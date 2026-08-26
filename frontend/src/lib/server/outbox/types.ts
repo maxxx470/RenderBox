@@ -12,8 +12,7 @@
 export type OutboxEvent =
   | NotificationPaymentReceivedEvent
   | EmailPaymentConfirmationEvent
-  | EmailVerificationCodeEvent
-  | EmailPasswordResetEvent;
+  | EmailMagicLinkEvent;
 
 export interface NotificationPaymentReceivedEvent {
   kind: 'notification.payment_received';
@@ -36,27 +35,14 @@ export interface EmailPaymentConfirmationEvent {
 }
 
 /**
- * Phase 1 — emitted by signup + resend-verification routes; consumed by the
- * email-queue cron in Phase 5 (which calls verificationEmail() to render).
+ * Emitted by POST /api/auth/magic-link/request; consumed by the email-queue
+ * cron (which calls magicLinkEmail() to render).
  */
-export interface EmailVerificationCodeEvent {
-  kind: 'email.verification_code';
+export interface EmailMagicLinkEvent {
+  kind: 'email.magic_link';
   payload: {
     to: string;
-    code: string;
-    expiresAt: string;
-  };
-}
-
-/**
- * Phase 1 — emitted by forgot-password route; consumed by the email-queue cron
- * in Phase 5 (which calls resetPasswordEmail() to render).
- */
-export interface EmailPasswordResetEvent {
-  kind: 'email.password_reset';
-  payload: {
-    to: string;
-    code: string;
+    url: string;
     expiresAt: string;
   };
 }

@@ -57,28 +57,25 @@ describe('.env.example shape (OPS-01, OPS-04)', () => {
 // will fail CI here. The wording is the product — the test quotes it
 // character-for-character.
 // ───────────────────────────────────────────────────────────────────────
-describe('.env.example phase 4 additions (UP-01, UP-02, WD-01..04)', () => {
+describe('.env.example RenderBox additions (upload + storage + AI engine)', () => {
   const src = readFileSync(ENV_EXAMPLE, 'utf8');
-
-  it(`contains the verbatim WITHDRAWAL_BALANCE_CHECK FINANCIAL-SAFETY warning (file: ${ENV_EXAMPLE})`, () => {
-    expect(src).toContain('⚠️  FINANCIAL-SAFETY WARNING — DO NOT CASUALLY DISABLE  ⚠️');
-    expect(src).toContain('WITHDRAWAL_BALANCE_CHECK="1"');
-  });
 
   it('declares the upload allow-list and max-bytes defaults', () => {
     expect(src).toContain('UPLOAD_ALLOWED_MIME="image/jpeg,image/png,image/webp"');
-    expect(src).toContain('UPLOAD_MAX_BYTES="10485760"');
+    expect(src).toContain('UPLOAD_MAX_BYTES="15728640"');
   });
 
-  it('declares CLOUDINARY_* keys with empty defaults', () => {
-    expect(src).toMatch(/^CLOUDINARY_CLOUD_NAME=""$/m);
-    expect(src).toMatch(/^CLOUDINARY_API_KEY=""$/m);
-    expect(src).toMatch(/^CLOUDINARY_API_SECRET=""$/m);
+  it('declares BLOB_READ_WRITE_TOKEN with an empty default', () => {
+    expect(src).toMatch(/^BLOB_READ_WRITE_TOKEN=""$/m);
   });
 
-  it('declares production-safe withdrawal-policy defaults', () => {
-    expect(src).toContain('WITHDRAWAL_MIN_AMOUNT="1000"');
-    expect(src).toContain('WITHDRAWAL_REQUIRE_PIN="1"');
+  it('declares GEMINI_API_KEY with an empty default', () => {
+    expect(src).toMatch(/^GEMINI_API_KEY=""$/m);
+  });
+
+  it('declares magic-link tunables', () => {
+    expect(src).toContain('AUTH_MAGIC_LINK_TTL_MIN=15');
+    expect(src).toContain('AUTH_MAGIC_LINK_RATE_LIMIT_MAX=3');
   });
 });
 
@@ -95,5 +92,21 @@ describe('.env.example phase 5 additions (CRON-05 + Phase 5 ENV)', () => {
   it('contains WEBHOOK_LOG_RETENTION_DAYS and ORDER_EXPIRATION_MINUTES with defaults', () => {
     expect(src).toContain('WEBHOOK_LOG_RETENTION_DAYS="90"');
     expect(src).toContain('ORDER_EXPIRATION_MINUTES="30"');
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────────
+// Phase 6 — Maketou payments + account-purge retention knob.
+// ───────────────────────────────────────────────────────────────────────
+describe('.env.example phase 6 additions (Maketou + account deletion)', () => {
+  const src = readFileSync(ENV_EXAMPLE, 'utf8');
+
+  it('declares MAKETOU_API_KEY and MAKETOU_PRODUCT_ID with empty defaults', () => {
+    expect(src).toContain('MAKETOU_API_KEY=""');
+    expect(src).toContain('MAKETOU_PRODUCT_ID=""');
+  });
+
+  it('contains ACCOUNT_DELETION_GRACE_DAYS with a 30-day default', () => {
+    expect(src).toContain('ACCOUNT_DELETION_GRACE_DAYS="30"');
   });
 });
