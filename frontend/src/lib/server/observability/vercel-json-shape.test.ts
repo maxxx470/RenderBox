@@ -1,11 +1,19 @@
 // frontend/src/lib/server/observability/vercel-json-shape.test.ts — Phase 5 D-20.
 //
-// Tripwire: verifies vercel.json declares all 8 cron schedules with valid
-// cron-format strings and paths that correspond to actual route.ts files.
-// (5 Phase-5 canonical + 1 post-audit email-job-purge + 2 Phase-6
-// additions: maketou-reconcile + account-purge.)
+// Tripwire: verifies vercel.json declares the daily-eligible cron schedules
+// with valid cron-format strings and paths that correspond to actual
+// route.ts files.
 //
-// Wave 0 status: RED until Wave 1 plan 05-08 ships frontend/vercel.json.
+// RenderBox runs on Vercel Hobby, which only permits once-per-day cron
+// schedules. Only the 3 crons that are genuinely daily
+// (webhook-log-purge / email-job-purge / account-purge) stay registered in
+// vercel.json. The 5 sub-daily crons (outbox-drain, email-queue-drain,
+// verification-cleanup, order-expiration, maketou-reconcile) still exist as
+// route.ts handlers guarded by verifyCronSecret, but are invoked by an
+// external scheduler (e.g. cron-job.org) instead — see README.md
+// "Déploiement Vercel" for the exact URLs/schedules. Upgrading to Vercel Pro
+// would allow moving them back into this file.
+//
 // Once GREEN, this test guards against route-rename / schedule-drift
 // regressions where a developer renames a cron route file but forgets
 // vercel.json (or vice versa).
@@ -34,11 +42,11 @@ describe('vercel.json schema (CRON-07, D-20)', () => {
     expect(existsSync(VERCEL_JSON)).toBe(true);
   });
 
-  it('declares exactly 8 cron schedules', () => {
+  it('declares exactly 3 cron schedules (Hobby plan: daily-only)', () => {
     if (!existsSync(VERCEL_JSON)) return; // skip silently when RED-by-design
     const cfg = JSON.parse(readFileSync(VERCEL_JSON, 'utf8')) as VercelConfig;
     expect(cfg.crons).toBeDefined();
-    expect(cfg.crons!.length).toBe(8);
+    expect(cfg.crons!.length).toBe(3);
   });
 
   it('every cron path matches /^\\/api\\/cron\\/[a-z-]+$/ and schedule is valid 5-field cron', () => {
@@ -64,19 +72,43 @@ describe('vercel.json schema (CRON-07, D-20)', () => {
     }
   });
 
-  it('declares schedules for the 8 canonical crons (Phase 5 + post-audit + Phase 6)', () => {
+  it('declares schedules for the 3 daily-eligible crons (Hobby plan)', () => {
     if (!existsSync(VERCEL_JSON)) return;
     const cfg = JSON.parse(readFileSync(VERCEL_JSON, 'utf8')) as VercelConfig;
     const paths = (cfg.crons ?? []).map((c) => c.path).sort();
     expect(paths).toEqual([
       '/api/cron/account-purge',
       '/api/cron/email-job-purge',
-      '/api/cron/email-queue-drain',
-      '/api/cron/maketou-reconcile',
-      '/api/cron/order-expiration',
-      '/api/cron/outbox-drain',
-      '/api/cron/verification-cleanup',
       '/api/cron/webhook-log-purge',
     ]);
+  });
+
+  it('every declared schedule is once-per-day or less frequent (Hobby plan limit)', () => {
+    if (!existsSync(VERCEL_JSON)) return;
+    const cfg = JSON.parse(readFileSync(VERCEL_JSON, 'utf8')) as VercelConfig;
+    for (const c of cfg.crons ?? []) {
+      const [minute = '*', hour = '*'] = c.schedule.split(/\s+/);
+      const isDailyOrLess =
+        minute !== '*' && !minute.includes('/') && hour !== '*' && !hour.includes('/');
+      expect(isDailyOrLess, `${c.path} schedule "${c.schedule}" runs more than once/day`).toBe(
+        true,
+      );
+    }
+  });
+
+  it('the 5 sub-daily cron routes still exist for external-scheduler invocation', () => {
+    const externallyScheduled = [
+      'outbox-drain',
+      'email-queue-drain',
+      'verification-cleanup',
+      'order-expiration',
+      'maketou-reconcile',
+    ];
+    for (const name of externallyScheduled) {
+      expect(
+        existsSync(resolve(APP_API_CRON, name, 'route.ts')),
+        `expected app/api/cron/${name}/route.ts to exist for external scheduling`,
+      ).toBe(true);
+    }
   });
 });

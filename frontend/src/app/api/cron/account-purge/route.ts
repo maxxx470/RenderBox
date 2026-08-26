@@ -40,3 +40,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   });
 }
+
+// Vercel Cron sends GET, not POST — alias so scheduled invocations succeed.
+export const GET = POST;
