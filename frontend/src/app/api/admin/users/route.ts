@@ -34,6 +34,7 @@ const USER_SELECT = {
   status: true,
   emailVerifiedAt: true,
   createdAt: true,
+  deletedAt: true,
 } as const satisfies Prisma.UserSelect;
 
 const Q_MAX = 200;
@@ -54,6 +55,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const role = url.searchParams.get('role');
     const cursor = decodeCursor(url.searchParams.get('cursor'));
 
+    // Phase 6 — "DELETED" is a virtual status value layered over the
+    // soft-delete deletedAt column, not a real User.status value (that
+    // column stays ACTIVE|SUSPENDED). Default listing (no ?status, or
+    // ?status=ACTIVE/SUSPENDED) excludes soft-deleted accounts so they
+    // don't linger in the active back-office view during their 30-day
+    // grace window; ?status=DELETED is the only way to see them (to
+    // restore via POST /api/admin/users/[id]/restore).
     const where: Prisma.UserWhereInput = {
       ...(q
         ? {
@@ -63,7 +71,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             ],
           }
         : {}),
-      ...(status ? { status } : {}),
+      ...(status === 'DELETED'
+        ? { deletedAt: { not: null } }
+        : { ...(status ? { status } : {}), deletedAt: null }),
       ...(role ? { role } : {}),
       ...cursorWhere(cursor),
     };
@@ -75,9 +85,33 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       select: USER_SELECT,
     });
 
+    // Phase 6 — per-row generation count for the admin table (D-06 spec).
+    // One extra query for the whole page (not N+1): RenderNode has no
+    // direct userId column (it belongs to Project), so we fetch the
+    // matching rows' owning userId and reduce in JS.
+    const pageIds = rows.slice(0, limit).map((r) => r.id);
+    const genRows =
+      pageIds.length > 0
+        ? ((await prisma.renderNode.findMany({
+            where: { kind: 'GENERATED', project: { userId: { in: pageIds } } },
+            select: { project: { select: { userId: true } } },
+          })) ?? [])
+        : [];
+    const generationsByUser = new Map<string, number>();
+    for (const g of genRows) {
+      generationsByUser.set(g.project.userId, (generationsByUser.get(g.project.userId) ?? 0) + 1);
+    }
+
     const page = buildPage(rows, limit);
-    return NextResponse.json(page, {
-      headers: { 'x-request-id': ctx.requestId },
-    });
+    return NextResponse.json(
+      {
+        ...page,
+        items: page.items.map((u) => ({
+          ...u,
+          generationsCount: generationsByUser.get(u.id) ?? 0,
+        })),
+      },
+      { headers: { 'x-request-id': ctx.requestId } },
+    );
   });
 }

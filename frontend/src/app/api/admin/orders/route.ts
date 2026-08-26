@@ -55,9 +55,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const since = parseDate(url.searchParams.get('since'));
     const until = parseDate(url.searchParams.get('until'));
     const cursor = decodeCursor(url.searchParams.get('cursor'));
+    // Phase 6 — /admin/paiements "recherche par utilisateur" (D-06 spec 1.3).
+    const email = url.searchParams.get('email');
 
     const where: Prisma.OrderWhereInput = {
       ...(status ? { status } : {}),
+      ...(email ? { customerEmail: { contains: email, mode: 'insensitive' } } : {}),
       ...(since || until
         ? {
             createdAt: {

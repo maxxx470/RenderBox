@@ -1,11 +1,11 @@
-// SCRIPT-01 — companion unit test for `scripts/seed-dev.ts`.
+// Companion unit test for `scripts/seed-dev.ts`.
 //
 // Asserts:
-//   1. NODE_ENV=production refuses with exit 1 BEFORE any prisma call (Rule 2 —
-//      production-safety; matches the threat model T-06-01-02 mitigation).
-//   2. 3 seed users are upserted (idempotent — runs upsert, not create).
-//   3. The first call's `create.passwordHash` matches the bcrypt prefix
-//      `$2[ab]$` and never contains plaintext.
+//   1. NODE_ENV=production refuses with exit 1 BEFORE any prisma call.
+//   2. 3 seed users + the dev-bypass fake user are upserted (idempotent —
+//      runs upsert, not create).
+//   3. The unverified seed user has emailVerifiedAt=null.
+//   4. The dev-bypass fake user is upserted keyed on its fixed id.
 //
 // Tests invoke `main([], { prisma })` directly with a mocked Prisma client
 // (no subprocess spawn, no real DB). The CLI entrypoint guard
@@ -15,6 +15,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mockDeep, mockReset, type DeepMockProxy } from 'vitest-mock-extended';
 import type { PrismaClient } from '@prisma/client';
 import { main } from './seed-dev';
+import { DEV_FAKE_USER_ID, DEV_FAKE_USER_EMAIL } from '../src/lib/server/dev-bypass';
 
 const prismaMock = mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
 
@@ -56,8 +57,8 @@ describe('scripts/seed-dev (SCRIPT-01)', () => {
 
     await main([], { prisma: prismaMock });
 
-    // 3 seed users → 3 upserts (admin, user, unverified).
-    expect(prismaMock.user.upsert).toHaveBeenCalledTimes(3);
+    // 3 seed users + 1 dev-bypass fake user → 4 upserts.
+    expect(prismaMock.user.upsert).toHaveBeenCalledTimes(4);
     const firstCall = prismaMock.user.upsert.mock.calls[0]?.[0];
     expect(firstCall?.where).toEqual({ email: 'admin@example.com' });
     expect(firstCall?.create).toMatchObject({
@@ -66,7 +67,7 @@ describe('scripts/seed-dev (SCRIPT-01)', () => {
     });
   });
 
-  it('hashes passwords with bcrypt before upsert (never plaintext)', async () => {
+  it('upserts the dev-bypass fake user keyed on its fixed id', async () => {
     process.env.NODE_ENV = 'test';
     prismaMock.user.upsert.mockResolvedValue({
       email: 'admin@example.com',
@@ -77,15 +78,13 @@ describe('scripts/seed-dev (SCRIPT-01)', () => {
 
     await main([], { prisma: prismaMock });
 
-    const firstCall = prismaMock.user.upsert.mock.calls[0]?.[0];
-    const create = firstCall?.create as { passwordHash: string };
-    expect(create.passwordHash).toMatch(/^\$2[ab]\$/); // bcrypt prefix
-    expect(create.passwordHash).not.toContain('AdminPassword123!'); // never plaintext
-
-    // The update branch also receives the bcrypt-hashed password.
-    const update = firstCall?.update as { passwordHash: string };
-    expect(update.passwordHash).toMatch(/^\$2[ab]\$/);
-    expect(update.passwordHash).not.toContain('AdminPassword123!');
+    const lastCall = prismaMock.user.upsert.mock.calls[3]?.[0];
+    expect(lastCall?.where).toEqual({ id: DEV_FAKE_USER_ID });
+    expect(lastCall?.create).toMatchObject({
+      id: DEV_FAKE_USER_ID,
+      email: DEV_FAKE_USER_EMAIL,
+      role: 'USER',
+    });
   });
 
   it('marks the unverified seed user with emailVerifiedAt=null', async () => {

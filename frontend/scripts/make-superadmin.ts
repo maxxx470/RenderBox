@@ -14,6 +14,8 @@
 // others via the admin back-office, so this script exists to bootstrap the
 // very first one.
 
+import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import { logAdminAction } from '../src/lib/server/admin/audit';
 
@@ -81,8 +83,12 @@ export async function main(
 }
 
 // CLI entrypoint guard — only run when invoked as a script, not when
-// imported by tests.
-if (import.meta.url === `file://${process.argv[1]}`) {
+// imported by tests. Compares resolved filesystem paths (via fileURLToPath)
+// rather than raw strings — a naive `file://${process.argv[1]}` comparison
+// never matches on Windows, where process.argv[1] uses backslashes and
+// import.meta.url uses a forward-slash file:// URL, so the script silently
+// no-ops (main() never runs, no output, exit 0) on every Windows invocation.
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   main()
     .then((code) => process.exit(code))
     .catch((err) => {

@@ -9,49 +9,51 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  // Nullable: OAuth-only users (e.g. signed up with Google) never set a
-  // password. Email/password signup still requires it; the auth route
-  // enforces presence at runtime.
-  passwordHash      String?
-  emailVerifiedAt   DateTime?
-  tokenVersion      Int       @default(0)
-  withdrawalPinHash String? // bcrypt hash of withdrawal PIN; null = no PIN set
+  id              String    @id @default(cuid())
+  email           String    @unique
+  // RenderBox is password-less: Google OAuth + magic link only. Users
+  // created via magic-link request never have an OAuthAccount; users
+  // created via Google never set emailVerifiedAt through a code (Google's
+  // own email_verified claim is the trust source there instead).
+  emailVerifiedAt DateTime?
+  tokenVersion    Int       @default(0)
   // Optional display name — populated from OAuth profile on first sign-in.
-  // Email/password users can fill it later via /api/auth/me PATCH (future).
-  name              String?
+  name            String?
   // Optional avatar URL — populated from OAuth profile on first sign-in.
-  avatarUrl         String?
+  avatarUrl       String?
   // App-wide role. USER is the default; ADMIN unlocks /admin back-office;
   // SUPERADMIN can promote/demote other admins. Bootstrap an initial
   // SUPERADMIN via `pnpm db:make-superadmin <email>` (see scripts).
-  role              String    @default("USER") // USER | ADMIN | SUPERADMIN
+  role            String    @default("USER") // USER | ADMIN | SUPERADMIN
   // Account status. ACTIVE = login + refresh allowed; SUSPENDED = both
   // refused with 403 ACCOUNT_SUSPENDED. Mutated via /api/admin/users/[id]/status
   // (ADMIN can suspend; only SUPERADMIN can restore).
-  status            String    @default("ACTIVE") // ACTIVE | SUSPENDED
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  status          String    @default("ACTIVE") // ACTIVE | SUSPENDED
+  // Phase 6 soft-delete. NULL = active/visible. Set by an admin via
+  // DELETE /api/admin/users/[id]; reversible for ACCOUNT_DELETION_GRACE_DAYS
+  // (default 30) via POST /api/admin/users/[id]/restore, after which the
+  // account-purge cron hard-deletes the row. Login is refused (same 15-min
+  // choke point as ACCOUNT_SUSPENDED) while deletedAt is set.
+  deletedAt       DateTime?
+  // Preferred generation engine, set from /parametres. NULL falls back to
+  // "nanobanana" client-side (AppShell.tsx's initial engine state).
+  defaultEngine   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   verificationCodes VerificationCode[]
   uploads           FileUpload[]
   notifications     Notification[]
   notifPrefs        NotificationPreferences?
   orders            Order[]
-  withdrawals       Withdrawal[]
   oauthAccounts     OAuthAccount[]
   adminActions      AdminAction[]
-
-  // Multi-tenancy is opt-in per project: by default no resource is org-scoped.
-  // Apps that need it (marketplace, B2B SaaS, classifieds) wire owner relations
-  // on their domain models.
-  ownedOrganizations Organization[]      @relation("OrgOwner")
-  memberships        OrganizationMember[] @relation("OrgMembership")
+  projects          Project[]
 
   @@index([email])
   @@index([role])
   @@index([status])
+  @@index([deletedAt])
 }
 
 // ───────────────────────────────────────────────────────────────────────
@@ -85,45 +87,6 @@ model AdminAction {
 }
 
 // ───────────────────────────────────────────────────────────────────────
-// Multi-tenancy primitives — opt-in.
-//
-// Default project surface stays user-owned (`Order.userId`, `Withdrawal.userId`).
-// Apps that need orgs add `organizationId String?` to their domain models
-// case by case and use `requireOrgRole()` middleware to gate access.
-//
-// Slug must be unique app-wide (not just within an owner) so it can be
-// used as a stable URL segment.
-// ───────────────────────────────────────────────────────────────────────
-model Organization {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  name      String
-  ownerId   String
-  owner     User     @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
-  members   OrganizationMember[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([ownerId])
-}
-
-// Role precedence: OWNER > ADMIN > MEMBER. The owner is also a member row
-// (created in the same tx as the org) so list-my-orgs queries can join
-// uniformly via memberships.
-model OrganizationMember {
-  id             String       @id @default(cuid())
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User         @relation("OrgMembership", fields: [userId], references: [id], onDelete: Cascade)
-  role           String       @default("MEMBER") // OWNER | ADMIN | MEMBER
-  createdAt      DateTime     @default(now())
-
-  @@unique([organizationId, userId])
-  @@index([userId])
-}
-
-// ───────────────────────────────────────────────────────────────────────
 // OAuth identities — one User can have N linked providers (Google, GitHub, …).
 // (provider, providerAccountId) is unique so the same Google account can't
 // link twice. Email matching at sign-in is intentional: if a user signed up
@@ -151,8 +114,12 @@ model VerificationCode {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // For type = MAGIC_LINK, `code` holds the SHA-256 hex digest of the raw
+  // 256-bit token embedded in the emailed link — never the raw token itself.
+  // `attempts` is meaningless for that type (guessing a 256-bit token isn't
+  // a realistic brute-force surface); it's kept for schema uniformity.
   code      String
-  type      String // EMAIL_VERIFY | PASSWORD_RESET
+  type      String // MAGIC_LINK
   expiresAt DateTime
   usedAt    DateTime?
   attempts  Int       @default(0)
@@ -273,21 +240,21 @@ model WebhookLog {
 // at the call site — the schema is currency-agnostic.
 // ───────────────────────────────────────────────────────────────────────
 model Order {
-  id              String    @id @default(cuid())
-  userId          String? // nullable — guest checkout supported
-  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  amount          Int // gross amount, smallest unit
-  currency        String    @default("XOF") // ISO 4217
-  status          String    @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | REFUNDED
-  customerEmail   String?
-  customerPhone   String?
-  customerName    String?
-  metadata        Json? // app-specific fields
+  id            String  @id @default(cuid())
+  userId        String? // nullable — guest checkout supported
+  user          User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  amount        Int // gross amount, smallest unit
+  currency      String  @default("XOF") // ISO 4217
+  status        String  @default("PENDING") // PENDING | PAID | EXPIRED | FAILED | REFUNDED
+  customerEmail String?
+  customerPhone String?
+  customerName  String?
+  metadata      Json? // app-specific fields
 
   // Stripe-grade idempotency. Required header on POST /api/orders; replay
   // with same value returns the original Order row instead of double-charging.
   // Nullable so existing rows pre-migration don't break the @unique constraint.
-  idempotencyKey  String?   @unique
+  idempotencyKey String? @unique
 
   // Provider reference
   provider         String // e.g. "bictorys"
@@ -310,25 +277,89 @@ model Order {
   @@index([provider, providerChargeId])
 }
 
-model Withdrawal {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  amount      Int // requested amount, smallest unit
-  currency    String   @default("XOF")
-  status      String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED | CANCELLED
-  destination Json // { method: "WAVE" | "ORANGE_MONEY" | ..., phone: "+221...", accountName?: "..." }
+// ───────────────────────────────────────────────────────────────────────
+// RenderBox core — Project (one building), RenderNode (each uploaded or
+// generated image, tree-shaped via parentId), Material (per-facade memory),
+// Generation (trace of each AI call + the materials snapshot used).
+// ───────────────────────────────────────────────────────────────────────
+model Project {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // Provider reference
-  provider         String // e.g. "bictorys"
-  providerPayoutId String? @unique
-  failureReason    String?
+  renderNodes RenderNode[]
+  materials   Material[]
 
-  requestedAt DateTime  @default(now())
-  processedAt DateTime?
-  completedAt DateTime?
+  @@index([userId, createdAt])
+}
 
-  @@index([userId, requestedAt])
-  @@index([status, requestedAt])
-  @@index([provider, providerPayoutId])
+model RenderNode {
+  id        String       @id @default(cuid())
+  projectId String
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    RenderNode?  @relation("NodeTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  RenderNode[] @relation("NodeTree")
+  kind      String // UPLOADED | GENERATED
+  // Vercel Blob URL. Vercel Blob has no private/signed access mode — this
+  // field must NEVER be sent to the client directly. All reads go through
+  // the authenticated proxy route (app/api/render-nodes/[id]/image) which
+  // checks project ownership before streaming bytes.
+  blobUrl   String
+  mimeType  String
+  sizeBytes Int
+  // Phase 3 — which ambiance preset produced this node. Null for UPLOADED
+  // nodes (no preset applies to a source photo) and for any GENERATED node
+  // predating Phase 3. See lib/server/generation/presets.ts.
+  preset    String?
+  // Phase 4 — which engine produced this node ("nanobanana" | "gpt_image").
+  // Null for UPLOADED nodes and for any GENERATED node predating Phase 4.
+  // Denormalized onto RenderNode (mirroring `preset`) so the viewer's
+  // per-node badge doesn't need a join through Generation.
+  engine    String?
+  // Phase 5 — set only when this node came from the edit route (not the
+  // standard generate route). Null = a standard generation or an upload.
+  editType  String? // "add_element" | "targeted_retouch" | null
+  // { x, y, width, height } in percent (0-100) of the source image,
+  // present only when editType = "targeted_retouch".
+  editZone  Json?
+  createdAt DateTime     @default(now())
+
+  generation Generation?
+
+  @@index([projectId, createdAt])
+  @@index([parentId])
+}
+
+// One active value per (projectId, face) — @@unique both enforces that and
+// gives the merge logic (lib/server/materials/merge.ts) a natural upsert
+// target. `confidence` is 0-100, null when source = manuel.
+model Material {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  face       String // e.g. "facade_principale", "toiture", "menuiseries"
+  valeur     String // free-text material description
+  source     String   @default("auto") // auto | manuel
+  confidence Int? // 0-100, null when source = manuel
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([projectId, face])
+}
+
+model Generation {
+  id                String     @id @default(cuid())
+  nodeId            String     @unique
+  node              RenderNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  engine            String // "nanobanana" | "gpt_image" — see lib/server/generation/engines/types.ts
+  preset            String? // one of lib/server/generation/presets.ts's PRESET_KEYS
+  prompt            String
+  materialsSnapshot Json // frozen copy of Material rows at generation time
+  createdAt         DateTime   @default(now())
+
+  @@index([engine, createdAt])
 }
