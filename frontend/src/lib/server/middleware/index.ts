@@ -22,10 +22,9 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { verifyToken, COOKIE_NAME } from '../auth';
 import { prisma } from '../prisma';
+import { DEV_FAKE_USER_ID, DEV_FAKE_USER_EMAIL, isDevBypassActive } from '../dev-bypass';
 import type { AdminRole } from './require-admin';
 import { roleRank } from './require-admin';
-import type { OrgRole } from './require-org-role';
-import { ORG_ROLE_RANK } from './require-org-role';
 
 export interface AuthContext {
   user: { sub: string; email: string };
@@ -33,10 +32,6 @@ export interface AuthContext {
 
 export interface AdminContext extends AuthContext {
   admin: { id: string; email: string; role: AdminRole };
-}
-
-export interface OrgContext extends AuthContext {
-  orgMember: { organizationId: string; userId: string; role: OrgRole };
 }
 
 /**
@@ -47,6 +42,12 @@ export interface OrgContext extends AuthContext {
  * tokenVersion).
  */
 export async function requireAuth(authHeader?: string | null): Promise<AuthContext | NextResponse> {
+  // Dev-only bypass — see lib/server/dev-bypass.ts. Never active unless
+  // NODE_ENV=development AND DEV_BYPASS_AUTH=true are BOTH set.
+  if (isDevBypassActive()) {
+    return { user: { sub: DEV_FAKE_USER_ID, email: DEV_FAKE_USER_EMAIL } };
+  }
+
   const store = await cookies();
   let token = store.get(COOKIE_NAME)?.value;
 
@@ -82,6 +83,10 @@ export async function requireAuth(authHeader?: string | null): Promise<AuthConte
  * accept both guests and authenticated callers.
  */
 export async function optionalAuth(authHeader?: string | null): Promise<AuthContext | null> {
+  if (isDevBypassActive()) {
+    return { user: { sub: DEV_FAKE_USER_ID, email: DEV_FAKE_USER_EMAIL } };
+  }
+
   const store = await cookies();
   let token = store.get(COOKIE_NAME)?.value;
   if (!token && authHeader && authHeader.startsWith('Bearer ')) {
@@ -139,37 +144,4 @@ export async function requireSuperadmin(
   authHeader?: string | null,
 ): Promise<AdminContext | NextResponse> {
   return requireAdmin('SUPERADMIN', authHeader);
-}
-
-/**
- * requireOrgRole — verifies the authed user belongs to `organizationId`
- * with at least `minRole`. Returns 404 (not 403) for non-members so org
- * existence isn't leaked. Chains requireAuth.
- */
-export async function requireOrgRole(
-  organizationId: string,
-  minRole: OrgRole = 'MEMBER',
-  authHeader?: string | null,
-): Promise<OrgContext | NextResponse> {
-  const auth = await requireAuth(authHeader);
-  if (auth instanceof NextResponse) return auth;
-
-  const membership = await prisma.organizationMember.findUnique({
-    where: { organizationId_userId: { organizationId, userId: auth.user.sub } },
-    select: { organizationId: true, userId: true, role: true },
-  });
-  if (!membership) {
-    return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
-  }
-  const role = membership.role as OrgRole;
-  if (ORG_ROLE_RANK[role] < ORG_ROLE_RANK[minRole]) {
-    return NextResponse.json(
-      { error: 'ORG_ROLE_INSUFFICIENT', message: 'Insufficient organization role' },
-      { status: 403 },
-    );
-  }
-  return {
-    user: auth.user,
-    orgMember: { organizationId: membership.organizationId, userId: membership.userId, role },
-  };
 }

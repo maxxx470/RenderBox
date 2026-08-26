@@ -26,16 +26,8 @@ export interface EmailTemplate {
   text: string;
 }
 
-export interface VerificationEmailArgs {
-  code: string;
-  email: string;
-  /** Optional ISO-8601 expiry; falls back to "soon" wording when omitted. */
-  expiresAt?: string;
-}
-
-export interface ResetPasswordEmailArgs {
-  code: string;
-  email: string;
+export interface MagicLinkEmailArgs {
+  url: string;
   /** Optional ISO-8601 expiry; falls back to "soon" wording when omitted. */
   expiresAt?: string;
 }
@@ -79,22 +71,26 @@ function ttlWording(expiresAtIso: string | undefined): string {
   return `in ${hours} hour${hours === 1 ? '' : 's'}`;
 }
 
-export function verificationEmail(args: VerificationEmailArgs): EmailTemplate {
-  const code = htmlEscape(args.code);
-  const ttl = ttlWording(args.expiresAt);
-  return {
-    subject: 'Verify your email',
-    html: `<p>Hi,</p><p>Your verification code is <strong>${code}</strong>.</p><p>It expires ${ttl}. If you did not request this, ignore this email.</p>`,
-    text: `Your verification code is ${args.code}. It expires ${ttl}. If you did not request this, ignore this email.`,
-  };
+// French-only for now (primary audience is Francophone Africa) — the
+// FR/EN toggle in the app UI doesn't thread a locale into the magic-link
+// request today. Add an `args.locale` branch here when that's needed.
+function ttlWordingFr(expiresAtIso: string | undefined): string {
+  const en = ttlWording(expiresAtIso);
+  if (en === 'soon') return 'bientôt';
+  if (en === 'in less than a minute') return 'dans moins d’une minute';
+  const match = /^in (\d+) (minute|hour)s?$/.exec(en);
+  if (!match) return en;
+  const [, n, unit] = match;
+  const plural = n !== '1' ? 's' : '';
+  return unit === 'minute' ? `dans ${n} minute${plural}` : `dans ${n} heure${plural}`;
 }
 
-export function resetPasswordEmail(args: ResetPasswordEmailArgs): EmailTemplate {
-  const code = htmlEscape(args.code);
-  const ttl = ttlWording(args.expiresAt);
+export function magicLinkEmail(args: MagicLinkEmailArgs): EmailTemplate {
+  const url = htmlEscape(args.url);
+  const ttl = ttlWordingFr(args.expiresAt);
   return {
-    subject: 'Reset your password',
-    html: `<p>Hi,</p><p>Your password reset code is <strong>${code}</strong>.</p><p>It expires ${ttl}. If you did not request this, ignore this email.</p>`,
-    text: `Your password reset code is ${args.code}. It expires ${ttl}. If you did not request this, ignore this email.`,
+    subject: 'Ton lien de connexion RenderBox',
+    html: `<p>Bonjour,</p><p>Clique sur le lien ci-dessous pour te connecter à RenderBox :</p><p><a href="${url}">${url}</a></p><p>Ce lien expire ${ttl}. Si tu n'es pas à l'origine de cette demande, ignore cet email.</p>`,
+    text: `Clique sur ce lien pour te connecter à RenderBox : ${args.url}\n\nCe lien expire ${ttl}. Si tu n'es pas à l'origine de cette demande, ignore cet email.`,
   };
 }
