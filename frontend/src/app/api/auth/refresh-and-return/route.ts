@@ -63,9 +63,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, email: true, tokenVersion: true, status: true },
+      select: { id: true, email: true, tokenVersion: true, status: true, deletedAt: true },
     });
-    if (!user || user.tokenVersion !== payload.tokenVersion || user.status === 'SUSPENDED') {
+    if (
+      !user ||
+      user.tokenVersion !== payload.tokenVersion ||
+      user.status === 'SUSPENDED' ||
+      user.deletedAt
+    ) {
       return loginRedirect(req, next);
     }
 

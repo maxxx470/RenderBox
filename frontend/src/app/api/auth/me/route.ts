@@ -3,17 +3,15 @@
 // Source: RESEARCH.md Pattern 14.
 //
 // requireAuth handles the cookie/Bearer lookup, JWT verification, and the
-// DB-side tokenVersion re-check (T-1-02 mitigation against stale-JWT bypass
-// after change-password bumps tokenVersion). Returns AuthContext on success
-// or a 401 NextResponse on failure.
+// DB-side tokenVersion re-check. Returns AuthContext on success or a 401
+// NextResponse on failure.
 //
 // Extra fields beyond { sub, email } (id, emailVerifiedAt, createdAt,
-// updatedAt, hasPassword, linkedProviders) are fetched via a second DB hit
-// so the AuthContext / settings page can branch on them without an extra
-// round-trip. `hasPassword` distinguishes OAuth-only accounts (passwordHash
-// is null) — used by /settings to switch between "Set password" and
-// "Change password". `linkedProviders` is a string[] of provider names
-// already wired (e.g. ['google']).
+// updatedAt, linkedProviders) are fetched via a second DB hit so the
+// AuthContext can branch on them without an extra round-trip.
+// `linkedProviders` is a string[] of provider names already wired
+// (e.g. ['google']) — RenderBox is password-less (Google OAuth + magic
+// link only), so there's no "has password" branch to expose.
 //
 // No CSRF: GET is a safe method; verifyCsrf is a no-op for GET anyway.
 export const runtime = 'nodejs';
@@ -44,7 +42,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         emailVerifiedAt: true,
         createdAt: true,
         updatedAt: true,
-        passwordHash: true,
+        role: true,
+        defaultEngine: true,
         oauthAccounts: { select: { provider: true } },
       },
     });
@@ -70,8 +69,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           ? dbUser.updatedAt.toISOString()
           : dbUser.updatedAt
         : null,
-      hasPassword: !!dbUser?.passwordHash,
       linkedProviders: (dbUser?.oauthAccounts ?? []).map((a) => a.provider),
+      // Phase 6 — used by the /admin nav link + /parametres engine picker.
+      role: dbUser?.role ?? 'USER',
+      defaultEngine: dbUser?.defaultEngine ?? null,
     };
 
     return NextResponse.json({ user }, { status: 200, headers: { 'x-request-id': ctx.requestId } });

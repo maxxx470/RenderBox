@@ -44,6 +44,7 @@ import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { prisma } from '@/lib/server/prisma';
+import { clampLimit, cursorWhere, buildPage, decodeCursor } from '@/lib/server/pagination/paginate';
 import { CircuitOpenError } from '@/lib/server/payments/circuit-breaker';
 import {
   breaker,
@@ -346,5 +347,39 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { status: 502, headers: { 'x-request-id': ctx.requestId } },
       );
     }
+  });
+}
+
+// Phase 6 — GET /api/orders — the caller's own billing history (/parametres).
+// Self-scoped by auth.user.sub; no admin-style filters. Cursor-paginated
+// with the same helpers the admin listings use.
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  const ctx = makeRequestContext(req.headers);
+  return withRequestContext(ctx, async () => {
+    const auth = await requireAuth(req.headers.get('authorization'));
+    if (auth instanceof NextResponse) return auth;
+
+    const limit = clampLimit(req.nextUrl.searchParams.get('limit'));
+    const cursor = decodeCursor(req.nextUrl.searchParams.get('cursor'));
+
+    const rows = await prisma.order.findMany({
+      where: { userId: auth.user.sub, ...cursorWhere(cursor) },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        status: true,
+        provider: true,
+        paymentUrl: true,
+        paidAt: true,
+        createdAt: true,
+      },
+    });
+
+    return NextResponse.json(buildPage(rows, limit), {
+      headers: { 'x-request-id': ctx.requestId },
+    });
   });
 }

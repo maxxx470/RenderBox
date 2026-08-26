@@ -259,7 +259,6 @@ describe('GET /api/auth/oauth/google/callback', () => {
         email: 'a@b.com',
         name: 'Alice',
         avatarUrl: 'https://example.com/avatar.png',
-        passwordHash: null,
       }),
     );
     expect(userArg?.data?.emailVerifiedAt).toBeInstanceOf(Date);

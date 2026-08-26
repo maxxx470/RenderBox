@@ -169,4 +169,24 @@ describe('POST /api/auth/refresh', () => {
     expect(acquireRefreshLock).not.toHaveBeenCalled();
     expect(releaseSpy).not.toHaveBeenCalled();
   });
+
+  it('Test 9 (Phase 6): soft-deleted user — 403 ACCOUNT_DELETED, no rotation, no lock acquired', async () => {
+    vi.mocked(verifyRefreshToken).mockResolvedValue({ sub: 'u_del', tokenVersion: 0 });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u_del',
+      email: 'deleted@b.com',
+      tokenVersion: 0,
+      status: 'ACTIVE',
+      deletedAt: new Date('2026-01-01T00:00:00Z'),
+    } as never);
+
+    const res = await POST(makeReq('valid'));
+
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.error).toBe('ACCOUNT_DELETED');
+    expect(__cookieStore.has('app-token')).toBe(false);
+    expect(acquireRefreshLock).not.toHaveBeenCalled();
+    expect(releaseSpy).not.toHaveBeenCalled();
+  });
 });

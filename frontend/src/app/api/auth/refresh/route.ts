@@ -62,7 +62,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, email: true, tokenVersion: true, status: true },
+      select: { id: true, email: true, tokenVersion: true, status: true, deletedAt: true },
     });
     if (!user) {
       return NextResponse.json(
@@ -85,6 +85,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (user.status === 'SUSPENDED') {
       return NextResponse.json(
         { error: 'ACCOUNT_SUSPENDED', message: 'This account has been suspended.' },
+        { status: 403, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    // Phase 6 — same choke point for a soft-deleted account. Reversible via
+    // POST /api/admin/users/[id]/restore during the grace window.
+    if (user.deletedAt) {
+      return NextResponse.json(
+        { error: 'ACCOUNT_DELETED', message: 'This account has been deleted.' },
         { status: 403, headers: { 'x-request-id': ctx.requestId } },
       );
     }

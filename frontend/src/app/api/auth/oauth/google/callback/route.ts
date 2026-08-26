@@ -150,7 +150,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
               emailVerifiedAt: new Date(),
               name: claims.name ?? null,
               avatarUrl: claims.picture ?? null,
-              passwordHash: null,
             },
             select: { id: true },
           });

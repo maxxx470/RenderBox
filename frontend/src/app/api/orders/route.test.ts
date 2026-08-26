@@ -54,7 +54,7 @@ import {
   PaymentProviderUnconfiguredError,
 } from '@/lib/server/payments/provider-singleton';
 import { CircuitOpenError } from '@/lib/server/payments/circuit-breaker';
-import { POST } from './route';
+import { POST, GET } from './route';
 
 const mockRequireAuth = vi.mocked(requireAuth);
 const mockGetProvider = vi.mocked(getProvider);
@@ -538,5 +538,40 @@ describe('POST /api/orders [Wave 1] — CSRF', () => {
     );
     expect(res.status).toBe(403);
     expect(mockRequireAuth).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/orders [Phase 6] — billing history', () => {
+  it("returns the caller's own orders scoped by userId", async () => {
+    mockRequireAuth.mockResolvedValueOnce(authedCtx);
+    prismaMock.order.findMany.mockResolvedValueOnce([
+      {
+        id: 'o1',
+        amount: 2000,
+        currency: 'XOF',
+        status: 'PAID',
+        provider: 'maketou',
+        paymentUrl: 'https://maketou.example/pay/1',
+        paidAt: new Date('2026-08-01T00:00:00Z'),
+        createdAt: new Date('2026-08-01T00:00:00Z'),
+      },
+    ] as never);
+
+    const res = await GET(new NextRequest('http://test/api/orders'));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { items: Array<{ id: string }> };
+    expect(body.items).toHaveLength(1);
+    expect(prismaMock.order.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ userId: 'user-1' }) }),
+    );
+  });
+
+  it('propagates 401 from requireAuth without a DB hit', async () => {
+    mockRequireAuth.mockResolvedValueOnce(
+      NextResponse.json({ error: 'Missing token' }, { status: 401 }),
+    );
+    const res = await GET(new NextRequest('http://test/api/orders'));
+    expect(res.status).toBe(401);
+    expect(prismaMock.order.findMany).not.toHaveBeenCalled();
   });
 });
