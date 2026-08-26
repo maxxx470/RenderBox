@@ -1,0 +1,46 @@
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { COOKIE_PREFIX } from '@/lib/constants';
+import { ConnexionForm } from './ConnexionForm';
+import { LanguageToggle } from '@/components/LanguageToggle';
+
+export default async function ConnexionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ magicLinkError?: string }>;
+}) {
+  // Heuristic (mirrors AuthContext's client-side check): the CSRF cookie is
+  // only ever set after a successful login, so its presence is a reliable
+  // "already signed in" signal — an invalid/expired session still bounces
+  // back here via useUser() on /app.
+  const store = await cookies();
+  const hasSession = store.has(`${COOKIE_PREFIX}-csrf`);
+  if (hasSession) {
+    redirect('/app');
+  }
+
+  const { magicLinkError } = await searchParams;
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-white">
+      <LanguageToggle />
+      <div className="w-[380px] rounded-[18px] border border-[#ECE3E5] px-8 py-9">
+        <div className="mb-7 flex items-center justify-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
+          <span className="font-[family-name:var(--font-poppins)] text-[17px] font-bold text-[#170608]">
+            RenderBox
+          </span>
+        </div>
+        <ConnexionForm
+          initialError={
+            magicLinkError === 'expired'
+              ? 'expired'
+              : magicLinkError === 'invalid'
+                ? 'invalid'
+                : null
+          }
+        />
+      </div>
+    </main>
+  );
+}

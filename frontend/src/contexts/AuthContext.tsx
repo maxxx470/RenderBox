@@ -12,10 +12,12 @@ export interface User {
   emailVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  /** false when the account was created via OAuth and never set a password. */
-  hasPassword: boolean;
-  /** Provider names already linked, e.g. ['google']. Empty for pure email/password accounts. */
+  /** Provider names already linked, e.g. ['google']. RenderBox is password-less (Google + magic link only). */
   linkedProviders: string[];
+  /** App-wide role — USER | ADMIN | SUPERADMIN. Gates the /admin nav link client-side (server-enforced separately). */
+  role: string;
+  /** Preferred generation engine set from /parametres, or null (falls back to nanobanana). */
+  defaultEngine: string | null;
 }
 
 interface AuthContextValue {
@@ -122,12 +124,12 @@ export function useAuth(): AuthContextValue {
  *     return <div>Hello {user.email}</div>;
  *   }
  *
- * Default redirect target is `/login`; override via the `redirectTo` arg.
+ * Default redirect target is `/connexion`; override via the `redirectTo` arg.
  * Returns `null` while loading OR while the redirect is in flight, so the
  * UI can render a stub. Use the `loading` field of useAuth() if you want
  * to render a spinner explicitly.
  */
-export function useUser(redirectTo: string = '/login'): User | null {
+export function useUser(redirectTo: string = '/connexion'): User | null {
   const { user, loading } = useAuth();
   const router = useRouter();
 
