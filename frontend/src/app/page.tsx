@@ -1,193 +1,453 @@
-// Default welcome page for the izi kit starter.
-//
-// Replace this file with your real homepage as soon as you're oriented.
-// This file exists so a fresh fork shows something useful at `/` instead of a
-// blank page — it's a server component that reads env at request time and
-// shows which optional providers are configured.
-//
-// Design-swappable: uses minimal Tailwind utilities; rip the JSX out and write
-// your own homepage. The starter ships no UI components by design.
+'use client';
 
-export const runtime = 'nodejs';
+// RenderBox landing page — replaces the izikit starter's default status
+// page. Layout/copy reproduced from the validated landing mockup (hero +
+// stats + alternating split sections + 3 presets + integrations + dark CTA
+// band + footer). Bilingual via the existing i18n system (landing.* keys in
+// lib/i18n/dictionaries) — no hardcoded strings.
+import Link from 'next/link';
+import { useTranslations } from '@/lib/i18n/LocaleContext';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
-function ConfigRow({ label, ok, hint }: { label: string; ok: boolean; hint: string }) {
+function AccentText({ children }: { children: React.ReactNode }) {
   return (
-    <li className="flex flex-wrap items-center gap-2 py-1.5">
-      <span aria-hidden className={ok ? 'text-emerald-600' : 'text-amber-500'}>
-        {ok ? '✅' : '⚠️ '}
-      </span>
-      <span className="font-mono text-sm">{label}</span>
-      <span className="text-xs text-gray-500">— {hint}</span>
+    <span className="bg-gradient-to-br from-[#E8121F] to-[#7F0000] bg-clip-text text-transparent">
+      {children}
+    </span>
+  );
+}
+
+function CheckItem({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-2.5 text-[13.5px] text-[#170608]">
+      <span className="font-bold text-[#C81120]">✓</span>
+      {children}
     </li>
   );
 }
 
-export default function Home() {
-  const env = process.env;
+function FicheRow({ face, value, tag }: { face: string; value: string; tag: string }) {
+  return (
+    <div className="mb-2 flex items-center justify-between rounded-[10px] border border-[#ECE3E5] bg-white px-3.5 py-2.5">
+      <div>
+        <span className="block font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#7A6E71]">
+          {face}
+        </span>
+        <span className="text-[13px] font-semibold text-[#170608]">{value}</span>
+      </div>
+      <span className="rounded-[6px] bg-[#C8112012] px-1.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[9px] text-[#C81120]">
+        {tag}
+      </span>
+    </div>
+  );
+}
 
-  const required = [
-    { label: 'DATABASE_URL', ok: !!env.DATABASE_URL, hint: 'Postgres (required)' },
-    { label: 'JWT_SECRET', ok: !!env.JWT_SECRET, hint: 'Auth signing key (required)' },
-  ];
+function TreeNode({
+  label,
+  tag,
+  child,
+  extraIndent,
+}: {
+  label: string;
+  tag: string;
+  child?: boolean;
+  extraIndent?: boolean;
+}) {
+  return (
+    <div
+      className={`mb-2.5 flex items-center gap-2 ${child ? 'ml-6.5' : ''} ${extraIndent ? 'ml-13' : ''}`}
+    >
+      <div className="h-6 w-6 flex-shrink-0 rounded-md bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
+      <div>
+        <div className="text-xs font-medium text-[#170608]">{label}</div>
+        <div className="font-[family-name:var(--font-ibm-plex-mono)] text-[9px] text-[#7A6E71]">
+          {tag}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  const recommended = [
-    { label: 'ENCRYPTION_KEY', ok: !!env.ENCRYPTION_KEY, hint: 'AES-256-GCM (recommended)' },
-    { label: 'CRON_SECRET', ok: !!env.CRON_SECRET, hint: 'Vercel Cron Bearer (recommended)' },
-    { label: 'DIRECT_URL', ok: !!env.DIRECT_URL, hint: 'For prisma migrate deploy' },
-  ];
+function PresetCard({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-2xl border border-[#ECE3E5] bg-[#F8F5F6] p-6.5">
+      <div className="mb-4 h-10.5 w-10.5 rounded-[10px] bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
+      <h4 className="mb-2 font-[family-name:var(--font-poppins)] text-[15px] font-semibold text-[#170608]">
+        {title}
+      </h4>
+      <p className="text-[13px] leading-[1.55] text-[#7A6E71]">{body}</p>
+    </div>
+  );
+}
 
-  const optional = [
-    {
-      label: 'UPSTASH_REDIS_REST_URL',
-      ok: !!env.UPSTASH_REDIS_REST_URL,
-      hint: 'Redis (rate limit, queue, lockout)',
-    },
-    {
-      label: 'GOOGLE_CLIENT_ID',
-      ok: !!env.GOOGLE_CLIENT_ID,
-      hint: 'Sign in with Google (OAuth)',
-    },
-    { label: 'RESEND_API_KEY', ok: !!env.RESEND_API_KEY, hint: 'Email sender' },
-    { label: 'EMAIL_FROM', ok: !!env.EMAIL_FROM, hint: 'Verified sender address' },
-    {
-      label: 'CLOUDINARY_CLOUD_NAME',
-      ok: !!env.CLOUDINARY_CLOUD_NAME,
-      hint: 'Cloudinary file / media storage',
-    },
-    { label: 'BICTORYS_API_KEY', ok: !!env.BICTORYS_API_KEY, hint: 'Mobile money payments' },
-    { label: 'SENTRY_DSN', ok: !!env.SENTRY_DSN, hint: 'Error reporting + traces' },
-  ];
+export default function LandingPage() {
+  const t = useTranslations();
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12 font-sans text-gray-900">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">izi kit</h1>
-        <p className="mt-2 text-gray-600">
-          Headless Next.js 16 starter — auth, payments, admin, webhooks, cron.
-          <br />
-          You&rsquo;re seeing this default page because{' '}
-          <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm">
-            frontend/src/app/page.tsx
-          </code>{' '}
-          hasn&rsquo;t been replaced yet.
-        </p>
-      </header>
-
-      {/* ─── Beginner: what to type next ───────────────────────────────── */}
-      <section className="mt-10 rounded-lg border border-emerald-200 bg-emerald-50 p-5">
-        <h2 className="text-lg font-semibold text-emerald-900">
-          👋 New here? Open this project in Claude Code and type:
-        </h2>
-        <pre className="mt-3 overflow-x-auto rounded bg-white p-3 text-sm">/setup-kit</pre>
-        <p className="mt-3 text-sm text-emerald-900">
-          The <code>/setup-kit</code> skill audits your environment, installs what it can (pnpm via
-          Corepack, secrets), and walks you through plugging a <strong>Neon Postgres</strong>{' '}
-          connection string — the kit is tuned for Neon&rsquo;s serverless behavior (other Postgres
-          providers work but need user-side tuning). Then just{' '}
-          <strong>describe what you want to build to Claude</strong> (in French or English). The 40
-          routes (auth, payments, admin, webhooks, cron, uploads) are already wired — you only talk
-          about your product, not the plumbing. See <code>WORKFLOW.md</code> for the full
-          vibe-coding flow.
-        </p>
-      </section>
-
-      {/* ─── Live backend probes ──────────────────────────────────────── */}
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">Backend status</h2>
-        <p className="mt-1 text-sm text-gray-600">
-          Live JSON probes — open these in a new tab to confirm everything is up.
-        </p>
-        <ul className="mt-3 space-y-1">
-          <li>
-            <a
-              href="/api/health"
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 underline"
+    <main className="bg-white">
+      <LanguageToggle />
+      <div className="mx-auto max-w-[1180px] px-6">
+        {/* NAV */}
+        <nav className="flex items-center justify-between py-5">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-[family-name:var(--font-poppins)] text-[17px] font-bold text-[#170608]"
+          >
+            <div className="h-6.5 w-6.5 rounded-[7px] bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
+            RenderBox
+          </Link>
+          <div className="hidden items-center gap-7 text-sm font-medium text-[#7A6E71] min-[860px]:flex">
+            <a href="#fonctionnalites" className="hover:text-[#170608]">
+              {t('landing.navFeatures')}
+            </a>
+            <a href="#tarifs" className="hover:text-[#170608]">
+              {t('landing.navPricing')}
+            </a>
+            <Link href="/exemple" className="hover:text-[#170608]">
+              {t('landing.navExamples')}
+            </Link>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <Link href="/connexion" className="text-sm text-[#7A6E71] hover:text-[#170608]">
+              {t('landing.navLogin')}
+            </Link>
+            <Link
+              href="/connexion"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_8px_20px_-6px_#C8112050]"
             >
-              /api/health
-            </a>{' '}
-            <span className="text-xs text-gray-500">— liveness (always responds)</span>
-          </li>
-          <li>
-            <a
-              href="/api/readyz"
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 underline"
+              {t('landing.navStart')}
+            </Link>
+          </div>
+        </nav>
+
+        {/* HERO */}
+        <section className="grid grid-cols-1 items-center gap-12.5 py-15 pb-10 min-[860px]:grid-cols-2">
+          <div>
+            <div className="mb-4.5 inline-block rounded-[20px] bg-[#C8112012] px-3 py-1.5 font-[family-name:var(--font-ibm-plex-mono)] text-xs text-[#C81120]">
+              {t('landing.heroEyebrow')}
+            </div>
+            <h1 className="mb-4.5 font-[family-name:var(--font-poppins)] text-[44px] font-bold leading-[1.12] tracking-[-1px] text-[#170608]">
+              {t('landing.heroTitlePrefix')}
+              <AccentText>{t('landing.heroTitleAccent')}</AccentText>
+              {t('landing.heroTitleSuffix')}
+            </h1>
+            <p className="mb-7 max-w-[440px] text-[15px] leading-[1.6] text-[#7A6E71]">
+              {t('landing.heroSubtitle')}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/connexion"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_8px_20px_-6px_#C8112050]"
+              >
+                {t('landing.heroCtaPrimary')}
+              </Link>
+              <Link
+                href="/exemple"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#ECE3E5] px-6 py-3.5 text-sm font-semibold text-[#170608]"
+              >
+                {t('landing.heroCtaSecondary')}
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute -top-4 right-5 z-10 rounded-xl border border-[#ECE3E5] bg-white px-3.5 py-2.5 font-[family-name:var(--font-ibm-plex-mono)] text-xs shadow-[0_14px_30px_-12px_#17060830]">
+              {t('landing.heroChipMaterials')
+                .split(':')
+                .map((part, i) =>
+                  i === 0 ? (
+                    <span key={i}>{part}:</span>
+                  ) : (
+                    <b key={i} className="text-[#C81120]">
+                      {part}
+                    </b>
+                  ),
+                )}
+            </div>
+            <div className="rounded-2xl border border-[#ECE3E5] bg-[#F8F5F6] p-5 shadow-[0_30px_60px_-30px_#17060820]">
+              <div className="mb-3.5 flex items-center justify-between">
+                <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A6E71]">
+                  {t('landing.heroPreviewProject')}
+                </span>
+                <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A6E71]">
+                  {t('landing.heroPreviewEngine')}
+                </span>
+              </div>
+              <div className="relative mb-3.5 h-[190px] overflow-hidden rounded-xl bg-gradient-to-br from-[#3D0206] to-[#1A0407]">
+                <span className="absolute bottom-2.5 left-2.5 rounded-lg bg-black/30 px-2 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#F8D6D6]">
+                  {t('landing.heroPreviewCaption')}
+                </span>
+              </div>
+              <div className="flex gap-2.5">
+                <div className="h-13 flex-1 rounded-lg border border-[#C81120] bg-[#F1EBEC]" />
+                <div className="h-13 flex-1 rounded-lg border border-[#ECE3E5] bg-[#F1EBEC]" />
+                <div className="h-13 flex-1 rounded-lg border border-[#ECE3E5] bg-[#F1EBEC]" />
+                <div className="h-13 flex-1 rounded-lg border border-[#ECE3E5] bg-[#F1EBEC]" />
+              </div>
+            </div>
+            <div className="absolute -bottom-4.5 -left-2.5 rounded-xl border border-[#ECE3E5] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_#17060830]">
+              {t('landing.heroChipFacade')}
+            </div>
+          </div>
+        </section>
+
+        {/* TRUST BAR */}
+        <div className="flex flex-wrap justify-center gap-11 border-b border-[#ECE3E5] py-9 pb-15">
+          <div className="text-center">
+            <b className="block font-[family-name:var(--font-poppins)] text-xl text-[#170608]">4</b>
+            <span className="text-xs text-[#7A6E71]">{t('landing.trustPresets')}</span>
+          </div>
+          <div className="text-center">
+            <b className="block font-[family-name:var(--font-poppins)] text-xl text-[#170608]">2</b>
+            <span className="text-xs text-[#7A6E71]">{t('landing.trustEngines')}</span>
+          </div>
+          <div className="text-center">
+            <b className="block font-[family-name:var(--font-poppins)] text-xl text-[#170608]">0</b>
+            <span className="text-xs text-[#7A6E71]">{t('landing.trustMaterials')}</span>
+          </div>
+        </div>
+
+        {/* SPLIT 1 — materials memory */}
+        <section id="fonctionnalites" className="py-20">
+          <div className="grid grid-cols-1 items-center gap-14 py-12.5 min-[860px]:grid-cols-2">
+            <div>
+              <span className="mb-2.5 block font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#C81120]">
+                {t('landing.split1Tag')}
+              </span>
+              <h3 className="mb-3 font-[family-name:var(--font-poppins)] text-[26px] font-bold tracking-[-0.4px] text-[#170608]">
+                {t('landing.split1Title')}
+              </h3>
+              <p className="mb-4.5 max-w-[400px] text-[14.5px] leading-[1.65] text-[#7A6E71]">
+                {t('landing.split1Body')}
+              </p>
+              <ul className="flex flex-col gap-2.5">
+                <CheckItem>{t('landing.split1Check1')}</CheckItem>
+                <CheckItem>{t('landing.split1Check2')}</CheckItem>
+                <CheckItem>{t('landing.split1Check3')}</CheckItem>
+              </ul>
+            </div>
+            <div className="rounded-2xl border border-[#ECE3E5] bg-[#F8F5F6] p-5.5">
+              <FicheRow
+                face={t('landing.split1FaceMain')}
+                value={t('landing.split1FaceMainValue')}
+                tag={t('landing.split1AutoTag')}
+              />
+              <FicheRow
+                face={t('landing.split1FaceBack')}
+                value={t('landing.split1FaceBackValue')}
+                tag={t('landing.split1AutoTag')}
+              />
+              <FicheRow
+                face={t('landing.split1Joinery')}
+                value={t('landing.split1JoineryValue')}
+                tag={t('landing.split1AutoTag')}
+              />
+              <FicheRow
+                face={t('landing.split1Roof')}
+                value={t('landing.split1RoofValue')}
+                tag={t('landing.split1AutoTag')}
+              />
+            </div>
+          </div>
+
+          {/* SPLIT 2 — tree gallery (reversed) */}
+          <div className="grid grid-cols-1 items-center gap-14 py-12.5 min-[860px]:grid-cols-2">
+            <div className="min-[860px]:order-2">
+              <span className="mb-2.5 block font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#C81120]">
+                {t('landing.split2Tag')}
+              </span>
+              <h3 className="mb-3 font-[family-name:var(--font-poppins)] text-[26px] font-bold tracking-[-0.4px] text-[#170608]">
+                {t('landing.split2Title')}
+              </h3>
+              <p className="mb-4.5 max-w-[400px] text-[14.5px] leading-[1.65] text-[#7A6E71]">
+                {t('landing.split2Body')}
+              </p>
+              <ul className="flex flex-col gap-2.5">
+                <CheckItem>{t('landing.split2Check1')}</CheckItem>
+                <CheckItem>{t('landing.split2Check2')}</CheckItem>
+                <CheckItem>{t('landing.split2Check3')}</CheckItem>
+              </ul>
+            </div>
+            <div className="rounded-2xl border border-[#ECE3E5] bg-[#F8F5F6] p-5.5 min-[860px]:order-1">
+              <div className="rounded-[10px] border border-[#ECE3E5] bg-white p-4">
+                <TreeNode
+                  label={t('landing.split2NodeUpload')}
+                  tag={t('landing.split2NodeSource')}
+                />
+                <TreeNode
+                  label={t('landing.split2NodeDay')}
+                  tag={t('landing.heroPreviewEngine')}
+                  child
+                />
+                <TreeNode
+                  label={t('landing.split2NodeNight')}
+                  tag={t('landing.heroPreviewEngine')}
+                  child
+                />
+                <TreeNode label={t('landing.split2NodeExtra')} tag="gpt image" extraIndent />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 3 PRESETS */}
+        <section className="py-20">
+          <div className="mx-auto mb-11.5 max-w-[560px] text-center">
+            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
+              {t('landing.presetsTitlePrefix')}
+              <AccentText>{t('landing.presetsTitleAccent')}</AccentText>
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 gap-5.5 min-[860px]:grid-cols-3">
+            <PresetCard
+              title={t('landing.presetsCard1Title')}
+              body={t('landing.presetsCard1Body')}
+            />
+            <PresetCard
+              title={t('landing.presetsCard2Title')}
+              body={t('landing.presetsCard2Body')}
+            />
+            <PresetCard
+              title={t('landing.presetsCard3Title')}
+              body={t('landing.presetsCard3Body')}
+            />
+          </div>
+        </section>
+
+        {/* INTEGRATIONS */}
+        <section id="tarifs" className="py-20 text-center">
+          <div className="mx-auto mb-11.5 max-w-[560px]">
+            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
+              {t('landing.integrationsTitlePrefix')}
+              <AccentText>{t('landing.integrationsTitleAccent')}</AccentText>
+            </h2>
+            <p className="mt-2.5 text-sm text-[#7A6E71]">{t('landing.integrationsSubtitle')}</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex h-13 w-13 items-center justify-center rounded-[14px] border border-[#ECE3E5] bg-[#F8F5F6] px-2 text-center font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#7A6E71]">
+              {t('landing.heroPreviewEngine')}
+            </div>
+            <div className="flex h-13 w-13 items-center justify-center rounded-[14px] border border-[#ECE3E5] bg-[#F8F5F6] px-2 text-center font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#7A6E71]">
+              GPT Image
+            </div>
+            <div className="flex h-13 w-13 items-center justify-center rounded-[14px] border border-[#ECE3E5] bg-[#F8F5F6] px-2 text-center font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#7A6E71]">
+              Claude Vision
+            </div>
+          </div>
+        </section>
+
+        {/* CTA DARK BAND */}
+        <section className="py-20">
+          <div className="grid grid-cols-1 items-center gap-10 rounded-3xl bg-gradient-to-br from-[#1A0407] to-[#3D0206] p-9 py-14 text-white min-[860px]:grid-cols-[1.1fr_0.9fr] min-[860px]:px-12.5">
+            <div>
+              <h2 className="mb-3.5 text-[28px] font-bold leading-[1.25]">
+                {t('landing.ctaBandTitle')}
+              </h2>
+              <p className="mb-6 max-w-[380px] text-sm text-[#E8C9CB]">
+                {t('landing.ctaBandBody')}
+              </p>
+              <Link
+                href="/connexion"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_8px_20px_-6px_#C8112050]"
+              >
+                {t('landing.ctaBandButton')}
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-5">
+              <div className="mb-3.5 flex items-center justify-between">
+                <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#E8C9CB]">
+                  {t('landing.ctaBandPreviewTag')}
+                </span>
+              </div>
+              <div className="mb-3.5 h-[190px] rounded-xl bg-gradient-to-br from-[#3D0206] to-[#1A0407]" />
+              <div className="flex gap-2.5">
+                <div className="h-13 flex-1 rounded-lg border border-white/20 bg-white/10" />
+                <div className="h-13 flex-1 rounded-lg border border-white/20 bg-white/10" />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-9 grid grid-cols-1 gap-5.5 min-[860px]:grid-cols-2">
+            <div className="rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] p-7.5 text-white">
+              <h4 className="mb-1.5 text-lg font-semibold">{t('landing.ctaChatTitle')}</h4>
+              <p className="mb-4.5 text-[13px] opacity-85">{t('landing.ctaChatBody')}</p>
+              <button
+                type="button"
+                className="rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-[#170608]"
+              >
+                {t('landing.ctaChatButton')}
+              </button>
+            </div>
+            <div className="rounded-2xl bg-[#1A0407] p-7.5 text-white">
+              <h4 className="mb-1.5 text-lg font-semibold">{t('landing.ctaDemoTitle')}</h4>
+              <p className="mb-4.5 text-[13px] opacity-85">{t('landing.ctaDemoBody')}</p>
+              <Link
+                href="/exemple"
+                className="inline-block rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-[#170608]"
+              >
+                {t('landing.ctaDemoButton')}
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer className="mt-15 border-t border-[#ECE3E5] py-15 pb-7.5">
+          <div className="flex flex-wrap justify-between gap-10 pb-10">
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-[family-name:var(--font-poppins)] text-[17px] font-bold text-[#170608]"
             >
-              /api/readyz
-            </a>{' '}
-            <span className="text-xs text-gray-500">
-              — readiness (DB + Redis probes, 503 if either is down)
-            </span>
-          </li>
-        </ul>
-      </section>
-
-      {/* ─── Provider configuration ───────────────────────────────────── */}
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">Provider configuration</h2>
-        <p className="mt-1 text-sm text-gray-600">
-          Read at request time from <code>process.env</code>. Optional providers are inert when
-          absent — the corresponding routes 404 silently and the rest of the app keeps working.
-        </p>
-
-        <h3 className="mt-5 text-sm font-semibold uppercase tracking-wide text-gray-500">
-          Required (app refuses to boot without these)
-        </h3>
-        <ul>
-          {required.map((row) => (
-            <ConfigRow key={row.label} {...row} />
-          ))}
-        </ul>
-
-        <h3 className="mt-5 text-sm font-semibold uppercase tracking-wide text-gray-500">
-          Recommended (app boots, but breaks at first use)
-        </h3>
-        <ul>
-          {recommended.map((row) => (
-            <ConfigRow key={row.label} {...row} />
-          ))}
-        </ul>
-
-        <h3 className="mt-5 text-sm font-semibold uppercase tracking-wide text-gray-500">
-          Optional providers
-        </h3>
-        <ul>
-          {optional.map((row) => (
-            <ConfigRow key={row.label} {...row} />
-          ))}
-        </ul>
-      </section>
-
-      {/* ─── What's shipped ───────────────────────────────────────────── */}
-      <section className="mt-10">
-        <h2 className="text-xl font-semibold">What this starter ships</h2>
-        <ul className="mt-3 list-inside list-disc space-y-1 text-sm">
-          <li>
-            API routes under <code>/api/*</code> — auth, OAuth, admin, payments, uploads, webhooks,
-            5 cron handlers
-          </li>
-          <li>Prisma schema + versioned migrations (Postgres / Neon)</li>
-          <li>Vitest unit test suite covering the protected libs</li>
-          <li>CI pipeline: format / lint / typecheck / test / build / audit</li>
-          <li>
-            Cloud-only by design — bring your own Postgres (Neon free tier), no local containers
-          </li>
-        </ul>
-        <p className="mt-3 text-sm text-gray-600">
-          Full architecture overview in{' '}
-          <code className="rounded bg-gray-100 px-1.5 py-0.5">CLAUDE.md</code>; public surface in{' '}
-          <code className="rounded bg-gray-100 px-1.5 py-0.5">README.md</code>.
-        </p>
-      </section>
-
-      <footer className="mt-12 border-t border-gray-200 pt-6 text-xs text-gray-500">
-        Replace this page in{' '}
-        <code className="rounded bg-gray-100 px-1.5 py-0.5">frontend/src/app/page.tsx</code> when
-        you&rsquo;re ready.
-      </footer>
+              <div className="h-6.5 w-6.5 rounded-[7px] bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
+              RenderBox
+            </Link>
+            <div className="flex flex-wrap gap-15">
+              <div>
+                <h5 className="mb-3.5 font-[family-name:var(--font-poppins)] text-xs uppercase tracking-wide text-[#7A6E71]">
+                  {t('landing.footerProductHeading')}
+                </h5>
+                <a href="#fonctionnalites" className="mb-2.5 block text-[13px] text-[#170608]">
+                  {t('landing.navFeatures')}
+                </a>
+                <a href="#tarifs" className="mb-2.5 block text-[13px] text-[#170608]">
+                  {t('landing.navPricing')}
+                </a>
+                <Link href="/exemple" className="mb-2.5 block text-[13px] text-[#170608]">
+                  {t('landing.navExamples')}
+                </Link>
+              </div>
+              <div>
+                <h5 className="mb-3.5 font-[family-name:var(--font-poppins)] text-xs uppercase tracking-wide text-[#7A6E71]">
+                  {t('landing.footerResourcesHeading')}
+                </h5>
+                <span className="mb-2.5 block text-[13px] text-[#7A6E71]">
+                  {t('landing.footerLinkGuide')}
+                </span>
+                <span className="mb-2.5 block text-[13px] text-[#7A6E71]">
+                  {t('landing.footerLinkBlog')}
+                </span>
+              </div>
+              <div>
+                <h5 className="mb-3.5 font-[family-name:var(--font-poppins)] text-xs uppercase tracking-wide text-[#7A6E71]">
+                  {t('landing.footerSupportHeading')}
+                </h5>
+                <span className="mb-2.5 block text-[13px] text-[#7A6E71]">
+                  {t('landing.footerLinkContact')}
+                </span>
+                <span className="mb-2.5 block text-[13px] text-[#7A6E71]">
+                  {t('landing.footerLinkHelp')}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-between gap-2 border-t border-[#ECE3E5] pt-6 text-xs text-[#7A6E71]">
+            <span>{t('landing.footerCopyright', { year: new Date().getFullYear() })}</span>
+            <Link href="/legal" className="hover:text-[#170608]">
+              {t('landing.footerLegalLinks')}
+            </Link>
+          </div>
+        </footer>
+      </div>
     </main>
   );
 }

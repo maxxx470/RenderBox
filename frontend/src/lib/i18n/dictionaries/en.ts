@@ -231,6 +231,98 @@ const en: Record<keyof typeof fr, string> = {
   'legal.privacyBody':
     'We collect your email address for authentication, the images you upload for render generation, and payment metadata tied to your purchases. Your data is never resold. You can request account deletion by contacting support — deletion is reversible for 30 days, then permanent.',
   'legal.backHome': '← Back home',
+
+  'landing.navFeatures': 'Features',
+  'landing.navPricing': 'Pricing',
+  'landing.navExamples': 'Examples',
+  'landing.navLogin': 'Log in',
+  'landing.navStart': 'Get started',
+
+  'landing.heroEyebrow': 'AI rendering for architects',
+  'landing.heroTitlePrefix': 'Renders that ',
+  'landing.heroTitleAccent': 'remember',
+  'landing.heroTitleSuffix': ' your materials',
+  'landing.heroSubtitle':
+    'Change the view, the mood, or the time of day — RenderBox remembers every material applied to your building, façade by façade.',
+  'landing.heroCtaPrimary': 'Generate my first render',
+  'landing.heroCtaSecondary': 'See an example',
+  'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
+  'landing.heroPreviewEngine': 'Nanobanana',
+  'landing.heroPreviewCaption': 'Exterior day · Nanobanana',
+  'landing.heroChipMaterials': 'Materials remembered: 12/12',
+  'landing.heroChipFacade': '🎨 North façade → white render',
+
+  'landing.trustPresets': 'Render presets',
+  'landing.trustEngines': 'AI engines to choose from',
+  'landing.trustMaterials': 'Material forgotten between views',
+
+  'landing.split1Tag': 'Material memory',
+  'landing.split1Title': 'Every façade keeps its material, in every new view',
+  'landing.split1Body':
+    'The AI automatically detects the materials applied to your building and remembers them. Change the angle or the mood: they stay identical.',
+  'landing.split1Check1': 'Automatic detection after every render',
+  'landing.split1Check2': 'Editable sheet if the AI gets it wrong',
+  'landing.split1Check3': 'Re-injected into every new generation',
+  'landing.split1FaceMain': 'MAIN FAÇADE',
+  'landing.split1FaceMainValue': 'White trowelled render',
+  'landing.split1FaceBack': 'REAR FAÇADE',
+  'landing.split1FaceBackValue': 'Light wood cladding',
+  'landing.split1Joinery': 'JOINERY',
+  'landing.split1JoineryValue': 'Matte black aluminium',
+  'landing.split1Roof': 'ROOF',
+  'landing.split1RoofValue': 'Terracotta tile',
+  'landing.split1AutoTag': 'auto',
+
+  'landing.split2Tag': 'Tree gallery',
+  'landing.split2Title': 'Every render can become a new reference',
+  'landing.split2Body':
+    'No fixed chain: from a single image, generate multiple variants and keep the full history visible to explore several directions.',
+  'landing.split2Check1': 'Full, browsable history',
+  'landing.split2Check2': 'Pick up any render as a new starting point',
+  'landing.split2Check3': 'No variant lost while exploring another',
+  'landing.split2NodeUpload': 'Photo upload',
+  'landing.split2NodeSource': 'source',
+  'landing.split2NodeDay': 'Exterior day',
+  'landing.split2NodeNight': 'Exterior night',
+  'landing.split2NodeExtra': '+ character',
+
+  'landing.presetsTitlePrefix': 'A preset for ',
+  'landing.presetsTitleAccent': 'every mood',
+  'landing.presetsCard1Title': 'Exterior day',
+  'landing.presetsCard1Body': 'Crisp natural light, sharp cast shadows, clear sky.',
+  'landing.presetsCard2Title': 'Exterior night',
+  'landing.presetsCard2Body': 'Architectural lighting, night-time mood, controlled dark sky.',
+  'landing.presetsCard3Title': 'Interior day / night',
+  'landing.presetsCard3Body':
+    'Natural or artificial light depending on the time, faithful materials.',
+
+  'landing.integrationsTitlePrefix': 'Two engines, ',
+  'landing.integrationsTitleAccent': 'one project',
+  'landing.integrationsSubtitle':
+    'Pick the engine that fits each render — materials and history stay shared.',
+
+  'landing.ctaBandTitle': 'Ready to generate your first renders?',
+  'landing.ctaBandBody':
+    'Upload a photo, pick a preset, and let RenderBox remember every material for you.',
+  'landing.ctaBandButton': 'Start for free',
+  'landing.ctaBandPreviewTag': 'New project',
+
+  'landing.ctaChatTitle': 'Chat with us',
+  'landing.ctaChatBody': 'A question about a project or a specific need?',
+  'landing.ctaChatButton': 'Open chat',
+  'landing.ctaDemoTitle': 'Watch a demo',
+  'landing.ctaDemoBody': '5 minutes to see material memory in action.',
+  'landing.ctaDemoButton': 'Watch',
+
+  'landing.footerProductHeading': 'Product',
+  'landing.footerResourcesHeading': 'Resources',
+  'landing.footerSupportHeading': 'Support',
+  'landing.footerLinkGuide': 'Guide',
+  'landing.footerLinkBlog': 'Blog',
+  'landing.footerLinkContact': 'Contact',
+  'landing.footerLinkHelp': 'Help',
+  'landing.footerCopyright': '© {year} RenderBox. All rights reserved.',
+  'landing.footerLegalLinks': 'Terms · Privacy',
 };
 
 export default en;

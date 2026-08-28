@@ -230,6 +230,97 @@ const fr = {
   'legal.privacyBody':
     "Nous collectons ton adresse email pour l'authentification, les images que tu téléverses pour la génération de rendus, et les métadonnées de paiement liées à tes achats. Tes données ne sont jamais revendues. Tu peux demander la suppression de ton compte en contactant le support — la suppression est réversible pendant 30 jours puis définitive.",
   'legal.backHome': "← Retour à l'accueil",
+
+  'landing.navFeatures': 'Fonctionnalités',
+  'landing.navPricing': 'Tarifs',
+  'landing.navExamples': 'Exemples',
+  'landing.navLogin': 'Se connecter',
+  'landing.navStart': 'Commencer',
+
+  'landing.heroEyebrow': 'Rendu IA pour architectes',
+  'landing.heroTitlePrefix': 'Des rendus qui ',
+  'landing.heroTitleAccent': 'se souviennent',
+  'landing.heroTitleSuffix': ' de tes matériaux',
+  'landing.heroSubtitle':
+    "Change de vue, d'ambiance ou de moment de la journée — RenderBox garde en mémoire chaque matériau posé sur ton bâtiment, façade par façade.",
+  'landing.heroCtaPrimary': 'Générer mon premier rendu',
+  'landing.heroCtaSecondary': 'Voir un exemple',
+  'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
+  'landing.heroPreviewEngine': 'Nanobanana',
+  'landing.heroPreviewCaption': 'Jour extérieur · Nanobanana',
+  'landing.heroChipMaterials': 'Matériaux mémorisés : 12/12',
+  'landing.heroChipFacade': '🎨 Façade nord → enduit blanc',
+
+  'landing.trustPresets': 'Presets de rendu',
+  'landing.trustEngines': 'Moteurs IA au choix',
+  'landing.trustMaterials': 'Matériau oublié entre les vues',
+
+  'landing.split1Tag': 'Mémoire matériaux',
+  'landing.split1Title': 'Chaque façade garde son matériau, à chaque nouvelle vue',
+  'landing.split1Body':
+    "L'IA détecte automatiquement les matériaux posés sur ton bâtiment et les mémorise. Change d'angle ou d'ambiance : ils restent identiques.",
+  'landing.split1Check1': 'Détection automatique après chaque rendu',
+  'landing.split1Check2': "Fiche éditable si l'IA se trompe",
+  'landing.split1Check3': 'Réinjectée dans chaque nouvelle génération',
+  'landing.split1FaceMain': 'FAÇADE PRINCIPALE',
+  'landing.split1FaceMainValue': 'Enduit blanc taloché',
+  'landing.split1FaceBack': 'FAÇADE ARRIÈRE',
+  'landing.split1FaceBackValue': 'Bardage bois clair',
+  'landing.split1Joinery': 'MENUISERIES',
+  'landing.split1JoineryValue': 'Aluminium noir mat',
+  'landing.split1Roof': 'TOITURE',
+  'landing.split1RoofValue': 'Tuile terre cuite',
+  'landing.split1AutoTag': 'auto',
+
+  'landing.split2Tag': 'Galerie en arbre',
+  'landing.split2Title': 'Chaque rendu peut devenir une nouvelle référence',
+  'landing.split2Body':
+    "Pas de chaîne figée : à partir d'une même image, génère plusieurs variantes et garde tout l'historique visible pour explorer plusieurs directions.",
+  'landing.split2Check1': 'Historique complet et navigable',
+  'landing.split2Check2': "Reprends n'importe quel rendu comme point de départ",
+  'landing.split2Check3': "Aucune perte d'une variante en explorant une autre",
+  'landing.split2NodeUpload': 'Photo upload',
+  'landing.split2NodeSource': 'source',
+  'landing.split2NodeDay': 'Jour extérieur',
+  'landing.split2NodeNight': 'Nuit extérieur',
+  'landing.split2NodeExtra': '+ personnage',
+
+  'landing.presetsTitlePrefix': 'Un preset pour ',
+  'landing.presetsTitleAccent': 'chaque ambiance',
+  'landing.presetsCard1Title': 'Jour extérieur',
+  'landing.presetsCard1Body': 'Lumière naturelle franche, ombres portées nettes, ciel dégagé.',
+  'landing.presetsCard2Title': 'Nuit extérieur',
+  'landing.presetsCard2Body': 'Éclairage architectural, ambiance nocturne, ciel sombre maîtrisé.',
+  'landing.presetsCard3Title': 'Jour / Nuit intérieur',
+  'landing.presetsCard3Body': "Lumière naturelle ou artificielle selon l'heure, matériaux fidèles.",
+
+  'landing.integrationsTitlePrefix': 'Deux moteurs, ',
+  'landing.integrationsTitleAccent': 'un seul projet',
+  'landing.integrationsSubtitle':
+    'Choisis le moteur qui convient à chaque rendu, matériaux et historique restent partagés.',
+
+  'landing.ctaBandTitle': 'Prêt à générer tes premiers rendus ?',
+  'landing.ctaBandBody':
+    'Upload une photo, choisis un preset, et laisse RenderBox garder la mémoire de chaque matériau pour toi.',
+  'landing.ctaBandButton': 'Commencer gratuitement',
+  'landing.ctaBandPreviewTag': 'Nouveau projet',
+
+  'landing.ctaChatTitle': 'Discuter avec nous',
+  'landing.ctaChatBody': 'Une question sur un projet ou un besoin spécifique ?',
+  'landing.ctaChatButton': 'Ouvrir le chat',
+  'landing.ctaDemoTitle': 'Voir une démo',
+  'landing.ctaDemoBody': '5 minutes pour voir la mémoire matériaux en action.',
+  'landing.ctaDemoButton': 'Regarder',
+
+  'landing.footerProductHeading': 'Produit',
+  'landing.footerResourcesHeading': 'Ressources',
+  'landing.footerSupportHeading': 'Support',
+  'landing.footerLinkGuide': 'Guide',
+  'landing.footerLinkBlog': 'Blog',
+  'landing.footerLinkContact': 'Contact',
+  'landing.footerLinkHelp': 'Aide',
+  'landing.footerCopyright': '© {year} RenderBox. Tous droits réservés.',
+  'landing.footerLegalLinks': 'Conditions · Confidentialité',
 } as const;
 
 export default fr;
