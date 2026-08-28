@@ -2,7 +2,7 @@ packages:
   - 'frontend'
 
 # Force patched versions of transitive build-time deps pulled in by
-# @sentry/nextjs's bundler tooling (webpack/postcss/nanoid/fast-uri/
+# @sentry/nextjs's bundler tooling (webpack/nanoid/fast-uri/
 # brace-expansion) — CI's `pnpm audit --prod --audit-level=high` fails
 # without these even though none of them ship in the runtime bundle.
 overrides:
@@ -10,7 +10,4 @@ overrides:
   brace-expansion: '>=5.0.9'
   nanoid: '>=3.3.18'
   postcss: '>=8.5.18'
-  next>postcss: '>=8.5.18'
-  sharp: '>=0.35.0'
-  next>sharp: '>=0.35.0'
   '@opentelemetry/core': '>=2.8.0'
