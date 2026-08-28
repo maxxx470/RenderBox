@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import { useToast } from '@/contexts/ToastContext';
@@ -13,11 +12,12 @@ import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { Category, Filter2 } from 'react-iconly';
-import { ProjectTree } from './ProjectTree';
+import { ModeSidebar } from './ModeSidebar';
 import { Dropzone } from './Dropzone';
 import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
-import { CommandBar } from './CommandBar';
-import { EditModeView, type EditResponse } from './EditModeView';
+import { EditPanel } from './EditPanel';
+import { CommandBar, type AppMode } from './CommandBar';
+import { EngineSelect } from './EngineSelect';
 
 interface UploadResponse {
   id: string;
@@ -32,6 +32,25 @@ interface GenerateResponse {
   materialsDetected: boolean;
 }
 
+interface EditResponse {
+  tree: RenderTreeNode[];
+  nodeIds: string[];
+  requestedCount: number;
+  createdCount: number;
+}
+
+interface Zone {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const EDIT_TYPE: Record<Extract<AppMode, 'retouch' | 'add'>, 'targeted_retouch' | 'add_element'> = {
+  retouch: 'targeted_retouch',
+  add: 'add_element',
+};
+
 function flattenTree(nodes: RenderTreeNode[]): RenderTreeNode[] {
   return nodes.flatMap((n) => [n, ...flattenTree(n.children)]);
 }
@@ -42,8 +61,8 @@ export function AppShell({
   initialTree,
   devBypassActive = false,
 }: {
-  initialProjectId: string | null;
-  initialProjectName: string | null;
+  initialProjectId: string;
+  initialProjectName: string;
   initialTree: RenderTreeNode[];
   devBypassActive?: boolean;
 }) {
@@ -51,10 +70,10 @@ export function AppShell({
   const { locale } = useLocale();
   const { toast } = useToast();
   const { user } = useAuth();
-  const router = useRouter();
 
-  const [projectId, setProjectId] = useState<string | null>(initialProjectId);
-  const [projectName, setProjectName] = useState<string | null>(initialProjectName);
+  const projectId = initialProjectId;
+  const projectName = initialProjectName;
+
   const [tree, setTree] = useState<RenderTreeNode[]>(initialTree);
   const [selectedId, setSelectedId] = useState<string | null>(initialTree[0]?.id ?? null);
   const [materials, setMaterials] = useState<MaterialRow[]>([]);
@@ -63,16 +82,17 @@ export function AppShell({
   const [prompt, setPrompt] = useState('');
   const [preset, setPreset] = useState<PresetKey>('jour_ext');
   const [engine, setEngine] = useState<EngineName>('nanobanana');
-  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
-  // Phase 6 responsive — below 900px the tree + materials columns become
-  // overlay drawers instead of always-visible columns (D-06 spec 6).
+  const [mode, setMode] = useState<AppMode>('generate');
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [zone, setZone] = useState<Zone | null>(null);
+  const [variantCount, setVariantCount] = useState(3);
+  const [submittingEdit, setSubmittingEdit] = useState(false);
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
-  const [mobileMaterialsOpen, setMobileMaterialsOpen] = useState(false);
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
 
-  // Phase 6 — engine preference now lives on User.defaultEngine (was a
-  // localStorage-only preference pre-Phase-6, before /parametres existed
-  // to back it with a real settings page). AuthContext's /api/auth/me
-  // already fetches it, so just seed local state once the user loads.
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+
   useEffect(() => {
     if (user?.defaultEngine === 'nanobanana' || user?.defaultEngine === 'gpt_image') {
       setEngine(user.defaultEngine);
@@ -89,6 +109,15 @@ export function AppShell({
     });
   }
 
+  function handleModeChange(next: AppMode) {
+    setMode(next);
+    // Each mode has its own submission shape — drop the previous mode's
+    // draft input so switching never silently carries state across.
+    setPrompt('');
+    setZone(null);
+    setReferenceFile(null);
+  }
+
   const refreshMaterials = useCallback(async (id: string) => {
     try {
       const res = await api<{ materials: MaterialRow[] }>(`/api/projects/${id}/materials`);
@@ -99,31 +128,23 @@ export function AppShell({
   }, []);
 
   useEffect(() => {
-    if (projectId) void refreshMaterials(projectId);
+    void refreshMaterials(projectId);
   }, [projectId, refreshMaterials]);
 
-  async function ensureProject(): Promise<string> {
-    if (projectId) return projectId;
-    const created = await api<{ id: string; name: string }>('/api/projects', {
-      method: 'POST',
-      body: { name: `Projet ${new Date().toLocaleDateString()}` },
-    });
-    setProjectId(created.id);
-    setProjectName(created.name);
-    // Reflect the newly-created project in the URL (was only reachable via
-    // bare /app for a brand-new user with no projects yet).
-    router.replace(`/app/${created.id}`);
-    return created.id;
-  }
+  // A new selection means a new image context — a zone or reference drawn
+  // against the previous render no longer applies.
+  useEffect(() => {
+    setZone(null);
+    setReferenceFile(null);
+  }, [selectedId]);
 
   async function handleFile(file: File) {
     setUploading(true);
     try {
-      const id = await ensureProject();
       const form = new FormData();
       form.append('file', file);
       const csrf = getCsrfTokenForUpload();
-      const res = await fetch(`/api/projects/${id}/upload`, {
+      const res = await fetch(`/api/projects/${projectId}/upload`, {
         method: 'POST',
         body: form,
         credentials: 'include',
@@ -142,7 +163,7 @@ export function AppShell({
   }
 
   async function handleGenerate() {
-    if (!projectId || !selectedId) return;
+    if (!selectedId) return;
     setGenerating(true);
     try {
       const res = await api<GenerateResponse>(`/api/projects/${projectId}/generate`, {
@@ -165,18 +186,92 @@ export function AppShell({
     }
   }
 
-  function handleEditSubmitted(res: EditResponse) {
-    setTree(res.tree);
-    if (res.nodeIds[0]) setSelectedId(res.nodeIds[0]);
+  async function handleEditSubmit() {
+    if (mode === 'generate' || !selectedNode || selectedNode.kind !== 'GENERATED') return;
+    if (!prompt.trim()) return;
+    if (mode === 'add' && !referenceFile) return;
+    if (mode === 'retouch' && (!zone || zone.width < 1 || zone.height < 1)) return;
+
+    setSubmittingEdit(true);
+    try {
+      const form = new FormData();
+      form.append('sourceNodeId', selectedNode.id);
+      form.append('editType', EDIT_TYPE[mode]);
+      form.append('instruction', prompt.trim());
+      form.append('variantCount', String(variantCount));
+      form.append('engine', engine);
+      if (mode === 'retouch' && zone) form.append('zone', JSON.stringify(zone));
+      if (mode === 'add' && referenceFile) form.append('referenceImage', referenceFile);
+
+      const csrf = getCsrfTokenForUpload();
+      const res = await fetch(`/api/projects/${projectId}/edit`, {
+        method: 'POST',
+        body: form,
+        credentials: 'include',
+        headers: csrf ? { 'x-csrf-token': csrf } : {},
+      });
+      if (!res.ok) throw new Error('edit failed');
+      const data = (await res.json()) as EditResponse;
+      if (data.createdCount < data.requestedCount) {
+        toast(
+          t('edit.partialSuccess', { created: data.createdCount, requested: data.requestedCount }),
+          'error',
+        );
+      }
+      setTree(data.tree);
+      if (data.nodeIds[0]) setSelectedId(data.nodeIds[0]);
+      setPrompt('');
+      setZone(null);
+      setReferenceFile(null);
+    } catch {
+      toast(t('edit.submitError'), 'error');
+    } finally {
+      setSubmittingEdit(false);
+    }
+  }
+
+  function handleSubmit() {
+    if (mode === 'generate') void handleGenerate();
+    else void handleEditSubmit();
   }
 
   async function handleSaveMaterial(materialId: string, valeur: string) {
-    if (!projectId) return;
     const material = await api<{ material: MaterialRow }>(
       `/api/projects/${projectId}/materials/${materialId}`,
       { method: 'PATCH', body: { valeur } },
     );
     setMaterials((prev) => prev.map((m) => (m.id === materialId ? material.material : m)));
+  }
+
+  function pctFromEvent(e: React.MouseEvent): { x: number; y: number } {
+    const rect = canvasRef.current!.getBoundingClientRect();
+    return {
+      x: Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100)),
+      y: Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100)),
+    };
+  }
+
+  function handleMouseDown(e: React.MouseEvent) {
+    if (mode !== 'retouch') return;
+    const p = pctFromEvent(e);
+    dragStart.current = p;
+    setZone({ x: p.x, y: p.y, width: 0, height: 0 });
+  }
+
+  function handleMouseMove(e: React.MouseEvent) {
+    if (!dragStart.current) return;
+    const p = pctFromEvent(e);
+    const start = dragStart.current;
+    setZone({
+      x: Math.min(start.x, p.x),
+      y: Math.min(start.y, p.y),
+      width: Math.abs(p.x - start.x),
+      height: Math.abs(p.y - start.y),
+    });
+  }
+
+  function handleMouseUp() {
+    dragStart.current = null;
   }
 
   const hasNodes = tree.length > 0;
@@ -185,28 +280,27 @@ export function AppShell({
   const parentNode = selectedNode?.parentId
     ? (flat.find((n) => n.id === selectedNode.parentId) ?? null)
     : null;
+  const canEdit = mode !== 'generate' && selectedNode?.kind === 'GENERATED';
+  const zoneSelected = Boolean(zone && zone.width > 0 && zone.height > 0);
 
   function nodeLabel(kind: string): string {
     return kind === 'GENERATED' ? t('app.nodeGenerated') : t('app.nodeUploaded');
   }
 
-  const editingNode = editingNodeId ? (flat.find((n) => n.id === editingNodeId) ?? null) : null;
-  if (editingNode) {
-    return (
-      <EditModeView
-        projectId={projectId!}
-        sourceNode={editingNode}
-        engine={engine}
-        onClose={() => setEditingNodeId(null)}
-        onSubmitted={handleEditSubmitted}
-      />
-    );
-  }
+  const inputDisabled =
+    mode === 'generate' ? !selectedId || generating : !canEdit || submittingEdit;
+  const sendDisabled =
+    mode === 'generate'
+      ? !selectedId || generating
+      : !canEdit ||
+        submittingEdit ||
+        !prompt.trim() ||
+        (mode === 'add' ? !referenceFile : !zoneSelected);
 
   return (
     <div className="flex h-screen flex-col bg-white">
       <LanguageToggle />
-      <header className="flex items-center justify-between border-b border-[#ECE3E5] px-5.5 py-3.5">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#ECE3E5] px-5.5 py-3.5">
         <div className="flex items-center gap-2.5">
           <button
             type="button"
@@ -220,6 +314,9 @@ export function AppShell({
           <span className="font-[family-name:var(--font-poppins)] text-[15px] font-semibold text-[#170608]">
             RenderBox
           </span>
+          <span className="rounded-2xl border border-[#ECE3E5] bg-[#F8F5F6] px-3 py-1.5 font-[family-name:var(--font-ibm-plex-mono)] text-xs text-[#7A6E71]">
+            {projectName}
+          </span>
         </div>
         <div className="flex items-center gap-2.5">
           {devBypassActive && (
@@ -230,14 +327,15 @@ export function AppShell({
           <span className="rounded-2xl bg-[#C8112012] px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#C81120]">
             {t('app.phaseTag')}
           </span>
-          <span className="rounded-2xl border border-[#ECE3E5] bg-[#F8F5F6] px-3 py-1.5 font-[family-name:var(--font-ibm-plex-mono)] text-xs text-[#7A6E71]">
-            {projectName ?? t('app.newProject')}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-[#7A6E71]">{t('app.engineLabel')} :</span>
+            <EngineSelect engine={engine} onChange={handleEngineChange} />
+          </div>
           <button
             type="button"
-            onClick={() => setMobileMaterialsOpen(true)}
+            onClick={() => setMobilePanelOpen(true)}
             className="rounded-lg border border-[#ECE3E5] p-1.5 min-[900px]:hidden"
-            aria-label={t('app.materialsTitle')}
+            aria-label={mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')}
           >
             <Filter2 set="bold" size={16} primaryColor="#7A6E71" />
           </button>
@@ -245,12 +343,12 @@ export function AppShell({
       </header>
 
       <div className="relative flex flex-1 overflow-hidden">
-        {(mobileTreeOpen || mobileMaterialsOpen) && (
+        {(mobileTreeOpen || mobilePanelOpen) && (
           <div
             className="fixed inset-0 z-10 bg-black/30 min-[900px]:hidden"
             onClick={() => {
               setMobileTreeOpen(false);
-              setMobileMaterialsOpen(false);
+              setMobilePanelOpen(false);
             }}
           />
         )}
@@ -260,13 +358,12 @@ export function AppShell({
             mobileTreeOpen ? 'flex' : 'hidden'
           } fixed inset-y-0 left-0 z-20 w-[230px] flex-col border-r border-[#ECE3E5] bg-[#F8F5F6] px-3.5 py-4.5 min-[900px]:static min-[900px]:z-auto min-[900px]:flex`}
         >
-          <h3 className="mb-3.5 font-[family-name:var(--font-poppins)] text-[11px] uppercase tracking-wide text-[#7A6E71]">
-            {t('app.treeTitle')}
-          </h3>
-          <ProjectTree
+          <ModeSidebar
+            mode={mode}
+            onModeChange={handleModeChange}
             tree={tree}
             selectedId={selectedId}
-            onSelect={(id) => {
+            onSelectNode={(id) => {
               setSelectedId(id);
               setMobileTreeOpen(false);
             }}
@@ -292,17 +389,22 @@ export function AppShell({
                   <b className="font-medium text-[#170608]">{nodeLabel(selectedNode.kind)}</b>
                 </div>
               )}
-              <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#ECE3E5] bg-gradient-to-br from-[#FBEDEE] to-[#F8F5F6]">
+              <div
+                ref={canvasRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#ECE3E5] bg-gradient-to-br from-[#FBEDEE] to-[#F8F5F6] ${
+                  mode === 'retouch' ? 'cursor-crosshair select-none' : ''
+                }`}
+              >
                 {selectedId && (
                   <>
                     <span className="absolute left-3.5 top-3.5 rounded-2xl border border-[#ECE3E5] bg-white px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A6E71]">
                       {selectedNode?.preset
                         ? t('app.canvasPresetBadge', {
                             preset: PRESETS[selectedNode.preset as PresetKey].label[locale],
-                            // Pre-Phase-4 GENERATED rows have no engine recorded —
-                            // they were all produced by nanobanana (the only
-                            // engine that existed then), so that's the accurate
-                            // fallback rather than a generic placeholder.
                             engine:
                               ENGINE_LABELS[(selectedNode.engine as EngineName) || 'nanobanana']
                                 .name,
@@ -315,21 +417,28 @@ export function AppShell({
                         {t('app.scanBadge', { n: materials.length })}
                       </span>
                     )}
-                    {selectedNode?.kind === 'GENERATED' && (
-                      <button
-                        type="button"
-                        onClick={() => setEditingNodeId(selectedNode.id)}
-                        className="absolute right-3.5 top-3.5 rounded-2xl border border-[#ECE3E5] bg-white px-3 py-1.5 font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#170608] hover:border-[#C81120]"
-                      >
-                        {t('edit.enterButton')}
-                      </button>
-                    )}
                     {/* Served by our own authenticated proxy route, not a static asset. */}
                     <img
                       src={`/api/render-nodes/${selectedId}/image`}
                       alt=""
-                      className="max-h-full max-w-full object-contain"
+                      draggable={false}
+                      className="pointer-events-none max-h-full max-w-full object-contain"
                     />
+                    {mode === 'retouch' && zone && (zone.width > 0 || zone.height > 0) && (
+                      <div
+                        className="absolute rounded-md border-2 border-dashed border-[#C81120] bg-[#C8112012]"
+                        style={{
+                          left: `${zone.x}%`,
+                          top: `${zone.y}%`,
+                          width: `${zone.width}%`,
+                          height: `${zone.height}%`,
+                        }}
+                      >
+                        <span className="absolute -top-6 left-0 whitespace-nowrap rounded-md bg-[#C81120] px-2 py-0.5 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-white">
+                          {t('edit.zoneLabel')}
+                        </span>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -339,23 +448,36 @@ export function AppShell({
 
         <div
           className={`${
-            mobileMaterialsOpen ? 'block' : 'hidden'
+            mobilePanelOpen ? 'block' : 'hidden'
           } fixed inset-y-0 right-0 z-20 min-[900px]:static min-[900px]:z-auto min-[900px]:block`}
         >
-          <MaterialsPanel materials={materials} onSave={handleSaveMaterial} />
+          {mode === 'generate' ? (
+            <MaterialsPanel materials={materials} onSave={handleSaveMaterial} />
+          ) : (
+            <EditPanel
+              mode={mode}
+              canEdit={canEdit}
+              referenceFile={referenceFile}
+              onReferenceChange={setReferenceFile}
+              variantCount={variantCount}
+              onVariantCountChange={setVariantCount}
+            />
+          )}
         </div>
       </div>
 
       <CommandBar
+        mode={mode}
         prompt={prompt}
         onPromptChange={setPrompt}
         preset={preset}
         onPresetChange={setPreset}
-        engine={engine}
-        onEngineChange={handleEngineChange}
-        onSubmit={handleGenerate}
-        disabled={!selectedId || generating}
-        generating={generating}
+        zoneSelected={zoneSelected}
+        referenceAdded={Boolean(referenceFile)}
+        onSubmit={handleSubmit}
+        inputDisabled={inputDisabled}
+        sendDisabled={sendDisabled}
+        generating={generating || submittingEdit}
       />
     </div>
   );

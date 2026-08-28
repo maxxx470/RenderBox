@@ -2,35 +2,38 @@ import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { isDevBypassActive } from '@/lib/server/dev-bypass';
-import { AppShell } from './AppShell';
+import { ProjectsGrid, type ProjectCardData } from './ProjectsGrid';
 
-export default async function AppPage() {
+export default async function AppRootPage() {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) {
     redirect('/connexion');
   }
 
-  // Redirect to the URL-addressable /app/[projet] route for the most recent
-  // project, so the active project is always reflected in the URL. Only a
-  // brand-new user with zero projects renders AppShell here directly —
-  // it creates one lazily on first upload (see ensureProject in AppShell).
-  const project = await prisma.project.findFirst({
+  // "Mes projets" grid — the root of /app now lists every project instead of
+  // auto-opening the most recent one, so the active project is a deliberate
+  // click rather than an implicit redirect (Krea-style project picker).
+  const projects = await prisma.project.findMany({
     where: { userId: auth.user.sub },
     orderBy: { createdAt: 'desc' },
-    select: { id: true },
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      renderNodes: {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { id: true, createdAt: true },
+      },
+    },
   });
 
-  if (project) {
-    redirect(`/app/${project.id}`);
-  }
+  const items: ProjectCardData[] = projects.map((p) => ({
+    id: p.id,
+    name: p.name,
+    thumbnailNodeId: p.renderNodes[0]?.id ?? null,
+    lastActivityAt: (p.renderNodes[0]?.createdAt ?? p.createdAt).toISOString(),
+  }));
 
-  return (
-    <AppShell
-      initialProjectId={null}
-      initialProjectName={null}
-      initialTree={[]}
-      devBypassActive={isDevBypassActive()}
-    />
-  );
+  return <ProjectsGrid initialProjects={items} />;
 }

@@ -1,4 +1,7 @@
-// GET /api/projects — list the current user's projects (newest first).
+// GET /api/projects — list the current user's projects (newest first), each
+// with its latest render node (for the grid thumbnail) — the DB's
+// updatedAt only changes on a direct Project write, not on child
+// RenderNode inserts, so it's not a reliable "last activity" signal.
 // POST /api/projects — create a new project (Phase 1: name only).
 export const runtime = 'nodejs';
 
@@ -20,10 +23,26 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const projects = await prisma.project.findMany({
       where: { userId: auth.user.sub },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, name: true, createdAt: true, updatedAt: true },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        renderNodes: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { id: true, createdAt: true },
+        },
+      },
     });
 
-    return NextResponse.json({ projects }, { headers: { 'x-request-id': ctx.requestId } });
+    const items = projects.map(({ renderNodes, ...project }) => ({
+      ...project,
+      thumbnailNodeId: renderNodes[0]?.id ?? null,
+      lastActivityAt: renderNodes[0]?.createdAt ?? project.createdAt,
+    }));
+
+    return NextResponse.json({ projects: items }, { headers: { 'x-request-id': ctx.requestId } });
   });
 }
 
