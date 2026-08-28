@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import { useToast } from '@/contexts/ToastContext';
@@ -50,6 +51,7 @@ export function AppShell({
   const { locale } = useLocale();
   const { toast } = useToast();
   const { user } = useAuth();
+  const router = useRouter();
 
   const [projectId, setProjectId] = useState<string | null>(initialProjectId);
   const [projectName, setProjectName] = useState<string | null>(initialProjectName);
@@ -108,6 +110,9 @@ export function AppShell({
     });
     setProjectId(created.id);
     setProjectName(created.name);
+    // Reflect the newly-created project in the URL (was only reachable via
+    // bare /app for a brand-new user with no projects yet).
+    router.replace(`/app/${created.id}`);
     return created.id;
   }
 
