@@ -180,7 +180,7 @@ export default function LandingPage() {
     try {
       const res = await api<{ paymentUrl: string }>('/api/payments/checkout', {
         method: 'POST',
-        body: JSON.stringify({ tier }),
+        body: { tier },
       });
       window.location.href = res.paymentUrl;
     } catch {

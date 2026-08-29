@@ -69,6 +69,18 @@ const en: Record<keyof typeof fr, string> = {
   'app.pillReferenceAdded': 'Reference added',
   'app.pillReferenceEmpty': 'Add a reference',
 
+  'app.modesLabel': 'Modes',
+  'app.accountLabel': 'Account',
+  'app.genHomeTitle': 'Generate a render',
+  'app.genHomeInputPlaceholder': 'Describe the render to generate, or drop a reference image…',
+  'app.genHomeModeHint': 'Open an existing project to retouch or add an element.',
+  'app.genHomeOpenProjects': 'View my projects',
+  'app.genHomeQuickStartError': 'Quick start failed. Try again.',
+  'app.upgradeBannerLabel': 'Upgrade to {tier}',
+  'app.tierDecouverte': 'Discovery',
+  'app.tierStandard': 'Standard',
+  'app.tierPro': 'Pro',
+
   'edit.enterButton': 'Edit',
   'edit.closeButton': '✕ Close edit mode',
   'edit.canvasTitle': 'Render — {preset}',

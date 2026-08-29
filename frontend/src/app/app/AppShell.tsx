@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import { useToast } from '@/contexts/ToastContext';
@@ -8,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
-import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { Category, Filter2 } from 'react-iconly';
@@ -70,6 +71,7 @@ export function AppShell({
   const { locale } = useLocale();
   const { toast } = useToast();
   const { user } = useAuth();
+  const searchParams = useSearchParams();
 
   const projectId = initialProjectId;
   const projectName = initialProjectName;
@@ -79,8 +81,15 @@ export function AppShell({
   const [materials, setMaterials] = useState<MaterialRow[]>([]);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [prompt, setPrompt] = useState('');
-  const [preset, setPreset] = useState<PresetKey>('jour_ext');
+  // Prefilled once from the /app home quick-start redirect (?prompt=&preset=&engine=),
+  // if present — see GenerationHome.tsx's quickStart(). Lazy initializers run
+  // only on the very first render, so this never re-applies on a later
+  // client-side navigation within the same mounted instance.
+  const [prompt, setPrompt] = useState(() => searchParams.get('prompt') ?? '');
+  const [preset, setPreset] = useState<PresetKey>(() => {
+    const p = searchParams.get('preset');
+    return p && isPresetKey(p) ? p : 'jour_ext';
+  });
   const [engine, setEngine] = useState<EngineName>('nanobanana');
   const [mode, setMode] = useState<AppMode>('generate');
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
@@ -94,16 +103,19 @@ export function AppShell({
   const dragStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
-    if (user?.defaultEngine === 'nanobanana' || user?.defaultEngine === 'gpt_image') {
+    const paramEngine = searchParams.get('engine');
+    if (paramEngine === 'nanobanana' || paramEngine === 'gpt_image') {
+      setEngine(paramEngine);
+    } else if (user?.defaultEngine === 'nanobanana' || user?.defaultEngine === 'gpt_image') {
       setEngine(user.defaultEngine);
     }
-  }, [user?.defaultEngine]);
+  }, [user?.defaultEngine, searchParams]);
 
   function handleEngineChange(next: EngineName) {
     setEngine(next);
     void api('/api/users/me', {
       method: 'PATCH',
-      body: JSON.stringify({ defaultEngine: next }),
+      body: { defaultEngine: next },
     }).catch(() => {
       // Non-fatal — the choice just won't persist across reloads/devices.
     });

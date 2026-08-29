@@ -171,7 +171,7 @@ export default function AdminUserDetailPage() {
               void runAction(() =>
                 api(`/api/admin/users/${user.id}/role`, {
                   method: 'PATCH',
-                  body: JSON.stringify({ role: e.target.value }),
+                  body: { role: e.target.value },
                 }),
               )
             }
@@ -194,7 +194,7 @@ export default function AdminUserDetailPage() {
                 void runAction(() =>
                   api(`/api/admin/users/${user.id}/status`, {
                     method: 'PATCH',
-                    body: JSON.stringify({ status: 'ACTIVE' }),
+                    body: { status: 'ACTIVE' },
                   }),
                 )
               }
@@ -211,7 +211,7 @@ export default function AdminUserDetailPage() {
                 void runAction(() =>
                   api(`/api/admin/users/${user.id}/status`, {
                     method: 'PATCH',
-                    body: JSON.stringify({ status: 'SUSPENDED' }),
+                    body: { status: 'SUSPENDED' },
                   }),
                 );
               }}

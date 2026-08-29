@@ -67,6 +67,18 @@ const fr = {
   'app.pillReferenceAdded': 'Référence ajoutée',
   'app.pillReferenceEmpty': 'Ajouter une référence',
 
+  'app.modesLabel': 'Modes',
+  'app.accountLabel': 'Compte',
+  'app.genHomeTitle': 'Générer un rendu',
+  'app.genHomeInputPlaceholder': 'Décris le rendu à générer, ou glisse une image de référence…',
+  'app.genHomeModeHint': 'Ouvre un projet existant pour retoucher ou ajouter un élément.',
+  'app.genHomeOpenProjects': 'Voir mes projets',
+  'app.genHomeQuickStartError': 'La création rapide a échoué. Réessaie.',
+  'app.upgradeBannerLabel': 'Passer au palier {tier}',
+  'app.tierDecouverte': 'Découverte',
+  'app.tierStandard': 'Standard',
+  'app.tierPro': 'Pro',
+
   'edit.enterButton': 'Éditer',
   'edit.closeButton': '✕ Fermer le mode édition',
   'edit.canvasTitle': 'Rendu — {preset}',

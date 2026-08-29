@@ -46,7 +46,7 @@ export default function ParametresPage() {
     try {
       await api('/api/users/me', {
         method: 'PATCH',
-        body: JSON.stringify({ defaultEngine: next }),
+        body: { defaultEngine: next },
       });
       await refresh();
       setEngineSaved(true);
