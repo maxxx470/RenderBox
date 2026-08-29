@@ -1,6 +1,6 @@
 'use client';
 
-import { Send } from 'react-iconly';
+import { Send, TickSquare } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 
@@ -16,7 +16,7 @@ function StatusPill({ active, label }: { active: boolean; label: string }) {
           : 'border-dashed border-[#ECE3E5] bg-[#F8F5F6] text-[#7A6E71]',
       ].join(' ')}
     >
-      {active && '✓ '}
+      {active && <TickSquare set="bold" size={13} primaryColor="#ffffff" />}
       {label}
     </span>
   );

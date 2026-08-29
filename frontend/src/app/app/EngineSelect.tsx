@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { ChevronUp, ChevronDown, TickSquare } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -44,7 +45,13 @@ export function EngineSelect({
         <span className="text-[12.5px] font-medium text-[#170608]">
           {ENGINE_LABELS[engine].name}
         </span>
-        <span className="ml-0.5 text-[10px] text-[#7A6E71]">{open ? '▲' : '▼'}</span>
+        <span className="ml-0.5 flex-shrink-0">
+          {open ? (
+            <ChevronUp set="bold" size={13} primaryColor="#7A6E71" />
+          ) : (
+            <ChevronDown set="bold" size={13} primaryColor="#7A6E71" />
+          )}
+        </span>
       </button>
 
       {open && (
@@ -74,7 +81,7 @@ export function EngineSelect({
                     {ENGINE_LABELS[key].description[locale]}
                   </span>
                 </span>
-                {selected && <span className="text-[14px] text-[#C81120]">✓</span>}
+                {selected && <TickSquare set="bold" size={16} primaryColor="#C81120" />}
               </button>
             );
           })}

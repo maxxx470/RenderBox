@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Folder, Send } from 'react-iconly';
+import { Folder, Send, TickSquare, CloseSquare } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -263,9 +263,15 @@ export function GenerationHome({
                       : 'border-dashed border-[#ECE3E5] bg-[#F8F5F6] text-[#7A6E71]',
                   ].join(' ')}
                 >
-                  {referenceFile
-                    ? `✓ ${t('app.pillReferenceAdded')} ✕`
-                    : t('app.pillReferenceEmpty')}
+                  {referenceFile ? (
+                    <>
+                      <TickSquare set="bold" size={13} primaryColor="#ffffff" />
+                      {t('app.pillReferenceAdded')}
+                      <CloseSquare set="bold" size={13} primaryColor="#ffffff" />
+                    </>
+                  ) : (
+                    t('app.pillReferenceEmpty')
+                  )}
                 </button>
                 <input
                   ref={fileInputRef}

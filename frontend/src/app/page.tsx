@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { TickSquare, Image as ImageIcon } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,7 +26,9 @@ function AccentText({ children }: { children: React.ReactNode }) {
 function CheckItem({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-2.5 text-[13.5px] text-[#170608]">
-      <span className="font-bold text-[#C81120]">✓</span>
+      <span className="mt-0.5 flex-shrink-0">
+        <TickSquare set="bold" size={15} primaryColor="#C81120" />
+      </span>
       {children}
     </li>
   );
@@ -291,7 +294,8 @@ export default function LandingPage() {
                 <div className="h-13 flex-1 rounded-lg border border-[#ECE3E5] bg-[#F1EBEC]" />
               </div>
             </div>
-            <div className="absolute -bottom-4.5 -left-2.5 rounded-xl border border-[#ECE3E5] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_#17060830]">
+            <div className="absolute -bottom-4.5 -left-2.5 flex items-center gap-1.5 rounded-xl border border-[#ECE3E5] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_#17060830]">
+              <ImageIcon set="bold" size={14} primaryColor="#C81120" />
               {t('landing.heroChipFacade')}
             </div>
           </div>
@@ -399,7 +403,7 @@ export default function LandingPage() {
         {/* 3 PRESETS */}
         <section className="py-20">
           <div className="mx-auto mb-11.5 max-w-[560px] text-center">
-            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
+            <h2 className="font-[family-name:var(--font-poppins)] text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
               {t('landing.presetsTitlePrefix')}
               <AccentText>{t('landing.presetsTitleAccent')}</AccentText>
             </h2>
@@ -426,7 +430,7 @@ export default function LandingPage() {
             <span className="mb-2.5 block font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#C81120]">
               {t('landing.pricingTag')}
             </span>
-            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
+            <h2 className="font-[family-name:var(--font-poppins)] text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
               {t('landing.pricingTitlePrefix')}
               <AccentText>{t('landing.pricingTitleAccent')}</AccentText>
             </h2>
@@ -448,7 +452,7 @@ export default function LandingPage() {
         {/* INTEGRATIONS */}
         <section id="integrations" className="py-20 text-center">
           <div className="mx-auto mb-11.5 max-w-[560px]">
-            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
+            <h2 className="font-[family-name:var(--font-poppins)] text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
               {t('landing.integrationsTitlePrefix')}
               <AccentText>{t('landing.integrationsTitleAccent')}</AccentText>
             </h2>
@@ -471,7 +475,7 @@ export default function LandingPage() {
         <section className="py-20">
           <div className="grid grid-cols-1 items-center gap-10 rounded-3xl bg-gradient-to-br from-[#1A0407] to-[#3D0206] p-9 py-14 text-white min-[860px]:grid-cols-[1.1fr_0.9fr] min-[860px]:px-12.5">
             <div>
-              <h2 className="mb-3.5 text-[28px] font-bold leading-[1.25]">
+              <h2 className="mb-3.5 font-[family-name:var(--font-poppins)] text-[28px] font-bold leading-[1.25]">
                 {t('landing.ctaBandTitle')}
               </h2>
               <p className="mb-6 max-w-[380px] text-sm text-[#E8C9CB]">

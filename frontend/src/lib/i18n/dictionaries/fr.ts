@@ -88,7 +88,7 @@ const fr = {
   'app.tierPro': 'Pro',
 
   'edit.enterButton': 'Éditer',
-  'edit.closeButton': '✕ Fermer le mode édition',
+  'edit.closeButton': 'Fermer le mode édition',
   'edit.canvasTitle': 'Rendu — {preset}',
   'edit.zoneLabel': 'Zone sélectionnée',
   'edit.panelTitle': 'Mode édition',
@@ -285,7 +285,7 @@ const fr = {
   'landing.heroPreviewEngine': 'Nanobanana',
   'landing.heroPreviewCaption': 'Jour extérieur · Nanobanana',
   'landing.heroChipMaterials': 'Matériaux mémorisés : 12/12',
-  'landing.heroChipFacade': '🎨 Façade nord → enduit blanc',
+  'landing.heroChipFacade': 'Façade nord → enduit blanc',
 
   'landing.trustPresets': 'Presets de rendu',
   'landing.trustEngines': 'Moteurs IA au choix',

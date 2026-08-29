@@ -90,7 +90,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.tierPro': 'Pro',
 
   'edit.enterButton': 'Edit',
-  'edit.closeButton': '✕ Close edit mode',
+  'edit.closeButton': 'Close edit mode',
   'edit.canvasTitle': 'Render — {preset}',
   'edit.zoneLabel': 'Selected zone',
   'edit.panelTitle': 'Edit mode',
@@ -286,7 +286,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroPreviewEngine': 'Nanobanana',
   'landing.heroPreviewCaption': 'Exterior day · Nanobanana',
   'landing.heroChipMaterials': 'Materials remembered: 12/12',
-  'landing.heroChipFacade': '🎨 North façade → white render',
+  'landing.heroChipFacade': 'North façade → white render',
 
   'landing.trustPresets': 'Render presets',
   'landing.trustEngines': 'AI engines to choose from',
