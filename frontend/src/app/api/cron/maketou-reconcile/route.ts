@@ -11,7 +11,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { verifyCronSecret } from '@/lib/server/cron/auth';
 import { withLease } from '@/lib/server/leader-lease';
 import { reconcileMaketouOrder } from '@/lib/server/payments/maketou-reconcile';
-import { isMaketouConfigured } from '@/lib/server/payments/maketou';
+import { isMaketouApiConfigured } from '@/lib/server/payments/maketou';
 import { prisma } from '@/lib/server/prisma';
 import { redis } from '@/lib/server/redis';
 import { createLogger } from '@/lib/server/logger';
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     let changed = 0;
 
     await withLease(redis ?? undefined, 'maketou-reconcile', LEASE_TTL_MS, async () => {
-      if (!isMaketouConfigured()) {
+      if (!isMaketouApiConfigured()) {
         log.info('maketou-reconcile tick: provider not configured, skipping', {
           requestId: ctx.requestId,
         });

@@ -7,7 +7,7 @@ vi.mock('@/lib/server/leader-lease', () => ({
   withLease: vi.fn(async (_r: unknown, _n: string, _t: number, fn: () => Promise<void>) => fn()),
 }));
 vi.mock('@/lib/server/redis', () => ({ redis: null }));
-vi.mock('@/lib/server/payments/maketou', () => ({ isMaketouConfigured: vi.fn(() => true) }));
+vi.mock('@/lib/server/payments/maketou', () => ({ isMaketouApiConfigured: vi.fn(() => true) }));
 
 const reconcileMock = vi.fn();
 vi.mock('@/lib/server/payments/maketou-reconcile', () => ({
@@ -43,8 +43,8 @@ describe('POST /api/cron/maketou-reconcile', () => {
   });
 
   it('skips DB work when Maketou is not configured', async () => {
-    const { isMaketouConfigured } = await import('@/lib/server/payments/maketou');
-    (isMaketouConfigured as Mock).mockReturnValueOnce(false);
+    const { isMaketouApiConfigured } = await import('@/lib/server/payments/maketou');
+    (isMaketouApiConfigured as Mock).mockReturnValueOnce(false);
     const { POST } = await import('./route');
     const res = await POST(makeReq());
     expect(res.status).toBe(200);

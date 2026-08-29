@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useUser, useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import { api, ApiError } from '@/lib/api';
+import { api } from '@/lib/api';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_NAMES } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -27,8 +27,6 @@ export default function ParametresPage() {
   const { logout, refresh } = useAuth();
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
   const [engineSaved, setEngineSaved] = useState(false);
-  const [buyError, setBuyError] = useState<string | null>(null);
-  const [buying, setBuying] = useState(false);
 
   const loadOrders = useCallback(async () => {
     try {
@@ -54,22 +52,6 @@ export default function ParametresPage() {
       setEngineSaved(true);
     } catch {
       // Non-fatal — the select just won't have persisted.
-    }
-  }
-
-  async function handleBuy() {
-    setBuying(true);
-    setBuyError(null);
-    try {
-      const res = await api<{ paymentUrl: string }>('/api/payments/checkout', { method: 'POST' });
-      window.location.href = res.paymentUrl;
-    } catch (err) {
-      setBuyError(
-        err instanceof ApiError && err.status === 503
-          ? t('app.uploadError')
-          : t('parametres.buyError'),
-      );
-      setBuying(false);
     }
   }
 
@@ -169,15 +151,12 @@ export default function ParametresPage() {
         ) : (
           <p className="text-[13px] text-[#7A6E71]">{t('parametres.billingEmpty')}</p>
         )}
-        <button
-          type="button"
-          disabled={buying}
-          onClick={() => void handleBuy()}
-          className="mt-2 self-start rounded-[10px] bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50"
+        <Link
+          href="/#tarifs"
+          className="mt-2 inline-block self-start rounded-[10px] bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-4 py-2 text-[13px] font-medium text-white"
         >
           {t('parametres.buyButton')}
-        </button>
-        {buyError ? <p className="text-[12px] text-[#B8710B]">{buyError}</p> : null}
+        </Link>
       </section>
 
       <Link href="/app" className="text-center text-sm text-[#7A6E71] hover:text-[#170608]">

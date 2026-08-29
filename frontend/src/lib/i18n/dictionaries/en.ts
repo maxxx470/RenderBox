@@ -225,8 +225,7 @@ const en: Record<keyof typeof fr, string> = {
   'parametres.engineSaved': 'Saved.',
   'parametres.billingTitle': 'Billing history',
   'parametres.billingEmpty': 'No payment yet.',
-  'parametres.buyButton': 'Buy a generations pack',
-  'parametres.buyError': 'Could not start checkout. Try again.',
+  'parametres.buyButton': 'View pricing',
   'parametres.backToApp': 'Back to the app',
 
   'paiementRetour.checking': 'Verifying your payment…',
@@ -340,6 +339,23 @@ const en: Record<keyof typeof fr, string> = {
   'landing.footerLinkHelp': 'Help',
   'landing.footerCopyright': '© {year} RenderBox. All rights reserved.',
   'landing.footerLegalLinks': 'Terms · Privacy',
+
+  'landing.pricingTag': 'Pricing',
+  'landing.pricingTitlePrefix': 'A tier for ',
+  'landing.pricingTitleAccent': 'every pace',
+  'landing.pricingSubtitle': 'Same engines, same presets — only the monthly quota changes.',
+  'landing.pricingPeriod': '/ month',
+  'landing.pricingBadgeFeatured': 'Most popular',
+  'landing.pricingTierDecouverteName': 'Discovery',
+  'landing.pricingTierStandardName': 'Standard',
+  'landing.pricingTierProName': 'Pro',
+  'landing.pricingFeatureQuota': '{count} generations / month',
+  'landing.pricingFeatureEngines': 'Access to both engines (Nanobanana + ChatGPT Image)',
+  'landing.pricingFeaturePresets': 'Access to all 5 mood presets',
+  'landing.pricingFeatureEditing': 'Advanced editing mode (add element, targeted retouch)',
+  'landing.pricingCta': 'Choose {tier}',
+  'landing.pricingCtaLoading': 'Redirecting…',
+  'landing.pricingError': 'Could not start checkout. Try again.',
 };
 
 export default en;

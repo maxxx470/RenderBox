@@ -3,7 +3,7 @@ import {
   maketouCheckout,
   maketouVerifyCart,
   isMaketouConfigured,
-  getOfferAmount,
+  getTierAmount,
   MaketouNotConfiguredError,
   MaketouApiError,
 } from './maketou';
@@ -26,40 +26,55 @@ function jsonResponse(status: number, body: unknown) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
 }
 
-describe('isMaketouConfigured / getOfferAmount', () => {
+describe('isMaketouConfigured / getTierAmount', () => {
   it('false when either env var is missing', () => {
     vi.stubEnv('MAKETOU_PRODUCT_ID', '');
-    expect(isMaketouConfigured()).toBe(false);
+    expect(isMaketouConfigured('standard')).toBe(false);
   });
 
   it('true when both env vars are set', () => {
-    expect(isMaketouConfigured()).toBe(true);
+    expect(isMaketouConfigured('standard')).toBe(true);
   });
 
-  it('defaults the offer amount to 2000 XOF', () => {
-    vi.stubEnv('MAKETOU_OFFER_AMOUNT_XOF', '');
-    expect(getOfferAmount()).toBe(2000);
+  it('false for a tier whose own product env var is unset', () => {
+    expect(isMaketouConfigured('decouverte')).toBe(false);
   });
 
-  it('reads MAKETOU_OFFER_AMOUNT_XOF when set', () => {
-    vi.stubEnv('MAKETOU_OFFER_AMOUNT_XOF', '5000');
-    expect(getOfferAmount()).toBe(5000);
+  it('true for a tier once its product env var is set', () => {
+    vi.stubEnv('MAKETOU_PRODUCT_ID_DECOUVERTE', 'prod-decouverte');
+    expect(isMaketouConfigured('decouverte')).toBe(true);
+  });
+
+  it('returns the fixed XOF price for each tier', () => {
+    expect(getTierAmount('decouverte')).toBe(6000);
+    expect(getTierAmount('standard')).toBe(15000);
+    expect(getTierAmount('pro')).toBe(36000);
   });
 });
 
 describe('maketouCheckout', () => {
-  it('throws MaketouNotConfiguredError when env is missing', async () => {
+  it('throws MaketouNotConfiguredError when the API key is missing', async () => {
     vi.stubEnv('MAKETOU_API_KEY', '');
-    await expect(maketouCheckout({ email: 'a@b.com', redirectUrl: 'https://x/y' })).rejects.toThrow(
-      MaketouNotConfiguredError,
-    );
+    await expect(
+      maketouCheckout({ tier: 'standard', email: 'a@b.com', redirectUrl: 'https://x/y' }),
+    ).rejects.toThrow(MaketouNotConfiguredError);
+  });
+
+  it("throws MaketouNotConfiguredError when the tier's product id is missing", async () => {
+    await expect(
+      maketouCheckout({ tier: 'decouverte', email: 'a@b.com', redirectUrl: 'https://x/y' }),
+    ).rejects.toThrow(MaketouNotConfiguredError);
   });
 
   it('posts to /api/v1/stores/cart/checkout and parses cartId + redirectUrl', async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse(200, { cartId: 'cart-1', redirectUrl: 'https://pay.example/cart-1' }),
     );
-    const result = await maketouCheckout({ email: 'a@b.com', redirectUrl: 'https://x/y' });
+    const result = await maketouCheckout({
+      tier: 'standard',
+      email: 'a@b.com',
+      redirectUrl: 'https://x/y',
+    });
     expect(result).toEqual({ cartId: 'cart-1', redirectUrl: 'https://pay.example/cart-1' });
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.maketou.net/api/v1/stores/cart/checkout');
@@ -67,28 +82,34 @@ describe('maketouCheckout', () => {
     expect((init as { headers: Record<string, string> }).headers.Authorization).toBe(
       'Bearer test-key',
     );
+    const body = JSON.parse((init as { body: string }).body) as { productDocumentId: string };
+    expect(body.productDocumentId).toBe('prod-1');
   });
 
   it('accepts the id/redirectURL field-name variants', async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse(200, { id: 'cart-2', redirectURL: 'https://pay.example/cart-2' }),
     );
-    const result = await maketouCheckout({ email: 'a@b.com', redirectUrl: 'https://x/y' });
+    const result = await maketouCheckout({
+      tier: 'standard',
+      email: 'a@b.com',
+      redirectUrl: 'https://x/y',
+    });
     expect(result).toEqual({ cartId: 'cart-2', redirectUrl: 'https://pay.example/cart-2' });
   });
 
   it('throws MaketouApiError on a non-2xx response', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(401, { message: 'bad key' }));
-    await expect(maketouCheckout({ email: 'a@b.com', redirectUrl: 'https://x/y' })).rejects.toThrow(
-      MaketouApiError,
-    );
+    await expect(
+      maketouCheckout({ tier: 'standard', email: 'a@b.com', redirectUrl: 'https://x/y' }),
+    ).rejects.toThrow(MaketouApiError);
   });
 
   it('throws MaketouApiError when the response is missing cartId/redirectUrl', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(200, { ok: true }));
-    await expect(maketouCheckout({ email: 'a@b.com', redirectUrl: 'https://x/y' })).rejects.toThrow(
-      MaketouApiError,
-    );
+    await expect(
+      maketouCheckout({ tier: 'standard', email: 'a@b.com', redirectUrl: 'https://x/y' }),
+    ).rejects.toThrow(MaketouApiError);
   });
 });
 

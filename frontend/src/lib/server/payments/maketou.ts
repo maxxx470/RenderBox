@@ -19,10 +19,11 @@
  * this starter's other pending-real-keys integrations).
  */
 import 'server-only';
+import { getPricingTier, type PricingTierId } from '@/lib/pricing-tiers';
 
 export class MaketouNotConfiguredError extends Error {
   constructor() {
-    super('Maketou is not configured (MAKETOU_API_KEY / MAKETOU_PRODUCT_ID missing)');
+    super('Maketou is not configured (MAKETOU_API_KEY / tier product id missing)');
     this.name = 'MaketouNotConfiguredError';
   }
 }
@@ -40,6 +41,7 @@ export class MaketouApiError extends Error {
 export type MaketouCartStatus = 'waiting_payment' | 'completed' | 'abandoned' | 'payment_failed';
 
 export interface MaketouCheckoutInput {
+  tier: PricingTierId;
   email: string;
   firstName?: string | undefined;
   lastName?: string | undefined;
@@ -60,30 +62,50 @@ export interface MaketouCartResult {
 interface MaketouConfig {
   apiKey: string;
   baseUrl: string;
-  productId: string;
 }
 
-export function isMaketouConfigured(): boolean {
-  return Boolean(process.env.MAKETOU_API_KEY?.trim() && process.env.MAKETOU_PRODUCT_ID?.trim());
+// One Maketou product per pricing tier. MAKETOU_PRODUCT_ID (the original
+// single-offer env var) now backs the "standard" tier so existing deploys
+// with that var already set keep working without a rename.
+const TIER_PRODUCT_ENV: Record<PricingTierId, string> = {
+  decouverte: 'MAKETOU_PRODUCT_ID_DECOUVERTE',
+  standard: 'MAKETOU_PRODUCT_ID',
+  pro: 'MAKETOU_PRODUCT_ID_PRO',
+};
+
+export function getTierProductId(tier: PricingTierId): string | undefined {
+  return process.env[TIER_PRODUCT_ENV[tier]]?.trim() || undefined;
+}
+
+/** Fixed price for a tier, in XOF (no decimals) — see lib/pricing-tiers.ts. */
+export function getTierAmount(tier: PricingTierId): number {
+  const pricingTier = getPricingTier(tier);
+  if (!pricingTier) throw new Error(`Unknown pricing tier: ${tier}`);
+  return pricingTier.priceXof;
+}
+
+export function isMaketouConfigured(tier: PricingTierId): boolean {
+  return Boolean(process.env.MAKETOU_API_KEY?.trim() && getTierProductId(tier));
+}
+
+/**
+ * API-key-only check, tier-agnostic — used by the reconcile cron, which
+ * verifies already-created carts (no product id needed) across every tier.
+ */
+export function isMaketouApiConfigured(): boolean {
+  return Boolean(process.env.MAKETOU_API_KEY?.trim());
 }
 
 function getConfig(): MaketouConfig {
   const apiKey = process.env.MAKETOU_API_KEY?.trim();
-  const productId = process.env.MAKETOU_PRODUCT_ID?.trim();
-  if (!apiKey || !productId) throw new MaketouNotConfiguredError();
+  if (!apiKey) throw new MaketouNotConfiguredError();
   return {
     apiKey,
-    productId,
     baseUrl: (process.env.MAKETOU_API_BASE_URL?.trim() || 'https://api.maketou.net').replace(
       /\/+$/,
       '',
     ),
   };
-}
-
-/** RenderBox's single V1 offer — amount is XOF (no decimals). */
-export function getOfferAmount(): number {
-  return Number.parseInt(process.env.MAKETOU_OFFER_AMOUNT_XOF || '2000', 10);
 }
 
 function unwrapString(value: unknown): string | undefined {
@@ -92,6 +114,8 @@ function unwrapString(value: unknown): string | undefined {
 
 export async function maketouCheckout(input: MaketouCheckoutInput): Promise<MaketouCheckoutResult> {
   const cfg = getConfig();
+  const productId = getTierProductId(input.tier);
+  if (!productId) throw new MaketouNotConfiguredError();
 
   const res = await fetch(`${cfg.baseUrl}/api/v1/stores/cart/checkout`, {
     method: 'POST',
@@ -100,7 +124,7 @@ export async function maketouCheckout(input: MaketouCheckoutInput): Promise<Make
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      productDocumentId: cfg.productId,
+      productDocumentId: productId,
       email: input.email,
       prenom: input.firstName ?? '',
       nom: input.lastName ?? '',

@@ -5,9 +5,14 @@
 // stats + alternating split sections + 3 presets + integrations + dark CTA
 // band + footer). Bilingual via the existing i18n system (landing.* keys in
 // lib/i18n/dictionaries) — no hardcoded strings.
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
+import { PRICING_TIERS, type PricingTier, type PricingTierId } from '@/lib/pricing-tiers';
 
 function AccentText({ children }: { children: React.ReactNode }) {
   return (
@@ -80,8 +85,109 @@ function PresetCard({ title, body }: { title: string; body: string }) {
   );
 }
 
+function PricingCard({
+  tier,
+  onSelect,
+  loading,
+  error,
+}: {
+  tier: PricingTier;
+  onSelect: () => void;
+  loading: boolean;
+  error: string | null;
+}) {
+  const t = useTranslations();
+  const name =
+    tier.id === 'decouverte'
+      ? t('landing.pricingTierDecouverteName')
+      : tier.id === 'standard'
+        ? t('landing.pricingTierStandardName')
+        : t('landing.pricingTierProName');
+
+  return (
+    <div
+      className={`relative flex flex-col gap-5 rounded-2xl border p-6.5 ${
+        tier.featured
+          ? 'border-[#C81120] bg-white shadow-[0_20px_40px_-24px_#C8112040]'
+          : 'border-[#ECE3E5] bg-[#F8F5F6]'
+      }`}
+    >
+      {tier.featured ? (
+        <span className="absolute -top-3 left-6.5 rounded-[20px] bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-3 py-1 text-[11px] font-semibold text-white">
+          {t('landing.pricingBadgeFeatured')}
+        </span>
+      ) : null}
+      <div>
+        <h3 className="font-[family-name:var(--font-poppins)] text-lg font-semibold text-[#170608]">
+          {name}
+        </h3>
+        <div className="mt-3 flex items-baseline gap-1.5">
+          <span className="font-[family-name:var(--font-poppins)] text-[16px] font-bold text-[#170608]">
+            {tier.priceXof.toLocaleString('fr-FR')} FCFA
+          </span>
+          <span className="text-[12px] text-[#7A6E71]">{t('landing.pricingPeriod')}</span>
+        </div>
+        <div className="font-[family-name:var(--font-ibm-plex-mono)] text-[12px] text-[#7A6E71]">
+          ~{tier.priceUsdDisplay} $
+        </div>
+      </div>
+      <ul className="flex flex-col gap-2.5">
+        <CheckItem>
+          <span className="font-[family-name:var(--font-ibm-plex-mono)] font-semibold text-[#170608]">
+            {t('landing.pricingFeatureQuota', { count: tier.generationsPerMonth })}
+          </span>
+        </CheckItem>
+        <CheckItem>{t('landing.pricingFeatureEngines')}</CheckItem>
+        <CheckItem>{t('landing.pricingFeaturePresets')}</CheckItem>
+        <CheckItem>{t('landing.pricingFeatureEditing')}</CheckItem>
+      </ul>
+      <button
+        type="button"
+        disabled={loading}
+        onClick={onSelect}
+        className={`mt-auto inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold disabled:opacity-60 ${
+          tier.featured
+            ? 'bg-gradient-to-br from-[#E8121F] to-[#7F0000] text-white shadow-[0_8px_20px_-6px_#C8112050]'
+            : 'border border-[#ECE3E5] text-[#170608]'
+        }`}
+      >
+        {loading ? t('landing.pricingCtaLoading') : t('landing.pricingCta', { tier: name })}
+      </button>
+      {error ? <p className="text-[12px] text-[#B8710B]">{error}</p> : null}
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const t = useTranslations();
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const [checkoutTier, setCheckoutTier] = useState<PricingTierId | null>(null);
+  const [checkoutErrors, setCheckoutErrors] = useState<Record<PricingTierId, string | null>>({
+    decouverte: null,
+    standard: null,
+    pro: null,
+  });
+
+  async function handleSelectTier(tier: PricingTierId) {
+    if (authLoading) return;
+    if (!user) {
+      router.push('/connexion');
+      return;
+    }
+    setCheckoutTier(tier);
+    setCheckoutErrors((prev) => ({ ...prev, [tier]: null }));
+    try {
+      const res = await api<{ paymentUrl: string }>('/api/payments/checkout', {
+        method: 'POST',
+        body: JSON.stringify({ tier }),
+      });
+      window.location.href = res.paymentUrl;
+    } catch {
+      setCheckoutErrors((prev) => ({ ...prev, [tier]: t('landing.pricingError') }));
+      setCheckoutTier(null);
+    }
+  }
 
   return (
     <main className="bg-white">
@@ -194,7 +300,7 @@ export default function LandingPage() {
         {/* TRUST BAR */}
         <div className="flex flex-wrap justify-center gap-11 border-b border-[#ECE3E5] py-9 pb-15">
           <div className="text-center">
-            <b className="block font-[family-name:var(--font-poppins)] text-xl text-[#170608]">4</b>
+            <b className="block font-[family-name:var(--font-poppins)] text-xl text-[#170608]">5</b>
             <span className="text-xs text-[#7A6E71]">{t('landing.trustPresets')}</span>
           </div>
           <div className="text-center">
@@ -314,8 +420,33 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* PRICING */}
+        <section id="tarifs" className="py-20">
+          <div className="mx-auto mb-3 max-w-[560px] text-center">
+            <span className="mb-2.5 block font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#C81120]">
+              {t('landing.pricingTag')}
+            </span>
+            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
+              {t('landing.pricingTitlePrefix')}
+              <AccentText>{t('landing.pricingTitleAccent')}</AccentText>
+            </h2>
+            <p className="mt-2.5 text-sm text-[#7A6E71]">{t('landing.pricingSubtitle')}</p>
+          </div>
+          <div className="mx-auto mt-11.5 grid max-w-[980px] grid-cols-1 items-stretch gap-5.5 min-[860px]:grid-cols-3">
+            {PRICING_TIERS.map((tier) => (
+              <PricingCard
+                key={tier.id}
+                tier={tier}
+                onSelect={() => void handleSelectTier(tier.id)}
+                loading={checkoutTier === tier.id}
+                error={checkoutErrors[tier.id]}
+              />
+            ))}
+          </div>
+        </section>
+
         {/* INTEGRATIONS */}
-        <section id="tarifs" className="py-20 text-center">
+        <section id="integrations" className="py-20 text-center">
           <div className="mx-auto mb-11.5 max-w-[560px]">
             <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25] text-[#170608]">
               {t('landing.integrationsTitlePrefix')}

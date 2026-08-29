@@ -224,8 +224,7 @@ const fr = {
   'parametres.engineSaved': 'Enregistré.',
   'parametres.billingTitle': 'Historique de facturation',
   'parametres.billingEmpty': 'Aucun paiement pour le moment.',
-  'parametres.buyButton': 'Acheter un pack de générations',
-  'parametres.buyError': 'Impossible de démarrer le paiement. Réessaie.',
+  'parametres.buyButton': 'Voir les tarifs',
   'parametres.backToApp': "Retour à l'app",
 
   'paiementRetour.checking': 'Vérification du paiement…',
@@ -338,6 +337,23 @@ const fr = {
   'landing.footerLinkHelp': 'Aide',
   'landing.footerCopyright': '© {year} RenderBox. Tous droits réservés.',
   'landing.footerLegalLinks': 'Conditions · Confidentialité',
+
+  'landing.pricingTag': 'Tarifs',
+  'landing.pricingTitlePrefix': 'Un palier pour ',
+  'landing.pricingTitleAccent': 'chaque rythme',
+  'landing.pricingSubtitle': 'Même moteurs, mêmes presets, seul le quota mensuel change.',
+  'landing.pricingPeriod': '/ mois',
+  'landing.pricingBadgeFeatured': 'Le plus choisi',
+  'landing.pricingTierDecouverteName': 'Découverte',
+  'landing.pricingTierStandardName': 'Standard',
+  'landing.pricingTierProName': 'Pro',
+  'landing.pricingFeatureQuota': '{count} générations / mois',
+  'landing.pricingFeatureEngines': 'Accès aux deux moteurs (Nanobanana + ChatGPT Image)',
+  'landing.pricingFeaturePresets': 'Accès aux 5 presets d’ambiance',
+  'landing.pricingFeatureEditing': 'Mode édition avancée (ajout d’élément, retouche ciblée)',
+  'landing.pricingCta': 'Choisir {tier}',
+  'landing.pricingCtaLoading': 'Redirection…',
+  'landing.pricingError': 'Impossible de démarrer le paiement. Réessaie.',
 } as const;
 
 export default fr;

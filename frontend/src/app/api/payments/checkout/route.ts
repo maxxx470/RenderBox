@@ -1,23 +1,25 @@
-// POST /api/payments/checkout — Phase 6. Creates a PENDING Order and starts
-// a Maketou hosted-checkout session. No Idempotency-Key header (unlike the
-// generic /api/orders Bictorys route this replaces for RenderBox) — Maketou
-// checkout is a single-offer "buy now" action from /parametres, not a
-// retryable API a client library calls with replay semantics.
+// POST /api/payments/checkout — Phase 6 (single V1 offer), extended for the
+// 3-tier /tarifs pricing page. Body: { tier: "decouverte"|"standard"|"pro" }.
+// Creates a PENDING Order for that tier's fixed XOF amount and starts a
+// Maketou hosted-checkout session against that tier's product. No
+// Idempotency-Key header (unlike the generic /api/orders Bictorys route this
+// replaces for RenderBox) — Maketou checkout is a "buy now" action from
+// /tarifs or /parametres, not a retryable API a client library calls with
+// replay semantics.
 export const runtime = 'nodejs';
 
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
+import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import {
-  maketouCheckout,
-  isMaketouConfigured,
-  getOfferAmount,
-} from '@/lib/server/payments/maketou';
+import { maketouCheckout, isMaketouConfigured, getTierAmount } from '@/lib/server/payments/maketou';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const ORDER_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24h — matches order-expiration cron's PENDING sweep
+
+const Body = z.object({ tier: z.enum(['decouverte', 'standard', 'pro']) });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
@@ -28,7 +30,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth(req.headers.get('authorization'));
     if (auth instanceof NextResponse) return auth;
 
-    if (!isMaketouConfigured()) {
+    const json = await req.json().catch(() => null);
+    const parsed = Body.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'VALIDATION_FAILED', issues: parsed.error.issues },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+    const { tier } = parsed.data;
+
+    if (!isMaketouConfigured(tier)) {
       return NextResponse.json(
         { code: 'PAYMENT_PROVIDER_UNCONFIGURED', message: 'Payment provider not configured' },
         { status: 503, headers: { 'x-request-id': ctx.requestId } },
@@ -46,7 +58,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const amount = getOfferAmount();
+    const amount = getTierAmount(tier);
     const order = await prisma.order.create({
       data: {
         userId: user.id,
@@ -56,6 +68,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         customerEmail: user.email,
         customerName: user.name,
         provider: 'maketou',
+        metadata: { tier },
         expiresAt: new Date(Date.now() + ORDER_EXPIRY_MS),
       },
       select: { id: true },
@@ -64,10 +77,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const appUrl = process.env.APP_URL ?? req.nextUrl.origin;
     try {
       const checkout = await maketouCheckout({
+        tier,
         email: user.email,
         firstName: user.name ?? undefined,
         redirectUrl: `${appUrl}/paiement/retour?orderId=${order.id}`,
-        meta: { orderId: order.id },
+        meta: { orderId: order.id, tier },
       });
 
       await prisma.order.update({
