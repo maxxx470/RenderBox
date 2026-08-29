@@ -14,16 +14,29 @@ vi.mock('@/lib/server/auth', async () => {
   return { ...actual, verifyToken: vi.fn() };
 });
 
-const { mockEnforceGenerationRateLimit, mockGenerate, mockIsEngineConfigured, mockModerateImage } =
-  vi.hoisted(() => ({
-    mockEnforceGenerationRateLimit: vi.fn(),
-    mockGenerate: vi.fn(),
-    mockIsEngineConfigured: vi.fn(),
-    mockModerateImage: vi.fn(),
-  }));
+const {
+  mockEnforceGenerationRateLimit,
+  mockGenerate,
+  mockIsEngineConfigured,
+  mockModerateImage,
+  mockCheckTierQuota,
+  mockRecordTierUsage,
+} = vi.hoisted(() => ({
+  mockEnforceGenerationRateLimit: vi.fn(),
+  mockGenerate: vi.fn(),
+  mockIsEngineConfigured: vi.fn(),
+  mockModerateImage: vi.fn(),
+  mockCheckTierQuota: vi.fn(),
+  mockRecordTierUsage: vi.fn(),
+}));
 
 vi.mock('@/lib/server/middleware/rate-limit-generation', () => ({
   enforceGenerationRateLimit: mockEnforceGenerationRateLimit,
+}));
+
+vi.mock('@/lib/server/generation/tier-quota', () => ({
+  checkTierQuota: mockCheckTierQuota,
+  recordTierUsage: mockRecordTierUsage,
 }));
 
 vi.mock('@/lib/server/generation/engines', async () => {
@@ -100,6 +113,10 @@ beforeEach(() => {
   mockGenerate.mockReset();
   mockIsEngineConfigured.mockReset().mockReturnValue(true);
   mockEnforceGenerationRateLimit.mockReset().mockResolvedValue(null);
+  mockCheckTierQuota
+    .mockReset()
+    .mockResolvedValue({ allowed: true, tier: 'standard', max: 100, remaining: 99 });
+  mockRecordTierUsage.mockReset().mockResolvedValue(undefined);
   mockModerateImage.mockReset().mockResolvedValue({ flagged: false, categories: [] });
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
 
@@ -190,7 +207,7 @@ describe('POST /api/projects/[projectId]/edit — validation', () => {
 });
 
 describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
-  it('creates N RenderNodes with the same parentId and charges the rate limit N units', async () => {
+  it('creates N RenderNodes with the same parentId, charges the rate limit N units, and records N units of tier usage', async () => {
     const res = await POST(makeReq(baseFields({ variantCount: '3' })), ctx());
     expect(res.status).toBe(201);
     const body = (await res.json()) as { createdCount: number; requestedCount: number };
@@ -198,6 +215,8 @@ describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
     expect(body.createdCount).toBe(3);
     expect(mockGenerate).toHaveBeenCalledTimes(3);
     expect(mockEnforceGenerationRateLimit).toHaveBeenCalledWith(USER_ID, 3);
+    expect(mockCheckTierQuota).toHaveBeenCalledWith(prismaMock, USER_ID, 3);
+    expect(mockRecordTierUsage).toHaveBeenCalledWith(prismaMock, USER_ID, 3);
     expect(prismaMock.renderNode.create).toHaveBeenCalledTimes(3);
     for (const call of prismaMock.renderNode.create.mock.calls) {
       expect(call[0]?.data).toMatchObject({ parentId: SOURCE_NODE_ID, kind: 'GENERATED' });
@@ -214,7 +233,7 @@ describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 
-  it('reports partial success when some variants fail to generate', async () => {
+  it('reports partial success when some variants fail to generate, and records tier usage for the 2 that actually succeeded, not the 3 requested', async () => {
     mockGenerate
       .mockResolvedValueOnce({ imageBuffer: Buffer.from('a'), mimeType: 'image/png' })
       .mockRejectedValueOnce(new Error('boom'))
@@ -225,12 +244,44 @@ describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
     const body = (await res.json()) as { createdCount: number; requestedCount: number };
     expect(body.requestedCount).toBe(3);
     expect(body.createdCount).toBe(2);
+    expect(mockRecordTierUsage).toHaveBeenCalledWith(prismaMock, USER_ID, 2);
   });
 
-  it('502s when every variant fails to generate', async () => {
+  it('502s when every variant fails to generate, and never records any tier usage', async () => {
     mockGenerate.mockRejectedValue(new Error('boom'));
     const res = await POST(makeReq(baseFields({ variantCount: '2' })), ctx());
     expect(res.status).toBe(502);
+    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/projects/[projectId]/edit — monthly tier quota', () => {
+  it('403s with NO_ACTIVE_TIER before any engine call', async () => {
+    mockCheckTierQuota.mockResolvedValue({
+      allowed: false,
+      reason: 'NO_ACTIVE_TIER',
+      tier: null,
+      max: null,
+      remaining: null,
+    });
+    const res = await POST(makeReq(baseFields()), ctx());
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe('NO_ACTIVE_TIER');
+    expect(mockGenerate).not.toHaveBeenCalled();
+  });
+
+  it('402s with QUOTA_EXCEEDED when the batch would overshoot the remaining quota', async () => {
+    mockCheckTierQuota.mockResolvedValue({
+      allowed: false,
+      reason: 'QUOTA_EXCEEDED',
+      tier: 'decouverte',
+      max: 30,
+      remaining: 2,
+    });
+    const res = await POST(makeReq(baseFields({ variantCount: '3' })), ctx());
+    expect(res.status).toBe(402);
+    expect(mockGenerate).not.toHaveBeenCalled();
   });
 });
 

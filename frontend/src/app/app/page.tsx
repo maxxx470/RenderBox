@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { isPricingTierId, type PricingTierId } from '@/lib/pricing-tiers';
+import { checkTierQuota } from '@/lib/server/generation/tier-quota';
 import { GenerationHome, type RecentRenderCardData } from './GenerationHome';
 
 // /app root — the "Espace de génération" home: engine picker + a fan of the
@@ -17,7 +17,7 @@ export default async function AppHomePage() {
     redirect('/connexion');
   }
 
-  const [recentNodes, lastPaidOrder] = await Promise.all([
+  const [recentNodes, quota] = await Promise.all([
     prisma.renderNode.findMany({
       where: { project: { userId: auth.user.sub } },
       orderBy: { createdAt: 'desc' },
@@ -30,16 +30,9 @@ export default async function AppHomePage() {
         project: { select: { id: true, name: true } },
       },
     }),
-    // "Palier réel de l'utilisateur" — RenderBox has no subscription/renewal
-    // record yet (see the pricing-page follow-up note), so the most recent
-    // PAID Maketou order's tier is the best available signal of what the
-    // user currently has. Falls back to the lowest tier below rather than a
-    // generic "Free" label per the spec.
-    prisma.order.findFirst({
-      where: { userId: auth.user.sub, provider: 'maketou', status: 'PAID' },
-      orderBy: { paidAt: 'desc' },
-      select: { metadata: true },
-    }),
+    // count: 0 — read-only status check (also lazily clears an expired tier,
+    // same as the real enforcement path — see tier-quota.ts).
+    checkTierQuota(prisma, auth.user.sub, 0),
   ]);
 
   const recentRenders: RecentRenderCardData[] = recentNodes.map((n) => ({
@@ -51,12 +44,12 @@ export default async function AppHomePage() {
     editType: n.editType,
   }));
 
-  const metaTier =
-    lastPaidOrder?.metadata && typeof lastPaidOrder.metadata === 'object'
-      ? (lastPaidOrder.metadata as Record<string, unknown>).tier
-      : undefined;
-  const currentTier: PricingTierId =
-    typeof metaTier === 'string' && isPricingTierId(metaTier) ? metaTier : 'decouverte';
-
-  return <GenerationHome recentRenders={recentRenders} currentTier={currentTier} />;
+  return (
+    <GenerationHome
+      recentRenders={recentRenders}
+      tier={quota.tier}
+      max={quota.max}
+      remaining={quota.remaining}
+    />
+  );
 }

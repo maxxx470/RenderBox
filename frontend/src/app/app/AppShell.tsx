@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { api } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +12,7 @@ import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Filter2 } from 'react-iconly';
 import { ModeSidebar } from './ModeSidebar';
 import { Dropzone } from './Dropzone';
@@ -31,6 +32,7 @@ interface GenerateResponse {
   tree: RenderTreeNode[];
   nodeId: string;
   materialsDetected: boolean;
+  quotaRemaining: number | null;
 }
 
 interface EditResponse {
@@ -38,6 +40,17 @@ interface EditResponse {
   nodeIds: string[];
   requestedCount: number;
   createdCount: number;
+  quotaRemaining: number | null;
+}
+
+// handleEditSubmit posts via raw fetch (FormData), not the api() wrapper, so
+// it needs its own tiny error type to carry the backend's stable `error`
+// code through to the catch block below (mirrors what ApiError.code does
+// for every other call site — see lib/api.ts).
+class EditRequestError extends Error {
+  constructor(public readonly code: string) {
+    super(code);
+  }
 }
 
 interface Zone {
@@ -61,11 +74,17 @@ export function AppShell({
   initialProjectName,
   initialTree,
   devBypassActive = false,
+  initialTier,
+  initialMax,
+  initialRemaining,
 }: {
   initialProjectId: string;
   initialProjectName: string;
   initialTree: RenderTreeNode[];
   devBypassActive?: boolean;
+  initialTier: PricingTierId | null;
+  initialMax: number | null;
+  initialRemaining: number | null;
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
@@ -98,6 +117,11 @@ export function AppShell({
   const [submittingEdit, setSubmittingEdit] = useState(false);
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
+  // Updated in place after each successful generate/edit (via the route's
+  // quotaRemaining field) so the display never needs a full page reload.
+  const [tier] = useState(initialTier);
+  const [max] = useState(initialMax);
+  const [remaining, setRemaining] = useState(initialRemaining);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
@@ -190,9 +214,16 @@ export function AppShell({
       setTree(res.tree);
       setSelectedId(res.nodeId);
       setPrompt('');
+      setRemaining(res.quotaRemaining);
       if (res.materialsDetected) void refreshMaterials(projectId);
-    } catch {
-      toast(t('app.generateError'), 'error');
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'NO_ACTIVE_TIER') {
+        toast(t('app.noActiveTierError'), 'error');
+      } else if (err instanceof ApiError && err.code === 'QUOTA_EXCEEDED') {
+        toast(t('app.quotaExceededError'), 'error');
+      } else {
+        toast(t('app.generateError'), 'error');
+      }
     } finally {
       setGenerating(false);
     }
@@ -222,7 +253,10 @@ export function AppShell({
         credentials: 'include',
         headers: csrf ? { 'x-csrf-token': csrf } : {},
       });
-      if (!res.ok) throw new Error('edit failed');
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new EditRequestError(body.error ?? '');
+      }
       const data = (await res.json()) as EditResponse;
       if (data.createdCount < data.requestedCount) {
         toast(
@@ -235,8 +269,15 @@ export function AppShell({
       setPrompt('');
       setZone(null);
       setReferenceFile(null);
-    } catch {
-      toast(t('edit.submitError'), 'error');
+      setRemaining(data.quotaRemaining);
+    } catch (err) {
+      if (err instanceof EditRequestError && err.code === 'NO_ACTIVE_TIER') {
+        toast(t('app.noActiveTierError'), 'error');
+      } else if (err instanceof EditRequestError && err.code === 'QUOTA_EXCEEDED') {
+        toast(t('app.quotaExceededError'), 'error');
+      } else {
+        toast(t('edit.submitError'), 'error');
+      }
     } finally {
       setSubmittingEdit(false);
     }
@@ -300,12 +341,13 @@ export function AppShell({
   }
 
   const inputDisabled =
-    mode === 'generate' ? !selectedId || generating : !canEdit || submittingEdit;
+    mode === 'generate' ? !selectedId || generating || !tier : !canEdit || submittingEdit || !tier;
   const sendDisabled =
     mode === 'generate'
-      ? !selectedId || generating
+      ? !selectedId || generating || !tier
       : !canEdit ||
         submittingEdit ||
+        !tier ||
         !prompt.trim() ||
         (mode === 'add' ? !referenceFile : !zoneSelected);
 
@@ -343,6 +385,11 @@ export function AppShell({
             <span className="text-[11px] text-[#7A6E71]">{t('app.engineLabel')} :</span>
             <EngineSelect engine={engine} onChange={handleEngineChange} />
           </div>
+          <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#7A6E71]">
+            {tier && max !== null && remaining !== null
+              ? t('app.quotaLabel', { used: max - remaining, max })
+              : t('app.noTierLabel')}
+          </span>
           <button
             type="button"
             onClick={() => setMobilePanelOpen(true)}

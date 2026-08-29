@@ -13,6 +13,8 @@
  */
 import 'server-only';
 import type { Order, PrismaClient } from '@prisma/client';
+import { getOrderMetadataTier } from '@/lib/pricing-tiers';
+import { activateTier } from '@/lib/server/generation/tier-quota';
 import { maketouVerifyCart, type MaketouCartStatus } from './maketou';
 
 function mapToOrderStatus(cartStatus: MaketouCartStatus): Order['status'] | null {
@@ -41,7 +43,7 @@ export interface ReconcileResult {
  */
 export async function reconcileMaketouOrder(
   prisma: PrismaClient,
-  order: Pick<Order, 'id' | 'status' | 'providerChargeId'>,
+  order: Pick<Order, 'id' | 'status' | 'providerChargeId' | 'userId' | 'metadata'>,
 ): Promise<ReconcileResult> {
   if (order.status !== 'PENDING' || !order.providerChargeId) {
     return { changed: false, status: order.status };
@@ -59,5 +61,13 @@ export async function reconcileMaketouOrder(
     },
   });
 
-  return { changed: updated.count > 0, status: updated.count > 0 ? mapped : order.status };
+  const won = updated.count > 0;
+  if (won && mapped === 'PAID' && order.userId) {
+    // Only the caller that actually won the CAS reaches here — the loser
+    // (updated.count === 0) never double-activates the tier.
+    const tier = getOrderMetadataTier(order.metadata);
+    if (tier) await activateTier(prisma, order.userId, tier);
+  }
+
+  return { changed: won, status: won ? mapped : order.status };
 }

@@ -30,7 +30,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { id: true, userId: true, status: true, providerChargeId: true, provider: true },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        providerChargeId: true,
+        provider: true,
+        metadata: true,
+      },
     });
     if (!order || order.userId !== auth.user.sub || order.provider !== 'maketou') {
       return NextResponse.json(

@@ -1,9 +1,7 @@
-// Single source of truth for RenderBox's 3 pricing tiers — consumed by both
-// the client-side /tarifs pricing cards and the server-side Maketou checkout
-// route, so a future price/quota change is a 3-line edit here, not a page
-// rewrite. Quota enforcement (actually capping a user's monthly generations
-// per purchased tier) is NOT wired yet — these numbers are display-only
-// pending real usage data post-launch (see the pricing spec's own note).
+// Single source of truth for RenderBox's 3 pricing tiers — consumed by the
+// client-side /tarifs pricing cards, the server-side Maketou checkout route,
+// and the tier-quota gate (lib/server/generation/tier-quota.ts), so a future
+// price/quota change is a 3-line edit here, not a page rewrite.
 export type PricingTierId = 'decouverte' | 'standard' | 'pro';
 
 export interface PricingTier {
@@ -40,4 +38,18 @@ export function getPricingTier(id: string): PricingTier | undefined {
 
 export function isPricingTierId(value: string): value is PricingTierId {
   return PRICING_TIERS.some((tier) => tier.id === value);
+}
+
+/**
+ * Reads the tier out of an `Order.metadata` JSON blob (set at checkout —
+ * see api/payments/checkout/route.ts). Shared by /app's "current tier"
+ * lookup and the checkout-confirmation tier activation so the same
+ * defensive parsing lives in one place.
+ */
+export function getOrderMetadataTier(metadata: unknown): PricingTierId | null {
+  if (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) {
+    const tier = (metadata as Record<string, unknown>).tier;
+    if (typeof tier === 'string' && isPricingTierId(tier)) return tier;
+  }
+  return null;
 }

@@ -15,6 +15,7 @@ import { prisma } from '@/lib/server/prisma';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { assertProjectOwner, ProjectNotFoundError } from '@/lib/server/idor/assert-project-owner';
 import { enforceGenerationRateLimit } from '@/lib/server/middleware/rate-limit-generation';
+import { checkTierQuota, recordTierUsage } from '@/lib/server/generation/tier-quota';
 import {
   generateRender,
   isEngineConfigured,
@@ -157,6 +158,22 @@ export async function POST(
     // rate-limit-generation.ts's rollback behavior).
     const limited = await enforceGenerationRateLimit(auth.user.sub, variantCount);
     if (limited) return limited;
+
+    // Same "charge the full count up front" posture as the rate limit above
+    // — a 4-variant request needs 4 remaining in the monthly quota, not 1.
+    const quota = await checkTierQuota(prisma, auth.user.sub, variantCount);
+    if (!quota.allowed) {
+      // `error` (not `code`) is the field lib/api.ts's ApiError.code reads —
+      // the frontend switches on err.code to tell "no active tier" apart
+      // from "quota exhausted" apart from the hourly rate limit above.
+      return NextResponse.json(
+        { error: quota.reason, message: 'Monthly generation quota check failed' },
+        {
+          status: quota.reason === 'QUOTA_EXCEEDED' ? 402 : 403,
+          headers: { 'x-request-id': ctx.requestId },
+        },
+      );
+    }
 
     let referenceImages: { buffer: Buffer; mimeType: string }[] | undefined;
     if (editType === 'add_element') {
@@ -317,6 +334,11 @@ export async function POST(
       );
     }
 
+    // Each ACTUALLY produced + stored variant decrements the monthly quota
+    // by 1 — a requested variant that failed the engine call or the upload
+    // is never charged.
+    await recordTierUsage(prisma, auth.user.sub, createdNodeIds.length);
+
     const nodes = await prisma.renderNode.findMany({
       where: { projectId },
       orderBy: { createdAt: 'asc' },
@@ -329,6 +351,8 @@ export async function POST(
         nodeIds: createdNodeIds,
         requestedCount: variantCount,
         createdCount: createdNodeIds.length,
+        quotaRemaining:
+          quota.remaining !== null ? Math.max(0, quota.remaining - createdNodeIds.length) : null,
       },
       { status: 201, headers: { 'x-request-id': ctx.requestId } },
     );

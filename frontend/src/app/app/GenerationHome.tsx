@@ -77,10 +77,14 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
 
 export function GenerationHome({
   recentRenders,
-  currentTier,
+  tier,
+  max,
+  remaining,
 }: {
   recentRenders: RecentRenderCardData[];
-  currentTier: PricingTierId;
+  tier: PricingTierId | null;
+  max: number | null;
+  remaining: number | null;
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
@@ -154,7 +158,9 @@ export function GenerationHome({
       <HomeSidebar
         mode={mode}
         onModeChange={handleModeChange}
-        currentTier={currentTier}
+        tier={tier}
+        max={max}
+        remaining={remaining}
         userEmail={user?.email ?? ''}
       />
 
@@ -164,7 +170,26 @@ export function GenerationHome({
           <EngineSelect engine={engine} onChange={setEngine} />
         </div>
 
-        {mode !== 'generate' ? (
+        {!tier ? (
+          // Blocking, not a late error at generate-time: without an active
+          // tier there's nothing to do in any mode, so this pre-empts even
+          // the mode hint below.
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000]">
+              <Folder set="bold" size={24} primaryColor="#ffffff" />
+            </div>
+            <h2 className="font-[family-name:var(--font-poppins)] text-[15px] font-semibold text-[#170608]">
+              {t('app.genHomeNoTierTitle')}
+            </h2>
+            <p className="max-w-[320px] text-[13px] text-[#7A6E71]">{t('app.genHomeNoTierBody')}</p>
+            <Link
+              href="/#tarifs"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-5 py-2.5 text-[13px] font-semibold text-white"
+            >
+              {t('app.genHomeChooseTier')}
+            </Link>
+          </div>
+        ) : mode !== 'generate' ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
             <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000]">
               <Folder set="bold" size={24} primaryColor="#ffffff" />

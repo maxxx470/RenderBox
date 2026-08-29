@@ -13,6 +13,7 @@ import { prisma } from '@/lib/server/prisma';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { assertProjectOwner, ProjectNotFoundError } from '@/lib/server/idor/assert-project-owner';
 import { enforceGenerationRateLimit } from '@/lib/server/middleware/rate-limit-generation';
+import { checkTierQuota, recordTierUsage } from '@/lib/server/generation/tier-quota';
 import {
   generateRender,
   isEngineConfigured,
@@ -60,6 +61,20 @@ export async function POST(
 
     const limited = await enforceGenerationRateLimit(auth.user.sub);
     if (limited) return limited;
+
+    const quota = await checkTierQuota(prisma, auth.user.sub);
+    if (!quota.allowed) {
+      // `error` (not `code`) is the field lib/api.ts's ApiError.code reads —
+      // the frontend switches on err.code to tell "no active tier" apart
+      // from "quota exhausted" apart from the hourly rate limit above.
+      return NextResponse.json(
+        { error: quota.reason, message: 'Monthly generation quota check failed' },
+        {
+          status: quota.reason === 'QUOTA_EXCEEDED' ? 402 : 403,
+          headers: { 'x-request-id': ctx.requestId },
+        },
+      );
+    }
 
     const json = await req.json().catch(() => null);
     const parsed = Body.safeParse(json);
@@ -179,6 +194,10 @@ export async function POST(
       return newNode.id;
     });
 
+    // Only after the render was actually produced + stored — never before,
+    // never on a failed engine call (see tier-quota.ts's doc comment).
+    await recordTierUsage(prisma, auth.user.sub);
+
     // Detect + merge materials from the render that was JUST produced (Phase
     // 2). Never lets a Vision hiccup fail the generation the user asked for
     // — the render + tree above are already committed by this point.
@@ -197,7 +216,12 @@ export async function POST(
     });
 
     return NextResponse.json(
-      { tree: buildRenderTree(nodes), nodeId: newNodeId, materialsDetected },
+      {
+        tree: buildRenderTree(nodes),
+        nodeId: newNodeId,
+        materialsDetected,
+        quotaRemaining: quota.remaining !== null ? Math.max(0, quota.remaining - 1) : null,
+      },
       { status: 201, headers: { 'x-request-id': ctx.requestId } },
     );
   });

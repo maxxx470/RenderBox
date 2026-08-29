@@ -36,16 +36,20 @@ const NEXT_TIER: Record<PricingTierId, PricingTierId | null> = {
 export function HomeSidebar({
   mode,
   onModeChange,
-  currentTier,
+  tier,
+  max,
+  remaining,
   userEmail,
 }: {
   mode: AppMode;
   onModeChange: (mode: AppMode) => void;
-  currentTier: PricingTierId;
+  tier: PricingTierId | null;
+  max: number | null;
+  remaining: number | null;
   userEmail: string;
 }) {
   const t = useTranslations();
-  const nextTier = NEXT_TIER[currentTier];
+  const nextTier = tier ? NEXT_TIER[tier] : null;
 
   return (
     <aside className="flex w-[240px] flex-shrink-0 flex-col border-r border-[#ECE3E5] bg-[#F8F5F6] px-3.5 py-4.5">
@@ -104,7 +108,14 @@ export function HomeSidebar({
         </Link>
       </div>
 
-      {nextTier ? (
+      {!tier ? (
+        <Link
+          href="/#tarifs"
+          className="mb-3 mt-auto flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-3.5 py-3 text-white"
+        >
+          <span className="text-[12.5px] font-semibold">{t('app.genHomeChooseTier')}</span>
+        </Link>
+      ) : nextTier ? (
         <Link
           href="/parametres"
           className="mb-3 mt-auto flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-3.5 py-3 text-white"
@@ -116,14 +127,19 @@ export function HomeSidebar({
       ) : null}
 
       <div
-        className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 ${nextTier ? '' : 'mt-auto'}`}
+        className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 ${!tier || nextTier ? '' : 'mt-auto'}`}
       >
         <div className="h-7 w-7 flex-shrink-0 rounded-lg bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
         <div className="min-w-0">
           <div className="truncate text-[12.5px] font-medium text-[#170608]">{userEmail}</div>
           <div className="font-[family-name:var(--font-ibm-plex-mono)] text-[10.5px] text-[#7A6E71]">
-            {t(TIER_LABEL_KEY[currentTier])}
+            {tier ? t(TIER_LABEL_KEY[tier]) : t('app.noTierLabel')}
           </div>
+          {tier && max !== null && remaining !== null ? (
+            <div className="font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#7A6E71]">
+              {t('app.quotaLabel', { used: max - remaining, max })}
+            </div>
+          ) : null}
         </div>
       </div>
     </aside>

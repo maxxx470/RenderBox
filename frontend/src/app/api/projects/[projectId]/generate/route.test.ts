@@ -23,6 +23,15 @@ vi.mock('@/lib/server/middleware/rate-limit-generation', () => ({
   enforceGenerationRateLimit: mockEnforceGenerationRateLimit,
 }));
 
+const { mockCheckTierQuota, mockRecordTierUsage } = vi.hoisted(() => ({
+  mockCheckTierQuota: vi.fn(),
+  mockRecordTierUsage: vi.fn(),
+}));
+vi.mock('@/lib/server/generation/tier-quota', () => ({
+  checkTierQuota: mockCheckTierQuota,
+  recordTierUsage: mockRecordTierUsage,
+}));
+
 const { mockGenerate, mockIsEngineConfigured, mockDetectAndMerge } = vi.hoisted(() => ({
   mockGenerate: vi.fn(),
   mockIsEngineConfigured: vi.fn(),
@@ -83,6 +92,10 @@ beforeEach(() => {
   mockGenerate.mockReset();
   mockIsEngineConfigured.mockReset().mockReturnValue(true);
   mockEnforceGenerationRateLimit.mockReset().mockResolvedValue(null);
+  mockCheckTierQuota
+    .mockReset()
+    .mockResolvedValue({ allowed: true, tier: 'standard', max: 100, remaining: 99 });
+  mockRecordTierUsage.mockReset().mockResolvedValue(undefined);
   mockDetectAndMerge.mockReset().mockResolvedValue(undefined);
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
 
@@ -218,5 +231,57 @@ describe('POST /api/projects/[projectId]/generate — engines (Phase 4)', () => 
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(mockIsEngineConfigured).not.toHaveBeenCalled();
     expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/projects/[projectId]/generate — monthly tier quota', () => {
+  it('403s with NO_ACTIVE_TIER before any engine call, distinct from the hourly rate limit', async () => {
+    mockCheckTierQuota.mockResolvedValue({
+      allowed: false,
+      reason: 'NO_ACTIVE_TIER',
+      tier: null,
+      max: null,
+      remaining: null,
+    });
+
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe('NO_ACTIVE_TIER');
+    expect(mockGenerate).not.toHaveBeenCalled();
+    expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
+    expect(mockEnforceGenerationRateLimit).toHaveBeenCalled(); // rate limit still runs first
+  });
+
+  it('402s with QUOTA_EXCEEDED when the monthly quota is exhausted', async () => {
+    mockCheckTierQuota.mockResolvedValue({
+      allowed: false,
+      reason: 'QUOTA_EXCEEDED',
+      tier: 'decouverte',
+      max: 30,
+      remaining: 0,
+    });
+
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(402);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toBe('QUOTA_EXCEEDED');
+    expect(mockGenerate).not.toHaveBeenCalled();
+  });
+
+  it('records tier usage only after a successful generation, never before', async () => {
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(201);
+    expect(mockRecordTierUsage).toHaveBeenCalledWith(prismaMock, USER_ID);
+    expect(mockRecordTierUsage.mock.invocationCallOrder[0]).toBeGreaterThan(
+      mockGenerate.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it('never records tier usage when the engine call fails', async () => {
+    mockGenerate.mockRejectedValueOnce(new Error('engine down'));
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(502);
+    expect(mockRecordTierUsage).not.toHaveBeenCalled();
   });
 });

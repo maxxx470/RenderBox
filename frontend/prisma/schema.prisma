@@ -9,37 +9,51 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
+  id                      String    @id @default(cuid())
+  email                   String    @unique
   // RenderBox is password-less: Google OAuth + magic link only. Users
   // created via magic-link request never have an OAuthAccount; users
   // created via Google never set emailVerifiedAt through a code (Google's
   // own email_verified claim is the trust source there instead).
-  emailVerifiedAt DateTime?
-  tokenVersion    Int       @default(0)
+  emailVerifiedAt         DateTime?
+  tokenVersion            Int       @default(0)
   // Optional display name — populated from OAuth profile on first sign-in.
-  name            String?
+  name                    String?
   // Optional avatar URL — populated from OAuth profile on first sign-in.
-  avatarUrl       String?
+  avatarUrl               String?
   // App-wide role. USER is the default; ADMIN unlocks /admin back-office;
   // SUPERADMIN can promote/demote other admins. Bootstrap an initial
   // SUPERADMIN via `pnpm db:make-superadmin <email>` (see scripts).
-  role            String    @default("USER") // USER | ADMIN | SUPERADMIN
+  role                    String    @default("USER") // USER | ADMIN | SUPERADMIN
   // Account status. ACTIVE = login + refresh allowed; SUSPENDED = both
   // refused with 403 ACCOUNT_SUSPENDED. Mutated via /api/admin/users/[id]/status
   // (ADMIN can suspend; only SUPERADMIN can restore).
-  status          String    @default("ACTIVE") // ACTIVE | SUSPENDED
+  status                  String    @default("ACTIVE") // ACTIVE | SUSPENDED
   // Phase 6 soft-delete. NULL = active/visible. Set by an admin via
   // DELETE /api/admin/users/[id]; reversible for ACCOUNT_DELETION_GRACE_DAYS
   // (default 30) via POST /api/admin/users/[id]/restore, after which the
   // account-purge cron hard-deletes the row. Login is refused (same 15-min
   // choke point as ACCOUNT_SUSPENDED) while deletedAt is set.
-  deletedAt       DateTime?
+  deletedAt               DateTime?
   // Preferred generation engine, set from /parametres. NULL falls back to
   // "nanobanana" client-side (AppShell.tsx's initial engine state).
-  defaultEngine   String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  defaultEngine           String?
+  // Real, paid monthly quota (see lib/pricing-tiers.ts for the tier→quota
+  // mapping) — distinct from GENERATION_RATE_LIMIT_MAX_PER_DAY's anti-abuse
+  // hourly/daily cap; both gates must pass, neither replaces the other (see
+  // lib/server/generation/tier-quota.ts). NULL = no active tier (never paid,
+  // or the period lapsed without renewal — checkTierQuota() resets it here
+  // lazily rather than via a cron, so this can go stale for up to 30 days
+  // for a user who never generates again, which is harmless: it just means
+  // the next attempt re-derives NULL instead of reading it pre-computed).
+  currentTier             String?
+  // Start of the current paid period. A renewal of the SAME tier before
+  // expiry moves this to now() (extends, not stacks) rather than carrying
+  // over unused generations — see tier-quota.ts's activateTier().
+  tierPeriodStart         DateTime?
+  generationsUsedInPeriod Int       @default(0)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   verificationCodes VerificationCode[]
   uploads           FileUpload[]

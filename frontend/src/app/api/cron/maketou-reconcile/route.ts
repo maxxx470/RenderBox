@@ -42,7 +42,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         where: { provider: 'maketou', status: 'PENDING' },
         orderBy: { createdAt: 'asc' },
         take: BATCH_SIZE,
-        select: { id: true, status: true, providerChargeId: true },
+        select: { id: true, status: true, providerChargeId: true, userId: true, metadata: true },
       });
 
       for (const order of pending) {
