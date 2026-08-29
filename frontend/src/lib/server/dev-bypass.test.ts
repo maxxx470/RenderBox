@@ -24,10 +24,31 @@ describe('isDevBypassActive', () => {
     expect(isDevBypassActive()).toBe(false);
   });
 
-  it('is true only when both NODE_ENV=development AND DEV_BYPASS_AUTH=true', () => {
+  it('is true when NODE_ENV=development AND DEV_BYPASS_AUTH=true', () => {
     vi.stubEnv('NODE_ENV', 'development');
     vi.stubEnv('DEV_BYPASS_AUTH', 'true');
     expect(isDevBypassActive()).toBe(true);
+  });
+
+  it('is false outside development when DEV_BYPASS_AUTH=true but AUTH_BYPASS_ALLOW_PROD is unset', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('DEV_BYPASS_AUTH', 'true');
+    vi.stubEnv('AUTH_BYPASS_ALLOW_PROD', '');
+    expect(isDevBypassActive()).toBe(false);
+  });
+
+  it('is true outside development when BOTH DEV_BYPASS_AUTH=true AND AUTH_BYPASS_ALLOW_PROD=true (explicit prod override)', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('DEV_BYPASS_AUTH', 'true');
+    vi.stubEnv('AUTH_BYPASS_ALLOW_PROD', 'true');
+    expect(isDevBypassActive()).toBe(true);
+  });
+
+  it('is false when AUTH_BYPASS_ALLOW_PROD=true but DEV_BYPASS_AUTH is unset (still requires the base flag)', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('DEV_BYPASS_AUTH', '');
+    vi.stubEnv('AUTH_BYPASS_ALLOW_PROD', 'true');
+    expect(isDevBypassActive()).toBe(false);
   });
 
   it('exposes a fixed, stable fake user id/email', () => {

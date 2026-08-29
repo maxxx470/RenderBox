@@ -42,8 +42,8 @@ export interface AdminContext extends AuthContext {
  * tokenVersion).
  */
 export async function requireAuth(authHeader?: string | null): Promise<AuthContext | NextResponse> {
-  // Dev-only bypass — see lib/server/dev-bypass.ts. Never active unless
-  // NODE_ENV=development AND DEV_BYPASS_AUTH=true are BOTH set.
+  // Auth bypass — see lib/server/dev-bypass.ts for the exact activation
+  // rules (dev-only by default, opt-in override for other environments).
   if (isDevBypassActive()) {
     return { user: { sub: DEV_FAKE_USER_ID, email: DEV_FAKE_USER_EMAIL } };
   }

@@ -1,9 +1,14 @@
-// Dev-only auth bypass — lets /app and its API routes be exercised without
-// going through /connexion while iterating on Phases 3/4/5. Only ever active
-// when BOTH NODE_ENV=development AND DEV_BYPASS_AUTH=true are set (checked
-// together in requireAuth/optionalAuth, lib/server/middleware/index.ts) —
-// a stray DEV_BYPASS_AUTH=true in a preview/prod env var is inert there
-// because NODE_ENV won't be "development".
+// Auth bypass — lets /app and its API routes be exercised without going
+// through /connexion. Requires DEV_BYPASS_AUTH=true in all cases.
+//
+// Two activation paths:
+//   - Local dev: DEV_BYPASS_AUTH=true + NODE_ENV=development (the default
+//     `next dev` value) — always available, no second flag needed.
+//   - Any other environment (Vercel preview/production): ALSO requires
+//     AUTH_BYPASS_ALLOW_PROD=true as an explicit second opt-in, so a stray
+//     DEV_BYPASS_AUTH=true left in a shared env file can't silently open the
+//     app up. This is a deliberate, temporary, user-requested override —
+//     see renderbox_feedback memory for when it was turned on and why.
 //
 // The fake session resolves to a REAL User row (seeded by scripts/seed-dev.ts
 // with this exact id) so every IDOR check elsewhere in the app
@@ -20,5 +25,6 @@ export const DEV_FAKE_USER_ID = 'dev-bypass-fake-user';
 export const DEV_FAKE_USER_EMAIL = 'dev-bypass@localhost';
 
 export function isDevBypassActive(): boolean {
-  return process.env.NODE_ENV === 'development' && process.env.DEV_BYPASS_AUTH === 'true';
+  if (process.env.DEV_BYPASS_AUTH !== 'true') return false;
+  return process.env.NODE_ENV === 'development' || process.env.AUTH_BYPASS_ALLOW_PROD === 'true';
 }

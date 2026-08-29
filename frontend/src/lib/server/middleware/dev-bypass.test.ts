@@ -49,10 +49,20 @@ describe('requireAuth / optionalAuth — dev bypass wiring', () => {
 
   it('requireAuth falls through to normal 401 behavior when the bypass is not active (no cookie, no header)', async () => {
     vi.stubEnv('NODE_ENV', 'test');
-    vi.stubEnv('DEV_BYPASS_AUTH', 'true'); // must be inert without NODE_ENV=development
+    vi.stubEnv('DEV_BYPASS_AUTH', 'true'); // must be inert without NODE_ENV=development or AUTH_BYPASS_ALLOW_PROD=true
 
     const result = await requireAuth();
     expect(result).toBeInstanceOf(NextResponse);
     expect((result as NextResponse).status).toBe(401);
+  });
+
+  it('requireAuth returns the fake session outside development when AUTH_BYPASS_ALLOW_PROD=true (explicit override)', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('DEV_BYPASS_AUTH', 'true');
+    vi.stubEnv('AUTH_BYPASS_ALLOW_PROD', 'true');
+
+    const result = await requireAuth();
+    expect(result).toEqual({ user: { sub: DEV_FAKE_USER_ID, email: DEV_FAKE_USER_EMAIL } });
+    expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
   });
 });
