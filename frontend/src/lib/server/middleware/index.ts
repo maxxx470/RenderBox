@@ -22,7 +22,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { verifyToken, COOKIE_NAME } from '../auth';
 import { prisma } from '../prisma';
-import { DEV_FAKE_USER_ID, DEV_FAKE_USER_EMAIL, isDevBypassActive } from '../dev-bypass';
+import { AUTH_DISABLED_USER_ID, AUTH_DISABLED_USER_EMAIL, isAuthDisabled } from '../auth-disabled';
 import type { AdminRole } from './require-admin';
 import { roleRank } from './require-admin';
 
@@ -35,19 +35,16 @@ export interface AdminContext extends AuthContext {
 }
 
 /**
- * Resolve the authenticated user from the cookie / Bearer header. Returns
- * `AuthContext` on success, or a 401 NextResponse on failure.
+ * Real cookie/Bearer session resolution — NEVER short-circuited by
+ * AUTH_DISABLED. requireAdmin/requireSuperadmin call this directly (instead
+ * of requireAuth) so /admin always requires a genuine session regardless of
+ * the temporary AUTH_DISABLED kill-switch (see lib/server/auth-disabled.ts),
+ * which only ever affects requireAuth/optionalAuth (standard /app routes).
  *
  * The DB re-query blocks stale-JWT bypass (deleted accounts, bumped
  * tokenVersion).
  */
-export async function requireAuth(authHeader?: string | null): Promise<AuthContext | NextResponse> {
-  // Auth bypass — see lib/server/dev-bypass.ts for the exact activation
-  // rules (dev-only by default, opt-in override for other environments).
-  if (isDevBypassActive()) {
-    return { user: { sub: DEV_FAKE_USER_ID, email: DEV_FAKE_USER_EMAIL } };
-  }
-
+async function resolveRealAuth(authHeader?: string | null): Promise<AuthContext | NextResponse> {
   const store = await cookies();
   let token = store.get(COOKIE_NAME)?.value;
 
@@ -78,13 +75,27 @@ export async function requireAuth(authHeader?: string | null): Promise<AuthConte
 }
 
 /**
+ * Resolve the authenticated user from the cookie / Bearer header. Returns
+ * `AuthContext` on success, or a 401 NextResponse on failure.
+ */
+export async function requireAuth(authHeader?: string | null): Promise<AuthContext | NextResponse> {
+  // Temporary site-wide kill-switch — see lib/server/auth-disabled.ts.
+  // requireAdmin/requireSuperadmin never consult this (they call
+  // resolveRealAuth directly below), so /admin is never affected.
+  if (isAuthDisabled()) {
+    return { user: { sub: AUTH_DISABLED_USER_ID, email: AUTH_DISABLED_USER_EMAIL } };
+  }
+  return resolveRealAuth(authHeader);
+}
+
+/**
  * Soft auth — returns `{ user }` if a valid cookie/Bearer is present,
  * `null` otherwise. Never returns a NextResponse. Use for routes that
  * accept both guests and authenticated callers.
  */
 export async function optionalAuth(authHeader?: string | null): Promise<AuthContext | null> {
-  if (isDevBypassActive()) {
-    return { user: { sub: DEV_FAKE_USER_ID, email: DEV_FAKE_USER_EMAIL } };
+  if (isAuthDisabled()) {
+    return { user: { sub: AUTH_DISABLED_USER_ID, email: AUTH_DISABLED_USER_EMAIL } };
   }
 
   const store = await cookies();
@@ -109,15 +120,17 @@ export async function optionalAuth(authHeader?: string | null): Promise<AuthCont
 }
 
 /**
- * requireAdmin / requireSuperadmin — chain with requireAuth. Re-reads the
- * user role from DB so an in-flight role change is honored on the very
- * next request (no need to wait for the JWT to expire).
+ * requireAdmin / requireSuperadmin — real session only (see resolveRealAuth
+ * above). Re-reads the user role from DB so an in-flight role change is
+ * honored on the very next request (no need to wait for the JWT to expire).
  */
 export async function requireAdmin(
   minRole: AdminRole = 'ADMIN',
   authHeader?: string | null,
 ): Promise<AdminContext | NextResponse> {
-  const auth = await requireAuth(authHeader);
+  // Real session only — never resolves through requireAuth(), so
+  // AUTH_DISABLED can never grant /admin access (see resolveRealAuth above).
+  const auth = await resolveRealAuth(authHeader);
   if (auth instanceof NextResponse) return auth;
 
   const user = await prisma.user.findUnique({

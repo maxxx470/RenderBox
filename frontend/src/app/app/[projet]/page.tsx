@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { buildRenderTree } from '@/lib/server/render-tree';
-import { isDevBypassActive } from '@/lib/server/dev-bypass';
+import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { checkTierQuota } from '@/lib/server/generation/tier-quota';
 import { AppShell } from '../AppShell';
 
@@ -50,7 +50,7 @@ export default async function AppProjectPage({ params }: { params: Promise<{ pro
       initialProjectId={project.id}
       initialProjectName={project.name}
       initialTree={buildRenderTree(nodes)}
-      devBypassActive={isDevBypassActive()}
+      authDisabled={isAuthDisabled()}
       initialTier={quota.tier}
       initialMax={quota.max}
       initialRemaining={quota.remaining}

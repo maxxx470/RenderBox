@@ -2,10 +2,11 @@
 //
 // Asserts:
 //   1. NODE_ENV=production refuses with exit 1 BEFORE any prisma call.
-//   2. 3 seed users + the dev-bypass fake user are upserted (idempotent —
+//   2. 3 seed users + the auth-disabled demo user are upserted (idempotent —
 //      runs upsert, not create).
 //   3. The unverified seed user has emailVerifiedAt=null.
-//   4. The dev-bypass fake user is upserted keyed on its fixed id.
+//   4. The auth-disabled demo user is upserted keyed on its fixed id, with a
+//      pre-assigned tier so generation isn't blocked.
 //
 // Tests invoke `main([], { prisma })` directly with a mocked Prisma client
 // (no subprocess spawn, no real DB). The CLI entrypoint guard
@@ -15,7 +16,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mockDeep, mockReset, type DeepMockProxy } from 'vitest-mock-extended';
 import type { PrismaClient } from '@prisma/client';
 import { main } from './seed-dev';
-import { DEV_FAKE_USER_ID, DEV_FAKE_USER_EMAIL } from '../src/lib/server/dev-bypass';
+import { AUTH_DISABLED_USER_ID, AUTH_DISABLED_USER_EMAIL } from '../src/lib/server/auth-disabled';
 
 const prismaMock = mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
 
@@ -57,7 +58,7 @@ describe('scripts/seed-dev (SCRIPT-01)', () => {
 
     await main([], { prisma: prismaMock });
 
-    // 3 seed users + 1 dev-bypass fake user → 4 upserts.
+    // 3 seed users + 1 auth-disabled demo user → 4 upserts.
     expect(prismaMock.user.upsert).toHaveBeenCalledTimes(4);
     const firstCall = prismaMock.user.upsert.mock.calls[0]?.[0];
     expect(firstCall?.where).toEqual({ email: 'admin@example.com' });
@@ -67,7 +68,7 @@ describe('scripts/seed-dev (SCRIPT-01)', () => {
     });
   });
 
-  it('upserts the dev-bypass fake user keyed on its fixed id', async () => {
+  it('upserts the auth-disabled demo user keyed on its fixed id, with a pre-assigned tier', async () => {
     process.env.NODE_ENV = 'test';
     prismaMock.user.upsert.mockResolvedValue({
       email: 'admin@example.com',
@@ -79,11 +80,12 @@ describe('scripts/seed-dev (SCRIPT-01)', () => {
     await main([], { prisma: prismaMock });
 
     const lastCall = prismaMock.user.upsert.mock.calls[3]?.[0];
-    expect(lastCall?.where).toEqual({ id: DEV_FAKE_USER_ID });
+    expect(lastCall?.where).toEqual({ id: AUTH_DISABLED_USER_ID });
     expect(lastCall?.create).toMatchObject({
-      id: DEV_FAKE_USER_ID,
-      email: DEV_FAKE_USER_EMAIL,
+      id: AUTH_DISABLED_USER_ID,
+      email: AUTH_DISABLED_USER_EMAIL,
       role: 'USER',
+      currentTier: 'pro',
     });
   });
 

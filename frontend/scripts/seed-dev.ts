@@ -16,7 +16,7 @@
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
-import { DEV_FAKE_USER_ID, DEV_FAKE_USER_EMAIL } from '../src/lib/server/dev-bypass';
+import { AUTH_DISABLED_USER_ID, AUTH_DISABLED_USER_EMAIL } from '../src/lib/server/auth-disabled';
 
 const SEED_USERS = [
   { email: 'admin@example.com', role: 'SUPERADMIN' },
@@ -54,21 +54,28 @@ export async function main(_args: string[] = [], deps: SeedDeps = {}): Promise<v
       console.log(`✓ ${user.email} (${user.role}, ${verified})`);
     }
 
-    // Fixed-id user backing DEV_BYPASS_AUTH (see lib/server/dev-bypass.ts) —
+    // Fixed-id user backing AUTH_DISABLED (see lib/server/auth-disabled.ts) —
     // keyed on id, not email, so the bypass identity always resolves to a
     // real row and IDOR checks (project.userId === session.userId) keep
-    // working even when auth itself is skipped.
+    // working even when auth itself is skipped. role: 'USER' is deliberate —
+    // this identity must never be able to reach /admin (requireAdmin never
+    // consults AUTH_DISABLED at all, but keeping the row non-admin is
+    // defense in depth). A tier is pre-assigned so generation isn't blocked
+    // by the monthly quota gate while auth is disabled.
     await prisma.user.upsert({
-      where: { id: DEV_FAKE_USER_ID },
+      where: { id: AUTH_DISABLED_USER_ID },
       update: {},
       create: {
-        id: DEV_FAKE_USER_ID,
-        email: DEV_FAKE_USER_EMAIL,
+        id: AUTH_DISABLED_USER_ID,
+        email: AUTH_DISABLED_USER_EMAIL,
         role: 'USER',
         emailVerifiedAt: new Date(),
+        currentTier: 'pro',
+        tierPeriodStart: new Date(),
+        generationsUsedInPeriod: 0,
       },
     });
-    console.log(`✓ dev-bypass fake user ready (${DEV_FAKE_USER_ID})`);
+    console.log(`✓ auth-disabled demo user ready (${AUTH_DISABLED_USER_ID})`);
 
     console.log('\nSign in with the magic link at /connexion using one of these emails.');
   } finally {

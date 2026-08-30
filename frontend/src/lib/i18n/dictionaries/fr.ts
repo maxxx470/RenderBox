@@ -22,7 +22,7 @@ const fr = {
   'verifier.backToLogin': 'Retour à la connexion',
 
   'app.phaseTag': 'Phase 6 — finition',
-  'app.devBypassBadge': 'Mode dev — auth désactivée',
+  'app.authDisabledBanner': 'Mode démonstration — connexion désactivée temporairement',
   'app.newProject': 'Nouveau projet',
   'app.treeTitle': 'Arbre du projet',
   'app.treeEmpty': 'Ton premier upload apparaîtra ici',

@@ -73,7 +73,7 @@ export function AppShell({
   initialProjectId,
   initialProjectName,
   initialTree,
-  devBypassActive = false,
+  authDisabled = false,
   initialTier,
   initialMax,
   initialRemaining,
@@ -81,7 +81,7 @@ export function AppShell({
   initialProjectId: string;
   initialProjectName: string;
   initialTree: RenderTreeNode[];
-  devBypassActive?: boolean;
+  authDisabled?: boolean;
   initialTier: PricingTierId | null;
   initialMax: number | null;
   initialRemaining: number | null;
@@ -373,9 +373,9 @@ export function AppShell({
           </span>
         </div>
         <div className="flex items-center gap-2.5">
-          {devBypassActive && (
+          {authDisabled && (
             <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] font-medium text-amber-800">
-              {t('app.devBypassBadge')}
+              {t('app.authDisabledBanner')}
             </span>
           )}
           <span className="rounded-2xl bg-[#C8112012] px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#C81120]">

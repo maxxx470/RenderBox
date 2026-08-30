@@ -95,7 +95,13 @@ function NewProjectButton({ prominent }: { prominent?: boolean }) {
   );
 }
 
-export function ProjectsGrid({ initialProjects }: { initialProjects: ProjectCardData[] }) {
+export function ProjectsGrid({
+  initialProjects,
+  authDisabled = false,
+}: {
+  initialProjects: ProjectCardData[];
+  authDisabled?: boolean;
+}) {
   const t = useTranslations();
 
   return (
@@ -108,6 +114,11 @@ export function ProjectsGrid({ initialProjects }: { initialProjects: ProjectCard
             <h1 className="font-[family-name:var(--font-poppins)] text-lg font-semibold text-[#170608]">
               {t('projects.title')}
             </h1>
+            {authDisabled && (
+              <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] font-medium text-amber-800">
+                {t('app.authDisabledBanner')}
+              </span>
+            )}
           </div>
           {initialProjects.length > 0 && <NewProjectButton />}
         </div>

@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { COOKIE_PREFIX } from '@/lib/constants';
+import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { ConnexionForm } from './ConnexionForm';
 import { LanguageToggle } from '@/components/LanguageToggle';
 
@@ -9,6 +10,12 @@ export default async function ConnexionPage({
 }: {
   searchParams: Promise<{ magicLinkError?: string }>;
 }) {
+  // Temporary site-wide kill-switch (see lib/server/auth-disabled.ts) — while
+  // active, nobody needs to log in at all, so skip the form entirely.
+  if (isAuthDisabled()) {
+    redirect('/app');
+  }
+
   // Heuristic (mirrors AuthContext's client-side check): the CSRF cookie is
   // only ever set after a successful login, so its presence is a reliable
   // "already signed in" signal — an invalid/expired session still bounces

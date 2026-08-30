@@ -80,11 +80,13 @@ export function GenerationHome({
   tier,
   max,
   remaining,
+  authDisabled = false,
 }: {
   recentRenders: RecentRenderCardData[];
   tier: PricingTierId | null;
   max: number | null;
   remaining: number | null;
+  authDisabled?: boolean;
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
@@ -168,6 +170,11 @@ export function GenerationHome({
         <div className="mb-7.5 flex items-center gap-2">
           <span className="text-[13px] text-[#7A6E71]">{t('app.engineLabel')}</span>
           <EngineSelect engine={engine} onChange={setEngine} />
+          {authDisabled && (
+            <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] font-medium text-amber-800">
+              {t('app.authDisabledBanner')}
+            </span>
+          )}
         </div>
 
         {!tier ? (

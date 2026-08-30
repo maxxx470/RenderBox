@@ -24,7 +24,7 @@ const en: Record<keyof typeof fr, string> = {
   'verifier.backToLogin': 'Back to sign in',
 
   'app.phaseTag': 'Phase 6 — finishing',
-  'app.devBypassBadge': 'Dev mode — auth disabled',
+  'app.authDisabledBanner': 'Demo mode — sign-in temporarily disabled',
   'app.newProject': 'New project',
   'app.treeTitle': 'Project tree',
   'app.treeEmpty': 'Your first upload will appear here',

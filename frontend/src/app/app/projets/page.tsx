@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
+import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { ProjectsGrid, type ProjectCardData } from '../ProjectsGrid';
 
 // /app/projets — the full "Mes projets" grid, one click away from the new
@@ -34,5 +35,5 @@ export default async function AppProjectsPage() {
     lastActivityAt: (p.renderNodes[0]?.createdAt ?? p.createdAt).toISOString(),
   }));
 
-  return <ProjectsGrid initialProjects={items} />;
+  return <ProjectsGrid initialProjects={items} authDisabled={isAuthDisabled()} />;
 }
