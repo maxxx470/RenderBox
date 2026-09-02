@@ -26,6 +26,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.phaseTag': 'Phase 6 — finishing',
   'app.authDisabledBanner': 'Demo mode — sign-in temporarily disabled',
   'app.authDisabledBannerCount': 'Demo mode — {remaining} of {max} generations left',
+  'app.downloadButton': 'Download this image',
   'app.newProject': 'New project',
   'app.treeTitle': 'Project tree',
   'app.treeEmpty': 'Your first upload will appear here',

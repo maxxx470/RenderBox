@@ -24,6 +24,7 @@ const fr = {
   'app.phaseTag': 'Phase 6 — finition',
   'app.authDisabledBanner': 'Mode démonstration — connexion désactivée temporairement',
   'app.authDisabledBannerCount': 'Mode démonstration — {remaining} générations restantes sur {max}',
+  'app.downloadButton': 'Télécharger cette image',
   'app.newProject': 'Nouveau projet',
   'app.treeTitle': 'Arbre du projet',
   'app.treeEmpty': 'Ton premier upload apparaîtra ici',

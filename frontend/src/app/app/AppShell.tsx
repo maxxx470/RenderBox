@@ -13,7 +13,7 @@ import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/pr
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { PricingTierId } from '@/lib/pricing-tiers';
-import { Category, Filter2 } from 'react-iconly';
+import { Category, Filter2, Download } from 'react-iconly';
 import { ModeSidebar } from './ModeSidebar';
 import { Dropzone } from './Dropzone';
 import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
@@ -487,6 +487,16 @@ export function AppShell({
                       draggable={false}
                       className="pointer-events-none max-h-full max-w-full object-contain"
                     />
+                    <a
+                      href={`/api/render-nodes/${selectedId}/image`}
+                      download
+                      onMouseDown={(e) => e.stopPropagation()}
+                      aria-label={t('app.downloadButton')}
+                      title={t('app.downloadButton')}
+                      className="absolute right-3.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
+                    >
+                      <Download set="bold" size={15} primaryColor="#17161F" />
+                    </a>
                     {mode === 'retouch' && zone && (zone.width > 0 || zone.height > 0) && (
                       <div
                         className="absolute rounded-md border-2 border-dashed border-[#716FFF] bg-[#716FFF12]"
