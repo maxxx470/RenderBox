@@ -288,8 +288,12 @@ const en: Record<keyof typeof fr, string> = {
   'paiementRetour.paidTitle': 'Payment confirmed',
   'paiementRetour.paidBody': 'Thank you — your payment was received.',
   'paiementRetour.pendingTitle': 'Payment being processed',
+  'paiementRetour.pendingElapsed': 'Checking for {s}s',
+  'paiementRetour.pendingTimeoutBody':
+    'Your operator has not confirmed yet. You can close this page: we keep checking, and your access opens as soon as it clears. Your order history in settings will reflect the outcome.',
+  'paiementRetour.checkAgain': 'Check again',
   'paiementRetour.pendingBody':
-    'Your payment is still being verified — check back in a few minutes, your history will update automatically.',
+    'Your payment is being verified with your operator. Stay on this page — it updates on its own.',
   'paiementRetour.failedTitle': 'Payment not completed',
   'paiementRetour.failedBody':
     'The payment could not be confirmed. Try again or use a different payment method.',

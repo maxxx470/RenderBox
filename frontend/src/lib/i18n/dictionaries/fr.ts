@@ -288,7 +288,11 @@ const fr = {
   'paiementRetour.paidBody': 'Merci — ton paiement a bien été reçu.',
   'paiementRetour.pendingTitle': 'Paiement en cours de traitement',
   'paiementRetour.pendingBody':
-    'Ton paiement est en cours de vérification — repasse dans quelques minutes, ton historique se mettra à jour automatiquement.',
+    'Ton paiement est en cours de vérification auprès de ton opérateur. Reste sur cette page, elle se met à jour toute seule.',
+  'paiementRetour.pendingElapsed': 'Vérification depuis {s} s',
+  'paiementRetour.pendingTimeoutBody':
+    "Ton opérateur n'a pas encore confirmé. Tu peux fermer cette page : la vérification continue de notre côté et ton accès s'ouvrira dès la confirmation. Ton historique dans les paramètres reflétera le résultat.",
+  'paiementRetour.checkAgain': 'Vérifier à nouveau',
   'paiementRetour.failedTitle': 'Paiement non abouti',
   'paiementRetour.failedBody':
     "Le paiement n'a pas pu être confirmé. Réessaie ou utilise un autre moyen de paiement.",
