@@ -14,7 +14,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
-import { LanguageToggle } from '@/components/LanguageToggle';
+import { SiteHeader } from '@/components/SiteHeader';
 
 type Outcome = 'checking' | 'PAID' | 'PENDING' | 'EXPIRED' | 'FAILED' | 'PENDING_TIMEOUT';
 
@@ -100,41 +100,45 @@ export default function PaiementRetourPage() {
   const watching = outcome === 'PENDING';
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
-      <LanguageToggle />
-      {outcome === 'checking' ? (
-        <p className="text-[13px] text-[#8A8896]">{t('paiementRetour.checking')}</p>
-      ) : (
-        <>
-          {watching && (
-            <span className="rb-spin h-7 w-7 rounded-full border-2 border-[#ECECF2] border-t-[#716FFF]" />
-          )}
-          <h1 className="font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
-            {copy[outcome].title}
-          </h1>
-          <p className="text-[14px] text-[#8A8896]">{copy[outcome].body}</p>
-          {watching && (
-            <p className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
-              {t('paiementRetour.pendingElapsed', { s: elapsed })}
-            </p>
-          )}
-          {outcome === 'PENDING_TIMEOUT' && (
-            <button
-              type="button"
-              onClick={() => void checkAgain()}
-              className="rounded-[10px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-2.5 text-[13px] font-semibold text-white"
-            >
-              {t('paiementRetour.checkAgain')}
-            </button>
-          )}
-        </>
-      )}
-      <Link
-        href="/parametres"
-        className="mt-4 rounded-[10px] border border-[#ECECF2] px-5 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
-      >
-        {t('paiementRetour.backButton')}
-      </Link>
+    // Minimal header, no links: nothing should invite wandering off while a
+    // payment is still settling.
+    <main className="flex min-h-screen flex-col">
+      <SiteHeader />
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+        {outcome === 'checking' ? (
+          <p className="text-[13px] text-[#8A8896]">{t('paiementRetour.checking')}</p>
+        ) : (
+          <>
+            {watching && (
+              <span className="rb-spin h-7 w-7 rounded-full border-2 border-[#ECECF2] border-t-[#716FFF]" />
+            )}
+            <h1 className="font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
+              {copy[outcome].title}
+            </h1>
+            <p className="text-[14px] text-[#8A8896]">{copy[outcome].body}</p>
+            {watching && (
+              <p className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                {t('paiementRetour.pendingElapsed', { s: elapsed })}
+              </p>
+            )}
+            {outcome === 'PENDING_TIMEOUT' && (
+              <button
+                type="button"
+                onClick={() => void checkAgain()}
+                className="rounded-[10px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-2.5 text-[13px] font-semibold text-white"
+              >
+                {t('paiementRetour.checkAgain')}
+              </button>
+            )}
+          </>
+        )}
+        <Link
+          href="/parametres"
+          className="mt-4 rounded-[10px] border border-[#ECECF2] px-5 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+        >
+          {t('paiementRetour.backButton')}
+        </Link>
+      </div>
     </main>
   );
 }

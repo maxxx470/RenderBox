@@ -267,7 +267,6 @@ const en: Record<keyof typeof fr, string> = {
   'exemple.rendersTitle': 'Generated renders',
   'exemple.ctaTitle': 'Create your account to generate your own renders',
   'exemple.ctaButton': 'Create my account',
-  'exemple.backHome': '← Back home',
 
   'parametres.title': 'Settings',
   'parametres.accountTitle': 'Account',
@@ -308,7 +307,6 @@ const en: Record<keyof typeof fr, string> = {
     'RenderBox is an AI-assisted architectural rendering service. By using this service, you agree that images you upload are sent to third-party AI providers (Google, OpenAI) for generation purposes. You are responsible for the images you upload and warrant that you hold the necessary rights to them.',
   'legal.privacyBody':
     'We collect your email address for authentication, the images you upload for render generation, and payment metadata tied to your purchases. Your data is never resold. You can request account deletion by contacting support — deletion is reversible for 30 days, then permanent.',
-  'legal.backHome': '← Back home',
 
   'landing.navFeatures': 'Features',
   'landing.navPricing': 'Pricing',

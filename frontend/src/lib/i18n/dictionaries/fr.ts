@@ -266,7 +266,6 @@ const fr = {
   'exemple.rendersTitle': 'Rendus générés',
   'exemple.ctaTitle': 'Crée ton compte pour générer tes propres rendus',
   'exemple.ctaButton': 'Créer mon compte',
-  'exemple.backHome': "← Retour à l'accueil",
 
   'parametres.title': 'Paramètres',
   'parametres.accountTitle': 'Compte',
@@ -307,7 +306,6 @@ const fr = {
     "RenderBox est un service de génération de rendus architecturaux assistée par IA. En utilisant ce service, tu acceptes que les images que tu télécharges soient transmises à des fournisseurs d'IA tiers (Google, OpenAI) à des fins de génération. Tu es responsable des images que tu téléverses et garantis disposer des droits nécessaires sur celles-ci.",
   'legal.privacyBody':
     "Nous collectons ton adresse email pour l'authentification, les images que tu téléverses pour la génération de rendus, et les métadonnées de paiement liées à tes achats. Tes données ne sont jamais revendues. Tu peux demander la suppression de ton compte en contactant le support — la suppression est réversible pendant 30 jours puis définitive.",
-  'legal.backHome': "← Retour à l'accueil",
 
   'landing.navFeatures': 'Fonctionnalités',
   'landing.navPricing': 'Tarifs',

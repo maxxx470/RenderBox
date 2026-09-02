@@ -6,7 +6,7 @@
 // demo render assets, so a static gradient card per ambiance stands in.
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
-import { LanguageToggle } from '@/components/LanguageToggle';
+import { SiteHeader } from '@/components/SiteHeader';
 import { PRESET_KEYS, PRESETS } from '@/lib/server/generation/presets';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 
@@ -31,14 +31,10 @@ export default function ExemplePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-white px-6 py-14">
-      <LanguageToggle />
-      <div className="mx-auto max-w-3xl">
-        <Link href="/" className="text-[13px] text-[#8A8896] hover:text-[#17161F]">
-          {t('exemple.backHome')}
-        </Link>
-
-        <h1 className="mt-4 font-[family-name:var(--font-general-sans)] text-[26px] font-bold text-[#17161F]">
+    <main className="min-h-screen bg-white">
+      <SiteHeader links cta={{ href: '/app', label: t('landing.navStart') }} />
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        <h1 className="font-[family-name:var(--font-general-sans)] text-[26px] font-bold text-[#17161F]">
           {t('exemple.title')}
         </h1>
         <p className="mt-2 max-w-xl text-[14px] text-[#8A8896]">{t('exemple.subtitle')}</p>
