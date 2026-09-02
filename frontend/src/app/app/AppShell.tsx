@@ -17,6 +17,7 @@ import { Category, Filter2, Download, Upload } from 'react-iconly';
 import { ModeSidebar } from './ModeSidebar';
 import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
 import { useSidebarCollapsed } from './useSidebarCollapsed';
+import { nodeTitle } from './ProjectTree';
 import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
 import { EditPanel } from './EditPanel';
 import { CommandBar, type AppMode } from './CommandBar';
@@ -382,8 +383,10 @@ export function AppShell({
   const canEdit = mode !== 'generate' && selectedNode?.kind === 'GENERATED';
   const zoneSelected = Boolean(zone && zone.width > 0 && zone.height > 0);
 
-  function nodeLabel(kind: string): string {
-    return kind === 'GENERATED' ? t('app.nodeGenerated') : t('app.nodeUploaded');
+  // Same wording as the rail rows — the breadcrumb names the very nodes the
+  // tree lists, so the two must not use two vocabularies for one thing.
+  function nodeLabel(node: RenderTreeNode): string {
+    return nodeTitle(node, locale, t);
   }
 
   const inputDisabled =
@@ -494,8 +497,8 @@ export function AppShell({
             <>
               {selectedNode && (
                 <div className="mb-4 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
-                  {parentNode && <>{nodeLabel(parentNode.kind)} → </>}
-                  <b className="font-medium text-[#17161F]">{nodeLabel(selectedNode.kind)}</b>
+                  {parentNode && <>{nodeLabel(parentNode)} → </>}
+                  <b className="font-medium text-[#17161F]">{nodeLabel(selectedNode)}</b>
                 </div>
               )}
               <div
