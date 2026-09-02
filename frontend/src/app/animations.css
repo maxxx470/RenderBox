@@ -121,6 +121,23 @@
   animation: rb-card-in 0.55s cubic-bezier(0.23, 1, 0.32, 1) backwards;
 }
 
+/* Slow idle drift for the hero cards. Lives on its own wrapper element: the
+   cards carry a static tilt and an entrance animation, and all three write to
+   `transform` — stacked on one element the last one would simply win. */
+@keyframes rb-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+.rb-float {
+  animation: rb-float 6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rb-pulse,
   .rb-spark,
@@ -128,7 +145,8 @@
   .rb-spin,
   .rb-badge-pulse,
   .rb-caret,
-  .rb-card-in {
+  .rb-card-in,
+  .rb-float {
     animation: none !important;
   }
 }

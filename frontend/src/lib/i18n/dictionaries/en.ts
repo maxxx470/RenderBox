@@ -100,6 +100,7 @@ const en: Record<keyof typeof fr, string> = {
     'Choose a plan to unlock your monthly generations (Nanobanana + ChatGPT Image).',
   'app.genHomeChooseTier': 'View pricing',
   'app.genHomeCardPlaceholder': 'Add a photo to start your first render',
+  'landing.heroFanTag': 'ambiance',
   'app.noTierLabel': 'No active plan',
   'app.quotaLabel': '{used}/{max} generations this month',
   'app.quotaExceededError': 'Monthly quota reached. Switch plans or wait for renewal.',
