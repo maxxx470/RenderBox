@@ -41,7 +41,9 @@ export function EditPanel({
   }, [referenceFile]);
 
   return (
-    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] px-4 py-4.5">
+    // Mirrors MaterialsPanel: outlined panel on desktop, opaque drawer on
+    // mobile where it sits over a dimmed backdrop.
+    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8]">
       <h3 className="mb-1 font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
         {t('edit.panelTitle')}
       </h3>

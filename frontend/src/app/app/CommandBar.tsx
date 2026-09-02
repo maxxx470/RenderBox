@@ -65,11 +65,13 @@ export function CommandBar({
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="border-t border-[#ECECF2] px-5.5 pb-4.5 pt-3.5">
+    // No separator line above: the bar carries its own outline now, and a
+    // border-t on top of an outlined panel reads as a doubled rule.
+    <div className="px-5.5 pb-4.5 pt-2">
       {/* One container: prompt on top, attributes and actions on the row
           below — same shape as the /app quick-start bar, so the two screens
           read as one tool. */}
-      <div className="rounded-[18px] border border-[#ECECF2] bg-[#F7F7FA] px-3 pb-2.5 pt-2.5">
+      <div className="rounded-[18px] border border-[#DEDEE8] bg-[#F7F7FA] px-3 pb-2.5 pt-2.5 shadow-[0_2px_10px_-6px_rgba(23,22,31,0.18)]">
         <div className="mb-2.5 flex items-center gap-2">
           {/* Only in "generate": the edit modes already have their own
               reference-image picker in EditPanel, and two upload affordances

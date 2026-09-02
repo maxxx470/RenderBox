@@ -108,7 +108,10 @@ export function MaterialsPanel({
   const t = useTranslations();
 
   return (
-    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] px-4 py-4.5">
+    // Same outlined-panel treatment as the left rail — one flush side and one
+    // outlined side would read as a layout mistake. bg-white matters on
+    // mobile, where this is a fixed drawer over a dimmed backdrop.
+    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8]">
       <div className="mb-1 flex items-center justify-between">
         <h3 className="font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
           {t('app.materialsTitle')}

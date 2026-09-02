@@ -307,8 +307,8 @@ export function GenerationHome({
                 }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
-                className={`rounded-[18px] border px-3.5 pb-3 pt-3 transition-colors ${
-                  dragOver ? 'border-[#716FFF] bg-[#EFECFF]' : 'border-[#ECECF2] bg-[#F7F7FA]'
+                className={`rounded-[18px] border px-3.5 pb-3 pt-3 shadow-[0_2px_10px_-6px_rgba(23,22,31,0.18)] transition-colors ${
+                  dragOver ? 'border-[#716FFF] bg-[#EFECFF]' : 'border-[#DEDEE8] bg-[#F7F7FA]'
                 }`}
               >
                 <input

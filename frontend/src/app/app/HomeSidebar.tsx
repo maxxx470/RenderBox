@@ -67,7 +67,9 @@ export function HomeSidebar({
 
   return (
     <aside
-      className={`flex flex-shrink-0 flex-col overflow-y-auto border-r border-[#ECECF2] bg-[#F7F7FA] py-4.5 transition-[width] duration-200 ease-out ${
+      // Outlined panel rather than a flush column: a full border in the
+      // charter's line-strong tone, inset so the outline reads on every side.
+      className={`m-2.5 flex flex-shrink-0 flex-col overflow-y-auto rounded-2xl border border-[#DEDEE8] bg-[#F7F7FA] py-4.5 transition-[width] duration-200 ease-out ${
         collapsed ? 'w-[68px] px-2.5' : 'w-[240px] px-3.5'
       }`}
     >

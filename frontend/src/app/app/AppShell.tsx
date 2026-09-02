@@ -543,7 +543,7 @@ export function AppShell({
         <aside
           className={`${
             mobileTreeOpen ? 'flex' : 'hidden'
-          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col overflow-y-auto border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5 transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:flex ${
+          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col overflow-y-auto border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5 transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:m-2.5 min-[900px]:flex min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8] ${
             sidebarCollapsed ? 'min-[900px]:w-[68px] min-[900px]:px-2.5' : ''
           }`}
         >
@@ -595,7 +595,9 @@ export function AppShell({
                 onDragLeave={handleCanvasDragLeave}
                 onDrop={handleCanvasDrop}
                 className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-[#EFECFF] to-[#F7F7FA] transition-colors duration-150 ease-out ${
-                  fileDragOver ? 'border-[#716FFF]' : 'border-[#ECECF2]'
+                  // Same outline tone as the rails and the command bar, so the
+                  // three panels read as one family.
+                  fileDragOver ? 'border-[#716FFF]' : 'border-[#DEDEE8]'
                 } ${mode === 'retouch' ? 'cursor-crosshair select-none' : ''}`}
               >
                 {selectedId && (
