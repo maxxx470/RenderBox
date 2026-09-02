@@ -97,6 +97,7 @@ const fr = {
   'app.genHomeNoTierBody':
     'Choisis un palier pour débloquer tes générations mensuelles (Nanobanana + ChatGPT Image).',
   'app.genHomeChooseTier': 'Voir les tarifs',
+  'app.genHomeCardPlaceholder': 'Ajoute une photo pour lancer ton premier rendu',
   'app.noTierLabel': 'Aucun palier actif',
   'app.quotaLabel': '{used}/{max} générations ce mois-ci',
   'app.quotaExceededError': 'Quota mensuel atteint. Change de palier ou attends le renouvellement.',

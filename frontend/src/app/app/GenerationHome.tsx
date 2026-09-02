@@ -18,7 +18,7 @@ import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import type { PricingTierId } from '@/lib/pricing-tiers';
-import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
+import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
 import { EngineSelect } from './EngineSelect';
 import { PresetSelect } from './PresetSelect';
 import { RatioChip } from './RatioChip';
@@ -42,6 +42,36 @@ const CARD_TRANSFORM = [
   '-rotate-2 translate-y-2.5',
 ];
 
+/** How many positions the fan lays out, filled or not. */
+const FAN_SLOTS = CARD_TRANSFORM.length;
+
+// Shared geometry so a filled slot and an empty one occupy exactly the same
+// space — otherwise the fan would shift as renders replace placeholders.
+const CARD_SHAPE =
+  'group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] shadow-[0_20px_40px_-20px_#17161F30] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0';
+
+function EmptyFanCard({ index, onClick }: { index: number; onClick: () => void }) {
+  const t = useTranslations();
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ animationDelay: `${index * 90}ms` }}
+      className={`rb-card-in ${CARD_SHAPE} flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[#ECECF2] bg-[#FBFBFD] hover:border-[#716FFF] ${
+        index === 0 ? '' : '-ml-6'
+      } ${CARD_TRANSFORM[index] ?? ''}`}
+    >
+      <span className="flex h-[46px] w-[46px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+        <Upload set="bold" size={20} primaryColor="#ffffff" />
+      </span>
+      <span className="max-w-[150px] text-center text-[12.5px] font-medium text-[#8A8896]">
+        {t('app.genHomeCardPlaceholder')}
+      </span>
+    </button>
+  );
+}
+
 function RenderFanCard({ render, index }: { render: RecentRenderCardData; index: number }) {
   const { locale } = useLocale();
   const t = useTranslations();
@@ -61,7 +91,7 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
       // 90ms apart: enough to read as a deal of cards, short enough that the
       // last one lands well before anyone reaches for it.
       style={{ animationDelay: `${index * 90}ms` }}
-      className={`rb-card-in group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] border border-[#ECECF2] bg-gradient-to-br from-[#EFECFF] to-[#F1F0F6] shadow-[0_20px_40px_-20px_#17161F30] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0 ${
+      className={`rb-card-in ${CARD_SHAPE} border border-[#ECECF2] bg-gradient-to-br from-[#EFECFF] to-[#F1F0F6] ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
@@ -237,19 +267,33 @@ export function GenerationHome({
               </h1>
             </div>
 
-            {recentRenders.length === 0 ? (
-              <div className="flex flex-1 items-center justify-center pb-5">
-                <div className="w-full max-w-[440px]">
-                  <Dropzone uploading={creating} onFile={(f) => void quickStart(f)} />
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-1 items-start justify-center gap-0 overflow-hidden pb-5">
-                {recentRenders.map((r, i) => (
-                  <RenderFanCard key={r.id} render={r} index={i} />
-                ))}
-              </div>
-            )}
+            {/* The fan is always laid out with FAN_SLOTS positions: real
+                renders fill it from the left, and the rest stay as empty
+                slots that get replaced one by one as renders come in. The
+                placeholders are deliberately not images — inventing sample
+                renders would pass fabricated output off as the product's. */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              className="flex flex-1 items-start justify-center gap-0 overflow-hidden pb-5"
+            >
+              {Array.from({ length: FAN_SLOTS }, (_, i) => {
+                const render = recentRenders[i];
+                return render ? (
+                  <RenderFanCard key={render.id} render={render} index={i} />
+                ) : (
+                  <EmptyFanCard
+                    key={`slot-${i}`}
+                    index={i}
+                    onClick={() => fileInputRef.current?.click()}
+                  />
+                );
+              })}
+            </div>
 
             {/* One container, Krea-style: the prompt on top, its attributes
                 below, the send button on the same row — instead of a pill row
