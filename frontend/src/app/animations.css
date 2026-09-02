@@ -97,13 +97,38 @@
   animation: rb-caret-blink 1s step-end infinite;
 }
 
+/* Entrance for the fanned render cards on /app. Each card comes in from
+   slightly below, un-rotating into its resting tilt — the tilt itself stays a
+   static transform on the element, so this only animates the arrival. */
+@keyframes rb-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.rb-card-in {
+  /* `backwards` holds the from-state during the stagger delay, so a card does
+     not flash at full opacity before its turn. Deliberately NOT `forwards`:
+     the cards carry their fanned tilt as a static Tailwind transform, and a
+     forwards fill would freeze them on the animation's final
+     `translateY(0) scale(1)` and flatten the fan for good. Letting the fill
+     lapse hands each card back to its own transform. */
+  animation: rb-card-in 0.55s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rb-pulse,
   .rb-spark,
   .rb-sheen,
   .rb-spin,
   .rb-badge-pulse,
-  .rb-caret {
+  .rb-caret,
+  .rb-card-in {
     animation: none !important;
   }
 }

@@ -3,24 +3,19 @@
 import { useRef } from 'react';
 import { Send, TickSquare, Upload } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
-import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+import type { PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
 import { EngineSelect } from './EngineSelect';
+import { PresetSelect } from './PresetSelect';
+import { RatioChip } from './RatioChip';
+import { CHIP_ACTIVE, CHIP_STATIC } from './chip';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
 
 function StatusPill({ active, label }: { active: boolean; label: string }) {
   return (
-    <span
-      className={[
-        'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium',
-        active
-          ? 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-          : 'border-dashed border-[#ECECF2] bg-white text-[#8A8896]',
-        // (inactive chips are white so they stay visible on the #F7F7FA band)
-      ].join(' ')}
-    >
+    <span className={active ? CHIP_ACTIVE : CHIP_STATIC}>
       {active && <TickSquare set="bold" size={13} primaryColor="#ffffff" />}
       {label}
     </span>
@@ -46,6 +41,7 @@ export function CommandBar({
   onEngineChange,
   onUploadFile,
   uploading,
+  imageSrc,
 }: {
   mode: AppMode;
   prompt: string;
@@ -62,8 +58,10 @@ export function CommandBar({
   onEngineChange: (engine: EngineName) => void;
   onUploadFile: (file: File) => void;
   uploading: boolean;
+  /** Currently displayed render — the ratio chip reads its real dimensions. */
+  imageSrc: string | null;
 }) {
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -120,38 +118,13 @@ export function CommandBar({
           />
         </div>
 
+        {/* Chips grouped tight on the left, generate alone on the right —
+            not one control per option spread across the width. */}
         <div className="flex flex-wrap items-center gap-2">
-          {mode === 'generate' &&
-            PRESET_KEYS.map((key) => {
-              const active = preset === key;
-              const isSketch = key === 'esquisse';
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  disabled={inputDisabled}
-                  onClick={() => onPresetChange(key)}
-                  className={[
-                    'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                    isSketch ? 'border-dashed' : '',
-                    active
-                      ? isSketch
-                        ? 'border-transparent bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A] text-white'
-                        : 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-                      : // White, not the band colour: the chips sit ON the band
-                        // now, and #F7F7FA on #F7F7FA is invisible.
-                        'border-[#ECECF2] bg-white text-[#8A8896] hover:border-[#DEDEE8]',
-                  ].join(' ')}
-                >
-                  {PRESETS[key].label[locale]}
-                  {isSketch && (
-                    <span className="rounded-md bg-white px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#716FFF]">
-                      {t('app.presetNewBadge')}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          {mode === 'generate' && (
+            <PresetSelect preset={preset} onChange={onPresetChange} disabled={inputDisabled} />
+          )}
+          {imageSrc && <RatioChip src={imageSrc} />}
           {mode === 'retouch' && (
             <StatusPill
               active={zoneSelected}

@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Folder, Send, TickSquare, CloseSquare, Image as ImageIcon } from 'react-iconly';
+import { Folder, Send, TickSquare, CloseSquare, Upload, Image as ImageIcon } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -16,10 +16,13 @@ import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
-import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
 import { EngineSelect } from './EngineSelect';
+import { PresetSelect } from './PresetSelect';
+import { RatioChip } from './RatioChip';
+import { CHIP_ACTIVE, CHIP_BASE } from './chip';
 import { HomeSidebar } from './HomeSidebar';
 import type { AppMode } from './CommandBar';
 
@@ -55,7 +58,10 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
   return (
     <Link
       href={`/app/${render.projectId}`}
-      className={`group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] border border-[#ECECF2] bg-gradient-to-br from-[#EFECFF] to-[#F1F0F6] shadow-[0_20px_40px_-20px_#17161F30] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0 ${
+      // 90ms apart: enough to read as a deal of cards, short enough that the
+      // last one lands well before anyone reaches for it.
+      style={{ animationDelay: `${index * 90}ms` }}
+      className={`rb-card-in group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] border border-[#ECECF2] bg-gradient-to-br from-[#EFECFF] to-[#F1F0F6] shadow-[0_20px_40px_-20px_#17161F30] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0 ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
@@ -273,44 +279,17 @@ export function GenerationHome({
                   }}
                   className="mb-3 w-full bg-transparent px-1 py-1.5 text-[13.5px] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
                 />
+                {/* Chips grouped tight on the left, generate alone on the
+                    right — one chip per attribute, not one per option. */}
                 <div className="flex flex-wrap items-center gap-2">
-                  {PRESET_KEYS.map((key) => {
-                    const active = preset === key;
-                    const isSketch = key === 'esquisse';
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        disabled={creating}
-                        onClick={() => setPreset(key)}
-                        className={[
-                          'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                          isSketch ? 'border-dashed' : '',
-                          active
-                            ? isSketch
-                              ? 'border-transparent bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A] text-white'
-                              : 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-                            : // White, not the band colour: the chips now sit ON
-                              // the band, and #F7F7FA on #F7F7FA is invisible.
-                              'border-[#ECECF2] bg-white text-[#8A8896] hover:border-[#DEDEE8]',
-                        ].join(' ')}
-                      >
-                        {PRESETS[key].label[locale]}
-                      </button>
-                    );
-                  })}
+                  <PresetSelect preset={preset} onChange={setPreset} disabled={creating} />
                   <button
                     type="button"
                     disabled={creating}
                     onClick={() =>
                       referenceFile ? setReferenceFile(null) : fileInputRef.current?.click()
                     }
-                    className={[
-                      'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium disabled:cursor-not-allowed disabled:opacity-50',
-                      referenceFile
-                        ? 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-                        : 'border-dashed border-[#ECECF2] bg-white text-[#8A8896]',
-                    ].join(' ')}
+                    className={referenceFile ? CHIP_ACTIVE : CHIP_BASE}
                   >
                     {referenceFile ? (
                       <>
@@ -319,9 +298,13 @@ export function GenerationHome({
                         <CloseSquare set="bold" size={13} primaryColor="#ffffff" />
                       </>
                     ) : (
-                      t('app.pillReferenceEmpty')
+                      <>
+                        <Upload set="bold" size={13} primaryColor="#8A8896" />
+                        {t('app.pillReferenceEmpty')}
+                      </>
                     )}
                   </button>
+                  <RatioChip file={referenceFile} />
                   <input
                     ref={fileInputRef}
                     type="file"

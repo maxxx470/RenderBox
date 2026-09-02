@@ -825,6 +825,7 @@ export function AppShell({
         onEngineChange={handleEngineChange}
         onUploadFile={handleFile}
         uploading={uploading}
+        imageSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}
       />
 
       {pendingDelete && (
