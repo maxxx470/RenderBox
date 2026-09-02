@@ -43,7 +43,7 @@ export function EngineSelect({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className="flex flex-shrink-0 items-center gap-2 rounded-full border border-[#ECECF2] bg-[#F7F7FA] py-2 pl-2 pr-3 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex flex-shrink-0 items-center gap-2 rounded-full border border-[#ECECF2] bg-white py-2 pl-2 pr-3 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span
           className={`flex h-[22px] w-[22px] items-center justify-center rounded-md ${ENGINE_ICON_CLASS[engine]}`}

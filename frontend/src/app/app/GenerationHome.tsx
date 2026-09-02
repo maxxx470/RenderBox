@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Folder, Send, TickSquare, CloseSquare } from 'react-iconly';
+import { Folder, Send, TickSquare, CloseSquare, Image as ImageIcon } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -18,7 +18,7 @@ import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import type { PricingTierId } from '@/lib/pricing-tiers';
-import { Dropzone } from './Dropzone';
+import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
 import { EngineSelect } from './EngineSelect';
 import { HomeSidebar } from './HomeSidebar';
 import type { AppMode } from './CommandBar';
@@ -120,7 +120,16 @@ export function GenerationHome({
     try {
       const project = await api<{ id: string }>('/api/projects', {
         method: 'POST',
-        body: { name: `Projet ${new Date().toLocaleDateString()}` },
+        // Quick-start deliberately does not ask for a name, but it should at
+        // least speak the user's language — the grid's dialog uses the same key.
+        body: {
+          name: t('projects.defaultName', {
+            date: new Date().toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US', {
+              day: 'numeric',
+              month: 'short',
+            }),
+          }),
+        },
       });
 
       const form = new FormData();
@@ -168,8 +177,6 @@ export function GenerationHome({
       <main className="flex flex-1 flex-col overflow-hidden px-7.5 pt-5.5">
         <div className="mb-7.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-[13px] text-[#8A8896]">{t('app.engineLabel')}</span>
-            <EngineSelect engine={engine} onChange={setEngine} />
             {authDisabled && (
               <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
                 {tier && max !== null && remaining !== null
@@ -216,7 +223,9 @@ export function GenerationHome({
         ) : (
           <>
             <div className="mb-6.5 flex items-center justify-center gap-3.5">
-              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+                <ImageIcon set="bold" size={22} primaryColor="#ffffff" />
+              </div>
               <h1 className="font-[family-name:var(--font-general-sans)] text-[32px] font-bold text-[#17161F]">
                 {t('app.genHomeTitle')}
               </h1>
@@ -236,95 +245,105 @@ export function GenerationHome({
               </div>
             )}
 
+            {/* One container, Krea-style: the prompt on top, its attributes
+                below, the send button on the same row — instead of a pill row
+                floating free above a separate input. The whole block is the
+                drop target, so a photo can land anywhere on it. */}
             <div className="pb-5.5">
-              <div className="mb-3 flex flex-wrap gap-2">
-                {PRESET_KEYS.map((key) => {
-                  const active = preset === key;
-                  const isSketch = key === 'esquisse';
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      disabled={creating}
-                      onClick={() => setPreset(key)}
-                      className={[
-                        'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                        isSketch ? 'border-dashed' : '',
-                        active
-                          ? isSketch
-                            ? 'border-transparent bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A] text-white'
-                            : 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-                          : 'border-[#ECECF2] bg-[#F7F7FA] text-[#8A8896] hover:border-[#DEDEE8]',
-                      ].join(' ')}
-                    >
-                      {PRESETS[key].label[locale]}
-                    </button>
-                  );
-                })}
-                <button
-                  type="button"
-                  disabled={creating}
-                  onClick={() =>
-                    referenceFile ? setReferenceFile(null) : fileInputRef.current?.click()
-                  }
-                  className={[
-                    'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium disabled:cursor-not-allowed disabled:opacity-50',
-                    referenceFile
-                      ? 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-                      : 'border-dashed border-[#ECECF2] bg-[#F7F7FA] text-[#8A8896]',
-                  ].join(' ')}
-                >
-                  {referenceFile ? (
-                    <>
-                      <TickSquare set="bold" size={13} primaryColor="#ffffff" />
-                      {t('app.pillReferenceAdded')}
-                      <CloseSquare set="bold" size={13} primaryColor="#ffffff" />
-                    </>
-                  ) : (
-                    t('app.pillReferenceEmpty')
-                  )}
-                </button>
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                className={`rounded-[18px] border px-3.5 pb-3 pt-3 transition-colors ${
+                  dragOver ? 'border-[#716FFF] bg-[#EFECFF]' : 'border-[#ECECF2] bg-[#F7F7FA]'
+                }`}
+              >
                 <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={(e) => setReferenceFile(e.target.files?.[0] ?? null)}
-                />
-              </div>
-              <div className="flex items-center gap-2.5">
-                <div
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOver(true);
+                  type="text"
+                  placeholder={t('app.genHomeInputPlaceholder')}
+                  value={prompt}
+                  disabled={creating}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !sendDisabled && referenceFile)
+                      void quickStart(referenceFile);
                   }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={handleDrop}
-                  className={`flex flex-1 items-center gap-2.5 rounded-[14px] border px-4 py-3 ${
-                    dragOver ? 'border-[#716FFF] bg-[#EFECFF]' : 'border-[#ECECF2] bg-[#F7F7FA]'
-                  }`}
-                >
-                  <input
-                    type="text"
-                    placeholder={t('app.genHomeInputPlaceholder')}
-                    value={prompt}
+                  className="mb-3 w-full bg-transparent px-1 py-1.5 text-[13.5px] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  {PRESET_KEYS.map((key) => {
+                    const active = preset === key;
+                    const isSketch = key === 'esquisse';
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        disabled={creating}
+                        onClick={() => setPreset(key)}
+                        className={[
+                          'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                          isSketch ? 'border-dashed' : '',
+                          active
+                            ? isSketch
+                              ? 'border-transparent bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A] text-white'
+                              : 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
+                            : // White, not the band colour: the chips now sit ON
+                              // the band, and #F7F7FA on #F7F7FA is invisible.
+                              'border-[#ECECF2] bg-white text-[#8A8896] hover:border-[#DEDEE8]',
+                        ].join(' ')}
+                      >
+                        {PRESETS[key].label[locale]}
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
                     disabled={creating}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !sendDisabled && referenceFile)
-                        void quickStart(referenceFile);
-                    }}
-                    className="w-full bg-transparent text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
+                    onClick={() =>
+                      referenceFile ? setReferenceFile(null) : fileInputRef.current?.click()
+                    }
+                    className={[
+                      'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium disabled:cursor-not-allowed disabled:opacity-50',
+                      referenceFile
+                        ? 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
+                        : 'border-dashed border-[#ECECF2] bg-white text-[#8A8896]',
+                    ].join(' ')}
+                  >
+                    {referenceFile ? (
+                      <>
+                        <TickSquare set="bold" size={13} primaryColor="#ffffff" />
+                        {t('app.pillReferenceAdded')}
+                        <CloseSquare set="bold" size={13} primaryColor="#ffffff" />
+                      </>
+                    ) : (
+                      t('app.pillReferenceEmpty')
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_UPLOAD_TYPES.join(',')}
+                    className="hidden"
+                    onChange={(e) => setReferenceFile(e.target.files?.[0] ?? null)}
                   />
+                  {/* The engine belongs with the other generation attributes,
+                      not alone in the page header where it used to sit. */}
+                  <div className="ml-auto flex items-center gap-2">
+                    <EngineSelect engine={engine} onChange={setEngine} placement="up" />
+                    <button
+                      type="button"
+                      disabled={sendDisabled}
+                      onClick={() => referenceFile && void quickStart(referenceFile)}
+                      aria-label={t('app.genHomeTitle')}
+                      className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
+                    >
+                      <Send set="bold" size={17} primaryColor="#ffffff" />
+                    </button>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  disabled={sendDisabled}
-                  onClick={() => referenceFile && void quickStart(referenceFile)}
-                  className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
-                >
-                  <Send set="bold" size={17} primaryColor="#ffffff" />
-                </button>
               </div>
             </div>
           </>

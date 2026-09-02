@@ -17,7 +17,8 @@ function StatusPill({ active, label }: { active: boolean; label: string }) {
         'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium',
         active
           ? 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-          : 'border-dashed border-[#ECECF2] bg-[#F7F7FA] text-[#8A8896]',
+          : 'border-dashed border-[#ECECF2] bg-white text-[#8A8896]',
+        // (inactive chips are white so they stay visible on the #F7F7FA band)
       ].join(' ')}
     >
       {active && <TickSquare set="bold" size={13} primaryColor="#ffffff" />}
@@ -67,56 +68,11 @@ export function CommandBar({
 
   return (
     <div className="border-t border-[#ECECF2] px-5.5 pb-4.5 pt-3.5">
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        {mode === 'generate' &&
-          PRESET_KEYS.map((key) => {
-            const active = preset === key;
-            const isSketch = key === 'esquisse';
-            return (
-              <button
-                key={key}
-                type="button"
-                disabled={inputDisabled}
-                onClick={() => onPresetChange(key)}
-                className={[
-                  'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                  isSketch ? 'border-dashed' : '',
-                  active
-                    ? isSketch
-                      ? 'border-transparent bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A] text-white'
-                      : 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-                    : 'border-[#ECECF2] bg-[#F7F7FA] text-[#8A8896] hover:border-[#DEDEE8]',
-                ].join(' ')}
-              >
-                {PRESETS[key].label[locale]}
-                {isSketch && (
-                  <span className="rounded-md bg-white px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#716FFF]">
-                    {t('app.presetNewBadge')}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        {mode === 'retouch' && (
-          <StatusPill
-            active={zoneSelected}
-            label={t(zoneSelected ? 'app.pillZoneSelected' : 'app.pillZoneEmpty')}
-          />
-        )}
-        {mode === 'add' && (
-          <StatusPill
-            active={referenceAdded}
-            label={t(referenceAdded ? 'app.pillReferenceAdded' : 'app.pillReferenceEmpty')}
-          />
-        )}
-        {/* Right-aligned on the same line, and on its own line once the pills
-            wrap — no second fixed control competing for the corner. */}
-        <div className="ml-auto">
-          <EngineSelect engine={engine} onChange={onEngineChange} placement="up" />
-        </div>
-      </div>
-      <div className="flex items-center gap-2.5">
-        <div className="flex flex-1 items-center gap-2.5 rounded-[14px] border border-[#ECECF2] bg-[#F7F7FA] py-2 pl-2 pr-4">
+      {/* One container: prompt on top, attributes and actions on the row
+          below — same shape as the /app quick-start bar, so the two screens
+          read as one tool. */}
+      <div className="rounded-[18px] border border-[#ECECF2] bg-[#F7F7FA] px-3 pb-2.5 pt-2.5">
+        <div className="mb-2.5 flex items-center gap-2">
           {/* Only in "generate": the edit modes already have their own
               reference-image picker in EditPanel, and two upload affordances
               side by side would read as the same action. */}
@@ -160,17 +116,68 @@ export function CommandBar({
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !sendDisabled) onSubmit();
             }}
-            className="w-full bg-transparent text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
+            className="w-full bg-transparent px-1 py-1.5 text-[13.5px] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
           />
         </div>
-        <button
-          type="button"
-          disabled={sendDisabled || generating}
-          onClick={onSubmit}
-          className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
-        >
-          <Send set="bold" size={17} primaryColor="#ffffff" />
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {mode === 'generate' &&
+            PRESET_KEYS.map((key) => {
+              const active = preset === key;
+              const isSketch = key === 'esquisse';
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  disabled={inputDisabled}
+                  onClick={() => onPresetChange(key)}
+                  className={[
+                    'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                    isSketch ? 'border-dashed' : '',
+                    active
+                      ? isSketch
+                        ? 'border-transparent bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A] text-white'
+                        : 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
+                      : // White, not the band colour: the chips sit ON the band
+                        // now, and #F7F7FA on #F7F7FA is invisible.
+                        'border-[#ECECF2] bg-white text-[#8A8896] hover:border-[#DEDEE8]',
+                  ].join(' ')}
+                >
+                  {PRESETS[key].label[locale]}
+                  {isSketch && (
+                    <span className="rounded-md bg-white px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#716FFF]">
+                      {t('app.presetNewBadge')}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          {mode === 'retouch' && (
+            <StatusPill
+              active={zoneSelected}
+              label={t(zoneSelected ? 'app.pillZoneSelected' : 'app.pillZoneEmpty')}
+            />
+          )}
+          {mode === 'add' && (
+            <StatusPill
+              active={referenceAdded}
+              label={t(referenceAdded ? 'app.pillReferenceAdded' : 'app.pillReferenceEmpty')}
+            />
+          )}
+          {/* Engine and send pushed to the right of the attribute row; both
+              wrap together rather than stranding the send button alone. */}
+          <div className="ml-auto flex items-center gap-2">
+            <EngineSelect engine={engine} onChange={onEngineChange} placement="up" />
+            <button
+              type="button"
+              disabled={sendDisabled || generating}
+              onClick={onSubmit}
+              className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
+            >
+              <Send set="bold" size={17} primaryColor="#ffffff" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
