@@ -146,6 +146,12 @@ Two design-system skills auto-load in any Claude Code session run from the repo:
 
 A beginner's golden path: `gh repo create --template` → open in Claude Code → describe the screen → either skill takes over → the API routes are already wired. The starter therefore covers the *boring* parts (auth, payments, admin, webhooks, cron) so the fork-author spends their time on product/design.
 
+**Added 2026-08-30, per user request, for RenderBox's own visual polish (not part of the base starter):**
+
+- [`emil-design-eng`](.claude/skills/emil-design-eng/SKILL.md) — Emil Kowalski's design-engineering philosophy for interaction/animation polish (spring physics, easing choice, the "invisible details"). Triggers on UI-feel/animation questions.
+- [`design`](.claude/skills/design/SKILL.md), [`design-system`](.claude/skills/design-system/SKILL.md), [`ui-styling`](.claude/skills/ui-styling/SKILL.md), [`brand`](.claude/skills/brand/SKILL.md), [`banner-design`](.claude/skills/banner-design/SKILL.md), [`slides`](.claude/skills/slides/SKILL.md) — sibling skills from the same `ui-ux-pro-max` family (design tokens, shadcn/ui + Tailwind styling, brand voice/identity, banner/social assets, HTML slide decks). Use alongside `ui-ux-pro-max` rather than instead of it.
+- MCP server `reactbits` (see [.mcp.json](.mcp.json), `npx reactbits-dev-mcp-server`) — searchable catalog of 135+ animated React components from reactbits.dev, for sourcing/adapting ready-made animation implementations. Optional `GITHUB_TOKEN` env var raises the GitHub API rate limit (60→5000 req/h) when fetching component source.
+
 ## What is fair to modify
 
 Anything outside [Files Claude must NOT modify](#files-claude-must-not-modify) is the fork's surface area:

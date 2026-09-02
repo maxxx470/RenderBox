@@ -21,6 +21,10 @@ export default tseslint.config(
       // Bundled reference skill — provider examples + docs, not production
       // code. Same rationale as examples/**: illustrative for forkers.
       '.claude/skills/izisaas-payments-handler/**',
+      // Vendored design/animation skills (added 2026-08-30) — third-party
+      // skill scripts, not this project's code; same rationale as above.
+      '.claude/skills/brand/**',
+      '.claude/skills/design-system/**',
     ],
   },
   js.configs.recommended,
