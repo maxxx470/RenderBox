@@ -19,7 +19,6 @@ import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
 import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
 import { EditPanel } from './EditPanel';
 import { CommandBar, type AppMode } from './CommandBar';
-import { EngineSelect } from './EngineSelect';
 
 interface UploadResponse {
   id: string;
@@ -428,10 +427,6 @@ export function AppShell({
           <span className="rounded-2xl bg-[#716FFF12] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#716FFF]">
             {t('app.phaseTag')}
           </span>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-[#8A8896]">{t('app.engineLabel')} :</span>
-            <EngineSelect engine={engine} onChange={handleEngineChange} />
-          </div>
           {!authDisabled && (
             <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
               {tier && max !== null && remaining !== null
@@ -622,6 +617,10 @@ export function AppShell({
         inputDisabled={inputDisabled}
         sendDisabled={sendDisabled}
         generating={generating || submittingEdit}
+        engine={engine}
+        onEngineChange={handleEngineChange}
+        onUploadFile={handleFile}
+        uploading={uploading}
       />
     </div>
   );

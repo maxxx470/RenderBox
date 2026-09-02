@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ChevronUp, ChevronDown, TickSquare } from 'react-iconly';
+import { ChevronUp, ChevronDown, TickSquare, Image } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -15,10 +15,14 @@ export function EngineSelect({
   engine,
   onChange,
   disabled,
+  placement = 'down',
 }: {
   engine: EngineName;
   onChange: (engine: EngineName) => void;
   disabled?: boolean;
+  // The panel is absolutely positioned, so it has to open away from the edge
+  // it sits against: 'up' from the bottom command bar, 'down' from a header.
+  placement?: 'up' | 'down';
 }) {
   const { locale, t } = useLocale();
   const [open, setOpen] = useState(false);
@@ -41,7 +45,11 @@ export function EngineSelect({
         onClick={() => setOpen((v) => !v)}
         className="flex flex-shrink-0 items-center gap-2 rounded-full border border-[#ECECF2] bg-[#F7F7FA] py-2 pl-2 pr-3 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span className={`h-[22px] w-[22px] rounded-md ${ENGINE_ICON_CLASS[engine]}`} />
+        <span
+          className={`flex h-[22px] w-[22px] items-center justify-center rounded-md ${ENGINE_ICON_CLASS[engine]}`}
+        >
+          <Image set="bold" size={12} primaryColor="#ffffff" />
+        </span>
         <span className="text-[12.5px] font-medium text-[#17161F]">
           {ENGINE_LABELS[engine].name}
         </span>
@@ -55,7 +63,11 @@ export function EngineSelect({
       </button>
 
       {open && (
-        <div className="absolute bottom-[56px] right-0 z-10 w-[260px] rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_20px_40px_-16px_#17161F30]">
+        <div
+          className={`absolute right-0 z-10 w-[260px] rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_20px_40px_-16px_#17161F30] ${
+            placement === 'up' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+10px)]'
+          }`}
+        >
           {ENGINE_NAMES.map((key) => {
             const selected = key === engine;
             return (
@@ -71,8 +83,10 @@ export function EngineSelect({
                 }`}
               >
                 <span
-                  className={`h-[30px] w-[30px] flex-shrink-0 rounded-lg ${ENGINE_ICON_CLASS[key]}`}
-                />
+                  className={`flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-lg ${ENGINE_ICON_CLASS[key]}`}
+                >
+                  <Image set="bold" size={15} primaryColor="#ffffff" />
+                </span>
                 <span className="flex-1">
                   <span className="block text-[13px] font-semibold text-[#17161F]">
                     {ENGINE_LABELS[key].name}

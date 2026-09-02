@@ -1,8 +1,12 @@
 'use client';
 
-import { Send, TickSquare } from 'react-iconly';
+import { useRef } from 'react';
+import { Send, TickSquare, Upload } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+import type { EngineName } from '@/lib/server/generation/engines/types';
+import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
+import { EngineSelect } from './EngineSelect';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
 
@@ -37,6 +41,10 @@ export function CommandBar({
   inputDisabled,
   sendDisabled,
   generating,
+  engine,
+  onEngineChange,
+  onUploadFile,
+  uploading,
 }: {
   mode: AppMode;
   prompt: string;
@@ -49,12 +57,17 @@ export function CommandBar({
   inputDisabled: boolean;
   sendDisabled: boolean;
   generating: boolean;
+  engine: EngineName;
+  onEngineChange: (engine: EngineName) => void;
+  onUploadFile: (file: File) => void;
+  uploading: boolean;
 }) {
   const { locale, t } = useLocale();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="border-t border-[#ECECF2] px-5.5 pb-4.5 pt-3.5">
-      <div className="mb-3 flex flex-wrap gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         {mode === 'generate' &&
           PRESET_KEYS.map((key) => {
             const active = preset === key;
@@ -96,9 +109,42 @@ export function CommandBar({
             label={t(referenceAdded ? 'app.pillReferenceAdded' : 'app.pillReferenceEmpty')}
           />
         )}
+        {/* Right-aligned on the same line, and on its own line once the pills
+            wrap — no second fixed control competing for the corner. */}
+        <div className="ml-auto">
+          <EngineSelect engine={engine} onChange={onEngineChange} placement="up" />
+        </div>
       </div>
       <div className="flex items-center gap-2.5">
-        <div className="flex flex-1 items-center gap-2.5 rounded-[14px] border border-[#ECECF2] bg-[#F7F7FA] px-4 py-3">
+        <div className="flex flex-1 items-center gap-2.5 rounded-[14px] border border-[#ECECF2] bg-[#F7F7FA] py-2 pl-2 pr-4">
+          {/* Only in "generate": the edit modes already have their own
+              reference-image picker in EditPanel, and two upload affordances
+              side by side would read as the same action. */}
+          {mode === 'generate' && (
+            <>
+              <input
+                ref={fileRef}
+                type="file"
+                accept={ACCEPTED_UPLOAD_TYPES.join(',')}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) onUploadFile(file);
+                  e.target.value = '';
+                }}
+              />
+              <button
+                type="button"
+                disabled={uploading}
+                onClick={() => fileRef.current?.click()}
+                aria-label={t('app.commandBarUpload')}
+                title={t('app.commandBarUpload')}
+                className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[10px] border border-[#ECECF2] bg-white transition-colors hover:border-[#DEDEE8] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Upload set="bold" size={15} primaryColor="#8A8896" />
+              </button>
+            </>
+          )}
           <input
             type="text"
             placeholder={
