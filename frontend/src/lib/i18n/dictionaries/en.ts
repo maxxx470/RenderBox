@@ -408,6 +408,29 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingCta': 'Choose {tier}',
   'landing.pricingCtaLoading': 'Redirecting…',
   'landing.pricingError': 'Could not start checkout. Try again.',
+
+  'landing.kicker1': 'Architects',
+  'landing.kicker2': 'Real estate developers',
+  'landing.kicker3': 'Real estate agencies',
+  'landing.kicker4': 'Engineering firms',
+  'landing.kicker5': 'Construction companies',
+  'landing.kickerReducedMotion': 'Architects & Developers',
+
+  'landing.audience1Tab': 'Architects',
+  'landing.audience2Tab': 'Agencies',
+  'landing.audience3Tab': 'Developers',
+
+  'landing.feedStudioQuery1': 'Detect the materials on the main facade',
+  'landing.feedStudioQuery2': 'Check the back facade',
+  'landing.feedStudioQuery3': 'Analyze the window frames',
+  'landing.feedStudioQuery4': 'Check the roof',
+  'landing.feedStudioCount': '{count} materials detected',
+  'landing.feedStudioBadge': '100% consistent with the previous project',
+
+  'landing.enginesEvent1': 'Analyzing materials...',
+  'landing.enginesEvent2': 'Generating render...',
+  'landing.enginesEvent3': 'Checking consistency...',
+  'landing.enginesEvent4': 'Render ready.',
 };
 
 export default en;

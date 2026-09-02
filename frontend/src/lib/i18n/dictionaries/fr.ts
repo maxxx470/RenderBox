@@ -406,6 +406,29 @@ const fr = {
   'landing.pricingCta': 'Choisir {tier}',
   'landing.pricingCtaLoading': 'Redirection…',
   'landing.pricingError': 'Impossible de démarrer le paiement. Réessaie.',
+
+  'landing.kicker1': 'Architectes',
+  'landing.kicker2': 'Promoteurs immobiliers',
+  'landing.kicker3': 'Agences immobilières',
+  'landing.kicker4': "Bureaux d'études",
+  'landing.kicker5': 'Constructeurs',
+  'landing.kickerReducedMotion': 'Architectes & Promoteurs',
+
+  'landing.audience1Tab': 'Architectes',
+  'landing.audience2Tab': 'Agences',
+  'landing.audience3Tab': 'Promoteurs',
+
+  'landing.feedStudioQuery1': 'Détecte les matériaux de la façade principale',
+  'landing.feedStudioQuery2': 'Vérifie la façade arrière',
+  'landing.feedStudioQuery3': 'Analyse les menuiseries',
+  'landing.feedStudioQuery4': 'Vérifie la toiture',
+  'landing.feedStudioCount': '{count} matériaux détectés',
+  'landing.feedStudioBadge': '100% cohérent avec le projet précédent',
+
+  'landing.enginesEvent1': 'Analyse des matériaux...',
+  'landing.enginesEvent2': 'Génération du rendu...',
+  'landing.enginesEvent3': 'Vérification de cohérence...',
+  'landing.enginesEvent4': 'Rendu prêt.',
 } as const;
 
 export default fr;

@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'react-iconly';
+import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
 export function FaqAccordion({ items }: { items: { q: string; a: string }[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const reducedMotion = usePrefersReducedMotion();
 
   return (
     <div className="mx-auto flex max-w-[720px] flex-col gap-2.5">
@@ -22,14 +24,14 @@ export function FaqAccordion({ items }: { items: { q: string; a: string }[] }) {
             >
               <span className="text-[14.5px] font-medium text-[#17161F]">{item.q}</span>
               <span
-                className="flex-shrink-0 transition-transform duration-200 ease-out"
+                className={`flex-shrink-0 ${reducedMotion ? '' : 'transition-transform duration-200 ease-out'}`}
                 style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
               >
                 <ChevronDown set="bold" size={16} primaryColor="#6B6880" />
               </span>
             </button>
             <div
-              className="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+              className={`grid ${reducedMotion ? '' : 'transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]'}`}
               style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
             >
               <div className="overflow-hidden">

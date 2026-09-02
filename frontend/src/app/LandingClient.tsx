@@ -23,7 +23,7 @@
 // no real customers yet; inventing quotes would be deceptive. The reference
 // site's social-proof section is intentionally replaced with the honest
 // stat strip that was already on the page (presets/engines/materials).
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -43,6 +43,14 @@ import { PRICING_TIERS, type PricingTier, type PricingTierId } from '@/lib/prici
 import { Reveal } from './Reveal';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { FaqAccordion } from './FaqAccordion';
+import { Kicker } from './Kicker';
+import { CountUp } from './CountUp';
+import { AudienceTabs, type AudienceTabData } from './AudienceTabs';
+import { StaggeredChecklist } from './StaggeredChecklist';
+import { MaterialsFeedStudio } from './MaterialsFeedStudio';
+import { TreeGallery } from './TreeGallery';
+import { EnginesStateTiles } from './EnginesStateTiles';
+import { StickyBar } from './StickyBar';
 
 // Tailwind's JIT scanner only detects complete, literal class-name tokens in
 // the source text — it can't see a class assembled at runtime from a plain
@@ -77,48 +85,6 @@ function CheckItem({ children }: { children: React.ReactNode }) {
   );
 }
 
-function FicheRow({ face, value, tag }: { face: string; value: string; tag: string }) {
-  return (
-    <div className="mb-2 flex items-center justify-between rounded-[10px] border border-[#ECECF2] bg-white px-3.5 py-2.5">
-      <div>
-        <span className={`block text-[10px] text-[#8A8896] ${MONO}`}>{face}</span>
-        <span className="text-[13px] font-semibold text-[#17161F]">{value}</span>
-      </div>
-      <span className={`rounded-full bg-[#EFECFF] px-1.5 py-1 text-[9px] text-[#716FFF] ${MONO}`}>
-        {tag}
-      </span>
-    </div>
-  );
-}
-
-function TreeNode({
-  label,
-  tag,
-  child,
-  extraIndent,
-}: {
-  label: string;
-  tag: string;
-  child?: boolean;
-  extraIndent?: boolean;
-}) {
-  return (
-    <div
-      className={`mb-2.5 flex items-center gap-2 ${child ? 'ml-6.5' : ''} ${extraIndent ? 'ml-13' : ''}`}
-    >
-      <div
-        className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md ${GRADIENT}`}
-      >
-        <ImageIcon set="bold" size={12} primaryColor="#ffffff" />
-      </div>
-      <div>
-        <div className="text-xs font-medium text-[#17161F]">{label}</div>
-        <div className={`text-[9px] text-[#8A8896] ${MONO}`}>{tag}</div>
-      </div>
-    </div>
-  );
-}
-
 function PresetCard({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-6.5 transition-colors hover:border-[#CFCADF]">
@@ -129,33 +95,6 @@ function PresetCard({ title, body }: { title: string; body: string }) {
       </div>
       <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
       <p className="text-[13px] leading-[1.55] text-[#6B6880]">{body}</p>
-    </div>
-  );
-}
-
-function AudienceRow({
-  icon,
-  color,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  color: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="flex items-start gap-4 rounded-2xl border border-[#ECECF2] bg-white p-5 shadow-[0_1px_2px_rgba(23,22,31,0.04)] transition-colors hover:border-[#CFCADF]">
-      <div
-        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
-        style={{ backgroundColor: `${color}1A` }}
-      >
-        {icon}
-      </div>
-      <div>
-        <h4 className="mb-1 text-[15px] font-semibold text-[#17161F]">{title}</h4>
-        <p className="text-[13px] leading-[1.55] text-[#6B6880]">{body}</p>
-      </div>
     </div>
   );
 }
@@ -181,15 +120,15 @@ function PricingCard({
 
   return (
     <div
-      className={`relative flex flex-col gap-5 rounded-2xl border p-6.5 ${
+      className={`relative flex flex-col gap-5 rounded-2xl border p-6.5 transition-[transform,box-shadow] duration-[250ms] ease-out hover:-translate-y-[3px] ${
         tier.featured
-          ? 'border-[#716FFF] bg-white shadow-[0_20px_40px_-24px_rgba(113,111,255,0.45)]'
-          : 'border-[#ECECF2] bg-[#FBFBFD]'
+          ? 'border-[#716FFF] bg-white shadow-[0_20px_40px_-24px_rgba(113,111,255,0.45)] hover:shadow-[0_28px_48px_-20px_rgba(113,111,255,0.55)]'
+          : 'border-[#ECECF2] bg-[#FBFBFD] hover:shadow-[0_16px_32px_-18px_rgba(23,22,31,0.2)]'
       }`}
     >
       {tier.featured ? (
         <span
-          className={`absolute -top-3 left-6.5 rounded-full ${GRADIENT} px-3 py-1 text-[11px] font-semibold text-white`}
+          className={`rb-badge-pulse absolute -top-3 left-6.5 rounded-full ${GRADIENT} px-3 py-1 text-[11px] font-semibold text-white`}
         >
           {t('landing.pricingBadgeFeatured')}
         </span>
@@ -263,6 +202,19 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
     standard: null,
     pro: null,
   });
+  const heroSentinelRef = useRef<HTMLDivElement>(null);
+  const [pastHero, setPastHero] = useState(false);
+
+  useEffect(() => {
+    const el = heroSentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setPastHero(entry ? !entry.isIntersecting : false),
+      { rootMargin: '-72px 0px 0px 0px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   async function handleSelectTier(tier: PricingTierId) {
     // Demo mode: nobody has a real identity to attach a paid tier to, and
@@ -334,34 +286,54 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </nav>
       </div>
 
-      <div className="mx-auto max-w-[1180px] px-6">
+      <div className="mx-auto max-w-[1180px] px-6 pb-14">
         {/* HERO */}
         <section className="pt-16 pb-10 text-center">
-          <Reveal className="mx-auto flex flex-col items-center">
-            <EyebrowTag>{t('landing.heroEyebrow')}</EyebrowTag>
-            <h1 className="mx-auto mt-5 max-w-[720px] text-[40px] font-bold leading-[1.12] tracking-[-1px] min-[640px]:text-[52px]">
-              {t('landing.heroTitlePrefix')}
-              <GradientText>{t('landing.heroTitleAccent')}</GradientText>
-              {t('landing.heroTitleSuffix')}
-            </h1>
-            <p className="mx-auto mt-5 max-w-[480px] text-[15px] leading-[1.6] text-[#6B6880]">
-              {t('landing.heroSubtitle')}
-            </p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href={ctaHref}
-                className="inline-flex items-center gap-2 rounded-full bg-[#17161F] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.45)] transition-transform duration-150 ease-out active:scale-[0.97]"
-              >
-                {t('landing.heroCtaPrimary')}
-              </Link>
-              <Link
-                href="/exemple"
-                className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] px-6 py-3.5 text-sm font-semibold text-[#17161F] transition-colors hover:border-[#CFCADF]"
-              >
-                {t('landing.heroCtaSecondary')}
-              </Link>
-            </div>
-          </Reveal>
+          <div className="mx-auto flex flex-col items-center">
+            <Reveal delayMs={0}>
+              <span className={`text-[13px] font-medium text-[#716FFF] ${MONO}`}>
+                <Kicker
+                  phrases={[
+                    t('landing.kicker1'),
+                    t('landing.kicker2'),
+                    t('landing.kicker3'),
+                    t('landing.kicker4'),
+                    t('landing.kicker5'),
+                  ]}
+                  reducedMotionLabel={t('landing.kickerReducedMotion')}
+                />
+              </span>
+            </Reveal>
+            <Reveal delayMs={100}>
+              <EyebrowTag>{t('landing.heroEyebrow')}</EyebrowTag>
+            </Reveal>
+            <Reveal delayMs={200}>
+              <h1 className="mx-auto mt-5 max-w-[720px] text-[40px] font-bold leading-[1.12] tracking-[-1px] min-[640px]:text-[52px]">
+                {t('landing.heroTitlePrefix')}
+                <GradientText>{t('landing.heroTitleAccent')}</GradientText>
+                {t('landing.heroTitleSuffix')}
+              </h1>
+              <p className="mx-auto mt-5 max-w-[480px] text-[15px] leading-[1.6] text-[#6B6880]">
+                {t('landing.heroSubtitle')}
+              </p>
+            </Reveal>
+            <Reveal delayMs={300}>
+              <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href={ctaHref}
+                  className="rb-pulse inline-flex items-center gap-2 rounded-full bg-[#17161F] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.45)] transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)] active:scale-[0.97]"
+                >
+                  {t('landing.heroCtaPrimary')}
+                </Link>
+                <Link
+                  href="/exemple"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] px-6 py-3.5 text-sm font-semibold text-[#17161F] transition-colors hover:border-[#CFCADF]"
+                >
+                  {t('landing.heroCtaSecondary')}
+                </Link>
+              </div>
+            </Reveal>
+          </div>
 
           <Reveal delayMs={120} className="relative mx-auto mt-14 max-w-[760px]">
             <div className="relative rounded-[28px] border border-[#ECECF2] bg-[#FBFBFD] p-4 shadow-[0_30px_60px_-24px_rgba(113,111,255,0.45)] min-[640px]:p-6">
@@ -413,19 +385,26 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </div>
           </Reveal>
         </section>
+        <div ref={heroSentinelRef} aria-hidden />
 
         {/* TRUST STRIP */}
         <Reveal className="flex flex-wrap justify-center gap-11 border-b border-[#ECECF2] py-9 pb-15 pt-20">
           <div className="text-center">
-            <b className="block text-xl text-[#17161F]">5</b>
+            <b className="block text-xl text-[#17161F]">
+              <CountUp to={5} />
+            </b>
             <span className="text-xs text-[#8A8896]">{t('landing.trustPresets')}</span>
           </div>
           <div className="text-center">
-            <b className="block text-xl text-[#17161F]">2</b>
+            <b className="block text-xl text-[#17161F]">
+              <CountUp to={2} />
+            </b>
             <span className="text-xs text-[#8A8896]">{t('landing.trustEngines')}</span>
           </div>
           <div className="text-center">
-            <b className="block text-xl text-[#17161F]">0</b>
+            <b className="block text-xl text-[#17161F]">
+              <CountUp to={0} />
+            </b>
             <span className="text-xs text-[#8A8896]">{t('landing.trustMaterials')}</span>
           </div>
         </Reveal>
@@ -450,7 +429,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </Reveal>
         </section>
 
-        {/* AUDIENCE — 3 rows */}
+        {/* AUDIENCE — tabs */}
         <section className="py-20">
           <Reveal className="mx-auto mb-10 max-w-[560px] text-center">
             <EyebrowTag>{t('landing.audienceTag')}</EyebrowTag>
@@ -458,32 +437,35 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               {t('landing.audienceTitle')}
             </h2>
           </Reveal>
-          <div className="mx-auto flex max-w-[640px] flex-col gap-3.5">
-            <Reveal>
-              <AudienceRow
-                icon={<Home set="bold" size={20} primaryColor="#716FFF" />}
-                color="#716FFF"
-                title={t('landing.audience1Title')}
-                body={t('landing.audience1Body')}
-              />
-            </Reveal>
-            <Reveal delayMs={60}>
-              <AudienceRow
-                icon={<Location set="bold" size={20} primaryColor="#0EA5E9" />}
-                color="#0EA5E9"
-                title={t('landing.audience2Title')}
-                body={t('landing.audience2Body')}
-              />
-            </Reveal>
-            <Reveal delayMs={120}>
-              <AudienceRow
-                icon={<Graph set="bold" size={20} primaryColor="#E9A21B" />}
-                color="#E9A21B"
-                title={t('landing.audience3Title')}
-                body={t('landing.audience3Body')}
-              />
-            </Reveal>
-          </div>
+          <Reveal className="mx-auto max-w-[640px]">
+            <AudienceTabs
+              tabs={
+                [
+                  {
+                    icon: <Home set="bold" size={20} primaryColor="#716FFF" />,
+                    color: '#716FFF',
+                    label: t('landing.audience1Tab'),
+                    title: t('landing.audience1Title'),
+                    body: t('landing.audience1Body'),
+                  },
+                  {
+                    icon: <Location set="bold" size={20} primaryColor="#0EA5E9" />,
+                    color: '#0EA5E9',
+                    label: t('landing.audience2Tab'),
+                    title: t('landing.audience2Title'),
+                    body: t('landing.audience2Body'),
+                  },
+                  {
+                    icon: <Graph set="bold" size={20} primaryColor="#E9A21B" />,
+                    color: '#E9A21B',
+                    label: t('landing.audience3Tab'),
+                    title: t('landing.audience3Title'),
+                    body: t('landing.audience3Body'),
+                  },
+                ] satisfies AudienceTabData[]
+              }
+            />
+          </Reveal>
         </section>
 
         {/* CHECKLIST */}
@@ -497,13 +479,15 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               <h2 className="mt-4 text-[28px] font-bold leading-[1.3] tracking-[-0.5px]">
                 {t('landing.checklistTitle')}
               </h2>
-              <ul className="mt-6 flex flex-col gap-3">
-                <CheckItem>{t('landing.checklistItem1')}</CheckItem>
-                <CheckItem>{t('landing.checklistItem2')}</CheckItem>
-                <CheckItem>{t('landing.checklistItem3')}</CheckItem>
-                <CheckItem>{t('landing.checklistItem4')}</CheckItem>
-                <CheckItem>{t('landing.checklistItem5')}</CheckItem>
-              </ul>
+              <StaggeredChecklist
+                items={[
+                  t('landing.checklistItem1'),
+                  t('landing.checklistItem2'),
+                  t('landing.checklistItem3'),
+                  t('landing.checklistItem4'),
+                  t('landing.checklistItem5'),
+                ]}
+              />
               <Link
                 href={ctaHref}
                 className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#17161F] px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
@@ -511,26 +495,23 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 {t('landing.checklistCta')}
               </Link>
             </Reveal>
-            <Reveal delayMs={100} className="rounded-2xl border border-[#ECECF2] bg-white p-5.5">
-              <FicheRow
-                face={t('landing.split1FaceMain')}
-                value={t('landing.split1FaceMainValue')}
-                tag={t('landing.split1AutoTag')}
-              />
-              <FicheRow
-                face={t('landing.split1FaceBack')}
-                value={t('landing.split1FaceBackValue')}
-                tag={t('landing.split1AutoTag')}
-              />
-              <FicheRow
-                face={t('landing.split1Joinery')}
-                value={t('landing.split1JoineryValue')}
-                tag={t('landing.split1AutoTag')}
-              />
-              <FicheRow
-                face={t('landing.split1Roof')}
-                value={t('landing.split1RoofValue')}
-                tag={t('landing.split1AutoTag')}
+            <Reveal delayMs={100}>
+              <MaterialsFeedStudio
+                queries={[
+                  t('landing.feedStudioQuery1'),
+                  t('landing.feedStudioQuery2'),
+                  t('landing.feedStudioQuery3'),
+                  t('landing.feedStudioQuery4'),
+                ]}
+                materials={[
+                  { face: t('landing.split1FaceMain'), value: t('landing.split1FaceMainValue') },
+                  { face: t('landing.split1FaceBack'), value: t('landing.split1FaceBackValue') },
+                  { face: t('landing.split1Joinery'), value: t('landing.split1JoineryValue') },
+                  { face: t('landing.split1Roof'), value: t('landing.split1RoofValue') },
+                ]}
+                autoTag={t('landing.split1AutoTag')}
+                countLabel={(count) => t('landing.feedStudioCount', { count })}
+                badgeLabel={t('landing.feedStudioBadge')}
               />
             </Reveal>
           </div>
@@ -559,23 +540,14 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               delayMs={100}
               className="rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-5.5"
             >
-              <div className="rounded-[10px] border border-[#ECECF2] bg-white p-4">
-                <TreeNode
-                  label={t('landing.split2NodeUpload')}
-                  tag={t('landing.split2NodeSource')}
-                />
-                <TreeNode
-                  label={t('landing.split2NodeDay')}
-                  tag={t('landing.heroPreviewEngine')}
-                  child
-                />
-                <TreeNode
-                  label={t('landing.split2NodeNight')}
-                  tag={t('landing.heroPreviewEngine')}
-                  child
-                />
-                <TreeNode label={t('landing.split2NodeExtra')} tag="gpt image" extraIndent />
-              </div>
+              <TreeGallery
+                items={[
+                  { label: t('landing.split2NodeUpload'), tag: t('landing.split2NodeSource') },
+                  { label: t('landing.split2NodeDay'), tag: t('landing.heroPreviewEngine') },
+                  { label: t('landing.split2NodeNight'), tag: t('landing.heroPreviewEngine') },
+                  { label: t('landing.split2NodeExtra'), tag: 'gpt image' },
+                ]}
+              />
             </Reveal>
           </div>
 
@@ -589,17 +561,16 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 {t('landing.integrationsSubtitle')}
               </h3>
             </Reveal>
-            <Reveal className="flex flex-wrap items-center gap-4 min-[860px]:order-1">
-              <div
-                className={`flex h-16 w-16 items-center justify-center rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] text-center text-[10px] text-[#6B6880] ${MONO}`}
-              >
-                {t('landing.heroPreviewEngine')}
-              </div>
-              <div
-                className={`flex h-16 w-16 items-center justify-center rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] text-center text-[10px] text-[#6B6880] ${MONO}`}
-              >
-                GPT Image
-              </div>
+            <Reveal className="min-[860px]:order-1">
+              <EnginesStateTiles
+                engines={[t('landing.heroPreviewEngine'), 'GPT Image']}
+                events={[
+                  t('landing.enginesEvent1'),
+                  t('landing.enginesEvent2'),
+                  t('landing.enginesEvent3'),
+                  t('landing.enginesEvent4'),
+                ]}
+              />
             </Reveal>
           </div>
         </section>
@@ -646,7 +617,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </Reveal>
           <div className="mx-auto mt-11.5 grid max-w-[980px] grid-cols-1 items-stretch gap-5.5 min-[860px]:grid-cols-3">
             {PRICING_TIERS.map((tier, i) => (
-              <Reveal key={tier.id} delayMs={i * 60}>
+              <Reveal key={tier.id} delayMs={i * 150}>
                 <PricingCard
                   tier={tier}
                   onSelect={() => void handleSelectTier(tier.id)}
@@ -684,7 +655,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </p>
             <Link
               href={ctaHref}
-              className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-[#17161F] transition-transform duration-150 ease-out active:scale-[0.97]"
+              className="rb-pulse mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-[#17161F] transition-transform duration-150 ease-out active:scale-[0.97]"
             >
               {t('landing.ctaBandButton')}
             </Link>
@@ -745,6 +716,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </div>
         </footer>
       </div>
+
+      <StickyBar visible={pastHero} href={ctaHref} label={t('landing.heroCtaPrimary')} />
     </main>
   );
 }
