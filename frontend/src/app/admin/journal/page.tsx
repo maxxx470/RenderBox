@@ -75,17 +75,17 @@ export default function AdminJournalPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-[family-name:var(--font-poppins)] text-[19px] font-semibold text-[#170608]">
+        <h1 className="font-[family-name:var(--font-general-sans)] text-[19px] font-semibold text-[#17161F]">
           {t('admin.journal.title')}
         </h1>
-        <p className="mt-1 text-[12.5px] text-[#7A6E71]">{t('admin.journal.subtitle')}</p>
+        <p className="mt-1 text-[12.5px] text-[#8A8896]">{t('admin.journal.subtitle')}</p>
       </div>
 
       <input
         value={actionFilter}
         onChange={(e) => setActionFilter(e.target.value)}
         placeholder={t('admin.journal.filterActionPlaceholder')}
-        className="mb-4 w-80 rounded-[10px] border border-[#ECE3E5] bg-[#F8F5F6] px-3 py-2 text-[13px] text-[#170608] outline-none placeholder:text-[#7A6E71]"
+        className="mb-4 w-80 rounded-[10px] border border-[#ECECF2] bg-[#F7F7FA] px-3 py-2 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896]"
       />
 
       {error ? (
@@ -93,26 +93,26 @@ export default function AdminJournalPage() {
       ) : (
         <div>
           {items.map((row) => (
-            <div key={row.id} className="flex gap-3 border-b border-[#ECE3E5] py-3">
-              <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#C81120]" />
+            <div key={row.id} className="flex gap-3 border-b border-[#ECECF2] py-3">
+              <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#716FFF]" />
               <div>
-                <div className="text-[13px] text-[#170608]">
+                <div className="text-[13px] text-[#17161F]">
                   <b className="font-semibold">{row.actorId}</b> {describe(row, t)}
                 </div>
-                <div className="mt-0.5 font-[family-name:var(--font-ibm-plex-mono)] text-[10.5px] text-[#7A6E71]">
+                <div className="mt-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#8A8896]">
                   {new Date(row.createdAt).toLocaleString('fr-FR')}
                 </div>
               </div>
             </div>
           ))}
           {items.length === 0 ? (
-            <p className="mt-2 text-sm text-[#7A6E71]">{t('admin.journal.empty')}</p>
+            <p className="mt-2 text-sm text-[#8A8896]">{t('admin.journal.empty')}</p>
           ) : null}
           {nextCursor ? (
             <button
               type="button"
               onClick={() => void load({ cursor: nextCursor, append: true })}
-              className="mt-4 rounded-[10px] border border-[#ECE3E5] px-4 py-2 text-[13px] font-medium text-[#170608] hover:bg-[#F8F5F6]"
+              className="mt-4 rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
             >
               {t('admin.users.loadMore')}
             </button>

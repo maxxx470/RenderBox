@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (!checked || !admin) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-white text-sm text-[#7A6E71]">
+      <main className="flex min-h-screen items-center justify-center bg-white text-sm text-[#8A8896]">
         {t('admin.checkingAccess')}
       </main>
     );

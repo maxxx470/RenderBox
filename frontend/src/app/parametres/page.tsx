@@ -58,7 +58,7 @@ export default function ParametresPage() {
   if (!user) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-2 px-4">
-        <p className="text-sm text-[#7A6E71]">…</p>
+        <p className="text-sm text-[#8A8896]">…</p>
       </main>
     );
   }
@@ -69,33 +69,33 @@ export default function ParametresPage() {
     <main className="mx-auto flex min-h-screen max-w-lg flex-col gap-8 px-4 py-12">
       <LanguageToggle />
       <header className="flex flex-col gap-1">
-        <h1 className="font-[family-name:var(--font-poppins)] text-2xl font-bold text-[#170608]">
+        <h1 className="font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
           {t('parametres.title')}
         </h1>
       </header>
 
-      <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECE3E5] p-5">
-        <h2 className="text-[15px] font-semibold text-[#170608]">{t('parametres.accountTitle')}</h2>
-        <p className="text-[13px] text-[#7A6E71]">
+      <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+        <h2 className="text-[15px] font-semibold text-[#17161F]">{t('parametres.accountTitle')}</h2>
+        <p className="text-[13px] text-[#8A8896]">
           {t('parametres.connectedAs', { email: user.email })}
         </p>
         <button
           type="button"
           onClick={() => void logout()}
-          className="self-start rounded-[10px] border border-[#ECE3E5] px-4 py-2 text-[13px] font-medium text-[#170608] hover:bg-[#F8F5F6]"
+          className="self-start rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
         >
           {t('parametres.logoutButton')}
         </button>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECE3E5] p-5">
-        <h2 className="text-[15px] font-semibold text-[#170608]">
+      <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+        <h2 className="text-[15px] font-semibold text-[#17161F]">
           {t('parametres.linkedAccountsTitle')}
         </h2>
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col">
-            <span className="text-[13px] font-medium text-[#170608]">Google</span>
-            <span className="text-[12px] text-[#7A6E71]">
+            <span className="text-[13px] font-medium text-[#17161F]">Google</span>
+            <span className="text-[12px] text-[#8A8896]">
               {googleLinked ? t('parametres.googleLinked') : t('parametres.googleNotLinked')}
             </span>
           </div>
@@ -106,7 +106,7 @@ export default function ParametresPage() {
           ) : (
             <a
               href="/api/auth/oauth/google/start?next=/parametres"
-              className="rounded-[10px] border border-[#ECE3E5] px-4 py-2 text-[13px] font-medium text-[#170608] hover:bg-[#F8F5F6]"
+              className="rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
             >
               {t('parametres.linkGoogleButton')}
             </a>
@@ -114,13 +114,13 @@ export default function ParametresPage() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECE3E5] p-5">
-        <h2 className="text-[15px] font-semibold text-[#170608]">{t('parametres.engineTitle')}</h2>
-        <p className="text-[12px] text-[#7A6E71]">{t('parametres.engineHint')}</p>
+      <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+        <h2 className="text-[15px] font-semibold text-[#17161F]">{t('parametres.engineTitle')}</h2>
+        <p className="text-[12px] text-[#8A8896]">{t('parametres.engineHint')}</p>
         <select
           value={user.defaultEngine ?? 'nanobanana'}
           onChange={(e) => void handleEngineChange(e.target.value as EngineName)}
-          className="w-fit rounded-[10px] border border-[#ECE3E5] bg-[#F8F5F6] px-3 py-2 text-[13px] text-[#170608] outline-none"
+          className="w-fit rounded-[10px] border border-[#ECECF2] bg-[#F7F7FA] px-3 py-2 text-[13px] text-[#17161F] outline-none"
         >
           {ENGINE_NAMES.map((name) => (
             <option key={name} value={name}>
@@ -133,33 +133,33 @@ export default function ParametresPage() {
         ) : null}
       </section>
 
-      <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECE3E5] p-5">
-        <h2 className="text-[15px] font-semibold text-[#170608]">{t('parametres.billingTitle')}</h2>
+      <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+        <h2 className="text-[15px] font-semibold text-[#17161F]">{t('parametres.billingTitle')}</h2>
         {orders && orders.length > 0 ? (
           <ul className="flex flex-col gap-2">
             {orders.map((o) => (
               <li key={o.id} className="flex items-center justify-between text-[13px]">
-                <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A6E71]">
+                <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
                   {new Date(o.createdAt).toLocaleDateString('fr-FR')} · {o.status}
                 </span>
-                <span className="text-[#170608]">
+                <span className="text-[#17161F]">
                   {o.amount.toLocaleString('fr-FR')} {o.currency}
                 </span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-[13px] text-[#7A6E71]">{t('parametres.billingEmpty')}</p>
+          <p className="text-[13px] text-[#8A8896]">{t('parametres.billingEmpty')}</p>
         )}
         <Link
           href="/#tarifs"
-          className="mt-2 inline-block self-start rounded-[10px] bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-4 py-2 text-[13px] font-medium text-white"
+          className="mt-2 inline-block self-start rounded-[10px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-4 py-2 text-[13px] font-medium text-white"
         >
           {t('parametres.buyButton')}
         </Link>
       </section>
 
-      <Link href="/app" className="text-center text-sm text-[#7A6E71] hover:text-[#170608]">
+      <Link href="/app" className="text-center text-sm text-[#8A8896] hover:text-[#17161F]">
         {t('parametres.backToApp')}
       </Link>
     </main>

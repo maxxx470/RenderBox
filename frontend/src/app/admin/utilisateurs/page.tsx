@@ -80,10 +80,10 @@ export default function AdminUsersPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-[family-name:var(--font-poppins)] text-[19px] font-semibold text-[#170608]">
+          <h1 className="font-[family-name:var(--font-general-sans)] text-[19px] font-semibold text-[#17161F]">
             {t('admin.users.title')}
           </h1>
-          <p className="mt-1 text-[12.5px] text-[#7A6E71]">
+          <p className="mt-1 text-[12.5px] text-[#8A8896]">
             {t('admin.users.subtitle', { count: items.length })}
           </p>
         </div>
@@ -94,12 +94,12 @@ export default function AdminUsersPage() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t('admin.users.searchPlaceholder')}
-          className="w-64 rounded-[10px] border border-[#ECE3E5] bg-[#F8F5F6] px-3 py-2 text-[13px] text-[#170608] outline-none placeholder:text-[#7A6E71]"
+          className="w-64 rounded-[10px] border border-[#ECECF2] bg-[#F7F7FA] px-3 py-2 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896]"
         />
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as (typeof STATUS_FILTERS)[number])}
-          className="rounded-[10px] border border-[#ECE3E5] bg-[#F8F5F6] px-3 py-2 text-[13px] text-[#170608] outline-none"
+          className="rounded-[10px] border border-[#ECECF2] bg-[#F7F7FA] px-3 py-2 text-[13px] text-[#17161F] outline-none"
         >
           {STATUS_FILTERS.map((s) => (
             <option key={s} value={s}>
@@ -116,57 +116,57 @@ export default function AdminUsersPage() {
           <table className="w-full min-w-[640px] border-collapse">
             <thead>
               <tr>
-                <th className="border-b border-[#ECE3E5] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#7A6E71]">
+                <th className="border-b border-[#ECECF2] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#8A8896]">
                   {t('admin.users.colUser')}
                 </th>
-                <th className="border-b border-[#ECE3E5] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#7A6E71]">
+                <th className="border-b border-[#ECECF2] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#8A8896]">
                   {t('admin.users.colRole')}
                 </th>
-                <th className="border-b border-[#ECE3E5] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#7A6E71]">
+                <th className="border-b border-[#ECECF2] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#8A8896]">
                   {t('admin.users.colStatus')}
                 </th>
-                <th className="border-b border-[#ECE3E5] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#7A6E71]">
+                <th className="border-b border-[#ECECF2] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#8A8896]">
                   {t('admin.overview.statGenerations')}
                 </th>
-                <th className="border-b border-[#ECE3E5] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#7A6E71]">
+                <th className="border-b border-[#ECECF2] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#8A8896]">
                   {t('admin.users.colJoined')}
                 </th>
-                <th className="border-b border-[#ECE3E5] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#7A6E71]" />
+                <th className="border-b border-[#ECECF2] px-3.5 py-2.5 text-left text-[10.5px] uppercase tracking-wide text-[#8A8896]" />
               </tr>
             </thead>
             <tbody>
               {items.map((u) => {
                 const badge = rowStatusBadge(u, t);
                 return (
-                  <tr key={u.id} className="hover:bg-[#F8F5F6]">
-                    <td className="border-b border-[#ECE3E5] px-3.5 py-3 text-[13px]">
+                  <tr key={u.id} className="hover:bg-[#F7F7FA]">
+                    <td className="border-b border-[#ECECF2] px-3.5 py-3 text-[13px]">
                       <div className="flex items-center gap-2.5">
-                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#E8121F] to-[#7F0000] opacity-85" />
-                        <span className="text-[#170608]">{u.name || u.email}</span>
+                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] opacity-85" />
+                        <span className="text-[#17161F]">{u.name || u.email}</span>
                       </div>
                     </td>
-                    <td className="border-b border-[#ECE3E5] px-3.5 py-3">
-                      <span className="rounded-lg bg-[#C8112012] px-2 py-0.5 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#C81120]">
+                    <td className="border-b border-[#ECECF2] px-3.5 py-3">
+                      <span className="rounded-lg bg-[#716FFF12] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#716FFF]">
                         {u.role}
                       </span>
                     </td>
-                    <td className="border-b border-[#ECE3E5] px-3.5 py-3">
+                    <td className="border-b border-[#ECECF2] px-3.5 py-3">
                       <span
-                        className={`rounded-lg px-2 py-0.5 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] ${badge.cls}`}
+                        className={`rounded-lg px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] ${badge.cls}`}
                       >
                         {badge.label}
                       </span>
                     </td>
-                    <td className="border-b border-[#ECE3E5] px-3.5 py-3 text-[13px] text-[#170608]">
+                    <td className="border-b border-[#ECECF2] px-3.5 py-3 text-[13px] text-[#17161F]">
                       {u.generationsCount}
                     </td>
-                    <td className="border-b border-[#ECE3E5] px-3.5 py-3 text-[13px] text-[#170608]">
+                    <td className="border-b border-[#ECECF2] px-3.5 py-3 text-[13px] text-[#17161F]">
                       {new Date(u.createdAt).toLocaleDateString('fr-FR')}
                     </td>
-                    <td className="border-b border-[#ECE3E5] px-3.5 py-3">
+                    <td className="border-b border-[#ECECF2] px-3.5 py-3">
                       <Link
                         href={`/admin/utilisateurs/${u.id}`}
-                        className="text-[12px] font-medium text-[#C81120] hover:underline"
+                        className="text-[12px] font-medium text-[#716FFF] hover:underline"
                       >
                         {t('admin.users.viewAction')}
                       </Link>
@@ -177,14 +177,14 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
           {!loading && items.length === 0 ? (
-            <p className="mt-6 text-sm text-[#7A6E71]">{t('admin.users.empty')}</p>
+            <p className="mt-6 text-sm text-[#8A8896]">{t('admin.users.empty')}</p>
           ) : null}
           {nextCursor ? (
             <button
               type="button"
               onClick={() => void load({ cursor: nextCursor, append: true })}
               disabled={loading}
-              className="mt-4 rounded-[10px] border border-[#ECE3E5] px-4 py-2 text-[13px] font-medium text-[#170608] hover:bg-[#F8F5F6] disabled:opacity-50"
+              className="mt-4 rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
             >
               {t('admin.users.loadMore')}
             </button>

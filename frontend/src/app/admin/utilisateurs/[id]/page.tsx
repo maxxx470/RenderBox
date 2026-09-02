@@ -71,7 +71,7 @@ export default function AdminUserDetailPage() {
   }
 
   if (notFound) {
-    return <p className="text-sm text-[#7A6E71]">{t('admin.userDetail.notFound')}</p>;
+    return <p className="text-sm text-[#8A8896]">{t('admin.userDetail.notFound')}</p>;
   }
   if (!data) return null;
 
@@ -81,18 +81,18 @@ export default function AdminUserDetailPage() {
     <div>
       <Link
         href="/admin/utilisateurs"
-        className="text-[12.5px] text-[#7A6E71] hover:text-[#170608]"
+        className="text-[12.5px] text-[#8A8896] hover:text-[#17161F]"
       >
         {t('admin.userDetail.back')}
       </Link>
 
       <div className="mt-3 mb-6 flex items-center gap-3.5">
-        <div className="h-11 w-11 rounded-full bg-gradient-to-br from-[#E8121F] to-[#7F0000] opacity-85" />
+        <div className="h-11 w-11 rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] opacity-85" />
         <div>
-          <h1 className="font-[family-name:var(--font-poppins)] text-[18px] font-semibold text-[#170608]">
+          <h1 className="font-[family-name:var(--font-general-sans)] text-[18px] font-semibold text-[#17161F]">
             {user.name || user.email}
           </h1>
-          <p className="text-[12.5px] text-[#7A6E71]">
+          <p className="text-[12.5px] text-[#8A8896]">
             {t('admin.userDetail.memberSince', {
               date: new Date(user.createdAt).toLocaleDateString('fr-FR'),
             })}
@@ -112,18 +112,18 @@ export default function AdminUserDetailPage() {
       {actionError ? <p className="mb-4 text-sm text-[#B8710B]">{actionError}</p> : null}
 
       <div className="mb-8 grid grid-cols-1 gap-3.5 md:grid-cols-2">
-        <section className="rounded-[14px] border border-[#ECE3E5] p-4.5">
-          <h2 className="mb-3 text-[13px] font-semibold text-[#170608]">
+        <section className="rounded-[14px] border border-[#ECECF2] p-4.5">
+          <h2 className="mb-3 text-[13px] font-semibold text-[#17161F]">
             {t('admin.userDetail.projectsTitle')}
           </h2>
           {projects.length === 0 ? (
-            <p className="text-[12.5px] text-[#7A6E71]">{t('admin.userDetail.noProjects')}</p>
+            <p className="text-[12.5px] text-[#8A8896]">{t('admin.userDetail.noProjects')}</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {projects.map((p) => (
                 <li key={p.id} className="flex items-center justify-between text-[13px]">
-                  <span className="text-[#170608]">{p.name}</span>
-                  <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A6E71]">
+                  <span className="text-[#17161F]">{p.name}</span>
+                  <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
                     {p.generationsCount}
                   </span>
                 </li>
@@ -132,20 +132,20 @@ export default function AdminUserDetailPage() {
           )}
         </section>
 
-        <section className="rounded-[14px] border border-[#ECE3E5] p-4.5">
-          <h2 className="mb-3 text-[13px] font-semibold text-[#170608]">
+        <section className="rounded-[14px] border border-[#ECECF2] p-4.5">
+          <h2 className="mb-3 text-[13px] font-semibold text-[#17161F]">
             {t('admin.userDetail.ordersTitle')}
           </h2>
           {orders.length === 0 ? (
-            <p className="text-[12.5px] text-[#7A6E71]">{t('admin.userDetail.noOrders')}</p>
+            <p className="text-[12.5px] text-[#8A8896]">{t('admin.userDetail.noOrders')}</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {orders.map((o) => (
                 <li key={o.id} className="flex items-center justify-between text-[13px]">
-                  <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A6E71]">
+                  <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
                     {o.status}
                   </span>
-                  <span className="text-[#170608]">
+                  <span className="text-[#17161F]">
                     {o.amount.toLocaleString('fr-FR')} {o.currency}
                   </span>
                 </li>
@@ -155,13 +155,13 @@ export default function AdminUserDetailPage() {
         </section>
       </div>
 
-      <section className="rounded-[14px] border border-[#ECE3E5] p-4.5">
-        <h2 className="mb-3.5 text-[13px] font-semibold text-[#170608]">
+      <section className="rounded-[14px] border border-[#ECECF2] p-4.5">
+        <h2 className="mb-3.5 text-[13px] font-semibold text-[#17161F]">
           {t('admin.userDetail.actionsTitle')}
         </h2>
 
         <div className="mb-4 flex items-center gap-2.5">
-          <label className="text-[12.5px] text-[#7A6E71]">
+          <label className="text-[12.5px] text-[#8A8896]">
             {t('admin.userDetail.roleSelectLabel')}
           </label>
           <select
@@ -175,7 +175,7 @@ export default function AdminUserDetailPage() {
                 }),
               )
             }
-            className="rounded-[10px] border border-[#ECE3E5] bg-[#F8F5F6] px-3 py-1.5 text-[13px] text-[#170608] outline-none"
+            className="rounded-[10px] border border-[#ECECF2] bg-[#F7F7FA] px-3 py-1.5 text-[13px] text-[#17161F] outline-none"
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -198,7 +198,7 @@ export default function AdminUserDetailPage() {
                   }),
                 )
               }
-              className="rounded-[10px] border border-[#ECE3E5] px-4 py-2 text-[13px] font-medium text-[#170608] hover:bg-[#F8F5F6] disabled:opacity-50"
+              className="rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
             >
               {t('admin.userDetail.restoreButton')}
             </button>
@@ -215,7 +215,7 @@ export default function AdminUserDetailPage() {
                   }),
                 );
               }}
-              className="rounded-[10px] border border-[#ECE3E5] px-4 py-2 text-[13px] font-medium text-[#170608] hover:bg-[#F8F5F6] disabled:opacity-50"
+              className="rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
             >
               {t('admin.userDetail.suspendButton')}
             </button>
@@ -240,7 +240,7 @@ export default function AdminUserDetailPage() {
                 if (!confirm(t('admin.userDetail.confirmDelete'))) return;
                 void runAction(() => api(`/api/admin/users/${user.id}`, { method: 'DELETE' }));
               }}
-              className="rounded-[10px] bg-[#C8112012] px-4 py-2 text-[13px] font-medium text-[#C81120] hover:bg-[#C8112022] disabled:opacity-50"
+              className="rounded-[10px] bg-[#E5484D12] px-4 py-2 text-[13px] font-medium text-[#E5484D] hover:bg-[#E5484D22] disabled:opacity-50"
             >
               {t('admin.userDetail.deleteButton')}
             </button>

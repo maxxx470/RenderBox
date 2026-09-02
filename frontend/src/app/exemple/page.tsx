@@ -13,10 +13,10 @@ import { useLocale } from '@/lib/i18n/LocaleContext';
 const DEMO_PRESETS = PRESET_KEYS.filter((k) => k !== 'esquisse');
 
 const PRESET_GRADIENT: Record<string, string> = {
-  jour_ext: 'from-[#F1EBEC] to-[#ECE3E5]',
-  jour_int: 'from-[#FCEEE9] to-[#F1EBEC]',
-  nuit_ext: 'from-[#170608] to-[#3D0206]',
-  nuit_int: 'from-[#1A0407] to-[#7F0000]',
+  jour_ext: 'from-[#F1F0F6] to-[#ECECF2]',
+  jour_int: 'from-[#FCEEE9] to-[#F1F0F6]',
+  nuit_ext: 'from-[#17161F] to-[#3D0206]',
+  nuit_int: 'from-[#1A0407] to-[#A855F7]',
 };
 
 export default function ExemplePage() {
@@ -34,25 +34,25 @@ export default function ExemplePage() {
     <main className="min-h-screen bg-white px-6 py-14">
       <LanguageToggle />
       <div className="mx-auto max-w-3xl">
-        <Link href="/" className="text-[13px] text-[#7A6E71] hover:text-[#170608]">
+        <Link href="/" className="text-[13px] text-[#8A8896] hover:text-[#17161F]">
           {t('exemple.backHome')}
         </Link>
 
-        <h1 className="mt-4 font-[family-name:var(--font-poppins)] text-[26px] font-bold text-[#170608]">
+        <h1 className="mt-4 font-[family-name:var(--font-general-sans)] text-[26px] font-bold text-[#17161F]">
           {t('exemple.title')}
         </h1>
-        <p className="mt-2 max-w-xl text-[14px] text-[#7A6E71]">{t('exemple.subtitle')}</p>
+        <p className="mt-2 max-w-xl text-[14px] text-[#8A8896]">{t('exemple.subtitle')}</p>
 
         <section className="mt-9">
-          <h2 className="mb-3 text-[13px] font-semibold text-[#170608]">
+          <h2 className="mb-3 text-[13px] font-semibold text-[#17161F]">
             {t('exemple.materialsTitle')}
           </h2>
-          <div className="rounded-[16px] border border-[#ECE3E5] bg-[#F8F5F6] p-4.5">
+          <div className="rounded-[16px] border border-[#ECECF2] bg-[#F7F7FA] p-4.5">
             <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {materialRows.map((r) => (
                 <div key={r.label}>
-                  <dt className="text-[11px] text-[#7A6E71]">{r.label}</dt>
-                  <dd className="text-[13px] font-medium text-[#170608]">{r.value}</dd>
+                  <dt className="text-[11px] text-[#8A8896]">{r.label}</dt>
+                  <dd className="text-[13px] font-medium text-[#17161F]">{r.value}</dd>
                 </div>
               ))}
             </dl>
@@ -60,7 +60,7 @@ export default function ExemplePage() {
         </section>
 
         <section className="mt-9">
-          <h2 className="mb-3 text-[13px] font-semibold text-[#170608]">
+          <h2 className="mb-3 text-[13px] font-semibold text-[#17161F]">
             {t('exemple.rendersTitle')}
           </h2>
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -70,8 +70,8 @@ export default function ExemplePage() {
                 className={`relative flex h-40 items-end rounded-[14px] bg-gradient-to-br p-3.5 ${PRESET_GRADIENT[key]}`}
               >
                 <span
-                  className={`rounded-[20px] px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] ${
-                    key.startsWith('nuit') ? 'bg-white/15 text-white' : 'bg-white text-[#170608]'
+                  className={`rounded-[20px] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] ${
+                    key.startsWith('nuit') ? 'bg-white/15 text-white' : 'bg-white text-[#17161F]'
                   }`}
                 >
                   {PRESETS[key].label[locale]}
@@ -81,13 +81,13 @@ export default function ExemplePage() {
           </div>
         </section>
 
-        <section className="mt-11 rounded-[16px] bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-6 py-8 text-center">
-          <h2 className="mb-4 font-[family-name:var(--font-poppins)] text-[18px] font-semibold text-white">
+        <section className="mt-11 rounded-[16px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-6 py-8 text-center">
+          <h2 className="mb-4 font-[family-name:var(--font-general-sans)] text-[18px] font-semibold text-white">
             {t('exemple.ctaTitle')}
           </h2>
           <Link
             href="/connexion"
-            className="inline-block rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-medium text-[#C81120] hover:bg-white/90"
+            className="inline-block rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-medium text-[#716FFF] hover:bg-white/90"
           >
             {t('exemple.ctaButton')}
           </Link>

@@ -7,7 +7,7 @@ import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
-import { LanguageToggle } from '@/components/LanguageToggle';
+import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
@@ -353,39 +353,39 @@ export function AppShell({
 
   return (
     <div className="flex h-screen flex-col bg-white">
-      <LanguageToggle />
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#ECE3E5] px-5.5 py-3.5">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#ECECF2] px-5.5 py-3.5">
         <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={() => setMobileTreeOpen(true)}
-            className="rounded-lg border border-[#ECE3E5] p-1.5 min-[900px]:hidden"
+            className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
             aria-label={t('app.treeTitle')}
           >
-            <Category set="bold" size={16} primaryColor="#7A6E71" />
+            <Category set="bold" size={16} primaryColor="#8A8896" />
           </button>
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
-          <span className="font-[family-name:var(--font-poppins)] text-[15px] font-semibold text-[#170608]">
+          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
+          <span className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
             RenderBox
           </span>
-          <span className="rounded-2xl border border-[#ECE3E5] bg-[#F8F5F6] px-3 py-1.5 font-[family-name:var(--font-ibm-plex-mono)] text-xs text-[#7A6E71]">
+          <span className="rounded-2xl border border-[#ECECF2] bg-[#F7F7FA] px-3 py-1.5 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
             {projectName}
           </span>
         </div>
         <div className="flex items-center gap-2.5">
+          <LanguageInlineSwitch />
           {authDisabled && (
-            <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] font-medium text-amber-800">
+            <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
               {t('app.authDisabledBanner')}
             </span>
           )}
-          <span className="rounded-2xl bg-[#C8112012] px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#C81120]">
+          <span className="rounded-2xl bg-[#716FFF12] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#716FFF]">
             {t('app.phaseTag')}
           </span>
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-[#7A6E71]">{t('app.engineLabel')} :</span>
+            <span className="text-[11px] text-[#8A8896]">{t('app.engineLabel')} :</span>
             <EngineSelect engine={engine} onChange={handleEngineChange} />
           </div>
-          <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#7A6E71]">
+          <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
             {tier && max !== null && remaining !== null
               ? t('app.quotaLabel', { used: max - remaining, max })
               : t('app.noTierLabel')}
@@ -393,10 +393,10 @@ export function AppShell({
           <button
             type="button"
             onClick={() => setMobilePanelOpen(true)}
-            className="rounded-lg border border-[#ECE3E5] p-1.5 min-[900px]:hidden"
+            className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
             aria-label={mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')}
           >
-            <Filter2 set="bold" size={16} primaryColor="#7A6E71" />
+            <Filter2 set="bold" size={16} primaryColor="#8A8896" />
           </button>
         </div>
       </header>
@@ -415,7 +415,7 @@ export function AppShell({
         <aside
           className={`${
             mobileTreeOpen ? 'flex' : 'hidden'
-          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col border-r border-[#ECE3E5] bg-[#F8F5F6] px-3.5 py-4.5 min-[900px]:static min-[900px]:z-auto min-[900px]:flex`}
+          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5 min-[900px]:static min-[900px]:z-auto min-[900px]:flex`}
         >
           <ModeSidebar
             mode={mode}
@@ -433,19 +433,19 @@ export function AppShell({
           {!hasNodes ? (
             <>
               <div className="mb-4">
-                <h2 className="mb-1 font-[family-name:var(--font-poppins)] text-base font-semibold text-[#170608]">
+                <h2 className="mb-1 font-[family-name:var(--font-general-sans)] text-base font-semibold text-[#17161F]">
                   {t('app.viewerTitle')}
                 </h2>
-                <p className="text-[13px] text-[#7A6E71]">{t('app.viewerSubtitle')}</p>
+                <p className="text-[13px] text-[#8A8896]">{t('app.viewerSubtitle')}</p>
               </div>
               <Dropzone uploading={uploading} onFile={handleFile} />
             </>
           ) : (
             <>
               {selectedNode && (
-                <div className="mb-4 font-[family-name:var(--font-ibm-plex-mono)] text-xs text-[#7A6E71]">
+                <div className="mb-4 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
                   {parentNode && <>{nodeLabel(parentNode.kind)} → </>}
-                  <b className="font-medium text-[#170608]">{nodeLabel(selectedNode.kind)}</b>
+                  <b className="font-medium text-[#17161F]">{nodeLabel(selectedNode.kind)}</b>
                 </div>
               )}
               <div
@@ -454,13 +454,13 @@ export function AppShell({
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
-                className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#ECE3E5] bg-gradient-to-br from-[#FBEDEE] to-[#F8F5F6] ${
+                className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#ECECF2] bg-gradient-to-br from-[#EFECFF] to-[#F7F7FA] ${
                   mode === 'retouch' ? 'cursor-crosshair select-none' : ''
                 }`}
               >
                 {selectedId && (
                   <>
-                    <span className="absolute left-3.5 top-3.5 rounded-2xl border border-[#ECE3E5] bg-white px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A6E71]">
+                    <span className="absolute left-3.5 top-3.5 rounded-2xl border border-[#ECECF2] bg-white px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
                       {selectedNode?.preset
                         ? t('app.canvasPresetBadge', {
                             preset: PRESETS[selectedNode.preset as PresetKey].label[locale],
@@ -471,7 +471,7 @@ export function AppShell({
                         : t('app.engineTag')}
                     </span>
                     {selectedNode?.kind === 'GENERATED' && materials.length > 0 && (
-                      <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#1E7A3D14] px-3 py-1.5 font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#1E7A3D]">
+                      <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#1E7A3D14] px-3 py-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#1E7A3D]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#1E7A3D]" />
                         {t('app.scanBadge', { n: materials.length })}
                       </span>
@@ -485,7 +485,7 @@ export function AppShell({
                     />
                     {mode === 'retouch' && zone && (zone.width > 0 || zone.height > 0) && (
                       <div
-                        className="absolute rounded-md border-2 border-dashed border-[#C81120] bg-[#C8112012]"
+                        className="absolute rounded-md border-2 border-dashed border-[#716FFF] bg-[#716FFF12]"
                         style={{
                           left: `${zone.x}%`,
                           top: `${zone.y}%`,
@@ -493,7 +493,7 @@ export function AppShell({
                           height: `${zone.height}%`,
                         }}
                       >
-                        <span className="absolute -top-6 left-0 whitespace-nowrap rounded-md bg-[#C81120] px-2 py-0.5 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-white">
+                        <span className="absolute -top-6 left-0 whitespace-nowrap rounded-md bg-[#716FFF] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
                           {t('edit.zoneLabel')}
                         </span>
                       </div>

@@ -52,10 +52,10 @@ export function HomeSidebar({
   const nextTier = tier ? NEXT_TIER[tier] : null;
 
   return (
-    <aside className="flex w-[240px] flex-shrink-0 flex-col border-r border-[#ECE3E5] bg-[#F8F5F6] px-3.5 py-4.5">
+    <aside className="flex w-[240px] flex-shrink-0 flex-col border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5">
       <div className="mb-5 flex items-center gap-2.5 px-1.5">
-        <div className="h-6.5 w-6.5 rounded-[7px] bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
-        <span className="font-[family-name:var(--font-poppins)] text-[14.5px] font-semibold text-[#170608]">
+        <div className="h-6.5 w-6.5 rounded-[7px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
+        <span className="font-[family-name:var(--font-general-sans)] text-[14.5px] font-semibold text-[#17161F]">
           RenderBox
         </span>
       </div>
@@ -63,14 +63,14 @@ export function HomeSidebar({
       <div className="mb-4.5">
         <Link
           href="/app/projets"
-          className="flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-[13.5px] font-semibold text-[#170608] shadow-[0_1px_4px_#17060814]"
+          className="flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-[13.5px] font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14]"
         >
-          <Folder set="bold" size={16} primaryColor="#C81120" />
+          <Folder set="bold" size={16} primaryColor="#716FFF" />
           {t('projects.title')}
         </Link>
       </div>
 
-      <h3 className="mb-2 px-1.5 font-[family-name:var(--font-poppins)] text-[10.5px] uppercase tracking-wide text-[#7A6E71]">
+      <h3 className="mb-2 px-1.5 font-[family-name:var(--font-general-sans)] text-[10.5px] uppercase tracking-wide text-[#8A8896]">
         {t('app.modesLabel')}
       </h3>
       <div className="mb-4.5 flex flex-col gap-1">
@@ -84,26 +84,26 @@ export function HomeSidebar({
               onClick={() => onModeChange(m)}
               className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium transition-colors ${
                 active
-                  ? 'bg-white font-semibold shadow-[0_1px_4px_#17060814]'
-                  : 'text-[#170608] hover:bg-[#F1EBEC]'
+                  ? 'bg-white font-semibold shadow-[0_1px_4px_#17161F14]'
+                  : 'text-[#17161F] hover:bg-[#F1F0F6]'
               }`}
             >
-              <Icon set="bold" size={16} primaryColor={active ? '#C81120' : '#7A6E71'} />
+              <Icon set="bold" size={16} primaryColor={active ? '#716FFF' : '#8A8896'} />
               {t(MODE_LABEL_KEY[m])}
             </button>
           );
         })}
       </div>
 
-      <h3 className="mb-2 px-1.5 font-[family-name:var(--font-poppins)] text-[10.5px] uppercase tracking-wide text-[#7A6E71]">
+      <h3 className="mb-2 px-1.5 font-[family-name:var(--font-general-sans)] text-[10.5px] uppercase tracking-wide text-[#8A8896]">
         {t('app.accountLabel')}
       </h3>
       <div className="mb-4.5 flex flex-col gap-1">
         <Link
           href="/parametres"
-          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#170608] hover:bg-[#F1EBEC]"
+          className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6]"
         >
-          <Setting set="bold" size={16} primaryColor="#7A6E71" />
+          <Setting set="bold" size={16} primaryColor="#8A8896" />
           {t('parametres.title')}
         </Link>
       </div>
@@ -111,14 +111,14 @@ export function HomeSidebar({
       {!tier ? (
         <Link
           href="/#tarifs"
-          className="mb-3 mt-auto flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-3.5 py-3 text-white"
+          className="mb-3 mt-auto flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3.5 py-3 text-white"
         >
           <span className="text-[12.5px] font-semibold">{t('app.genHomeChooseTier')}</span>
         </Link>
       ) : nextTier ? (
         <Link
           href="/parametres"
-          className="mb-3 mt-auto flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-3.5 py-3 text-white"
+          className="mb-3 mt-auto flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3.5 py-3 text-white"
         >
           <span className="text-[12.5px] font-semibold">
             {t('app.upgradeBannerLabel', { tier: t(TIER_LABEL_KEY[nextTier]) })}
@@ -129,14 +129,14 @@ export function HomeSidebar({
       <div
         className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 ${!tier || nextTier ? '' : 'mt-auto'}`}
       >
-        <div className="h-7 w-7 flex-shrink-0 rounded-lg bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
+        <div className="h-7 w-7 flex-shrink-0 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
         <div className="min-w-0">
-          <div className="truncate text-[12.5px] font-medium text-[#170608]">{userEmail}</div>
-          <div className="font-[family-name:var(--font-ibm-plex-mono)] text-[10.5px] text-[#7A6E71]">
+          <div className="truncate text-[12.5px] font-medium text-[#17161F]">{userEmail}</div>
+          <div className="font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#8A8896]">
             {tier ? t(TIER_LABEL_KEY[tier]) : t('app.noTierLabel')}
           </div>
           {tier && max !== null && remaining !== null ? (
-            <div className="font-[family-name:var(--font-ibm-plex-mono)] text-[10px] text-[#7A6E71]">
+            <div className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
               {t('app.quotaLabel', { used: max - remaining, max })}
             </div>
           ) : null}

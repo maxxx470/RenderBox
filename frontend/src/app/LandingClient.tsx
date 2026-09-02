@@ -2,10 +2,11 @@
 
 // RenderBox landing page — v2 redesign (2026-09-02), reproducing the visual
 // system of a reference site (structure, tokens, type pairing) with
-// RenderBox's own copy and product. Deliberately its OWN design system,
-// separate from the rest of the app (/app, /admin, /parametres etc. keep
-// the original red/Poppins charter) — see PRs around this date for the
-// scope decision. Bilingual via the existing i18n system (landing.* keys in
+// RenderBox's own copy and product. This design system is now the site-wide
+// charter (2026-09-02 update) — /app, /admin, /parametres etc. were ported
+// off the old red/Poppins charter onto these same tokens, so changes here to
+// the shared palette/type pairing should stay consistent with the rest of
+// the app. Bilingual via the existing i18n system (landing.* keys in
 // lib/i18n/dictionaries) — no hardcoded strings.
 //
 // Tokens (extracted from the reference site's shipped CSS, kept exact):
@@ -13,9 +14,10 @@
 //   line #ECECF2 · line-strong #DEDEE8 · band #F7F7FA · surface-2 #FBFBFD
 //   violet #716FFF · violet-2 #A264FF · violet-3 #6470FF
 //   signature gradient: linear-gradient(135deg,#6E6BFF 0%,#8B5CF6 48%,#A855F7 100%)
-// Fonts: General Sans (self-hosted, next/font/local) + JetBrains Mono for
-// tags/eyebrows — scoped to this page via the `fontClassName` prop from the
-// server wrapper (page.tsx), not the root layout.
+//   error/danger (semantic, NOT brand): #E5484D — used only for error text
+//   and destructive actions, never for accents
+// Fonts: General Sans + JetBrains Mono (tags/technical values), loaded once
+// site-wide in the root layout (frontend/src/app/layout.tsx).
 //
 // No fabricated testimonials/ratings/"trusted by N" claims — RenderBox has
 // no real customers yet; inventing quotes would be deceptive. The reference
@@ -24,9 +26,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Home, Location, Graph, TickSquare, Image as ImageIcon } from 'react-iconly';
+import {
+  Home,
+  Location,
+  Graph,
+  TickSquare,
+  Image as ImageIcon,
+  Category,
+  Edit,
+} from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
-import { LanguageToggle } from '@/components/LanguageToggle';
+import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { PRICING_TIERS, type PricingTier, type PricingTierId } from '@/lib/pricing-tiers';
@@ -96,7 +106,11 @@ function TreeNode({
     <div
       className={`mb-2.5 flex items-center gap-2 ${child ? 'ml-6.5' : ''} ${extraIndent ? 'ml-13' : ''}`}
     >
-      <div className={`h-6 w-6 flex-shrink-0 rounded-md ${GRADIENT}`} />
+      <div
+        className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md ${GRADIENT}`}
+      >
+        <ImageIcon set="bold" size={12} primaryColor="#ffffff" />
+      </div>
       <div>
         <div className="text-xs font-medium text-[#17161F]">{label}</div>
         <div className={`text-[9px] text-[#8A8896] ${MONO}`}>{tag}</div>
@@ -108,7 +122,11 @@ function TreeNode({
 function PresetCard({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-6.5 transition-colors hover:border-[#CFCADF]">
-      <div className={`mb-4 h-10.5 w-10.5 rounded-[10px] ${GRADIENT}`} />
+      <div
+        className={`mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] ${GRADIENT}`}
+      >
+        <Category set="bold" size={18} primaryColor="#ffffff" />
+      </div>
       <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
       <p className="text-[13px] leading-[1.55] text-[#6B6880]">{body}</p>
     </div>
@@ -228,16 +246,14 @@ function SketchVisual() {
 }
 
 function RenderVisual() {
-  return <div className={`h-full w-full ${GRADIENT}`} />;
+  return (
+    <div className={`flex h-full w-full items-center justify-center ${GRADIENT}`}>
+      <ImageIcon set="bold" size={40} primaryColor="#ffffff" />
+    </div>
+  );
 }
 
-export function LandingClient({
-  ctaHref,
-  fontClassName,
-}: {
-  ctaHref: '/app' | '/connexion';
-  fontClassName: string;
-}) {
+export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
   const t = useTranslations();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -281,11 +297,7 @@ export function LandingClient({
   }));
 
   return (
-    <main
-      className={`${fontClassName} bg-white font-[family-name:var(--font-general-sans)] text-[#17161F]`}
-    >
-      <LanguageToggle />
-
+    <main className="bg-white text-[#17161F]">
       {/* FLOATING PILL NAV */}
       <div className="sticky top-4 z-30 mx-auto max-w-[1180px] px-4">
         <nav className="flex items-center justify-between rounded-full border border-[#ECECF2] bg-white/90 px-5 py-3 shadow-[0_10px_30px_-14px_rgba(23,22,31,0.15)] backdrop-blur">
@@ -304,7 +316,8 @@ export function LandingClient({
               {t('landing.navExamples')}
             </Link>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3.5">
+            <LanguageInlineSwitch />
             <Link
               href={ctaHref}
               className="hidden text-sm text-[#6B6880] hover:text-[#17161F] min-[500px]:block"
@@ -375,7 +388,9 @@ export function LandingClient({
               <ImageIcon set="bold" size={18} primaryColor="#716FFF" />
             </div>
             <div className="absolute -right-4 top-20 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
-              <div className={`h-6 w-6 rounded-md ${GRADIENT}`} />
+              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${GRADIENT}`}>
+                <Edit set="bold" size={12} primaryColor="#ffffff" />
+              </div>
             </div>
             <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
               <ImageIcon set="bold" size={14} primaryColor="#716FFF" />

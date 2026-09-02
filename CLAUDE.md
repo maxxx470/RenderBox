@@ -125,15 +125,24 @@ If a change is genuinely required in any of these, surface a brief "I am about t
 - Cookies stay `httpOnly` + `Secure` (prod) + `SameSite=Lax`.
 - Sentry init stays in [frontend/instrumentation.ts](frontend/instrumentation.ts) `register()` — do not move it into a route module (the hook fires before app code, route imports do not).
 
-## Design system — fully swappable (no UI shipped)
+## Design system
 
-The starter is **headless on purpose**. Touchpoints if a fork wants a specific design:
+The base starter ships headless (no UI). **RenderBox has since diverged from that default**: it has a real, shipped, site-wide design charter — the rules below are binding for every page (`/`, `/app/*`, `/admin/*`, `/parametres`, `/legal`, `/exemple`, `/connexion`, error pages), not just the landing page. Follow them for any new UI work instead of inventing new tokens.
 
-- [frontend/src/app/page.tsx](frontend/src/app/page.tsx) — `return null`. Write your homepage here. No layout assumption is baked into the API.
-- [frontend/src/app/layout.tsx](frontend/src/app/layout.tsx) — Inter font + 2 client contexts (`AuthProvider`, `ToastProvider`). Both are logic-only — swap the font, restyle toasts in your own components, keep the providers (they wrap the `api()` wrapper's auto-refresh + the toast queue).
+### RenderBox charter (binding, site-wide — last updated 2026-09-02)
+
+- **Fonts** — General Sans (self-hosted via `next/font/local`, [frontend/src/fonts/general-sans/](frontend/src/fonts/general-sans/)) for all body/heading text, JetBrains Mono (`next/font/google`) for technical/tag/mono text (project names, badges, prices, node labels). Both are loaded once in [frontend/src/app/layout.tsx](frontend/src/app/layout.tsx) as CSS variables (`--font-general-sans`, `--font-jetbrains-mono`) available to every route — reference them as `font-[family-name:var(--font-general-sans)]` / `font-[family-name:var(--font-jetbrains-mono)]`. Do **not** reintroduce Inter, Poppins, or IBM Plex Mono (the old, fully-retired charter) or leave any UI text on the browser default font.
+- **Colors** — ink `#17161F` (primary text) · ink-2 `#3D3B49` · muted `#8A8896` (secondary text) · line `#ECECF2` (borders/dividers) · line-strong `#DEDEE8` (hover borders) · band `#F7F7FA` (sidebar/section backgrounds) · surface-2 `#FBFBFD`. Brand accent is **violet**, not red: `#716FFF` (primary accent, icons, links, active states), gradient `linear-gradient(135deg,#6E6BFF 0%,#8B5CF6 48%,#A855F7 100%)` (buttons, badges, logo marks — as a literal complete Tailwind class string, e.g. `bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]`; see the Tailwind JIT gotcha below). **Error/destructive is a separate semantic color, `#E5484D`** — never reuse the violet brand accent for error text, failed-status badges, or delete/danger buttons; never reuse `#E5484D` for anything that isn't an error or a destructive action.
+- **Icons** — `react-iconly` only (IconlyPro), `set="bold"`, explicit `primaryColor`. Never use emoji as UI icons. When a colored square/badge is meant to represent something (a node, a preset, an upload), it must contain an actual icon glyph in the foreground (`primaryColor="#ffffff"` on a gradient background) — a bare gradient `<div>` with no glyph reads as a missing icon, not a decoration.
+- **Tailwind JIT gotcha** — the scanner only detects complete literal class-name tokens in source text. A class assembled at runtime from a plain CSS-value constant interpolated into `` `bg-[${x}]` `` is invisible to it and silently generates no CSS. If you factor out a repeated gradient/color into a constant, make the constant the **entire** class name (e.g. `const GRADIENT = 'bg-[linear-gradient(...)]'`), not just the CSS value.
+- **Mobile/responsive** — any floating/fixed-positioned UI (language switcher, banners) must be checked against every page's own header/nav for corner collisions at small viewports; prefer docking such controls inline into an existing header row over a second `position: fixed` element competing for the same corner. See [frontend/src/components/LanguageToggle.tsx](frontend/src/components/LanguageToggle.tsx) (`LanguageInlineSwitch` for docking inline, `LanguageToggle` only for pages with no competing header content) for the pattern.
+
+Touchpoints if a future fork wants to swap this charter entirely:
+
+- [frontend/src/app/layout.tsx](frontend/src/app/layout.tsx) — swap the font loaders here (single source for the whole site) + 2 client contexts (`AuthProvider`, `ToastProvider`, logic-only, keep them).
 - [frontend/src/app/globals.css](frontend/src/app/globals.css) — one line: `@import 'tailwindcss';` (Tailwind v4 zero-config). Drop it + remove `@tailwindcss/postcss` from [frontend/postcss.config.mjs](frontend/postcss.config.mjs) to leave Tailwind out entirely.
 - [frontend/src/app/error.tsx](frontend/src/app/error.tsx) — Tailwind-styled fallback. Replace freely.
-- [examples/frontend-pages/](examples/frontend-pages/) — 11 reference pages (login/signup/verify-email/forgot-reset-password/dashboard/withdrawals/payment-success+failure/auth-error/admin/*). They are NOT imported anywhere — they live as Tailwind references to copy or rebuild.
+- [examples/frontend-pages/](examples/frontend-pages/) — reference pages from the base starter (NOT imported anywhere, NOT updated to RenderBox's charter — treat as structural/API-contract references only, not visual ones).
 
 **No server lib reaches into the DOM.** Routes only return `NextResponse.json(...)`. The same backend feeds plain React, shadcn/ui, Mantine, a SwiftUI client, a Flutter app — pick anything.
 

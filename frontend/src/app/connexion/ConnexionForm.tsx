@@ -39,43 +39,43 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
   if (status === 'sent') {
     return (
       <div className="text-center">
-        <h1 className="mb-1.5 font-[family-name:var(--font-poppins)] text-xl font-semibold text-[#170608]">
+        <h1 className="mb-1.5 font-[family-name:var(--font-general-sans)] text-xl font-semibold text-[#17161F]">
           {t('connexion.sentTitle')}
         </h1>
-        <p className="text-sm text-[#7A6E71]">{t('connexion.sentBody')}</p>
+        <p className="text-sm text-[#8A8896]">{t('connexion.sentBody')}</p>
       </div>
     );
   }
 
   return (
     <>
-      <h1 className="mb-1.5 text-center font-[family-name:var(--font-poppins)] text-xl font-semibold text-[#170608]">
+      <h1 className="mb-1.5 text-center font-[family-name:var(--font-general-sans)] text-xl font-semibold text-[#17161F]">
         {t('connexion.heading')}
       </h1>
-      <p className="mb-7 text-center text-[13px] text-[#7A6E71]">{t('connexion.subheading')}</p>
+      <p className="mb-7 text-center text-[13px] text-[#8A8896]">{t('connexion.subheading')}</p>
 
       <a
         href="/api/auth/oauth/google/start?next=/app"
-        className="mb-5 flex w-full items-center justify-center gap-2.5 rounded-xl border border-[#ECE3E5] px-3 py-3 text-sm font-medium text-[#170608] hover:bg-[#F8F5F6]"
+        className="mb-5 flex w-full items-center justify-center gap-2.5 rounded-xl border border-[#ECECF2] px-3 py-3 text-sm font-medium text-[#17161F] hover:bg-[#F7F7FA]"
       >
         <GoogleMark />
         {t('connexion.googleButton')}
       </a>
 
       <div className="mb-5 flex items-center gap-2.5">
-        <div className="h-px flex-1 bg-[#ECE3E5]" />
-        <span className="font-[family-name:var(--font-ibm-plex-mono)] text-[11px] text-[#7A6E71]">
+        <div className="h-px flex-1 bg-[#ECECF2]" />
+        <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
           {t('connexion.or')}
         </span>
-        <div className="h-px flex-1 bg-[#ECE3E5]" />
+        <div className="h-px flex-1 bg-[#ECECF2]" />
       </div>
 
       <form onSubmit={onSubmit}>
-        <label className="mb-1.5 block text-xs text-[#7A6E71]" htmlFor="connexion-email">
+        <label className="mb-1.5 block text-xs text-[#8A8896]" htmlFor="connexion-email">
           {t('connexion.emailLabel')}
         </label>
-        <div className="mb-3.5 flex items-center gap-2 rounded-xl border border-[#ECE3E5] bg-[#F8F5F6] px-3.5 py-3 focus-within:border-[#C81120]">
-          <Message set="bold" size={18} primaryColor="#7A6E71" />
+        <div className="mb-3.5 flex items-center gap-2 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-3 focus-within:border-[#716FFF]">
+          <Message set="bold" size={18} primaryColor="#8A8896" />
           <input
             id="connexion-email"
             type="email"
@@ -83,12 +83,12 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
             placeholder={t('connexion.emailPlaceholder')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-transparent text-sm text-[#170608] outline-none placeholder:text-[#7A6E71]"
+            className="w-full bg-transparent text-sm text-[#17161F] outline-none placeholder:text-[#8A8896]"
           />
         </div>
 
         {error && (
-          <p role="alert" className="mb-3 text-sm text-[#C81120]">
+          <p role="alert" className="mb-3 text-sm text-[#E5484D]">
             {error}
           </p>
         )}
@@ -96,13 +96,13 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
         <button
           type="submit"
           disabled={status === 'submitting'}
-          className="w-full rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="w-full rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
         >
           {status === 'submitting' ? t('connexion.submitting') : t('connexion.submitButton')}
         </button>
       </form>
 
-      <p className="mt-4 text-center text-xs text-[#7A6E71]">{t('connexion.hint')}</p>
+      <p className="mt-4 text-center text-xs text-[#8A8896]">{t('connexion.hint')}</p>
     </>
   );
 }

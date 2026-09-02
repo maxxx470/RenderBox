@@ -31,10 +31,10 @@ export default async function ConnexionPage({
   return (
     <main className="flex min-h-screen items-center justify-center bg-white">
       <LanguageToggle />
-      <div className="w-[380px] rounded-[18px] border border-[#ECE3E5] px-8 py-9">
+      <div className="w-[380px] rounded-[18px] border border-[#ECECF2] px-8 py-9">
         <div className="mb-7 flex items-center justify-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
-          <span className="font-[family-name:var(--font-poppins)] text-[17px] font-bold text-[#170608]">
+          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
+          <span className="font-[family-name:var(--font-general-sans)] text-[17px] font-bold text-[#17161F]">
             RenderBox
           </span>
         </div>

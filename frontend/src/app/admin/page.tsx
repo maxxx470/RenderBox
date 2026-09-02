@@ -14,12 +14,12 @@ interface Stats {
 
 function StatCard({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className="rounded-[14px] border border-[#ECE3E5] px-4.5 py-4">
-      <div className="mb-2 text-[11px] text-[#7A6E71]">{label}</div>
-      <div className="font-[family-name:var(--font-poppins)] text-[22px] font-bold text-[#170608]">
+    <div className="rounded-[14px] border border-[#ECECF2] px-4.5 py-4">
+      <div className="mb-2 text-[11px] text-[#8A8896]">{label}</div>
+      <div className="font-[family-name:var(--font-general-sans)] text-[22px] font-bold text-[#17161F]">
         {value}
         {suffix ? (
-          <small className="ml-1.5 font-[family-name:var(--font-ibm-plex-mono)] text-[11px] font-medium text-[#7A6E71]">
+          <small className="ml-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] font-medium text-[#8A8896]">
             {suffix}
           </small>
         ) : null}
@@ -51,10 +51,10 @@ export default function AdminOverviewPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-[family-name:var(--font-poppins)] text-[19px] font-semibold text-[#170608]">
+        <h1 className="font-[family-name:var(--font-general-sans)] text-[19px] font-semibold text-[#17161F]">
           {t('admin.overview.title')}
         </h1>
-        <p className="mt-1 text-[12.5px] text-[#7A6E71]">{t('admin.overview.subtitle')}</p>
+        <p className="mt-1 text-[12.5px] text-[#8A8896]">{t('admin.overview.subtitle')}</p>
       </div>
 
       {error ? (
@@ -84,7 +84,7 @@ export default function AdminOverviewPage() {
       <div className="mt-8">
         <Link
           href="/admin/journal"
-          className="text-[13px] font-medium text-[#C81120] hover:underline"
+          className="text-[13px] font-medium text-[#716FFF] hover:underline"
         >
           {t('admin.overview.viewAllJournal')}
         </Link>

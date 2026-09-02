@@ -24,12 +24,12 @@ function TreeRow({
         style={{ paddingLeft: 10 + depth * 14 }}
         className={`flex w-full items-center gap-2 rounded-lg py-2 pr-2 text-left text-[13px] ${
           selected
-            ? 'bg-[#F1EBEC] font-medium text-[#170608]'
-            : 'text-[#7A6E71] hover:bg-[#F1EBEC]/60'
+            ? 'bg-[#F1F0F6] font-medium text-[#17161F]'
+            : 'text-[#8A8896] hover:bg-[#F1F0F6]/60'
         }`}
       >
         <span
-          className={`h-1.5 w-1.5 rounded-full ${node.kind === 'GENERATED' ? 'bg-[#C81120]' : 'bg-[#7A6E71]'}`}
+          className={`h-1.5 w-1.5 rounded-full ${node.kind === 'GENERATED' ? 'bg-[#716FFF]' : 'bg-[#8A8896]'}`}
         />
         {node.kind === 'GENERATED' ? t('app.nodeGenerated') : t('app.nodeUploaded')}
       </button>
@@ -59,8 +59,8 @@ export function ProjectTree({
 
   if (tree.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-[#7A6E71]">
-        <div className="h-[34px] w-[34px] rounded-[10px] border-[1.5px] border-dashed border-[#ECE3E5]" />
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-[#8A8896]">
+        <div className="h-[34px] w-[34px] rounded-[10px] border-[1.5px] border-dashed border-[#ECECF2]" />
         <p className="max-w-[150px] text-xs leading-relaxed">{t('app.treeEmpty')}</p>
       </div>
     );

@@ -11,7 +11,7 @@ import { Folder, Send, TickSquare, CloseSquare } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
-import { LanguageToggle } from '@/components/LanguageToggle';
+import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import type { EngineName } from '@/lib/server/generation/engines/types';
@@ -55,7 +55,7 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
   return (
     <Link
       href={`/app/${render.projectId}`}
-      className={`group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] border border-[#ECE3E5] bg-gradient-to-br from-[#FBEDEE] to-[#F1EBEC] shadow-[0_20px_40px_-20px_#17060830] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0 ${
+      className={`group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] border border-[#ECECF2] bg-gradient-to-br from-[#EFECFF] to-[#F1F0F6] shadow-[0_20px_40px_-20px_#17161F30] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0 ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
@@ -65,10 +65,10 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-      <span className="absolute left-3 top-3 rounded-2xl border border-[#ECE3E5] bg-white px-2 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[9.5px] text-[#7A6E71]">
+      <span className="absolute left-3 top-3 rounded-2xl border border-[#ECECF2] bg-white px-2 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[9.5px] text-[#8A8896]">
         {tag}
       </span>
-      <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-poppins)] text-sm font-semibold text-white">
+      <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-general-sans)] text-sm font-semibold text-white">
         {render.projectName}
       </span>
     </Link>
@@ -156,7 +156,6 @@ export function GenerationHome({
 
   return (
     <div className="flex h-screen bg-white">
-      <LanguageToggle />
       <HomeSidebar
         mode={mode}
         onModeChange={handleModeChange}
@@ -167,14 +166,17 @@ export function GenerationHome({
       />
 
       <main className="flex flex-1 flex-col overflow-hidden px-7.5 pt-5.5">
-        <div className="mb-7.5 flex items-center gap-2">
-          <span className="text-[13px] text-[#7A6E71]">{t('app.engineLabel')}</span>
-          <EngineSelect engine={engine} onChange={setEngine} />
-          {authDisabled && (
-            <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-ibm-plex-mono)] text-[10px] font-medium text-amber-800">
-              {t('app.authDisabledBanner')}
-            </span>
-          )}
+        <div className="mb-7.5 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] text-[#8A8896]">{t('app.engineLabel')}</span>
+            <EngineSelect engine={engine} onChange={setEngine} />
+            {authDisabled && (
+              <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
+                {t('app.authDisabledBanner')}
+              </span>
+            )}
+          </div>
+          <LanguageInlineSwitch />
         </div>
 
         {!tier ? (
@@ -182,29 +184,29 @@ export function GenerationHome({
           // tier there's nothing to do in any mode, so this pre-empts even
           // the mode hint below.
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000]">
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
               <Folder set="bold" size={24} primaryColor="#ffffff" />
             </div>
-            <h2 className="font-[family-name:var(--font-poppins)] text-[15px] font-semibold text-[#170608]">
+            <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
               {t('app.genHomeNoTierTitle')}
             </h2>
-            <p className="max-w-[320px] text-[13px] text-[#7A6E71]">{t('app.genHomeNoTierBody')}</p>
+            <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeNoTierBody')}</p>
             <Link
               href="/#tarifs"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-5 py-2.5 text-[13px] font-semibold text-white"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-2.5 text-[13px] font-semibold text-white"
             >
               {t('app.genHomeChooseTier')}
             </Link>
           </div>
         ) : mode !== 'generate' ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#E8121F] to-[#7F0000]">
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
               <Folder set="bold" size={24} primaryColor="#ffffff" />
             </div>
-            <p className="max-w-[320px] text-[13px] text-[#7A6E71]">{t('app.genHomeModeHint')}</p>
+            <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeModeHint')}</p>
             <Link
               href="/app/projets"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] px-5 py-2.5 text-[13px] font-semibold text-white"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-2.5 text-[13px] font-semibold text-white"
             >
               {t('app.genHomeOpenProjects')}
             </Link>
@@ -212,8 +214,8 @@ export function GenerationHome({
         ) : (
           <>
             <div className="mb-6.5 flex items-center justify-center gap-3.5">
-              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000]" />
-              <h1 className="font-[family-name:var(--font-poppins)] text-[32px] font-bold text-[#170608]">
+              <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
+              <h1 className="font-[family-name:var(--font-general-sans)] text-[32px] font-bold text-[#17161F]">
                 {t('app.genHomeTitle')}
               </h1>
             </div>
@@ -249,8 +251,8 @@ export function GenerationHome({
                         active
                           ? isSketch
                             ? 'border-transparent bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A] text-white'
-                            : 'border-transparent bg-gradient-to-br from-[#E8121F] to-[#7F0000] text-white'
-                          : 'border-[#ECE3E5] bg-[#F8F5F6] text-[#7A6E71] hover:border-[#D9C4C6]',
+                            : 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
+                          : 'border-[#ECECF2] bg-[#F7F7FA] text-[#8A8896] hover:border-[#DEDEE8]',
                       ].join(' ')}
                     >
                       {PRESETS[key].label[locale]}
@@ -266,8 +268,8 @@ export function GenerationHome({
                   className={[
                     'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium disabled:cursor-not-allowed disabled:opacity-50',
                     referenceFile
-                      ? 'border-transparent bg-gradient-to-br from-[#E8121F] to-[#7F0000] text-white'
-                      : 'border-dashed border-[#ECE3E5] bg-[#F8F5F6] text-[#7A6E71]',
+                      ? 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
+                      : 'border-dashed border-[#ECECF2] bg-[#F7F7FA] text-[#8A8896]',
                   ].join(' ')}
                 >
                   {referenceFile ? (
@@ -297,7 +299,7 @@ export function GenerationHome({
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   className={`flex flex-1 items-center gap-2.5 rounded-[14px] border px-4 py-3 ${
-                    dragOver ? 'border-[#C81120] bg-[#FBEDEE]' : 'border-[#ECE3E5] bg-[#F8F5F6]'
+                    dragOver ? 'border-[#716FFF] bg-[#EFECFF]' : 'border-[#ECECF2] bg-[#F7F7FA]'
                   }`}
                 >
                   <input
@@ -310,14 +312,14 @@ export function GenerationHome({
                       if (e.key === 'Enter' && !sendDisabled && referenceFile)
                         void quickStart(referenceFile);
                     }}
-                    className="w-full bg-transparent text-[13px] text-[#170608] outline-none placeholder:text-[#7A6E71] disabled:cursor-not-allowed"
+                    className="w-full bg-transparent text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
                   />
                 </div>
                 <button
                   type="button"
                   disabled={sendDisabled}
                   onClick={() => referenceFile && void quickStart(referenceFile)}
-                  className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#E8121F] to-[#7F0000] text-white disabled:opacity-50"
+                  className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
                 >
                   <Send set="bold" size={17} primaryColor="#ffffff" />
                 </button>

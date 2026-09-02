@@ -46,20 +46,20 @@ export function ModeSidebar({
               onClick={() => onModeChange(m)}
               className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium transition-colors ${
                 active
-                  ? 'bg-gradient-to-br from-[#E8121F] to-[#7F0000] text-white'
-                  : 'text-[#170608] hover:bg-[#F1EBEC]'
+                  ? 'bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
+                  : 'text-[#17161F] hover:bg-[#F1F0F6]'
               }`}
             >
-              <Icon set="bold" size={16} primaryColor={active ? '#ffffff' : '#7A6E71'} />
+              <Icon set="bold" size={16} primaryColor={active ? '#ffffff' : '#8A8896'} />
               {t(MODE_LABEL_KEY[m])}
             </button>
           );
         })}
       </div>
 
-      <div className="mb-2 h-px bg-[#ECE3E5]" />
+      <div className="mb-2 h-px bg-[#ECECF2]" />
 
-      <h3 className="mb-3.5 mt-3 font-[family-name:var(--font-poppins)] text-[11px] uppercase tracking-wide text-[#7A6E71]">
+      <h3 className="mb-3.5 mt-3 font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
         {t('app.treeTitle')}
       </h3>
       <ProjectTree tree={tree} selectedId={selectedId} onSelect={onSelectNode} />

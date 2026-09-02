@@ -54,18 +54,18 @@ export default function PaiementRetourPage() {
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-6 text-center">
       <LanguageToggle />
       {outcome === 'checking' ? (
-        <p className="text-[13px] text-[#7A6E71]">{t('paiementRetour.checking')}</p>
+        <p className="text-[13px] text-[#8A8896]">{t('paiementRetour.checking')}</p>
       ) : (
         <>
-          <h1 className="font-[family-name:var(--font-poppins)] text-2xl font-bold text-[#170608]">
+          <h1 className="font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
             {copy[outcome].title}
           </h1>
-          <p className="text-[14px] text-[#7A6E71]">{copy[outcome].body}</p>
+          <p className="text-[14px] text-[#8A8896]">{copy[outcome].body}</p>
         </>
       )}
       <Link
         href="/parametres"
-        className="mt-4 rounded-[10px] border border-[#ECE3E5] px-5 py-2 text-[13px] font-medium text-[#170608] hover:bg-[#F8F5F6]"
+        className="mt-4 rounded-[10px] border border-[#ECECF2] px-5 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
       >
         {t('paiementRetour.backButton')}
       </Link>

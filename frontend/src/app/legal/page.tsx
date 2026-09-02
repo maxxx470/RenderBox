@@ -14,15 +14,15 @@ export default function LegalPage() {
   return (
     <main className="mx-auto min-h-screen max-w-2xl px-6 py-14">
       <LanguageToggle />
-      <Link href="/" className="text-[13px] text-[#7A6E71] hover:text-[#170608]">
+      <Link href="/" className="text-[13px] text-[#8A8896] hover:text-[#17161F]">
         {t('legal.backHome')}
       </Link>
 
-      <h1 className="mt-4 mb-6 font-[family-name:var(--font-poppins)] text-2xl font-bold text-[#170608]">
+      <h1 className="mt-4 mb-6 font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
         {t('legal.title')}
       </h1>
 
-      <div className="mb-6 flex gap-1 border-b border-[#ECE3E5]">
+      <div className="mb-6 flex gap-1 border-b border-[#ECECF2]">
         {(['terms', 'privacy'] as const).map((key) => (
           <button
             key={key}
@@ -30,8 +30,8 @@ export default function LegalPage() {
             onClick={() => setTab(key)}
             className={`px-4 py-2.5 text-[13px] font-medium ${
               tab === key
-                ? 'border-b-2 border-[#C81120] text-[#C81120]'
-                : 'text-[#7A6E71] hover:text-[#170608]'
+                ? 'border-b-2 border-[#716FFF] text-[#716FFF]'
+                : 'text-[#8A8896] hover:text-[#17161F]'
             }`}
           >
             {key === 'terms' ? t('legal.tabTerms') : t('legal.tabPrivacy')}
@@ -39,7 +39,7 @@ export default function LegalPage() {
         ))}
       </div>
 
-      <p className="whitespace-pre-line text-[14px] leading-relaxed text-[#170608]">
+      <p className="whitespace-pre-line text-[14px] leading-relaxed text-[#17161F]">
         {tab === 'terms' ? t('legal.termsBody') : t('legal.privacyBody')}
       </p>
     </main>

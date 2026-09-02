@@ -39,23 +39,23 @@ export function EngineSelect({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((v) => !v)}
-        className="flex flex-shrink-0 items-center gap-2 rounded-full border border-[#ECE3E5] bg-[#F8F5F6] py-2 pl-2 pr-3 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex flex-shrink-0 items-center gap-2 rounded-full border border-[#ECECF2] bg-[#F7F7FA] py-2 pl-2 pr-3 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span className={`h-[22px] w-[22px] rounded-md ${ENGINE_ICON_CLASS[engine]}`} />
-        <span className="text-[12.5px] font-medium text-[#170608]">
+        <span className="text-[12.5px] font-medium text-[#17161F]">
           {ENGINE_LABELS[engine].name}
         </span>
         <span className="ml-0.5 flex-shrink-0">
           {open ? (
-            <ChevronUp set="bold" size={13} primaryColor="#7A6E71" />
+            <ChevronUp set="bold" size={13} primaryColor="#8A8896" />
           ) : (
-            <ChevronDown set="bold" size={13} primaryColor="#7A6E71" />
+            <ChevronDown set="bold" size={13} primaryColor="#8A8896" />
           )}
         </span>
       </button>
 
       {open && (
-        <div className="absolute bottom-[56px] right-0 z-10 w-[260px] rounded-2xl border border-[#ECE3E5] bg-white p-2 shadow-[0_20px_40px_-16px_#17060830]">
+        <div className="absolute bottom-[56px] right-0 z-10 w-[260px] rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_20px_40px_-16px_#17161F30]">
           {ENGINE_NAMES.map((key) => {
             const selected = key === engine;
             return (
@@ -66,27 +66,27 @@ export function EngineSelect({
                   onChange(key);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center gap-2.5 rounded-[10px] p-2.5 text-left hover:bg-[#F8F5F6] ${
-                  selected ? 'bg-[#C8112012]' : ''
+                className={`flex w-full items-center gap-2.5 rounded-[10px] p-2.5 text-left hover:bg-[#F7F7FA] ${
+                  selected ? 'bg-[#716FFF12]' : ''
                 }`}
               >
                 <span
                   className={`h-[30px] w-[30px] flex-shrink-0 rounded-lg ${ENGINE_ICON_CLASS[key]}`}
                 />
                 <span className="flex-1">
-                  <span className="block text-[13px] font-semibold text-[#170608]">
+                  <span className="block text-[13px] font-semibold text-[#17161F]">
                     {ENGINE_LABELS[key].name}
                   </span>
-                  <span className="mt-0.5 block text-[11px] text-[#7A6E71]">
+                  <span className="mt-0.5 block text-[11px] text-[#8A8896]">
                     {ENGINE_LABELS[key].description[locale]}
                   </span>
                 </span>
-                {selected && <TickSquare set="bold" size={16} primaryColor="#C81120" />}
+                {selected && <TickSquare set="bold" size={16} primaryColor="#716FFF" />}
               </button>
             );
           })}
-          <div className="mx-1 my-1.5 h-px bg-[#ECE3E5]" />
-          <p className="px-2.5 pb-1 pt-2 text-[10.5px] leading-relaxed text-[#7A6E71]">
+          <div className="mx-1 my-1.5 h-px bg-[#ECECF2]" />
+          <p className="px-2.5 pb-1 pt-2 text-[10.5px] leading-relaxed text-[#8A8896]">
             {t('app.engineDropdownNote')}
           </p>
         </div>

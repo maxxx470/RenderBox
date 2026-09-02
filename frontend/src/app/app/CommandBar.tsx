@@ -12,8 +12,8 @@ function StatusPill({ active, label }: { active: boolean; label: string }) {
       className={[
         'flex items-center gap-2 rounded-full border px-3.5 py-2 text-[12.5px] font-medium',
         active
-          ? 'border-transparent bg-gradient-to-br from-[#E8121F] to-[#7F0000] text-white'
-          : 'border-dashed border-[#ECE3E5] bg-[#F8F5F6] text-[#7A6E71]',
+          ? 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
+          : 'border-dashed border-[#ECECF2] bg-[#F7F7FA] text-[#8A8896]',
       ].join(' ')}
     >
       {active && <TickSquare set="bold" size={13} primaryColor="#ffffff" />}
@@ -53,7 +53,7 @@ export function CommandBar({
   const { locale, t } = useLocale();
 
   return (
-    <div className="border-t border-[#ECE3E5] px-5.5 pb-4.5 pt-3.5">
+    <div className="border-t border-[#ECECF2] px-5.5 pb-4.5 pt-3.5">
       <div className="mb-3 flex flex-wrap gap-2">
         {mode === 'generate' &&
           PRESET_KEYS.map((key) => {
@@ -71,13 +71,13 @@ export function CommandBar({
                   active
                     ? isSketch
                       ? 'border-transparent bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A] text-white'
-                      : 'border-transparent bg-gradient-to-br from-[#E8121F] to-[#7F0000] text-white'
-                    : 'border-[#ECE3E5] bg-[#F8F5F6] text-[#7A6E71] hover:border-[#D9C4C6]',
+                      : 'border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
+                    : 'border-[#ECECF2] bg-[#F7F7FA] text-[#8A8896] hover:border-[#DEDEE8]',
                 ].join(' ')}
               >
                 {PRESETS[key].label[locale]}
                 {isSketch && (
-                  <span className="rounded-md bg-white px-1.5 py-0.5 font-[family-name:var(--font-ibm-plex-mono)] text-[9px] text-[#C81120]">
+                  <span className="rounded-md bg-white px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#716FFF]">
                     {t('app.presetNewBadge')}
                   </span>
                 )}
@@ -98,7 +98,7 @@ export function CommandBar({
         )}
       </div>
       <div className="flex items-center gap-2.5">
-        <div className="flex flex-1 items-center gap-2.5 rounded-[14px] border border-[#ECE3E5] bg-[#F8F5F6] px-4 py-3">
+        <div className="flex flex-1 items-center gap-2.5 rounded-[14px] border border-[#ECECF2] bg-[#F7F7FA] px-4 py-3">
           <input
             type="text"
             placeholder={
@@ -114,14 +114,14 @@ export function CommandBar({
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !sendDisabled) onSubmit();
             }}
-            className="w-full bg-transparent text-[13px] text-[#170608] outline-none placeholder:text-[#7A6E71] disabled:cursor-not-allowed"
+            className="w-full bg-transparent text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
           />
         </div>
         <button
           type="button"
           disabled={sendDisabled || generating}
           onClick={onSubmit}
-          className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#E8121F] to-[#7F0000] text-white disabled:opacity-50"
+          className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
         >
           <Send set="bold" size={17} primaryColor="#ffffff" />
         </button>
