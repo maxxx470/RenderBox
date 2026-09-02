@@ -45,6 +45,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.retryBannerText': 'The request failed. Your input was kept.',
   'app.retryButton': 'Try again',
   'app.retryDismiss': 'Dismiss',
+  'app.compareToggle': 'Compare with the source image',
   'app.treeDeleteNode': 'Delete this render',
   'app.treeDeleteTitle': 'Delete “{name}”?',
   'app.treeDeleteBody':

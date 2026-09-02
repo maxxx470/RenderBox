@@ -43,6 +43,7 @@ const fr = {
   'app.retryBannerText': 'La demande a échoué. Ta saisie a été conservée.',
   'app.retryButton': 'Réessayer',
   'app.retryDismiss': 'Ignorer',
+  'app.compareToggle': "Comparer avec l'image d'origine",
   'app.treeDeleteNode': 'Supprimer ce rendu',
   'app.treeDeleteTitle': 'Supprimer « {name} » ?',
   'app.treeDeleteBody':

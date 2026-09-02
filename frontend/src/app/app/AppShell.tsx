@@ -13,7 +13,7 @@ import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/pr
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { PricingTierId } from '@/lib/pricing-tiers';
-import { Category, Filter2, Download, Upload } from 'react-iconly';
+import { Category, Filter2, Download, Upload, Swap } from 'react-iconly';
 import { ModeSidebar } from './ModeSidebar';
 import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
 import { useSidebarCollapsed } from './useSidebarCollapsed';
@@ -122,6 +122,9 @@ export function AppShell({
   const [elapsed, setElapsed] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<RenderTreeNode | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [comparing, setComparing] = useState(false);
+  const [comparePos, setComparePos] = useState(50);
+  const compareDragging = useRef(false);
   const [sidebarCollapsed, toggleSidebar] = useSidebarCollapsed();
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
@@ -168,6 +171,7 @@ export function AppShell({
     setPrompt('');
     setZone(null);
     setReferenceFile(null);
+    setComparing(false);
   }
 
   const refreshMaterials = useCallback(async (id: string) => {
@@ -190,6 +194,10 @@ export function AppShell({
     setZone(null);
     setReferenceFile(null);
     setRetryable(false);
+    // A different node means a different pair to compare — reopen it
+    // deliberately rather than inheriting the previous comparison.
+    setComparing(false);
+    setComparePos(50);
   }, [selectedId]);
 
   const busy = generating || submittingEdit;
@@ -401,6 +409,27 @@ export function AppShell({
     };
   }
 
+  function comparePctFromClientX(clientX: number): number {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return comparePos;
+    return Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
+  }
+
+  function handleComparePointerDown(e: React.PointerEvent) {
+    compareDragging.current = true;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setComparePos(comparePctFromClientX(e.clientX));
+  }
+
+  function handleComparePointerMove(e: React.PointerEvent) {
+    if (!compareDragging.current) return;
+    setComparePos(comparePctFromClientX(e.clientX));
+  }
+
+  function handleComparePointerUp() {
+    compareDragging.current = false;
+  }
+
   function handleMouseDown(e: React.MouseEvent) {
     if (mode !== 'retouch') return;
     const p = pctFromEvent(e);
@@ -594,16 +623,91 @@ export function AppShell({
                       draggable={false}
                       className="pointer-events-none max-h-full max-w-full object-contain"
                     />
-                    <a
-                      href={`/api/render-nodes/${selectedId}/image`}
-                      download
-                      onMouseDown={(e) => e.stopPropagation()}
-                      aria-label={t('app.downloadButton')}
-                      title={t('app.downloadButton')}
-                      className="absolute right-3.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
-                    >
-                      <Download set="bold" size={15} primaryColor="#17161F" />
-                    </a>
+
+                    {/* Comparison layer: the parent image underneath, the
+                        selected one clipped on top. Both are laid out in the
+                        same box with object-contain, so the divider cuts
+                        through matching geometry. */}
+                    {comparing && parentNode && selectedNode && (
+                      <>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <img
+                            src={`/api/render-nodes/${parentNode.id}/image`}
+                            alt=""
+                            draggable={false}
+                            className="pointer-events-none max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                        <div
+                          className="absolute inset-0 flex items-center justify-center"
+                          style={{ clipPath: `inset(0 0 0 ${comparePos}%)` }}
+                        >
+                          <img
+                            src={`/api/render-nodes/${selectedId}/image`}
+                            alt=""
+                            draggable={false}
+                            className="pointer-events-none max-h-full max-w-full object-contain"
+                          />
+                        </div>
+                        <span className="pointer-events-none absolute bottom-3.5 left-3.5 rounded-2xl bg-[#17161F] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
+                          {nodeLabel(parentNode)}
+                        </span>
+                        <span className="pointer-events-none absolute bottom-3.5 right-3.5 rounded-2xl bg-[#716FFF] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
+                          {nodeLabel(selectedNode)}
+                        </span>
+                        <div
+                          onPointerDown={handleComparePointerDown}
+                          onPointerMove={handleComparePointerMove}
+                          onPointerUp={handleComparePointerUp}
+                          onPointerCancel={handleComparePointerUp}
+                          className="absolute inset-0 cursor-ew-resize touch-none select-none"
+                        />
+                        <div
+                          className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]"
+                          style={{ left: `${comparePos}%` }}
+                        >
+                          <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_10px_26px_-6px_rgba(113,111,255,0.6)]">
+                            <Swap set="bold" size={15} primaryColor="#716FFF" />
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="absolute right-3.5 top-3.5 flex items-center gap-2">
+                      {/* Only in "generate": in the edit modes the canvas is a
+                          working surface for the zone or the reference, and a
+                          comparison overlay would fight that interaction. */}
+                      {mode === 'generate' && parentNode && (
+                        <button
+                          type="button"
+                          onClick={() => setComparing((v) => !v)}
+                          aria-pressed={comparing}
+                          aria-label={t('app.compareToggle')}
+                          title={t('app.compareToggle')}
+                          className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95] ${
+                            comparing
+                              ? 'border-transparent bg-[#716FFF]'
+                              : 'border-[#ECECF2] bg-white'
+                          }`}
+                        >
+                          <Swap
+                            set="bold"
+                            size={15}
+                            primaryColor={comparing ? '#ffffff' : '#17161F'}
+                          />
+                        </button>
+                      )}
+                      <a
+                        href={`/api/render-nodes/${selectedId}/image`}
+                        download
+                        onMouseDown={(e) => e.stopPropagation()}
+                        aria-label={t('app.downloadButton')}
+                        title={t('app.downloadButton')}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
+                      >
+                        <Download set="bold" size={15} primaryColor="#17161F" />
+                      </a>
+                    </div>
                     {mode === 'retouch' && zone && (zone.width > 0 || zone.height > 0) && (
                       <div
                         className="absolute rounded-md border-2 border-dashed border-[#716FFF] bg-[#716FFF12]"
