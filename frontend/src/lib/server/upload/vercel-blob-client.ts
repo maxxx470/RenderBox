@@ -9,7 +9,7 @@
 // authenticated proxy route (app/api/render-nodes/[id]/image). See the
 // BLOB_READ_WRITE_TOKEN comment in .env.example for the full rationale.
 import 'server-only';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 
 export class StorageNotConfiguredError extends Error {
   constructor() {
@@ -47,4 +47,24 @@ export async function uploadBuffer(
   });
 
   return { blobUrl: result.url, bytes: body.length };
+}
+
+/**
+ * Delete blobs by URL.
+ *
+ * Not a nicety: a Vercel Blob URL is fetchable by anyone holding it, with no
+ * private mode to fall back on (see the file header). Dropping the DB rows
+ * without this would leave the bytes readable forever at a URL the user
+ * believes they deleted — a privacy failure, not just wasted storage.
+ *
+ * `del` is idempotent (already-deleted URLs are not an error), so a caller
+ * that fails partway can safely retry the whole set.
+ */
+export async function deleteBlobs(urls: string[]): Promise<void> {
+  if (urls.length === 0) return;
+  const token = process.env.BLOB_READ_WRITE_TOKEN ?? '';
+  if (!token) {
+    throw new StorageNotConfiguredError();
+  }
+  await del(urls, { token });
 }
