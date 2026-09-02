@@ -8,7 +8,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
-import type { RenderTreeNode } from '@/lib/server/render-tree';
+import { collectBranch, type RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -120,6 +120,8 @@ export function AppShell({
   // exhausted quota would fail identically, so those stay a toast.
   const [retryable, setRetryable] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [pendingDelete, setPendingDelete] = useState<RenderTreeNode | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [sidebarCollapsed, toggleSidebar] = useSidebarCollapsed();
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
@@ -266,6 +268,27 @@ export function AppShell({
       return;
     }
     void handleFile(file);
+  }
+
+  async function handleDeleteNode(node: RenderTreeNode) {
+    setDeleting(true);
+    try {
+      const res = await api<{ tree: RenderTreeNode[] }>(`/api/render-nodes/${node.id}`, {
+        method: 'DELETE',
+      });
+      setTree(res.tree);
+      // The selection may have been inside the deleted branch; fall back to
+      // whatever survived rather than leaving the canvas pointed at a 404.
+      const survivors = flattenTree(res.tree);
+      setSelectedId((prev) =>
+        prev && survivors.some((n) => n.id === prev) ? prev : (survivors[0]?.id ?? null),
+      );
+      setPendingDelete(null);
+    } catch {
+      toast(t('app.treeDeleteError'), 'error');
+    } finally {
+      setDeleting(false);
+    }
   }
 
   async function handleGenerate() {
@@ -504,6 +527,10 @@ export function AppShell({
               setSelectedId(id);
               setMobileTreeOpen(false);
             }}
+            onDeleteNode={(node) => {
+              setPendingDelete(node);
+              setMobileTreeOpen(false);
+            }}
             collapsed={sidebarCollapsed}
             onToggleCollapse={toggleSidebar}
           />
@@ -695,6 +722,42 @@ export function AppShell({
         onUploadFile={handleFile}
         uploading={uploading}
       />
+
+      {pendingDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setPendingDelete(null)} />
+          <div className="relative w-full max-w-[380px] rounded-2xl border border-[#ECECF2] bg-white p-5 shadow-[0_24px_48px_-20px_rgba(23,22,31,0.35)]">
+            <h2 className="mb-2 font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+              {t('app.treeDeleteTitle', { name: nodeLabel(pendingDelete) })}
+            </h2>
+            <p className="mb-4 text-[13px] leading-relaxed text-[#8A8896]">
+              {/* Says the real count before anything is destroyed: deleting a
+                  render takes everything derived from it, which is rarely
+                  obvious from the row you clicked. */}
+              {t('app.treeDeleteBody', {
+                n: collectBranch(flat, pendingDelete.id).length,
+              })}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setPendingDelete(null)}
+                className="rounded-xl px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+              >
+                {t('projects.dialogCancel')}
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => void handleDeleteNode(pendingDelete)}
+                className="rounded-xl bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              >
+                {t('projects.deleteConfirm')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

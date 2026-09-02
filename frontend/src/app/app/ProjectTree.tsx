@@ -1,6 +1,6 @@
 'use client';
 
-import { Image as ImageIcon, Upload } from 'react-iconly';
+import { Image as ImageIcon, Upload, Delete } from 'react-iconly';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { PRESETS, isPresetKey } from '@/lib/server/generation/presets';
@@ -34,10 +34,12 @@ function TreeLevel({
   nodes,
   selectedId,
   onSelect,
+  onDelete,
 }: {
   nodes: RenderTreeNode[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onDelete: (node: RenderTreeNode) => void;
 }) {
   const { locale, t } = useLocale();
 
@@ -62,31 +64,55 @@ function TreeLevel({
 
         return (
           <div key={node.id}>
-            <button
-              type="button"
-              onClick={() => onSelect(node.id)}
-              title={label}
-              className={`flex w-full items-center gap-2 rounded-lg py-2 pl-2.5 pr-2 text-left text-[13px] transition-colors ${
-                selected
-                  ? 'bg-[#F1F0F6] font-medium text-[#17161F]'
-                  : 'text-[#8A8896] hover:bg-[#F1F0F6]/60'
+            {/* The delete button is a sibling of the select button, never
+                nested in it — a button inside a button is invalid HTML. */}
+            <div
+              className={`group/row flex items-center rounded-lg transition-colors ${
+                selected ? 'bg-[#F1F0F6]' : 'hover:bg-[#F1F0F6]/60'
               }`}
             >
-              <span className="flex-shrink-0">
-                {generated ? (
-                  <ImageIcon set="bold" size={13} primaryColor={selected ? '#716FFF' : '#8A8896'} />
-                ) : (
-                  <Upload set="bold" size={13} primaryColor={selected ? '#716FFF' : '#8A8896'} />
-                )}
-              </span>
-              <span className="truncate">{label}</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => onSelect(node.id)}
+                title={label}
+                className={`flex min-w-0 flex-1 items-center gap-2 py-2 pl-2.5 text-left text-[13px] ${
+                  selected ? 'font-medium text-[#17161F]' : 'text-[#8A8896]'
+                }`}
+              >
+                <span className="flex-shrink-0">
+                  {generated ? (
+                    <ImageIcon
+                      set="bold"
+                      size={13}
+                      primaryColor={selected ? '#716FFF' : '#8A8896'}
+                    />
+                  ) : (
+                    <Upload set="bold" size={13} primaryColor={selected ? '#716FFF' : '#8A8896'} />
+                  )}
+                </span>
+                <span className="truncate">{label}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(node)}
+                aria-label={t('app.treeDeleteNode')}
+                title={t('app.treeDeleteNode')}
+                className="mr-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md transition-opacity hover:bg-[#E5484D14] min-[900px]:opacity-0 min-[900px]:group-hover/row:opacity-100 min-[900px]:group-focus-within/row:opacity-100"
+              >
+                <Delete set="bold" size={13} primaryColor="#E5484D" />
+              </button>
+            </div>
 
             {/* The nesting is drawn, not just indented: the left rule is what
                 makes a branch read as descending from its parent. */}
             {node.children.length > 0 && (
               <div className="ml-[15px] border-l border-[#ECECF2] pl-1.5 pt-0.5">
-                <TreeLevel nodes={node.children} selectedId={selectedId} onSelect={onSelect} />
+                <TreeLevel
+                  nodes={node.children}
+                  selectedId={selectedId}
+                  onSelect={onSelect}
+                  onDelete={onDelete}
+                />
               </div>
             )}
           </div>
@@ -100,10 +126,12 @@ export function ProjectTree({
   tree,
   selectedId,
   onSelect,
+  onDelete,
 }: {
   tree: RenderTreeNode[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onDelete: (node: RenderTreeNode) => void;
 }) {
   const { t } = useLocale();
 
@@ -120,7 +148,7 @@ export function ProjectTree({
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <TreeLevel nodes={tree} selectedId={selectedId} onSelect={onSelect} />
+      <TreeLevel nodes={tree} selectedId={selectedId} onSelect={onSelect} onDelete={onDelete} />
     </div>
   );
 }

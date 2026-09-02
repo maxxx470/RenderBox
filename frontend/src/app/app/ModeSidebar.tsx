@@ -24,6 +24,7 @@ export function ModeSidebar({
   tree,
   selectedId,
   onSelectNode,
+  onDeleteNode,
   collapsed,
   onToggleCollapse,
 }: {
@@ -32,6 +33,7 @@ export function ModeSidebar({
   tree: RenderTreeNode[];
   selectedId: string | null;
   onSelectNode: (id: string) => void;
+  onDeleteNode: (node: RenderTreeNode) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
 }) {
@@ -93,7 +95,12 @@ export function ModeSidebar({
         <h3 className="mb-3.5 mt-3 font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
           {t('app.treeTitle')}
         </h3>
-        <ProjectTree tree={tree} selectedId={selectedId} onSelect={onSelectNode} />
+        <ProjectTree
+          tree={tree}
+          selectedId={selectedId}
+          onSelect={onSelectNode}
+          onDelete={onDeleteNode}
+        />
       </div>
     </>
   );

@@ -43,6 +43,11 @@ const fr = {
   'app.retryBannerText': 'La demande a échoué. Ta saisie a été conservée.',
   'app.retryButton': 'Réessayer',
   'app.retryDismiss': 'Ignorer',
+  'app.treeDeleteNode': 'Supprimer ce rendu',
+  'app.treeDeleteTitle': 'Supprimer « {name} » ?',
+  'app.treeDeleteBody':
+    '{n} rendu(s) seront définitivement supprimés — celui-ci et tout ce qui en dérive. Cette action est irréversible.',
+  'app.treeDeleteError': 'Impossible de supprimer ce rendu. Réessaie.',
   'app.treeNodeSource': 'Photo de départ',
   'app.treeNodeRender': 'Rendu',
   'app.sidebarCollapse': 'Réduire le menu',

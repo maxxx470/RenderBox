@@ -45,6 +45,11 @@ const en: Record<keyof typeof fr, string> = {
   'app.retryBannerText': 'The request failed. Your input was kept.',
   'app.retryButton': 'Try again',
   'app.retryDismiss': 'Dismiss',
+  'app.treeDeleteNode': 'Delete this render',
+  'app.treeDeleteTitle': 'Delete “{name}”?',
+  'app.treeDeleteBody':
+    '{n} render(s) will be permanently deleted — this one and everything derived from it. This cannot be undone.',
+  'app.treeDeleteError': 'Could not delete this render. Try again.',
   'app.treeNodeSource': 'Starting photo',
   'app.treeNodeRender': 'Render',
   'app.sidebarCollapse': 'Collapse the menu',
