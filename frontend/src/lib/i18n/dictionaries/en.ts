@@ -40,6 +40,8 @@ const en: Record<keyof typeof fr, string> = {
   'app.canvasDropHint': 'It will be added to the project as a new base image.',
   'app.uploadTypeError': 'Unsupported format — JPG, PNG or WebP only.',
   'app.commandBarUpload': 'Add an image to the project',
+  'app.sidebarCollapse': 'Collapse the menu',
+  'app.sidebarExpand': 'Expand the menu',
   'app.materialsTitle': 'Materials sheet',
   'app.materialsEmptyBody': 'Available after your first generated render',
   'app.materialsBadge': 'soon',

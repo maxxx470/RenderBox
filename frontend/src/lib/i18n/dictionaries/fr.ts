@@ -38,6 +38,8 @@ const fr = {
   'app.canvasDropHint': 'Elle sera ajoutée au projet comme nouvelle image de base.',
   'app.uploadTypeError': 'Format non supporté — JPG, PNG ou WebP uniquement.',
   'app.commandBarUpload': 'Ajouter une image au projet',
+  'app.sidebarCollapse': 'Réduire le menu',
+  'app.sidebarExpand': 'Déplier le menu',
   'app.materialsTitle': 'Fiche matériaux',
   'app.materialsEmptyBody': 'Disponible après ton premier rendu généré',
   'app.materialsBadge': 'bientôt',

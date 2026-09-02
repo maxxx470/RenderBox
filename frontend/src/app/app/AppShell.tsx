@@ -16,6 +16,7 @@ import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Filter2, Download, Upload } from 'react-iconly';
 import { ModeSidebar } from './ModeSidebar';
 import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
+import { useSidebarCollapsed } from './useSidebarCollapsed';
 import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
 import { EditPanel } from './EditPanel';
 import { CommandBar, type AppMode } from './CommandBar';
@@ -114,6 +115,7 @@ export function AppShell({
   const [zone, setZone] = useState<Zone | null>(null);
   const [variantCount, setVariantCount] = useState(3);
   const [submittingEdit, setSubmittingEdit] = useState(false);
+  const [sidebarCollapsed, toggleSidebar] = useSidebarCollapsed();
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   // Updated in place after each successful generate/edit (via the route's
@@ -459,7 +461,9 @@ export function AppShell({
         <aside
           className={`${
             mobileTreeOpen ? 'flex' : 'hidden'
-          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5 min-[900px]:static min-[900px]:z-auto min-[900px]:flex`}
+          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col overflow-y-auto border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5 transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:flex ${
+            sidebarCollapsed ? 'min-[900px]:w-[68px] min-[900px]:px-2.5' : ''
+          }`}
         >
           <ModeSidebar
             mode={mode}
@@ -470,6 +474,8 @@ export function AppShell({
               setSelectedId(id);
               setMobileTreeOpen(false);
             }}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={toggleSidebar}
           />
         </aside>
 
