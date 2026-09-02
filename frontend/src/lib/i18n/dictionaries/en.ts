@@ -274,12 +274,12 @@ const en: Record<keyof typeof fr, string> = {
   'landing.navLogin': 'Log in',
   'landing.navStart': 'Get started',
 
-  'landing.heroEyebrow': 'AI rendering for architects',
-  'landing.heroTitlePrefix': 'Renders that ',
-  'landing.heroTitleAccent': 'remember',
-  'landing.heroTitleSuffix': ' your materials',
+  'landing.heroEyebrow': 'AI ARCHITECTURAL RENDERING',
+  'landing.heroTitlePrefix': 'AI renders that ',
+  'landing.heroTitleAccent': 'close your sales',
+  'landing.heroTitleSuffix': ' before the first brick is laid',
   'landing.heroSubtitle':
-    'Change the view, the mood, or the time of day — RenderBox remembers every material applied to your building, façade by façade.',
+    'RenderBox remembers every material, every style, every detail — for consistent renders from the first sketch to the last variant.',
   'landing.heroCtaPrimary': 'Generate my first render',
   'landing.heroCtaSecondary': 'See an example',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
@@ -292,13 +292,36 @@ const en: Record<keyof typeof fr, string> = {
   'landing.trustEngines': 'AI engines to choose from',
   'landing.trustMaterials': 'Material forgotten between views',
 
-  'landing.split1Tag': 'Material memory',
-  'landing.split1Title': 'Every façade keeps its material, in every new view',
-  'landing.split1Body':
-    'The AI automatically detects the materials applied to your building and remembers them. Change the angle or the mood: they stay identical.',
-  'landing.split1Check1': 'Automatic detection after every render',
-  'landing.split1Check2': 'Editable sheet if the AI gets it wrong',
-  'landing.split1Check3': 'Re-injected into every new generation',
+  'landing.beforeAfterTag': 'TRANSFORMATION',
+  'landing.beforeAfterTitlePrefix': 'From sketch to ',
+  'landing.beforeAfterTitleAccent': 'photorealistic render',
+  'landing.beforeAfterBody':
+    "Drag to compare. Every material, every opening, every proportion kept — RenderBox doesn't reinvent your project, it reveals it.",
+  'landing.beforeAfterLabelBefore': 'Sketch',
+  'landing.beforeAfterLabelAfter': 'RenderBox render',
+
+  'landing.audienceTag': 'WHO IT’S FOR',
+  'landing.audienceTitle': 'Built for everyone who sells before they build',
+  'landing.audience1Title': 'Architects',
+  'landing.audience1Body':
+    'Present your projects with consistent renders at every iteration, without starting from scratch at every client revision.',
+  'landing.audience2Title': 'Real estate agencies',
+  'landing.audience2Body':
+    'Bring off-plan properties to life for your buyers — a day render, a night render, a furnished render, in minutes.',
+  'landing.audience3Title': 'Developers',
+  'landing.audience3Body':
+    'Produce the sales visuals for an entire development without multiplying back-and-forths with a graphic designer.',
+
+  'landing.checklistTag': 'FEATURES',
+  'landing.checklistTitle':
+    'Consistent renders. A memory that never betrays you. Fewer back-and-forths.',
+  'landing.checklistItem1': 'Automatic material detection after every render',
+  'landing.checklistItem2': 'Editable sheet if the AI gets it wrong',
+  'landing.checklistItem3': 'Re-injected into every new generation',
+  'landing.checklistItem4': 'Full, browsable history per project',
+  'landing.checklistItem5': 'Pick up any render as a new starting point',
+  'landing.checklistCta': 'Start for free',
+
   'landing.split1FaceMain': 'MAIN FAÇADE',
   'landing.split1FaceMainValue': 'White trowelled render',
   'landing.split1FaceBack': 'REAR FAÇADE',
@@ -341,14 +364,23 @@ const en: Record<keyof typeof fr, string> = {
   'landing.ctaBandBody':
     'Upload a photo, pick a preset, and let RenderBox remember every material for you.',
   'landing.ctaBandButton': 'Start for free',
-  'landing.ctaBandPreviewTag': 'New project',
 
-  'landing.ctaChatTitle': 'Chat with us',
-  'landing.ctaChatBody': 'A question about a project or a specific need?',
-  'landing.ctaChatButton': 'Open chat',
-  'landing.ctaDemoTitle': 'Watch a demo',
-  'landing.ctaDemoBody': '5 minutes to see material memory in action.',
-  'landing.ctaDemoButton': 'Watch',
+  'landing.faqTag': 'FAQ',
+  'landing.faqTitle': 'Everything you need to know before you start',
+  'landing.faq1Q': 'What happens if I switch tiers mid-month?',
+  'landing.faq1A':
+    'The new quota applies immediately and replaces the old one — no stacking, no carryover.',
+  'landing.faq2Q': 'Do I own the renders?',
+  'landing.faq2A': 'Yes. Every render you generate is yours, with no commercial-use limit.',
+  'landing.faq3Q': "What's the difference between the two AI engines?",
+  'landing.faq3A':
+    'Nanobanana and ChatGPT Image each have their strengths — you pick whichever fits each render best, any time.',
+  'landing.faq4Q': 'What happens when I hit my monthly quota?',
+  'landing.faq4A':
+    'Generations are blocked until renewal or until you switch tiers — never a surprise charge.',
+  'landing.faq5Q': 'Can I cancel any time?',
+  'landing.faq5A':
+    'Yes, no commitment. Your access stays active until the already-paid period ends.',
 
   'landing.footerProductHeading': 'Product',
   'landing.footerResourcesHeading': 'Resources',

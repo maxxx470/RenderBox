@@ -273,12 +273,12 @@ const fr = {
   'landing.navLogin': 'Se connecter',
   'landing.navStart': 'Commencer',
 
-  'landing.heroEyebrow': 'Rendu IA pour architectes',
-  'landing.heroTitlePrefix': 'Des rendus qui ',
-  'landing.heroTitleAccent': 'se souviennent',
-  'landing.heroTitleSuffix': ' de tes matériaux',
+  'landing.heroEyebrow': 'RENDU ARCHITECTURAL PAR IA',
+  'landing.heroTitlePrefix': 'Des rendus IA qui ',
+  'landing.heroTitleAccent': 'closent vos ventes',
+  'landing.heroTitleSuffix': ' avant le premier coup de pelle',
   'landing.heroSubtitle':
-    "Change de vue, d'ambiance ou de moment de la journée — RenderBox garde en mémoire chaque matériau posé sur ton bâtiment, façade par façade.",
+    'RenderBox mémorise chaque matériau, chaque style, chaque détail — pour des rendus cohérents de la première esquisse à la dernière variante.',
   'landing.heroCtaPrimary': 'Générer mon premier rendu',
   'landing.heroCtaSecondary': 'Voir un exemple',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
@@ -291,13 +291,36 @@ const fr = {
   'landing.trustEngines': 'Moteurs IA au choix',
   'landing.trustMaterials': 'Matériau oublié entre les vues',
 
-  'landing.split1Tag': 'Mémoire matériaux',
-  'landing.split1Title': 'Chaque façade garde son matériau, à chaque nouvelle vue',
-  'landing.split1Body':
-    "L'IA détecte automatiquement les matériaux posés sur ton bâtiment et les mémorise. Change d'angle ou d'ambiance : ils restent identiques.",
-  'landing.split1Check1': 'Détection automatique après chaque rendu',
-  'landing.split1Check2': "Fiche éditable si l'IA se trompe",
-  'landing.split1Check3': 'Réinjectée dans chaque nouvelle génération',
+  'landing.beforeAfterTag': 'TRANSFORMATION',
+  'landing.beforeAfterTitlePrefix': "De l'esquisse au ",
+  'landing.beforeAfterTitleAccent': 'rendu photoréaliste',
+  'landing.beforeAfterBody':
+    'Glissez pour comparer. Chaque matériau, chaque ouverture, chaque proportion conservée — RenderBox ne réinvente pas votre projet, il le révèle.',
+  'landing.beforeAfterLabelBefore': 'Esquisse',
+  'landing.beforeAfterLabelAfter': 'Rendu RenderBox',
+
+  'landing.audienceTag': 'POUR QUI',
+  'landing.audienceTitle': 'Conçu pour tous ceux qui vendent avant de construire',
+  'landing.audience1Title': 'Architectes',
+  'landing.audience1Body':
+    'Présentez vos projets avec des rendus cohérents à chaque itération, sans repartir de zéro à chaque révision client.',
+  'landing.audience2Title': 'Agences immobilières',
+  'landing.audience2Body':
+    'Donnez vie aux biens sur plan pour vos acquéreurs — un rendu jour, un rendu nuit, un rendu meublé, en quelques minutes.',
+  'landing.audience3Title': 'Promoteurs',
+  'landing.audience3Body':
+    'Produisez les visuels de vente de tout un programme immobilier sans multiplier les allers-retours avec un infographiste.',
+
+  'landing.checklistTag': 'FONCTIONNALITÉS',
+  'landing.checklistTitle':
+    "Des rendus cohérents. Une mémoire qui ne vous trahit pas. Moins d'allers-retours.",
+  'landing.checklistItem1': 'Détection automatique des matériaux après chaque rendu',
+  'landing.checklistItem2': "Fiche éditable si l'IA se trompe",
+  'landing.checklistItem3': 'Réinjectée dans chaque nouvelle génération',
+  'landing.checklistItem4': 'Historique complet et navigable par projet',
+  'landing.checklistItem5': "Reprenez n'importe quel rendu comme point de départ",
+  'landing.checklistCta': 'Commencer gratuitement',
+
   'landing.split1FaceMain': 'FAÇADE PRINCIPALE',
   'landing.split1FaceMainValue': 'Enduit blanc taloché',
   'landing.split1FaceBack': 'FAÇADE ARRIÈRE',
@@ -335,18 +358,27 @@ const fr = {
   'landing.integrationsSubtitle':
     'Choisis le moteur qui convient à chaque rendu, matériaux et historique restent partagés.',
 
-  'landing.ctaBandTitle': 'Prêt à générer tes premiers rendus ?',
+  'landing.ctaBandTitle': 'Prêt à générer vos premiers rendus ?',
   'landing.ctaBandBody':
     'Upload une photo, choisis un preset, et laisse RenderBox garder la mémoire de chaque matériau pour toi.',
   'landing.ctaBandButton': 'Commencer gratuitement',
-  'landing.ctaBandPreviewTag': 'Nouveau projet',
 
-  'landing.ctaChatTitle': 'Discuter avec nous',
-  'landing.ctaChatBody': 'Une question sur un projet ou un besoin spécifique ?',
-  'landing.ctaChatButton': 'Ouvrir le chat',
-  'landing.ctaDemoTitle': 'Voir une démo',
-  'landing.ctaDemoBody': '5 minutes pour voir la mémoire matériaux en action.',
-  'landing.ctaDemoButton': 'Regarder',
+  'landing.faqTag': 'QUESTIONS FRÉQUENTES',
+  'landing.faqTitle': "Tout ce qu'il faut savoir avant de commencer",
+  'landing.faq1Q': 'Que se passe-t-il si je change de palier en cours de mois ?',
+  'landing.faq1A':
+    "Le nouveau quota s'applique immédiatement et remplace l'ancien — sans cumul, sans report.",
+  'landing.faq2Q': 'Les rendus m’appartiennent-ils ?',
+  'landing.faq2A': "Oui. Chaque rendu généré est votre propriété, sans limite d'usage commercial.",
+  'landing.faq3Q': 'Quelle est la différence entre les deux moteurs IA ?',
+  'landing.faq3A':
+    'Nanobanana et ChatGPT Image ont chacun leurs forces — vous choisissez celui qui convient le mieux à chaque rendu, à tout moment.',
+  'landing.faq4Q': "Que se passe-t-il si j'atteins mon quota mensuel ?",
+  'landing.faq4A':
+    'Les générations sont bloquées jusqu’au renouvellement ou jusqu’à ce que vous changiez de palier — jamais de facturation surprise.',
+  'landing.faq5Q': 'Puis-je annuler à tout moment ?',
+  'landing.faq5A':
+    'Oui, aucun engagement. Votre accès reste actif jusqu’à la fin de la période déjà payée.',
 
   'landing.footerProductHeading': 'Produit',
   'landing.footerResourcesHeading': 'Ressources',
