@@ -116,6 +116,10 @@ export function AppShell({
   const [zone, setZone] = useState<Zone | null>(null);
   const [variantCount, setVariantCount] = useState(3);
   const [submittingEdit, setSubmittingEdit] = useState(false);
+  // Set only for failures that a plain retry could fix — a missing tier or an
+  // exhausted quota would fail identically, so those stay a toast.
+  const [retryable, setRetryable] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [sidebarCollapsed, toggleSidebar] = useSidebarCollapsed();
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
@@ -154,6 +158,9 @@ export function AppShell({
 
   function handleModeChange(next: AppMode) {
     setMode(next);
+    // The retry would re-submit through the new mode's shape, not the one
+    // that failed — the offer no longer means what it says.
+    setRetryable(false);
     // Each mode has its own submission shape — drop the previous mode's
     // draft input so switching never silently carries state across.
     setPrompt('');
@@ -175,11 +182,27 @@ export function AppShell({
   }, [projectId, refreshMaterials]);
 
   // A new selection means a new image context — a zone or reference drawn
-  // against the previous render no longer applies.
+  // against the previous render no longer applies, and neither does an offer
+  // to retry a request that targeted the previous node.
   useEffect(() => {
     setZone(null);
     setReferenceFile(null);
+    setRetryable(false);
   }, [selectedId]);
+
+  const busy = generating || submittingEdit;
+
+  // Generation runs for tens of seconds with nothing to stream, so the only
+  // honest reassurance is the time actually spent — no fabricated percentage.
+  useEffect(() => {
+    if (!busy) {
+      setElapsed(0);
+      return;
+    }
+    const startedAt = Date.now();
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [busy]);
 
   async function handleFile(file: File) {
     setUploading(true);
@@ -248,6 +271,7 @@ export function AppShell({
   async function handleGenerate() {
     if (!selectedId) return;
     setGenerating(true);
+    setRetryable(false);
     try {
       const res = await api<GenerateResponse>(`/api/projects/${projectId}/generate`, {
         method: 'POST',
@@ -270,6 +294,7 @@ export function AppShell({
         toast(t('app.quotaExceededError'), 'error');
       } else {
         toast(t('app.generateError'), 'error');
+        setRetryable(true);
       }
     } finally {
       setGenerating(false);
@@ -283,6 +308,7 @@ export function AppShell({
     if (mode === 'retouch' && (!zone || zone.width < 1 || zone.height < 1)) return;
 
     setSubmittingEdit(true);
+    setRetryable(false);
     try {
       const form = new FormData();
       form.append('sourceNodeId', selectedNode.id);
@@ -324,6 +350,7 @@ export function AppShell({
         toast(t('app.quotaExceededError'), 'error');
       } else {
         toast(t('edit.submitError'), 'error');
+        setRetryable(true);
       }
     } finally {
       setSubmittingEdit(false);
@@ -589,6 +616,17 @@ export function AppShell({
                     </span>
                   </div>
                 )}
+                {busy && (
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#FFFFFFD9]">
+                    <span className="rb-spin h-8 w-8 rounded-full border-2 border-[#ECECF2] border-t-[#716FFF]" />
+                    <span className="font-[family-name:var(--font-general-sans)] text-[13.5px] font-semibold text-[#17161F]">
+                      {t('app.generatingOverlay')}
+                    </span>
+                    <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                      {t('app.generatingElapsed', { s: elapsed })}
+                    </span>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -613,6 +651,32 @@ export function AppShell({
           )}
         </div>
       </div>
+
+      {/* Semantic error colour, never the violet brand accent. The inputs are
+          already preserved on failure — this just says so, and offers the
+          second attempt the toast could not. */}
+      {retryable && !busy && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#E5484D33] bg-[#E5484D0F] px-5.5 py-2.5">
+          <span className="text-[12.5px] text-[#E5484D]">{t('app.retryBannerText')}</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setRetryable(false)}
+              className="rounded-lg px-2.5 py-1.5 text-[12.5px] text-[#8A8896] hover:text-[#17161F]"
+            >
+              {t('app.retryDismiss')}
+            </button>
+            <button
+              type="button"
+              disabled={sendDisabled}
+              onClick={handleSubmit}
+              className="rounded-lg bg-[#E5484D] px-3 py-1.5 text-[12.5px] font-semibold text-white disabled:opacity-50"
+            >
+              {t('app.retryButton')}
+            </button>
+          </div>
+        </div>
+      )}
 
       <CommandBar
         mode={mode}
