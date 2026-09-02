@@ -18,6 +18,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
+import { enforceUploadRateLimit } from '@/lib/server/middleware/rate-limit-upload';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { prisma } from '@/lib/server/prisma';
 import { assertProjectOwner, ProjectNotFoundError } from '@/lib/server/idor/assert-project-owner';
@@ -37,6 +38,9 @@ export async function POST(
 
     const auth = await requireAuth(req.headers.get('authorization'));
     if (auth instanceof NextResponse) return auth;
+
+    const limited = await enforceUploadRateLimit(req);
+    if (limited) return limited;
 
     const { projectId } = await ctx0.params;
     try {

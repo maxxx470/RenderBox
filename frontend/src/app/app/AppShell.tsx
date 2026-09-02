@@ -375,7 +375,9 @@ export function AppShell({
           <LanguageInlineSwitch />
           {authDisabled && (
             <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
-              {t('app.authDisabledBanner')}
+              {tier && max !== null && remaining !== null
+                ? t('app.authDisabledBannerCount', { remaining, max })
+                : t('app.authDisabledBanner')}
             </span>
           )}
           <span className="rounded-2xl bg-[#716FFF12] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#716FFF]">
@@ -385,11 +387,13 @@ export function AppShell({
             <span className="text-[11px] text-[#8A8896]">{t('app.engineLabel')} :</span>
             <EngineSelect engine={engine} onChange={handleEngineChange} />
           </div>
-          <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
-            {tier && max !== null && remaining !== null
-              ? t('app.quotaLabel', { used: max - remaining, max })
-              : t('app.noTierLabel')}
-          </span>
+          {!authDisabled && (
+            <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
+              {tier && max !== null && remaining !== null
+                ? t('app.quotaLabel', { used: max - remaining, max })
+                : t('app.noTierLabel')}
+            </span>
+          )}
           <button
             type="button"
             onClick={() => setMobilePanelOpen(true)}

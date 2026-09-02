@@ -172,7 +172,9 @@ export function GenerationHome({
             <EngineSelect engine={engine} onChange={setEngine} />
             {authDisabled && (
               <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
-                {t('app.authDisabledBanner')}
+                {tier && max !== null && remaining !== null
+                  ? t('app.authDisabledBannerCount', { remaining, max })
+                  : t('app.authDisabledBanner')}
               </span>
             )}
           </div>
