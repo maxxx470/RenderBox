@@ -63,16 +63,6 @@ import { HERO_CARDS } from './hero-cards';
 const GRADIENT = 'bg-[linear-gradient(135deg,#6E6BFF_0%,#8B5CF6_48%,#A855F7_100%)]';
 const MONO = 'font-[family-name:var(--font-jetbrains-mono)]';
 
-function EyebrowTag({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-2 rounded-full bg-[#EFECFF] px-3.5 py-1.5 text-[11px] font-medium tracking-wide text-[#716FFF] ${MONO}`}
-    >
-      {children}
-    </span>
-  );
-}
-
 function GradientText({ children }: { children: React.ReactNode }) {
   return <span className={`${GRADIENT} bg-clip-text text-transparent`}>{children}</span>;
 }
@@ -362,16 +352,13 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               </span>
             </Reveal>
             <Reveal delayMs={100}>
-              <EyebrowTag>{t('landing.heroEyebrow')}</EyebrowTag>
-            </Reveal>
-            <Reveal delayMs={200}>
               <h1 className="mx-auto mt-5 max-w-[720px] text-[40px] font-bold leading-[1.12] tracking-[-1px] min-[640px]:text-[52px]">
                 {t('landing.heroTitlePrefix')}
                 <GradientText>{t('landing.heroTitleAccent')}</GradientText>
                 {t('landing.heroTitleSuffix')}
               </h1>
             </Reveal>
-            <Reveal delayMs={300}>
+            <Reveal delayMs={200}>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href={ctaHref}
@@ -475,8 +462,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         {/* BEFORE / AFTER */}
         <section className="py-20">
           <Reveal className="mx-auto mb-9 max-w-[560px] text-center">
-            <EyebrowTag>{t('landing.beforeAfterTag')}</EyebrowTag>
-            <h2 className="mx-auto mt-4 text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
+            <h2 className="mx-auto text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
               {t('landing.beforeAfterTitlePrefix')}
               <GradientText>{t('landing.beforeAfterTitleAccent')}</GradientText>
             </h2>
@@ -495,8 +481,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         {/* AUDIENCE — tabs */}
         <section className="py-20">
           <Reveal className="mx-auto mb-10 max-w-[560px] text-center">
-            <EyebrowTag>{t('landing.audienceTag')}</EyebrowTag>
-            <h2 className="mx-auto mt-4 text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
+            <h2 className="mx-auto text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
               {t('landing.audienceTitle')}
             </h2>
           </Reveal>
@@ -538,8 +523,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         >
           <div className="grid grid-cols-1 items-center gap-10 min-[860px]:grid-cols-2">
             <Reveal>
-              <EyebrowTag>{t('landing.checklistTag')}</EyebrowTag>
-              <h2 className="mt-4 text-[28px] font-bold leading-[1.3] tracking-[-0.5px]">
+              <h2 className="text-[28px] font-bold leading-[1.3] tracking-[-0.5px]">
                 {t('landing.checklistTitle')}
               </h2>
               <StaggeredChecklist
@@ -671,8 +655,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         {/* PRICING */}
         <section id="tarifs" className="py-20">
           <Reveal className="mx-auto mb-3 max-w-[560px] text-center">
-            <EyebrowTag>{t('landing.pricingTag')}</EyebrowTag>
-            <h2 className="mt-4 text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
+            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
               {t('landing.pricingTitlePrefix')}
               <GradientText>{t('landing.pricingTitleAccent')}</GradientText>
             </h2>
@@ -695,8 +678,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         {/* FAQ */}
         <section className="py-20">
           <Reveal className="mx-auto mb-11.5 max-w-[560px] text-center">
-            <EyebrowTag>{t('landing.faqTag')}</EyebrowTag>
-            <h2 className="mt-4 text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
+            <h2 className="text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
               {t('landing.faqTitle')}
             </h2>
           </Reveal>

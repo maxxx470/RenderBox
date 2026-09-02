@@ -314,7 +314,6 @@ const en: Record<keyof typeof fr, string> = {
   'landing.navLogin': 'Log in',
   'landing.navStart': 'Get started',
 
-  'landing.heroEyebrow': 'AI ARCHITECTURAL RENDERING',
   'landing.heroTitlePrefix': 'AI renders that ',
   'landing.heroTitleAccent': 'close your sales',
   'landing.heroTitleSuffix': ' before the first brick is laid',
@@ -330,7 +329,6 @@ const en: Record<keyof typeof fr, string> = {
   'landing.trustEngines': 'AI engines to choose from',
   'landing.trustMaterials': 'Material forgotten between views',
 
-  'landing.beforeAfterTag': 'TRANSFORMATION',
   'landing.beforeAfterTitlePrefix': 'From sketch to ',
   'landing.beforeAfterTitleAccent': 'photorealistic render',
   'landing.beforeAfterBody':
@@ -338,7 +336,6 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterLabelBefore': 'Sketch',
   'landing.beforeAfterLabelAfter': 'RenderBox render',
 
-  'landing.audienceTag': 'WHO IT’S FOR',
   'landing.audienceTitle': 'Built for everyone who sells before they build',
   'landing.audience1Title': 'Architects',
   'landing.audience1Body':
@@ -350,7 +347,6 @@ const en: Record<keyof typeof fr, string> = {
   'landing.audience3Body':
     'Produce the sales visuals for an entire development without multiplying back-and-forths with a graphic designer.',
 
-  'landing.checklistTag': 'FEATURES',
   'landing.checklistTitle':
     'Consistent renders. A memory that never betrays you. Fewer back-and-forths.',
   'landing.checklistItem1': 'Automatic material detection after every render',
@@ -403,7 +399,6 @@ const en: Record<keyof typeof fr, string> = {
     'Upload a photo, pick a preset, and let RenderBox remember every material for you.',
   'landing.ctaBandButton': 'Start for free',
 
-  'landing.faqTag': 'FAQ',
   'landing.faqTitle': 'Everything you need to know before you start',
   'landing.faq1Q': 'What happens if I switch tiers mid-month?',
   'landing.faq1A':
@@ -430,7 +425,6 @@ const en: Record<keyof typeof fr, string> = {
   'landing.footerCopyright': '© {year} RenderBox. All rights reserved.',
   'landing.footerLegalLinks': 'Terms · Privacy',
 
-  'landing.pricingTag': 'Pricing',
   'landing.pricingTitlePrefix': 'A tier for ',
   'landing.pricingTitleAccent': 'every pace',
   'landing.pricingSubtitle': 'Same engines, same presets — only the monthly quota changes.',

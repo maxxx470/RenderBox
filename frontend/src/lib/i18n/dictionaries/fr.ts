@@ -313,7 +313,6 @@ const fr = {
   'landing.navLogin': 'Se connecter',
   'landing.navStart': 'Commencer',
 
-  'landing.heroEyebrow': 'RENDU ARCHITECTURAL PAR IA',
   'landing.heroTitlePrefix': 'Des rendus IA qui ',
   'landing.heroTitleAccent': 'closent vos ventes',
   'landing.heroTitleSuffix': ' avant le premier coup de pelle',
@@ -329,7 +328,6 @@ const fr = {
   'landing.trustEngines': 'Moteurs IA au choix',
   'landing.trustMaterials': 'Matériau oublié entre les vues',
 
-  'landing.beforeAfterTag': 'TRANSFORMATION',
   'landing.beforeAfterTitlePrefix': "De l'esquisse au ",
   'landing.beforeAfterTitleAccent': 'rendu photoréaliste',
   'landing.beforeAfterBody':
@@ -337,7 +335,6 @@ const fr = {
   'landing.beforeAfterLabelBefore': 'Esquisse',
   'landing.beforeAfterLabelAfter': 'Rendu RenderBox',
 
-  'landing.audienceTag': 'POUR QUI',
   'landing.audienceTitle': 'Conçu pour tous ceux qui vendent avant de construire',
   'landing.audience1Title': 'Architectes',
   'landing.audience1Body':
@@ -349,7 +346,6 @@ const fr = {
   'landing.audience3Body':
     'Produisez les visuels de vente de tout un programme immobilier sans multiplier les allers-retours avec un infographiste.',
 
-  'landing.checklistTag': 'FONCTIONNALITÉS',
   'landing.checklistTitle':
     "Des rendus cohérents. Une mémoire qui ne vous trahit pas. Moins d'allers-retours.",
   'landing.checklistItem1': 'Détection automatique des matériaux après chaque rendu',
@@ -401,7 +397,6 @@ const fr = {
     'Upload une photo, choisis un preset, et laisse RenderBox garder la mémoire de chaque matériau pour toi.',
   'landing.ctaBandButton': 'Commencer gratuitement',
 
-  'landing.faqTag': 'QUESTIONS FRÉQUENTES',
   'landing.faqTitle': "Tout ce qu'il faut savoir avant de commencer",
   'landing.faq1Q': 'Que se passe-t-il si je change de palier en cours de mois ?',
   'landing.faq1A':
@@ -428,7 +423,6 @@ const fr = {
   'landing.footerCopyright': '© {year} RenderBox. Tous droits réservés.',
   'landing.footerLegalLinks': 'Conditions · Confidentialité',
 
-  'landing.pricingTag': 'Tarifs',
   'landing.pricingTitlePrefix': 'Un palier pour ',
   'landing.pricingTitleAccent': 'chaque rythme',
   'landing.pricingSubtitle': 'Même moteurs, mêmes presets, seul le quota mensuel change.',
