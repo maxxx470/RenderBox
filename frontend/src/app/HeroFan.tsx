@@ -67,10 +67,18 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
                       className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+                    // Placeholder for a render not supplied yet: a dashed frame
+                    // and a sweep, the usual "image slot" motif, so the empty
+                    // card reads as awaiting content rather than as a solid
+                    // block someone forgot to fill.
+                    <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
+                      <span className="flex h-[86px] w-[86px] items-center justify-center rounded-2xl border-2 border-dashed border-white/40 bg-white/10 backdrop-blur-sm">
                         <ImageIcon set="bold" size={26} primaryColor="#ffffff" />
                       </span>
+                      <span
+                        aria-hidden
+                        className="rb-shimmer pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                      />
                     </div>
                   )}
 

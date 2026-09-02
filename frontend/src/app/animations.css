@@ -138,6 +138,22 @@
   animation: rb-float 6s ease-in-out infinite;
 }
 
+/* Skeleton sweep for a card whose render has not been supplied yet. Its own
+   absolutely-positioned element, so its transform never fights the card's
+   tilt, entrance or drift. */
+@keyframes rb-shimmer {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+
+.rb-shimmer {
+  animation: rb-shimmer 2.8s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rb-pulse,
   .rb-spark,
@@ -146,7 +162,8 @@
   .rb-badge-pulse,
   .rb-caret,
   .rb-card-in,
-  .rb-float {
+  .rb-float,
+  .rb-shimmer {
     animation: none !important;
   }
 }
