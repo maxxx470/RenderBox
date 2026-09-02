@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { buildCsp } from '@/lib/csp';
 
 // Silent-refresh gate for protected pages.
 //
@@ -54,40 +55,45 @@ function ensureCsrfCookieWhenAuthDisabled(req: NextRequest, res: NextResponse): 
 }
 
 export function middleware(req: NextRequest): NextResponse {
-  if (AUTHED_PREFIXES.length === 0) {
-    const res = NextResponse.next();
-    ensureCsrfCookieWhenAuthDisabled(req, res);
-    return res;
-  }
+  const csp = buildCsp({
+    nonce: crypto.randomUUID(),
+    isProduction: process.env.NODE_ENV === 'production',
+    enforce: process.env.CSP_ENFORCE === 'true',
+    sentryDsn: process.env.SENTRY_DSN,
+  });
 
-  const { pathname, search } = req.nextUrl;
-  if (!isAuthedPath(pathname)) {
-    const res = NextResponse.next();
-    ensureCsrfCookieWhenAuthDisabled(req, res);
-    return res;
-  }
+  // Next reads the nonce off the REQUEST's Content-Security-Policy header to
+  // stamp its own inline bootstrap script. It is set even in report-only mode
+  // on purpose: without it the reports would flag Next's own scripts, which
+  // enforcement would in fact have allowed — noise that hides real findings.
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-nonce', csp.nonce);
+  requestHeaders.set('Content-Security-Policy', csp.policy);
 
-  if (req.cookies.get(ACCESS_COOKIE)?.value) {
-    const res = NextResponse.next();
-    ensureCsrfCookieWhenAuthDisabled(req, res);
-    return res;
-  }
+  const nextResponse = () => NextResponse.next({ request: { headers: requestHeaders } });
 
-  const target = pathname + search;
+  const res = ((): NextResponse => {
+    if (AUTHED_PREFIXES.length === 0) return nextResponse();
 
-  if (!req.cookies.get(REFRESH_COOKIE)?.value) {
+    const { pathname, search } = req.nextUrl;
+    if (!isAuthedPath(pathname)) return nextResponse();
+    if (req.cookies.get(ACCESS_COOKIE)?.value) return nextResponse();
+
+    const target = pathname + search;
     const url = req.nextUrl.clone();
-    url.pathname = LOGIN_PATH;
-    url.search = `?next=${encodeURIComponent(target)}`;
-    const res = NextResponse.redirect(url, 303);
-    ensureCsrfCookieWhenAuthDisabled(req, res);
-    return res;
-  }
 
-  const url = req.nextUrl.clone();
-  url.pathname = '/api/auth/refresh-and-return';
-  url.search = `?next=${encodeURIComponent(target)}`;
-  const res = NextResponse.redirect(url, 303);
+    if (!req.cookies.get(REFRESH_COOKIE)?.value) {
+      url.pathname = LOGIN_PATH;
+      url.search = `?next=${encodeURIComponent(target)}`;
+      return NextResponse.redirect(url, 303);
+    }
+
+    url.pathname = '/api/auth/refresh-and-return';
+    url.search = `?next=${encodeURIComponent(target)}`;
+    return NextResponse.redirect(url, 303);
+  })();
+
+  res.headers.set(csp.headerName, csp.policy);
   ensureCsrfCookieWhenAuthDisabled(req, res);
   return res;
 }
