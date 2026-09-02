@@ -13,9 +13,9 @@ import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/pr
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { PricingTierId } from '@/lib/pricing-tiers';
-import { Category, Filter2, Download } from 'react-iconly';
+import { Category, Filter2, Download, Upload } from 'react-iconly';
 import { ModeSidebar } from './ModeSidebar';
-import { Dropzone } from './Dropzone';
+import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
 import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
 import { EditPanel } from './EditPanel';
 import { CommandBar, type AppMode } from './CommandBar';
@@ -125,6 +125,11 @@ export function AppShell({
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const [fileDragOver, setFileDragOver] = useState(false);
+  // dragenter/dragleave also fire when the pointer crosses into a child (the
+  // badges, the download button), so a plain boolean flickers. Counting
+  // enter/leave pairs keeps the overlay stable until the drag really exits.
+  const fileDragDepth = useRef(0);
 
   useEffect(() => {
     const paramEngine = searchParams.get('engine');
@@ -196,6 +201,46 @@ export function AppShell({
     } finally {
       setUploading(false);
     }
+  }
+
+  // Only react to an OS file drag — dragging the selected render around, or text
+  // from elsewhere in the page, must not arm the drop overlay.
+  function isFileDrag(e: React.DragEvent): boolean {
+    return Array.from(e.dataTransfer.types).includes('Files');
+  }
+
+  function handleCanvasDragEnter(e: React.DragEvent) {
+    if (!isFileDrag(e)) return;
+    fileDragDepth.current += 1;
+    setFileDragOver(true);
+  }
+
+  function handleCanvasDragOver(e: React.DragEvent) {
+    if (!isFileDrag(e)) return;
+    // Without preventDefault the browser refuses the drop and opens the file.
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }
+
+  function handleCanvasDragLeave(e: React.DragEvent) {
+    if (!isFileDrag(e)) return;
+    fileDragDepth.current = Math.max(0, fileDragDepth.current - 1);
+    if (fileDragDepth.current === 0) setFileDragOver(false);
+  }
+
+  function handleCanvasDrop(e: React.DragEvent) {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    fileDragDepth.current = 0;
+    setFileDragOver(false);
+    if (uploading) return;
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (!ACCEPTED_UPLOAD_TYPES.includes(file.type)) {
+      toast(t('app.uploadTypeError'), 'error');
+      return;
+    }
+    void handleFile(file);
   }
 
   async function handleGenerate() {
@@ -458,9 +503,13 @@ export function AppShell({
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
-                className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#ECECF2] bg-gradient-to-br from-[#EFECFF] to-[#F7F7FA] ${
-                  mode === 'retouch' ? 'cursor-crosshair select-none' : ''
-                }`}
+                onDragEnter={handleCanvasDragEnter}
+                onDragOver={handleCanvasDragOver}
+                onDragLeave={handleCanvasDragLeave}
+                onDrop={handleCanvasDrop}
+                className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-[#EFECFF] to-[#F7F7FA] transition-colors duration-150 ease-out ${
+                  fileDragOver ? 'border-[#716FFF]' : 'border-[#ECECF2]'
+                } ${mode === 'retouch' ? 'cursor-crosshair select-none' : ''}`}
               >
                 {selectedId && (
                   <>
@@ -513,6 +562,28 @@ export function AppShell({
                       </div>
                     )}
                   </>
+                )}
+                {/* pointer-events-none so the overlay never becomes the drag
+                    target itself, which would unbalance the enter/leave count. */}
+                {fileDragOver && (
+                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#716FFF] bg-[#EFECFFF2] px-6">
+                    <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+                      <Upload set="bold" size={24} primaryColor="#ffffff" />
+                    </div>
+                    <h3 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+                      {t('app.canvasDropTitle')}
+                    </h3>
+                    <p className="max-w-[280px] text-center text-[13px] text-[#8A8896]">
+                      {t('app.canvasDropHint')}
+                    </p>
+                  </div>
+                )}
+                {uploading && (
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#FFFFFFD9]">
+                    <span className="rounded-2xl border border-[#ECECF2] bg-white px-4 py-2 font-[family-name:var(--font-jetbrains-mono)] text-[12px] text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)]">
+                      {t('app.uploading')}
+                    </span>
+                  </div>
                 )}
               </div>
             </>

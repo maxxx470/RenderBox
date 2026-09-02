@@ -4,6 +4,11 @@ import { useRef, useState, type DragEvent } from 'react';
 import { Upload } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 
+// Single source of truth for what the client offers to upload — mirrored by the
+// canvas drop target in AppShell. The server still re-validates by magic bytes
+// (lib/server/upload/sniff.ts); this is UX, not a security boundary.
+export const ACCEPTED_UPLOAD_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 export function Dropzone({
   uploading,
   onFile,
@@ -38,7 +43,7 @@ export function Dropzone({
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept={ACCEPTED_UPLOAD_TYPES.join(',')}
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
