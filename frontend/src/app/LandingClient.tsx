@@ -35,7 +35,8 @@ import {
   Category,
   Edit,
 } from 'react-iconly';
-import { useTranslations } from '@/lib/i18n/LocaleContext';
+import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
+import { PRESETS } from '@/lib/server/generation/presets';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
@@ -51,6 +52,8 @@ import { MaterialsFeedStudio } from './MaterialsFeedStudio';
 import { TreeGallery } from './TreeGallery';
 import { EnginesStateTiles } from './EnginesStateTiles';
 import { StickyBar } from './StickyBar';
+import { HeroFan } from './HeroFan';
+import { HERO_CARDS } from './hero-cards';
 
 // Tailwind's JIT scanner only detects complete, literal class-name tokens in
 // the source text — it can't see a class assembled at runtime from a plain
@@ -184,6 +187,48 @@ function SketchVisual() {
   );
 }
 
+// Floating tags around the headline, in the spirit of the reference's named
+// cursors — but labelled with the real ambiance presets. The originals are
+// other users' cursors, which would advertise a live presence feature
+// RenderBox does not have; preset names keep the same visual rhythm and
+// happen to explain the product at a glance.
+//
+// Hidden below 1100px: they sit in the headline's margins, and the charter
+// forbids floating controls that collide with content on small viewports.
+const TAG_POSITIONS = [
+  { preset: 'jour_ext', className: 'left-0 top-10', style: 'gradient' },
+  { preset: 'esquisse', className: 'right-0 top-24', style: 'ink' },
+  { preset: 'nuit_int', className: 'left-10 top-48', style: 'tint' },
+] as const;
+
+function HeroPresetTags() {
+  const { locale } = useLocale();
+
+  return (
+    <div aria-hidden className="pointer-events-none hidden min-[1100px]:block">
+      {TAG_POSITIONS.map(({ preset, className, style }, i) => (
+        <span
+          key={preset}
+          style={{ animationDelay: `${400 + i * 140}ms` }}
+          className={`rb-card-in absolute ${className} inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold shadow-[0_10px_24px_-12px_rgba(23,22,31,0.35)] ${
+            style === 'gradient'
+              ? `${GRADIENT} text-white`
+              : style === 'ink'
+                ? 'bg-[#17161F] text-white'
+                : 'bg-[#EFECFF] text-[#716FFF]'
+          }`}
+        >
+          {PRESETS[preset].label[locale]}
+          {/* The little pointer that makes it read as a tag, not a badge. */}
+          <svg width="9" height="9" viewBox="0 0 9 9" className="-mr-0.5 opacity-70">
+            <path d="M0 0 L9 3.5 L4 4.5 L2.5 9 Z" fill="currentColor" />
+          </svg>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function RenderVisual() {
   return (
     <div className={`flex h-full w-full items-center justify-center ${GRADIENT}`}>
@@ -257,14 +302,25 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <div className={`h-6.5 w-6.5 rounded-[7px] ${GRADIENT}`} />
             RenderBox
           </Link>
-          <div className="hidden items-center gap-7 text-sm font-medium text-[#6B6880] min-[860px]:flex">
-            <a href="#fonctionnalites" className="hover:text-[#17161F]">
+          {/* Links grouped in their own pill, as in the reference — a segmented
+              control rather than three loose links floating in the bar. */}
+          <div className="hidden items-center gap-1 rounded-full bg-[#F7F7FA] p-1 text-sm font-medium text-[#6B6880] min-[860px]:flex">
+            <a
+              href="#fonctionnalites"
+              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+            >
               {t('landing.navFeatures')}
             </a>
-            <a href="#tarifs" className="hover:text-[#17161F]">
+            <a
+              href="#tarifs"
+              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+            >
               {t('landing.navPricing')}
             </a>
-            <Link href="/exemple" className="hover:text-[#17161F]">
+            <Link
+              href="/exemple"
+              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+            >
               {t('landing.navExamples')}
             </Link>
           </div>
@@ -289,7 +345,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
       <div className="mx-auto max-w-[1180px] px-6 pb-14">
         {/* HERO */}
         <section className="pt-16 pb-10 text-center">
-          <div className="mx-auto flex flex-col items-center">
+          <div className="relative mx-auto flex flex-col items-center">
+            <HeroPresetTags />
             <Reveal delayMs={0}>
               <span className={`text-[13px] font-medium text-[#716FFF] ${MONO}`}>
                 <Kicker
@@ -335,7 +392,17 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Reveal>
           </div>
 
-          <Reveal delayMs={120} className="relative mx-auto mt-14 max-w-[760px]">
+          {/* The fan takes over as soon as real renders are configured in
+              hero-cards.ts; until then the existing preview block stands in,
+              rather than a row of empty frames on a marketing page. */}
+          {HERO_CARDS.length > 0 && (
+            <HeroFan ctaHref={ctaHref} ctaLabel={t('landing.heroCtaPrimary')} />
+          )}
+
+          <Reveal
+            delayMs={120}
+            className={`relative mx-auto mt-14 max-w-[760px] ${HERO_CARDS.length > 0 ? 'hidden' : ''}`}
+          >
             <div className="relative rounded-[28px] border border-[#ECECF2] bg-[#FBFBFD] p-4 shadow-[0_30px_60px_-24px_rgba(113,111,255,0.45)] min-[640px]:p-6">
               <div className="mb-3.5 flex items-center justify-between">
                 <span className={`text-[11px] text-[#8A8896] ${MONO}`}>
