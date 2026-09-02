@@ -318,8 +318,6 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroTitlePrefix': 'AI renders that ',
   'landing.heroTitleAccent': 'close your sales',
   'landing.heroTitleSuffix': ' before the first brick is laid',
-  'landing.heroSubtitle':
-    'RenderBox remembers every material, every style, every detail — for consistent renders from the first sketch to the last variant.',
   'landing.heroCtaPrimary': 'Generate my first render',
   'landing.heroCtaSecondary': 'See an example',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',

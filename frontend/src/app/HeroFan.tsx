@@ -38,7 +38,7 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
   const middle = Math.floor(HERO_CARDS.length / 2);
 
   return (
-    <div className="relative mt-14">
+    <div className="relative mt-7">
       {/* Bleeds off the bottom like the reference: the row is taller than the
           visible window and the overflow is cropped. */}
       <div className="flex items-end justify-center overflow-hidden pt-8">

@@ -317,8 +317,6 @@ const fr = {
   'landing.heroTitlePrefix': 'Des rendus IA qui ',
   'landing.heroTitleAccent': 'closent vos ventes',
   'landing.heroTitleSuffix': ' avant le premier coup de pelle',
-  'landing.heroSubtitle':
-    'RenderBox mémorise chaque matériau, chaque style, chaque détail — pour des rendus cohérents de la première esquisse à la dernière variante.',
   'landing.heroCtaPrimary': 'Générer mon premier rendu',
   'landing.heroCtaSecondary': 'Voir un exemple',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',

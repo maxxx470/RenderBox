@@ -344,7 +344,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
 
       <div className="mx-auto max-w-[1180px] px-6 pb-14">
         {/* HERO */}
-        <section className="pt-16 pb-10 text-center">
+        <section className="pb-6 pt-14 text-center">
           <div className="relative mx-auto flex flex-col items-center">
             <HeroPresetTags />
             <Reveal delayMs={0}>
@@ -370,12 +370,9 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 <GradientText>{t('landing.heroTitleAccent')}</GradientText>
                 {t('landing.heroTitleSuffix')}
               </h1>
-              <p className="mx-auto mt-5 max-w-[480px] text-[15px] leading-[1.6] text-[#6B6880]">
-                {t('landing.heroSubtitle')}
-              </p>
             </Reveal>
             <Reveal delayMs={300}>
-              <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href={ctaHref}
                   className="rb-pulse inline-flex items-center gap-2 rounded-full bg-[#17161F] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.45)] transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)] active:scale-[0.97]"
@@ -399,58 +396,57 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <HeroFan ctaHref={ctaHref} ctaLabel={t('landing.heroCtaPrimary')} />
           )}
 
-          <Reveal
-            delayMs={120}
-            className={`relative mx-auto mt-14 max-w-[760px] ${HERO_CARDS.length > 0 ? 'hidden' : ''}`}
-          >
-            <div className="relative rounded-[28px] border border-[#ECECF2] bg-[#FBFBFD] p-4 shadow-[0_30px_60px_-24px_rgba(113,111,255,0.45)] min-[640px]:p-6">
-              <div className="mb-3.5 flex items-center justify-between">
-                <span className={`text-[11px] text-[#8A8896] ${MONO}`}>
-                  {t('landing.heroPreviewProject')}
-                </span>
-                <span className={`text-[11px] text-[#8A8896] ${MONO}`}>
-                  {t('landing.heroPreviewEngine')}
-                </span>
+          {HERO_CARDS.length === 0 && (
+            <Reveal delayMs={120} className="relative mx-auto mt-14 max-w-[760px]">
+              <div className="relative rounded-[28px] border border-[#ECECF2] bg-[#FBFBFD] p-4 shadow-[0_30px_60px_-24px_rgba(113,111,255,0.45)] min-[640px]:p-6">
+                <div className="mb-3.5 flex items-center justify-between">
+                  <span className={`text-[11px] text-[#8A8896] ${MONO}`}>
+                    {t('landing.heroPreviewProject')}
+                  </span>
+                  <span className={`text-[11px] text-[#8A8896] ${MONO}`}>
+                    {t('landing.heroPreviewEngine')}
+                  </span>
+                </div>
+                <div className="relative h-[220px] overflow-hidden rounded-2xl min-[640px]:h-[320px]">
+                  <RenderVisual />
+                  <span
+                    className={`absolute bottom-3 left-3 rounded-full bg-black/40 px-2.5 py-1 text-[10px] text-white ${MONO}`}
+                  >
+                    {t('landing.heroPreviewCaption')}
+                  </span>
+                </div>
               </div>
-              <div className="relative h-[220px] overflow-hidden rounded-2xl min-[640px]:h-[320px]">
-                <RenderVisual />
-                <span
-                  className={`absolute bottom-3 left-3 rounded-full bg-black/40 px-2.5 py-1 text-[10px] text-white ${MONO}`}
-                >
-                  {t('landing.heroPreviewCaption')}
-                </span>
-              </div>
-            </div>
 
-            {/* Floating badges around the mockup */}
-            <div className="absolute -left-4 top-8 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
-              <ImageIcon set="bold" size={18} primaryColor="#716FFF" />
-            </div>
-            <div className="absolute -right-4 top-20 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
-              <div className={`flex h-6 w-6 items-center justify-center rounded-md ${GRADIENT}`}>
-                <Edit set="bold" size={12} primaryColor="#ffffff" />
+              {/* Floating badges around the mockup */}
+              <div className="absolute -left-4 top-8 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
+                <ImageIcon set="bold" size={18} primaryColor="#716FFF" />
               </div>
-            </div>
-            <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
-              <ImageIcon set="bold" size={14} primaryColor="#716FFF" />
-              {t('landing.heroChipFacade')}
-            </div>
-            <div
-              className={`absolute -bottom-5 right-6 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)] ${MONO}`}
-            >
-              {t('landing.heroChipMaterials')
-                .split(':')
-                .map((part, i) =>
-                  i === 0 ? (
-                    <span key={i}>{part}:</span>
-                  ) : (
-                    <b key={i} className="text-[#716FFF]">
-                      {part}
-                    </b>
-                  ),
-                )}
-            </div>
-          </Reveal>
+              <div className="absolute -right-4 top-20 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
+                <div className={`flex h-6 w-6 items-center justify-center rounded-md ${GRADIENT}`}>
+                  <Edit set="bold" size={12} primaryColor="#ffffff" />
+                </div>
+              </div>
+              <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
+                <ImageIcon set="bold" size={14} primaryColor="#716FFF" />
+                {t('landing.heroChipFacade')}
+              </div>
+              <div
+                className={`absolute -bottom-5 right-6 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)] ${MONO}`}
+              >
+                {t('landing.heroChipMaterials')
+                  .split(':')
+                  .map((part, i) =>
+                    i === 0 ? (
+                      <span key={i}>{part}:</span>
+                    ) : (
+                      <b key={i} className="text-[#716FFF]">
+                        {part}
+                      </b>
+                    ),
+                  )}
+              </div>
+            </Reveal>
+          )}
         </section>
         <div ref={heroSentinelRef} aria-hidden />
 
