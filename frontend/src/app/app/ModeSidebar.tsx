@@ -81,9 +81,13 @@ export function ModeSidebar({
 
       <div className="mb-2 h-px bg-[#ECECF2]" />
 
-      {/* The tree needs the labels to be readable at all, so it goes away with
+      {/* Only this block scrolls. A project's tree can run to any length, but
+          the collapse button, the mode entries and the Informations link at the
+          bottom must stay put — scrolling the whole rail to reach them is
+          exactly what the fixed rail is meant to avoid.
+          The tree needs the labels to be readable at all, so it goes away with
           them rather than degrading into an unlabelled column of dots. */}
-      <div className={hideOnCollapse}>
+      <div className={`min-h-0 flex-1 overflow-y-auto ${hideOnCollapse}`}>
         <h3 className="mb-3.5 mt-3 font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
           {t('app.treeTitle')}
         </h3>
@@ -101,7 +105,7 @@ export function ModeSidebar({
         href="/info"
         {...(collapsed ? { title: t('info.title') } : {})}
         aria-label={t('info.title')}
-        className={`mt-auto flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${
+        className={`mt-2 flex flex-shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${
           collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
         }`}
       >

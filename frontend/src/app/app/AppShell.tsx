@@ -555,7 +555,7 @@ export function AppShell({
         <aside
           className={`${
             mobileTreeOpen ? 'flex' : 'hidden'
-          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col overflow-y-auto border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5 transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:m-2.5 min-[900px]:flex min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8] ${
+          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col overflow-hidden border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5 transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:m-2.5 min-[900px]:flex min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8] ${
             sidebarCollapsed ? 'min-[900px]:w-[68px] min-[900px]:px-2.5' : ''
           }`}
         >

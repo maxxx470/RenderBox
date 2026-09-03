@@ -1,9 +1,10 @@
 'use client';
 
-// /app home — "Espace de génération". Distinct from the /app/projets grid:
+// /app/generer — "Espace de génération". Distinct from the /app dashboard:
 // this screen is a quick-start surface (engine pick + recent renders + a
 // drop-a-photo command bar) that always creates a *new* project. Opening an
-// existing one still goes through /app/projets or by clicking a card here.
+// existing one still goes through the dashboard at /app, or by clicking a
+// card here.
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -260,7 +261,7 @@ export function GenerationHome({
             </div>
             <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeModeHint')}</p>
             <Link
-              href="/app/projets"
+              href="/app"
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-2.5 text-[13px] font-semibold text-white"
             >
               {t('app.genHomeOpenProjects')}

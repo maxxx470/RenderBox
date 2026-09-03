@@ -8,7 +8,7 @@
 // reached by typing the URL directly, never surfaced from this sidebar.
 import Link from 'next/link';
 import {
-  Folder,
+  Category,
   Image as ImageIcon,
   InfoSquare,
   Setting,
@@ -61,9 +61,15 @@ export function HomeSidebar({
 
   return (
     <aside
-      // Outlined panel rather than a flush column: a full border in the
-      // charter's line-strong tone, inset so the outline reads on every side.
-      className={`m-2.5 flex flex-shrink-0 flex-col overflow-y-auto rounded-2xl border border-[#DEDEE8] bg-[#F7F7FA] py-4.5 transition-[width] duration-200 ease-out ${
+      // Pinned to the viewport, exactly one screen tall: `sticky top-0` plus a
+      // height that subtracts its own margins, so the rail never scrolls with
+      // the page and never overflows past the bottom edge. The page beside it
+      // scrolls freely.
+      //
+      // `overflow-y-auto` is gone on purpose — the whole point is that the rail
+      // fits. The account block and the upgrade banner are pushed down with
+      // `mt-auto` instead of being scrolled to.
+      className={`sticky top-0 m-2.5 flex h-[calc(100vh-20px)] flex-shrink-0 flex-col rounded-2xl border border-[#DEDEE8] bg-[#F7F7FA] py-4.5 transition-[width] duration-200 ease-out ${
         collapsed ? 'w-[68px] px-2.5' : 'w-[240px] px-3.5'
       }`}
     >
@@ -94,13 +100,13 @@ export function HomeSidebar({
 
       <div className="mb-4.5">
         <Link
-          href="/app/projets"
-          {...(collapsed ? { title: t('projects.title') } : {})}
-          aria-label={t('projects.title')}
-          className={`flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-[13.5px] font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14] ${centerOnCollapse}`}
+          href="/app"
+          {...(collapsed ? { title: t('dashboard.title') } : {})}
+          aria-label={t('dashboard.title')}
+          className={`flex items-center gap-2.5 rounded-xl border border-[#DEDEE8] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14] ${centerOnCollapse}`}
         >
-          <Folder set="light" size={16} primaryColor="#716FFF" />
-          <span className={hideOnCollapse}>{t('projects.title')}</span>
+          <Category set="light" size={16} primaryColor="#716FFF" />
+          <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
       </div>
 
@@ -127,10 +133,10 @@ export function HomeSidebar({
           </button>
         ) : (
           <Link
-            href="/app"
+            href="/app/generer"
             {...(collapsed ? { title: t('app.modeGenerate') } : {})}
             aria-label={t('app.modeGenerate')}
-            className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${centerOnCollapse}`}
+            className={`flex items-center gap-2.5 rounded-xl border border-transparent px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:border-[#DEDEE8] hover:bg-white ${centerOnCollapse}`}
           >
             <ImageIcon set="light" size={16} primaryColor="#8A8896" />
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>

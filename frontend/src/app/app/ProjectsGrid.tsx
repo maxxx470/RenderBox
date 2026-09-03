@@ -1,13 +1,14 @@
 'use client';
 
-// Krea-style "my projects" grid — the new /app root. Replaces the old
-// behavior of auto-redirecting to the most-recent project: opening a
-// project is now a deliberate click, and creating one is a single visible
-// action instead of an implicit side-effect of the first upload.
+// The dashboard at /app: banners, account figures, then the project grid.
+// Also rendered on its own (without `dashboard`) as a plain grid.
+//
+// Opening a project is a deliberate click, and creating one is a single
+// visible action rather than a side-effect of the first upload.
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Folder, Edit, Delete, Search } from 'react-iconly';
+import { Plus, Folder, Edit, Delete, Search, Image as ImageIcon } from 'react-iconly';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -68,9 +69,15 @@ function ProjectCard({
               className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
             />
           ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#8A8896]">
-              <Folder set="light" size={26} primaryColor="#8A8896" style={{ opacity: 0.5 }} />
-              <span className="text-xs">{t('projects.cardEmpty')}</span>
+            // A project with no render yet: the brand gradient with a real
+            // glyph on it, not a faded folder on grey. The charter requires a
+            // coloured tile to carry an actual icon rather than read as a
+            // failed image.
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#EFECFF] to-[#F1F0F6]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+                <ImageIcon set="light" size={18} primaryColor="#ffffff" />
+              </span>
+              <span className="text-[11px] text-[#8A8896]">{t('projects.cardEmpty')}</span>
             </div>
           )}
         </div>
@@ -437,7 +444,9 @@ export function ProjectsGrid({
 
   return (
     <div className="flex min-h-screen bg-white">
-      <div className="hidden min-[900px]:flex">
+      {/* block, not flex: the rail inside is `sticky`, and it needs a plain
+          block container as tall as the page to stick within. */}
+      <div className="hidden min-[900px]:block">
         <HomeSidebar
           tier={dashboard.tier}
           max={dashboard.quotaMax}

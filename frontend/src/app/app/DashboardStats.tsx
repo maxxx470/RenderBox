@@ -1,6 +1,6 @@
 'use client';
 
-// The dashboard header that now sits above the project grid on /app/projets.
+// The dashboard header that sits above the project grid on /app.
 //
 // Every figure here comes from the database on the server (see the page that
 // renders this) — nothing is estimated, projected or padded. When a value
@@ -31,12 +31,49 @@ const TIER_LABEL_KEY = {
   pro: 'app.tierPro',
 } as const;
 
-function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+// One accent per card so the row reads as three distinct facts rather than
+// three copies of the same box. The three hues are the ones already used by
+// the landing's audience tabs — violet, sky, amber — so nothing new enters
+// the palette. Error red is deliberately absent: it means "something is
+// wrong", never "this is the third card".
+//
+// Full literal class strings: Tailwind's scanner cannot see a class built by
+// interpolating a colour value (see the JIT note in CLAUDE.md).
+const ACCENTS = {
+  violet: {
+    frame: 'rounded-2xl border border-[#DEDEE8] bg-white p-4 shadow-[0_1px_3px_#17161F0A]',
+    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#DCDBFF] bg-[#EFECFF]',
+    color: '#716FFF',
+  },
+  sky: {
+    frame: 'rounded-2xl border border-[#DEDEE8] bg-white p-4 shadow-[0_1px_3px_#17161F0A]',
+    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#C7E7F7] bg-[#E6F4FC]',
+    color: '#0EA5E9',
+  },
+  amber: {
+    frame: 'rounded-2xl border border-[#DEDEE8] bg-white p-4 shadow-[0_1px_3px_#17161F0A]',
+    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#F3E0BC] bg-[#FCF3E2]',
+    color: '#E9A21B',
+  },
+} as const;
+
+type AccentName = keyof typeof ACCENTS;
+
+function StatCard({
+  accent,
+  icon,
+  value,
+  label,
+}: {
+  accent: AccentName;
+  icon: (color: string) => React.ReactNode;
+  value: string;
+  label: string;
+}) {
+  const a = ACCENTS[accent];
   return (
-    <div className="rounded-2xl border border-[#ECECF2] bg-white p-4">
-      <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[#F1F0F6]">
-        {icon}
-      </div>
+    <div className={a.frame}>
+      <div className={a.chip}>{icon(a.color)}</div>
       <div className="font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]">
         {value}
       </div>
@@ -64,7 +101,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
     <div className="mb-8 grid grid-cols-1 gap-4 min-[860px]:grid-cols-[1.4fr_1fr_1fr_1fr]">
       {/* Quota — the one card that changes behaviour rather than just its
           number, so it leads and takes the widest column. */}
-      <div className="rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-4">
+      <div className="rounded-2xl border border-[#DEDEE8] bg-[#FBFBFD] p-4 shadow-[0_1px_3px_#17161F0A]">
         {data.tier && data.quotaMax !== null && data.quotaRemaining !== null ? (
           <>
             <div className="mb-2.5 flex items-center justify-between gap-2">
@@ -118,21 +155,24 @@ export function DashboardStats({ data }: { data: DashboardData }) {
       </div>
 
       <StatCard
-        icon={<Folder set="light" size={16} primaryColor="#716FFF" />}
+        accent="violet"
+        icon={(c) => <Folder set="light" size={16} primaryColor={c} />}
         value={data.projectCount.toLocaleString(intl)}
         label={t('dashboard.statProjects')}
       />
       <StatCard
-        icon={<ImageIcon set="light" size={16} primaryColor="#716FFF" />}
+        accent="sky"
+        icon={(c) => <ImageIcon set="light" size={16} primaryColor={c} />}
         value={data.renderCount.toLocaleString(intl)}
         label={t('dashboard.statRenders')}
       />
       <StatCard
-        icon={
+        accent="amber"
+        icon={(c) =>
           data.lastActivityAt ? (
-            <TimeCircle set="light" size={16} primaryColor="#716FFF" />
+            <TimeCircle set="light" size={16} primaryColor={c} />
           ) : (
-            <Chart set="light" size={16} primaryColor="#716FFF" />
+            <Chart set="light" size={16} primaryColor={c} />
           )
         }
         value={data.lastActivityAt ? shortDate(data.lastActivityAt) : '—'}

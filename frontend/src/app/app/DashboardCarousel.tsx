@@ -19,13 +19,15 @@ import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { SHOWCASE_SLIDES, SHOWCASE_INTERVAL_MS } from './dashboard-media';
 
+// Outlined like every other block on the dashboard, so the two banners sit in
+// the same frame language as the cards below them.
 const FRAME =
-  'relative aspect-[16/9] overflow-hidden rounded-2xl min-[900px]:aspect-auto min-[900px]:h-[210px]';
+  'relative aspect-[16/9] overflow-hidden rounded-2xl border border-[#DEDEE8] min-[900px]:aspect-auto min-[900px]:h-[210px]';
 
 function WaitingPanel() {
   const t = useTranslations();
   return (
-    <div className={`${FRAME} border border-dashed border-[#DEDEE8] bg-[#FBFBFD]`}>
+    <div className={`${FRAME} border-dashed bg-[#FBFBFD]`}>
       <div className="flex h-full w-full flex-col items-center justify-center gap-2.5 px-6 text-center">
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F1F0F6]">
           <ImageIcon set="light" size={20} primaryColor="#8A8896" />

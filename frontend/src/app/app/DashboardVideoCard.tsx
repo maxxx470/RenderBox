@@ -24,7 +24,7 @@ export function DashboardVideoCard() {
 
   if (playing && url) {
     return (
-      <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-black min-[900px]:aspect-auto min-[900px]:h-[210px]">
+      <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-[#DEDEE8] bg-black min-[900px]:aspect-auto min-[900px]:h-[210px]">
         {embed ? (
           <iframe
             src={embed}
@@ -42,7 +42,7 @@ export function DashboardVideoCard() {
   }
 
   return (
-    <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] min-[900px]:aspect-auto min-[900px]:h-[210px]">
+    <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-[#DEDEE8] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] min-[900px]:aspect-auto min-[900px]:h-[210px]">
       {DASHBOARD_VIDEO.poster && (
         <img src={DASHBOARD_VIDEO.poster} alt="" className="h-full w-full object-cover" />
       )}
