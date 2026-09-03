@@ -53,6 +53,8 @@ const fr = {
   'app.treeNodeRender': 'Rendu',
   'app.sidebarCollapse': 'Réduire le menu',
   'app.sidebarExpand': 'Déplier le menu',
+  'app.openMenu': 'Ouvrir le menu',
+  'app.closeMenu': 'Fermer le menu',
   'app.materialsTitle': 'Fiche matériaux',
   'app.materialsEmptyBody': 'Disponible après ton premier rendu généré',
   'app.materialsBadge': 'bientôt',

@@ -43,6 +43,8 @@ export function HomeSidebar({
   max,
   remaining,
   userEmail,
+  mobileOpen = false,
+  onMobileClose,
 }: {
   /** Absent on the dashboard, which has no mode state — the Image entry
       becomes a link back to the generation space instead of a button. */
@@ -51,29 +53,49 @@ export function HomeSidebar({
   max: number | null;
   remaining: number | null;
   userEmail: string;
+  /** Below 900px the rail is a drawer. Defaults to closed, so a caller that
+      does not wire the trigger simply keeps the old "hidden on mobile"
+      behaviour instead of leaking a 240px rail into a 390px screen. */
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }) {
   const t = useTranslations();
   const nextTier = tier ? NEXT_TIER[tier] : null;
   const [collapsed, toggleCollapsed] = useSidebarCollapsed();
-  const hideOnCollapse = collapsed ? 'hidden' : '';
-  const centerOnCollapse = collapsed ? 'justify-center px-0' : '';
-  const showUpgradeBanner = !collapsed && (!tier || Boolean(nextTier));
+  // The drawer only ever opens below 900px (its trigger is `min-[900px]:hidden`),
+  // so an open drawer means "narrow screen" and the persisted desktop collapse
+  // must not apply — a 68px drawer with no labels would be useless.
+  const collapsedUi = mobileOpen ? false : collapsed;
+  // Always a function: `exactOptionalPropertyTypes` rejects a possibly-undefined
+  // onClick, and every nav item wants to dismiss the drawer it was tapped in.
+  const closeDrawer = () => {
+    onMobileClose?.();
+  };
+  const hideOnCollapse = collapsedUi ? 'hidden' : '';
+  const centerOnCollapse = collapsedUi ? 'justify-center px-0' : '';
+  const showUpgradeBanner = !collapsedUi && (!tier || Boolean(nextTier));
 
   return (
     <aside
-      // Pinned to the viewport, exactly one screen tall: `sticky top-0` plus a
-      // height that subtracts its own margins, so the rail never scrolls with
-      // the page and never overflows past the bottom edge. The page beside it
-      // scrolls freely.
+      // Two layouts, one element.
       //
-      // `overflow-y-auto` is gone on purpose — the whole point is that the rail
-      // fits. The account block and the upgrade banner are pushed down with
-      // `mt-auto` instead of being scrolled to.
-      className={`sticky top-0 m-2.5 flex h-[calc(100vh-20px)] flex-shrink-0 flex-col rounded-2xl border border-[#DEDEE8] bg-[#F7F7FA] py-4.5 transition-[width] duration-200 ease-out ${
-        collapsed ? 'w-[68px] px-2.5' : 'w-[240px] px-3.5'
+      // Below 900px it is an overlay drawer (`fixed`, off-canvas until opened) —
+      // a 240px rail inside a 390px screen would eat the workspace, which is
+      // exactly what broke /app/generer on phones.
+      //
+      // From 900px it is the pinned rail: `sticky top-0` plus a height that
+      // subtracts its own margins, so it never scrolls with the page and never
+      // overflows past the bottom edge. The page beside it scrolls freely, and
+      // `overflow-y-auto` is deliberately absent there — the whole point is
+      // that the rail fits. The account block and the upgrade banner are pushed
+      // down with `mt-auto` instead of being scrolled to.
+      className={`${mobileOpen ? 'flex' : 'hidden'} fixed inset-y-0 left-0 z-40 flex-col overflow-y-auto border-r border-[#DEDEE8] bg-[#F7F7FA] py-4.5 transition-[width] duration-200 ease-out min-[900px]:sticky min-[900px]:top-0 min-[900px]:z-auto min-[900px]:m-2.5 min-[900px]:flex min-[900px]:h-[calc(100vh-20px)] min-[900px]:flex-shrink-0 min-[900px]:overflow-visible min-[900px]:rounded-2xl min-[900px]:border ${
+        collapsedUi ? 'w-[68px] px-2.5' : 'w-[240px] px-3.5'
       }`}
     >
-      <div className={`mb-3 flex items-center gap-2.5 ${collapsed ? 'justify-center' : 'px-1.5'}`}>
+      <div
+        className={`mb-3 flex items-center gap-2.5 ${collapsedUi ? 'justify-center' : 'px-1.5'}`}
+      >
         <div className="h-6.5 w-6.5 flex-shrink-0 rounded-[7px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
         <span
           className={`font-[family-name:var(--font-general-sans)] text-[14.5px] font-semibold text-[#17161F] ${hideOnCollapse}`}
@@ -82,16 +104,18 @@ export function HomeSidebar({
         </span>
       </div>
 
+      {/* Collapsing is a desktop affordance: the drawer is already dismissed by
+          the backdrop, and a 68px drawer would defeat its own purpose. */}
       <button
         type="button"
         onClick={toggleCollapsed}
-        aria-label={t(collapsed ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
-        title={t(collapsed ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
-        className={`mb-4 flex h-8 w-8 items-center justify-center rounded-lg border border-[#ECECF2] bg-white transition-colors hover:border-[#DEDEE8] ${
-          collapsed ? 'self-center' : 'self-end'
+        aria-label={t(collapsedUi ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
+        title={t(collapsedUi ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
+        className={`mb-4 hidden h-8 w-8 items-center justify-center rounded-lg border border-[#ECECF2] bg-white transition-colors hover:border-[#DEDEE8] min-[900px]:flex ${
+          collapsedUi ? 'self-center' : 'self-end'
         }`}
       >
-        {collapsed ? (
+        {collapsedUi ? (
           <ChevronRight set="light" size={15} primaryColor="#8A8896" />
         ) : (
           <ChevronLeft set="light" size={15} primaryColor="#8A8896" />
@@ -101,7 +125,8 @@ export function HomeSidebar({
       <div className="mb-4.5">
         <Link
           href="/app"
-          {...(collapsed ? { title: t('dashboard.title') } : {})}
+          {...(collapsedUi ? { title: t('dashboard.title') } : {})}
+          onClick={closeDrawer}
           aria-label={t('dashboard.title')}
           className={`flex items-center gap-2.5 rounded-xl border border-[#DEDEE8] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14] ${centerOnCollapse}`}
         >
@@ -122,8 +147,11 @@ export function HomeSidebar({
         {onModeChange ? (
           <button
             type="button"
-            onClick={() => onModeChange('generate')}
-            {...(collapsed ? { title: t('app.modeGenerate') } : {})}
+            onClick={() => {
+              onModeChange('generate');
+              closeDrawer();
+            }}
+            {...(collapsedUi ? { title: t('app.modeGenerate') } : {})}
             aria-label={t('app.modeGenerate')}
             aria-current="page"
             className={`flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-left text-[13.5px] font-semibold shadow-[0_1px_4px_#17161F14] ${centerOnCollapse}`}
@@ -134,7 +162,8 @@ export function HomeSidebar({
         ) : (
           <Link
             href="/app/generer"
-            {...(collapsed ? { title: t('app.modeGenerate') } : {})}
+            {...(collapsedUi ? { title: t('app.modeGenerate') } : {})}
+            onClick={closeDrawer}
             aria-label={t('app.modeGenerate')}
             className={`flex items-center gap-2.5 rounded-xl border border-transparent px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:border-[#DEDEE8] hover:bg-white ${centerOnCollapse}`}
           >
@@ -143,7 +172,7 @@ export function HomeSidebar({
           </Link>
         )}
         <VideoModeSoon
-          collapsed={collapsed}
+          collapsed={collapsedUi}
           className={`text-[13.5px] ${centerOnCollapse}`}
           labelClassName={hideOnCollapse}
         />
@@ -157,7 +186,8 @@ export function HomeSidebar({
       <div className="mb-4.5 flex flex-col gap-1">
         <Link
           href="/parametres"
-          {...(collapsed ? { title: t('parametres.title') } : {})}
+          {...(collapsedUi ? { title: t('parametres.title') } : {})}
+          onClick={closeDrawer}
           aria-label={t('parametres.title')}
           className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${centerOnCollapse}`}
         >
@@ -166,7 +196,8 @@ export function HomeSidebar({
         </Link>
         <Link
           href="/info"
-          {...(collapsed ? { title: t('info.title') } : {})}
+          {...(collapsedUi ? { title: t('info.title') } : {})}
+          onClick={closeDrawer}
           aria-label={t('info.title')}
           className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${centerOnCollapse}`}
         >
@@ -197,8 +228,8 @@ export function HomeSidebar({
         ) : null)}
 
       <div
-        className={`flex items-center gap-2.5 rounded-xl py-2 ${collapsed ? 'justify-center px-0' : 'px-2.5'} ${showUpgradeBanner ? '' : 'mt-auto'}`}
-        {...(collapsed ? { title: userEmail } : {})}
+        className={`flex items-center gap-2.5 rounded-xl py-2 ${collapsedUi ? 'justify-center px-0' : 'px-2.5'} ${showUpgradeBanner ? '' : 'mt-auto'}`}
+        {...(collapsedUi ? { title: userEmail } : {})}
       >
         <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
           <User set="light" size={14} primaryColor="#ffffff" />

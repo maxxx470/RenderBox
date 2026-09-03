@@ -8,7 +8,15 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Folder, Send, TickSquare, CloseSquare, Upload, Image as ImageIcon } from 'react-iconly';
+import {
+  Folder,
+  Send,
+  TickSquare,
+  CloseSquare,
+  Upload,
+  Image as ImageIcon,
+  Category,
+} from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -147,6 +155,7 @@ export function GenerationHome({
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -213,17 +222,37 @@ export function GenerationHome({
 
   return (
     <div className="flex h-screen bg-white">
+      {/* Backdrop for the mobile drawer, matching the workspace. */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/30 min-[900px]:hidden"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden
+        />
+      )}
       <HomeSidebar
         onModeChange={handleModeChange}
         tier={tier}
         max={max}
         remaining={remaining}
         userEmail={user?.email ?? ''}
+        mobileOpen={mobileNavOpen}
+        onMobileClose={() => setMobileNavOpen(false)}
       />
 
-      <main className="flex flex-1 flex-col overflow-hidden px-7.5 pt-5.5">
+      {/* min-w-0 so this flex child can shrink below its content's intrinsic
+          width instead of pushing the workspace off a narrow screen. */}
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden px-5 pt-5.5 min-[900px]:px-7.5">
         <div className="mb-7.5 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
+              aria-label={t('app.openMenu')}
+            >
+              <Category set="light" size={16} primaryColor="#8A8896" />
+            </button>
             {authDisabled && (
               <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
                 {tier && max !== null && remaining !== null

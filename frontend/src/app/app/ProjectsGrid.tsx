@@ -8,7 +8,7 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Folder, Edit, Delete, Search, Image as ImageIcon } from 'react-iconly';
+import { Plus, Folder, Edit, Delete, Search, Image as ImageIcon, Category } from 'react-iconly';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -160,6 +160,7 @@ export function ProjectsGrid({
   const [dialog, setDialog] = useState<Dialog>(null);
   const [draftName, setDraftName] = useState('');
   const [busy, setBusy] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Only the ambiances the user actually has: an empty filter pill would be a
   // control that can only ever return nothing.
@@ -243,6 +244,19 @@ export function ProjectsGrid({
       <div className="mx-auto max-w-[1100px]">
         <div className="mb-7 flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5">
+            {/* Below 900px the rail is off-canvas, so this is the only way to
+                reach Image / Paramètres / Informations. Without it the
+                dashboard is a dead end on a phone. */}
+            {dashboard && (
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(true)}
+                className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
+                aria-label={t('app.openMenu')}
+              >
+                <Category set="light" size={16} primaryColor="#8A8896" />
+              </button>
+            )}
             <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
             <h1 className="font-[family-name:var(--font-general-sans)] text-lg font-semibold text-[#17161F]">
               {t(dashboard ? 'dashboard.title' : 'projects.title')}
@@ -444,17 +458,32 @@ export function ProjectsGrid({
 
   return (
     <div className="flex min-h-screen bg-white">
+      {/* Backdrop for the mobile drawer. Tapping anywhere outside closes it —
+          the same dismissal the workspace drawer already uses. */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/30 min-[900px]:hidden"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden
+        />
+      )}
       {/* block, not flex: the rail inside is `sticky`, and it needs a plain
-          block container as tall as the page to stick within. */}
-      <div className="hidden min-[900px]:block">
+          block container as tall as the page to stick within. The rail hides
+          itself below 900px, so this wrapper no longer does. */}
+      <div>
         <HomeSidebar
           tier={dashboard.tier}
           max={dashboard.quotaMax}
           remaining={dashboard.quotaRemaining}
           userEmail={userEmail}
+          mobileOpen={mobileNavOpen}
+          onMobileClose={() => setMobileNavOpen(false)}
         />
       </div>
-      <main className="flex-1 overflow-x-hidden px-6 py-8">{content}</main>
+      {/* min-w-0: without it this flex child refuses to shrink below its
+          content's intrinsic width, and a single long unwrapped string would
+          stretch the page past the viewport. */}
+      <main className="min-w-0 flex-1 overflow-x-hidden px-6 py-8">{content}</main>
     </div>
   );
 }

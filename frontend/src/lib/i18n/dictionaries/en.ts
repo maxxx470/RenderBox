@@ -55,6 +55,8 @@ const en: Record<keyof typeof fr, string> = {
   'app.treeNodeRender': 'Render',
   'app.sidebarCollapse': 'Collapse the menu',
   'app.sidebarExpand': 'Expand the menu',
+  'app.openMenu': 'Open the menu',
+  'app.closeMenu': 'Close the menu',
   'app.materialsTitle': 'Materials sheet',
   'app.materialsEmptyBody': 'Available after your first generated render',
   'app.materialsBadge': 'soon',
