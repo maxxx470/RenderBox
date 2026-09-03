@@ -12,6 +12,7 @@ import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
+import { DashboardStats, type DashboardData } from './DashboardStats';
 
 export interface ProjectCardData {
   id: string;
@@ -108,9 +109,12 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
 
 export function ProjectsGrid({
   initialProjects,
+  dashboard,
   authDisabled = false,
 }: {
   initialProjects: ProjectCardData[];
+  /** Absent when the grid is rendered outside the dashboard. */
+  dashboard?: DashboardData;
   authDisabled?: boolean;
 }) {
   const t = useTranslations();
@@ -198,7 +202,7 @@ export function ProjectsGrid({
           <div className="flex items-center gap-2.5">
             <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
             <h1 className="font-[family-name:var(--font-general-sans)] text-lg font-semibold text-[#17161F]">
-              {t('projects.title')}
+              {t(dashboard ? 'dashboard.title' : 'projects.title')}
             </h1>
             {authDisabled && (
               <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
@@ -220,6 +224,16 @@ export function ProjectsGrid({
             )}
           </div>
         </div>
+
+        {dashboard && <DashboardStats data={dashboard} />}
+
+        {/* The grid keeps its own heading under the dashboard: without it the
+            cards would read as a continuation of the stat row. */}
+        {dashboard && projects.length > 0 && (
+          <h2 className="mb-4 font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+            {t('projects.title')}
+          </h2>
+        )}
 
         {/* Only worth the row once there is enough to sift through. */}
         {projects.length > 5 && (
