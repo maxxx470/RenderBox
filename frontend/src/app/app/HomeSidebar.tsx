@@ -241,7 +241,7 @@ export function HomeSidebar({
           </div>
           {tier && max !== null && remaining !== null ? (
             <div className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
-              {t('app.quotaLabel', { used: max - remaining, max })}
+              {t('app.quotaLabel', { remaining, max })}
             </div>
           ) : null}
         </div>

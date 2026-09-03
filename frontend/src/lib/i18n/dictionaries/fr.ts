@@ -56,7 +56,6 @@ const fr = {
   'app.closeMenu': 'Fermer le menu',
   'app.materialsTitle': 'Fiche matériaux',
   'app.materialsEmptyBody': 'Disponible après ton premier rendu généré',
-  'app.materialsBadge': 'bientôt',
   'app.materialsSubtitle':
     'Détectée automatiquement après chaque rendu — corrige si besoin, la correction est mémorisée pour la suite.',
   'app.materialsEditButton': 'Modifier',
@@ -111,7 +110,11 @@ const fr = {
   'app.genHomeCardPlaceholder': 'Ajoute une photo pour lancer ton premier rendu',
   'landing.heroFanTag': 'ambiance',
   'app.noTierLabel': 'Aucun palier actif',
-  'app.quotaLabel': '{used}/{max} générations ce mois-ci',
+  // Formule le RESTANT, comme la carte du tableau de bord. Les deux
+  // coexistaient a l'envers l'une de l'autre sur le meme ecran : la carte
+  // annoncait « 300 sur 300 » (ce qu'il reste) pendant que la sidebar
+  // affichait « 0/300 » (ce qui est consomme).
+  'app.quotaLabel': '{remaining}/{max} restantes ce mois-ci',
   'app.quotaExceededError': 'Quota mensuel atteint. Change de palier ou attends le renouvellement.',
   'app.noActiveTierError': 'Aucun palier actif — choisis un palier pour générer.',
   'app.upgradeBannerLabel': 'Passer au palier {tier}',
@@ -162,6 +165,7 @@ const fr = {
   'dashboard.noTierBody': 'Choisis un palier pour débloquer tes générations mensuelles.',
   'dashboard.noTierCta': 'Voir les tarifs',
   'dashboard.videoTitle': 'Découvre RenderBox en 2 minutes',
+  'dashboard.videoSoon': 'Vidéo bientôt disponible',
   'dashboard.videoPlay': 'Lancer la vidéo',
   'dashboard.showcaseLabel': 'Rendus en vitrine',
   'dashboard.showcaseGoTo': 'Aller au visuel {n}',
@@ -169,6 +173,7 @@ const fr = {
   'dashboard.showcaseEmptyBody': 'Une sélection de rendus RenderBox défilera ici prochainement.',
   'dashboard.statProjects': 'Projets',
   'dashboard.statRenders': 'Rendus générés',
+  'dashboard.statNoActivity': 'Aucun rendu pour le moment',
   'dashboard.statLastActivity': 'Dernière activité',
   'projects.filterAll': 'Toutes',
   'projects.renderCount': '{n} rendus',

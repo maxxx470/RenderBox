@@ -53,19 +53,24 @@ export function DashboardVideoCard() {
         <h3 className="max-w-[260px] font-[family-name:var(--font-general-sans)] text-[21px] font-bold leading-[1.15] text-white">
           {t('dashboard.videoTitle')}
         </h3>
+        {/* One statement, not two. This used to render a disabled button AND a
+            "soon" badge beside it — the same fact said twice, and a control
+            that could never act on anything until the config changes. With no
+            video there is now no button at all, just the line that says so. */}
         <div className="mt-3.5 flex items-center gap-2.5">
-          <button
-            type="button"
-            disabled={!url}
-            onClick={() => setPlaying(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out enabled:hover:-translate-y-0.5 enabled:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Play set="light" size={14} primaryColor="#716FFF" />
-            {t('dashboard.videoPlay')}
-          </button>
-          {!url && (
-            <span className="rounded-full bg-white/20 px-2 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] uppercase tracking-wide text-white">
-              {t('app.modeSoonBadge')}
+          {url ? (
+            <button
+              type="button"
+              onClick={() => setPlaying(true)}
+              className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+            >
+              <Play set="light" size={14} primaryColor="#716FFF" />
+              {t('dashboard.videoPlay')}
+            </button>
+          ) : (
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 text-[12px] font-medium text-white">
+              <Play set="light" size={14} primaryColor="#ffffff" />
+              {t('dashboard.videoSoon')}
             </span>
           )}
         </div>

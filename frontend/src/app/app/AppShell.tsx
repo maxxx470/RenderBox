@@ -523,7 +523,7 @@ export function AppShell({
           {!authDisabled && (
             <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
               {tier && max !== null && remaining !== null
-                ? t('app.quotaLabel', { used: max - remaining, max })
+                ? t('app.quotaLabel', { remaining, max })
                 : t('app.noTierLabel')}
             </span>
           )}

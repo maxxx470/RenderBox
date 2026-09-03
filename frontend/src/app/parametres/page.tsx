@@ -10,8 +10,7 @@ import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { SiteHeader } from '@/components/SiteHeader';
 import { api } from '@/lib/api';
 import type { EngineName } from '@/lib/server/generation/engines/types';
-import { ENGINE_NAMES } from '@/lib/server/generation/engines/types';
-import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { EngineSelect } from '@/app/app/EngineSelect';
 
 interface OrderRow {
   id: string;
@@ -125,17 +124,21 @@ export default function ParametresPage() {
             {t('parametres.engineTitle')}
           </h2>
           <p className="text-[12px] text-[#8A8896]">{t('parametres.engineHint')}</p>
-          <select
-            value={user.defaultEngine ?? 'nanobanana'}
-            onChange={(e) => void handleEngineChange(e.target.value as EngineName)}
-            className="w-fit rounded-[10px] border border-[#ECECF2] bg-[#F7F7FA] px-3 py-2 text-[13px] text-[#17161F] outline-none"
-          >
-            {ENGINE_NAMES.map((name) => (
-              <option key={name} value={name}>
-                {ENGINE_LABELS[name].name}
-              </option>
-            ))}
-          </select>
+          {/* The same picker the command bar uses. This was a bare <select>,
+              the only OS-rendered control on the page, sitting among custom
+              chips everywhere else — and it showed none of the per-engine
+              marks the command bar does. */}
+          <div className="w-fit">
+            <EngineSelect
+              engine={
+                user.defaultEngine === 'nanobanana' || user.defaultEngine === 'gpt_image'
+                  ? user.defaultEngine
+                  : 'nanobanana'
+              }
+              onChange={(next) => void handleEngineChange(next)}
+              placement="down"
+            />
+          </div>
           {engineSaved ? (
             <p className="text-[12px] text-[#1E7A3D]">{t('parametres.engineSaved')}</p>
           ) : null}

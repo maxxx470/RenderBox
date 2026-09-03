@@ -1,11 +1,14 @@
 'use client';
 
-// Left rail — Krea-style mode switcher (Generate/Retouch/Add) with the
-// existing render tree underneath, so both stay visible without an extra
-// click (per the addendum spec). The active mode is the only place the red
-// gradient appears here — the rail itself stays on the neutral surface
-// color, never a gradient background.
-import { Image as ImageIcon, ChevronLeft, ChevronRight, InfoSquare } from 'react-iconly';
+// Left rail inside an open project: the output kind on top, then the render
+// tree, so both stay visible without an extra click.
+//
+// It mirrors HomeSidebar deliberately — same "Tableau de bord" entry in the
+// same place, same raised-white-card active state, same pinned Informations
+// link at the bottom. The two rails had drifted apart (no way back to the
+// dashboard here, and a solid gradient for "you are here" instead of the
+// card), which made the same product look like two.
+import { Image as ImageIcon, ChevronLeft, ChevronRight, InfoSquare, Category } from 'react-iconly';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
@@ -55,21 +58,42 @@ export function ModeSidebar({
         )}
       </button>
 
+      {/* Way back to the dashboard. Opening a project used to drop this rail's
+          only exit — the logo aside, there was no route out — while the home
+          rail has carried the entry all along. Same component shape, same
+          position, so the two rails no longer disagree. */}
+      <div className="mb-4">
+        <Link
+          href="/app"
+          {...(collapsed ? { title: t('dashboard.title') } : {})}
+          aria-label={t('dashboard.title')}
+          className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-[#17161F] transition-colors hover:bg-[#F1F0F6] ${
+            collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
+          }`}
+        >
+          <Category set="light" size={16} primaryColor="#8A8896" />
+          <span className={hideOnCollapse}>{t('dashboard.title')}</span>
+        </Link>
+      </div>
+
       {/* Only the output kind lives here now. Generate / retouch / add moved
           into the command bar, where the action is actually fired — they are
           three ways of producing an image, not three destinations. */}
       <div className="mb-4 flex flex-col gap-1">
+        {/* Active state matches HomeSidebar's: a raised white card, not a
+            solid gradient fill. Two rails in the same product were using two
+            different treatments for the same "you are here". */}
         <button
           type="button"
           onClick={() => onModeChange('generate')}
           {...(collapsed ? { title: t('app.modeGenerate') } : {})}
           aria-label={t('app.modeGenerate')}
           aria-current="page"
-          className={`flex items-center gap-2.5 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3 py-2.5 text-left text-[13px] font-medium text-white ${
+          className={`flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-left text-[13px] font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14] ${
             collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
           }`}
         >
-          <ImageIcon set="light" size={16} primaryColor="#ffffff" />
+          <ImageIcon set="light" size={16} primaryColor="#716FFF" />
           <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
         </button>
         <VideoModeSoon

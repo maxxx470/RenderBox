@@ -60,7 +60,23 @@ const FAN_SLOTS = CARD_TRANSFORM.length;
 const CARD_SHAPE =
   'group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] shadow-[0_20px_40px_-20px_#17161F30] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0';
 
-function EmptyFanCard({ index, onClick }: { index: number; onClick: () => void }) {
+// An empty slot in the fan.
+//
+// Only the FIRST empty slot carries the instruction and the brand tile. The
+// message used to be repeated on all four, which stopped reading as a
+// prompt and started reading as a rendering glitch — four identical
+// sentences side by side. The remaining slots keep the fan's shape (that
+// silhouette is the motif) and stay quiet.
+function EmptyFanCard({
+  index,
+  lead,
+  onClick,
+}: {
+  index: number;
+  /** The first slot with nothing in it — the one that speaks. */
+  lead: boolean;
+  onClick: () => void;
+}) {
   const t = useTranslations();
 
   return (
@@ -68,16 +84,25 @@ function EmptyFanCard({ index, onClick }: { index: number; onClick: () => void }
       type="button"
       onClick={onClick}
       style={{ animationDelay: `${index * 90}ms` }}
+      aria-label={lead ? undefined : t('app.genHomeCardPlaceholder')}
       className={`rb-card-in ${CARD_SHAPE} flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[#ECECF2] bg-[#FBFBFD] hover:border-[#716FFF] ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
-      <span className="flex h-[46px] w-[46px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-        <Upload set="light" size={20} primaryColor="#ffffff" />
-      </span>
-      <span className="max-w-[150px] text-center text-[12.5px] font-medium text-[#8A8896]">
-        {t('app.genHomeCardPlaceholder')}
-      </span>
+      {lead ? (
+        <>
+          <span className="flex h-[46px] w-[46px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+            <Upload set="light" size={20} primaryColor="#ffffff" />
+          </span>
+          <span className="max-w-[150px] text-center text-[12.5px] font-medium text-[#6B6880]">
+            {t('app.genHomeCardPlaceholder')}
+          </span>
+        </>
+      ) : (
+        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-2xl border border-[#DEDEE8] bg-white">
+          <Upload set="light" size={20} primaryColor="#B4B2C0" />
+        </span>
+      )}
     </button>
   );
 }
@@ -329,6 +354,7 @@ export function GenerationHome({
                   <EmptyFanCard
                     key={`slot-${i}`}
                     index={i}
+                    lead={i === recentRenders.length}
                     onClick={() => fileInputRef.current?.click()}
                   />
                 );

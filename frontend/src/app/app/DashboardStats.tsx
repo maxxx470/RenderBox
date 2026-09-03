@@ -75,17 +75,28 @@ function StatCard({
   icon,
   value,
   label,
+  empty = false,
 }: {
   accent: AccentName;
   icon: (color: string) => React.ReactNode;
   value: string;
   label: string;
+  /** No figure to show yet — say so in words rather than printing a dash.
+      A lone em-dash in the big numeral slot reads as a missing value, i.e.
+      as a bug, not as "nothing has happened yet". */
+  empty?: boolean;
 }) {
   const a = ACCENTS[accent];
   return (
     <div className={a.frame}>
       <div className={a.chip}>{icon(a.color)}</div>
-      <div className="font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]">
+      <div
+        className={
+          empty
+            ? 'text-[13.5px] font-medium leading-[1.35] text-[#6B6880]'
+            : 'font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]'
+        }
+      >
         {value}
       </div>
       <div className="mt-1.5 text-[12px] text-[#6B6880]">{label}</div>
@@ -127,8 +138,12 @@ export function DashboardStats({ data }: { data: DashboardData }) {
                 {t('dashboard.quotaOf', { max: data.quotaMax.toLocaleString(intl) })}
               </span>
             </div>
+            {/* Violet-tinted track, not the page's neutral line colour: at 0%
+                used the bar has no fill at all, and a bare grey hairline on
+                this violet ground read as a stray rule rather than as an
+                empty gauge. */}
             <div
-              className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#ECECF2]"
+              className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#E1DCFF]"
               role="progressbar"
               aria-valuenow={pct}
               aria-valuemin={0}
@@ -186,8 +201,9 @@ export function DashboardStats({ data }: { data: DashboardData }) {
             <Chart set="light" size={16} primaryColor={c} />
           )
         }
-        value={data.lastActivityAt ? shortDate(data.lastActivityAt) : '—'}
+        value={data.lastActivityAt ? shortDate(data.lastActivityAt) : t('dashboard.statNoActivity')}
         label={t('dashboard.statLastActivity')}
+        empty={!data.lastActivityAt}
       />
     </div>
   );

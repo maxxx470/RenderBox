@@ -69,15 +69,17 @@ function ProjectCard({
               className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
             />
           ) : (
-            // A project with no render yet: the brand gradient with a real
-            // glyph on it, not a faded folder on grey. The charter requires a
-            // coloured tile to carry an actual icon rather than read as a
-            // failed image.
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#EFECFF] to-[#F1F0F6]">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-                <ImageIcon set="light" size={18} primaryColor="#ffffff" />
+            // A project with no render yet. Quiet on purpose: the brand
+            // gradient used to sit here, which made the strongest colour on
+            // the page mark what is MISSING — a grid of five saturated tiles
+            // pulling the eye away from the project names. The glyph stays
+            // (the charter forbids a bare coloured tile), it just recedes, so
+            // a real thumbnail will read as the exception it should be.
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#F7F7FA]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#DEDEE8] bg-white">
+                <ImageIcon set="light" size={18} primaryColor="#8A8896" />
               </span>
-              <span className="text-[11px] text-[#8A8896]">{t('projects.cardEmpty')}</span>
+              <span className="text-[11px] text-[#6B6880]">{t('projects.cardEmpty')}</span>
             </div>
           )}
         </div>

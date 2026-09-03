@@ -79,7 +79,7 @@ export function SiteHeader({
           {cta && (
             <Link
               href={cta.href}
-              className="inline-flex items-center rounded-full bg-[#17161F] px-4.5 py-2 text-[13px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
+              className="inline-flex items-center rounded-full bg-[linear-gradient(135deg,#6E6BFF_0%,#8B5CF6_48%,#A855F7_100%)] px-4.5 py-2 text-[13px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
             >
               {cta.label}
             </Link>
