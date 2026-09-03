@@ -23,7 +23,7 @@
 // no real customers yet; inventing quotes would be deceptive. The reference
 // site's social-proof section is intentionally replaced with the honest
 // stat strip that was already on the page (presets/engines/materials).
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -65,6 +65,53 @@ const MONO = 'font-[family-name:var(--font-jetbrains-mono)]';
 
 function GradientText({ children }: { children: React.ReactNode }) {
   return <span className={`${GRADIENT} bg-clip-text text-transparent`}>{children}</span>;
+}
+
+// Hero headline, revealed word by word.
+//
+// The plain words are split so each can carry its own delay; the accented
+// phrase stays ONE element on purpose — its gradient is clipped to the text,
+// and splitting it would restart the gradient inside every word instead of
+// running it across the whole phrase. It therefore lands as a single beat,
+// which also gives the key phrase more punch than a further stagger would.
+//
+// Spaces are real text nodes BETWEEN the spans, not padding inside them: the
+// words are inline-block, so a space tucked inside one would collapse at a
+// line break and the headline would copy-paste as a single run-on word.
+const WORD_STAGGER_MS = 55;
+
+function AnimatedHeadline({
+  prefix,
+  accent,
+  suffix,
+  className,
+}: {
+  prefix: string;
+  accent: string;
+  suffix: string;
+  className: string;
+}) {
+  const words = (s: string) => s.trim().split(/\s+/).filter(Boolean);
+  const segments: React.ReactNode[] = [
+    ...words(prefix),
+    <span key="accent" className="rb-gradient-pan">
+      {accent}
+    </span>,
+    ...words(suffix),
+  ];
+
+  return (
+    <h1 className={className}>
+      {segments.map((segment, i) => (
+        <Fragment key={i}>
+          <span className="rb-word-in" style={{ animationDelay: `${i * WORD_STAGGER_MS}ms` }}>
+            {segment}
+          </span>
+          {i < segments.length - 1 ? ' ' : null}
+        </Fragment>
+      ))}
+    </h1>
+  );
 }
 
 function CheckItem({ children }: { children: React.ReactNode }) {
@@ -351,29 +398,15 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 />
               </span>
             </Reveal>
-            <Reveal delayMs={100}>
-              <h1 className="mx-auto mt-5 max-w-[720px] text-[40px] font-bold leading-[1.12] tracking-[-1px] min-[640px]:text-[52px]">
-                {t('landing.heroTitlePrefix')}
-                <GradientText>{t('landing.heroTitleAccent')}</GradientText>
-                {t('landing.heroTitleSuffix')}
-              </h1>
-            </Reveal>
-            <Reveal delayMs={200}>
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                <Link
-                  href={ctaHref}
-                  className="rb-pulse inline-flex items-center gap-2 rounded-full bg-[#17161F] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_-10px_rgba(0,0,0,0.45)] transition-[transform,box-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)] active:scale-[0.97]"
-                >
-                  {t('landing.heroCtaPrimary')}
-                </Link>
-                <Link
-                  href="/exemple"
-                  className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] px-6 py-3.5 text-sm font-semibold text-[#17161F] transition-colors hover:border-[#CFCADF]"
-                >
-                  {t('landing.heroCtaSecondary')}
-                </Link>
-              </div>
-            </Reveal>
+            {/* No Reveal wrapper here: rb-word-in is the entrance, and
+                stacking Reveal's own opacity/translate on top would fight it
+                for the same properties. */}
+            <AnimatedHeadline
+              prefix={t('landing.heroTitlePrefix')}
+              accent={t('landing.heroTitleAccent')}
+              suffix={t('landing.heroTitleSuffix')}
+              className="mx-auto mt-5 max-w-[760px] text-[40px] font-bold leading-[1.12] tracking-[-1px] min-[640px]:text-[52px]"
+            />
           </div>
 
           {/* The fan takes over as soon as real renders are configured in
@@ -762,7 +795,10 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </footer>
       </div>
 
-      <StickyBar visible={pastHero} href={ctaHref} label={t('landing.heroCtaPrimary')} />
+      {/* Points at the example page, not at signup: the hero fan and the
+          header already carry the "start" CTA, so the persistent bar is more
+          useful offering the visitor proof than repeating the same button. */}
+      <StickyBar visible={pastHero} href="/exemple" label={t('landing.heroCtaSecondary')} />
     </main>
   );
 }

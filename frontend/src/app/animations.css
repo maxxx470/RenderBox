@@ -154,6 +154,58 @@
   animation: rb-shimmer 2.8s ease-in-out infinite;
 }
 
+/* Hero headline: each word rises into place, slightly out of focus, on a
+   stagger. Blur does the heavy lifting here — a plain fade-up reads as a
+   generic entrance, while letting the words sharpen makes them feel *set*
+   rather than merely moved. */
+@keyframes rb-word-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.rb-word-in {
+  /* `backwards` holds the from-state through the stagger delay so no word
+     flashes before its turn. Not `forwards`: the resting state IS the
+     to-state, so letting the fill lapse costs nothing and leaves the element
+     free of a frozen filter (a lingering `blur(0)` still forces a layer). */
+  animation: rb-word-in 0.62s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  display: inline-block;
+}
+
+/* Slow drift of the brand gradient across the accented words of the headline.
+   The gradient's first and last stops are the same colour and the box is
+   twice as wide as the text, so translating by exactly one image width loops
+   with no visible seam. */
+@keyframes rb-gradient-pan {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.rb-gradient-pan {
+  background-image: linear-gradient(
+    115deg,
+    #6e6bff 0%,
+    #8b5cf6 25%,
+    #a855f7 50%,
+    #8b5cf6 75%,
+    #6e6bff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rb-gradient-pan 7s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rb-pulse,
   .rb-spark,
@@ -163,7 +215,11 @@
   .rb-caret,
   .rb-card-in,
   .rb-float,
-  .rb-shimmer {
+  .rb-shimmer,
+  .rb-word-in,
+  /* Only the pan stops — `.rb-gradient-pan` keeps its clipped gradient, so
+     the accent stays coloured rather than collapsing to transparent text. */
+  .rb-gradient-pan {
     animation: none !important;
   }
 }

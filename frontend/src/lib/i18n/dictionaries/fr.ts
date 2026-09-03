@@ -313,9 +313,9 @@ const fr = {
   'landing.navLogin': 'Se connecter',
   'landing.navStart': 'Commencer',
 
-  'landing.heroTitlePrefix': 'Des rendus IA qui ',
-  'landing.heroTitleAccent': 'closent vos ventes',
-  'landing.heroTitleSuffix': ' avant le premier coup de pelle',
+  'landing.heroTitlePrefix': 'Vos plans deviennent des ',
+  'landing.heroTitleAccent': 'rendus 3D photoréalistes',
+  'landing.heroTitleSuffix': ' qui font signer vos clients',
   'landing.heroCtaPrimary': 'Générer mon premier rendu',
   'landing.heroCtaSecondary': 'Voir un exemple',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',

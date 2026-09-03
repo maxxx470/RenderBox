@@ -314,9 +314,9 @@ const en: Record<keyof typeof fr, string> = {
   'landing.navLogin': 'Log in',
   'landing.navStart': 'Get started',
 
-  'landing.heroTitlePrefix': 'AI renders that ',
-  'landing.heroTitleAccent': 'close your sales',
-  'landing.heroTitleSuffix': ' before the first brick is laid',
+  'landing.heroTitlePrefix': 'Your plans become ',
+  'landing.heroTitleAccent': 'photorealistic 3D renders',
+  'landing.heroTitleSuffix': ' that get clients to sign',
   'landing.heroCtaPrimary': 'Generate my first render',
   'landing.heroCtaSecondary': 'See an example',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
