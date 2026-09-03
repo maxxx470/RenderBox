@@ -23,7 +23,6 @@ const en: Record<keyof typeof fr, string> = {
   'verifier.expiredBody': 'This sign-in link has expired — request a new one.',
   'verifier.backToLogin': 'Back to sign in',
 
-  'app.phaseTag': 'Phase 6 — finishing',
   'app.authDisabledBanner': 'Demo mode — sign-in temporarily disabled',
   'app.authDisabledBannerCount': 'Demo mode — {remaining} of {max} generations left',
   'app.downloadButton': 'Download this image',
@@ -205,7 +204,6 @@ const en: Record<keyof typeof fr, string> = {
   'admin.navJournal': 'Audit log',
   'admin.checkingAccess': 'Checking access…',
   'admin.roleLabel': 'role: {role}',
-  'admin.phaseTag': 'Phase 6 — finishing',
   'admin.backToApp': 'Back to the app',
 
   'admin.overview.title': 'Overview',

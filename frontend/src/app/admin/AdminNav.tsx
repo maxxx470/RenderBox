@@ -57,7 +57,6 @@ export function AdminNav({ role }: { role: string }) {
       </nav>
 
       <div className="mt-auto px-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
-        <div>{t('admin.phaseTag')}</div>
         <div>{t('admin.roleLabel', { role })}</div>
         <Link href="/app" className="mt-3 inline-block hover:text-[#17161F]">
           {t('admin.backToApp')}

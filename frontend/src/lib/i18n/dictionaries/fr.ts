@@ -21,7 +21,6 @@ const fr = {
   'verifier.expiredBody': 'Ce lien de connexion a expiré — demandes-en un nouveau.',
   'verifier.backToLogin': 'Retour à la connexion',
 
-  'app.phaseTag': 'Phase 6 — finition',
   'app.authDisabledBanner': 'Mode démonstration — connexion désactivée temporairement',
   'app.authDisabledBannerCount': 'Mode démonstration — {remaining} générations restantes sur {max}',
   'app.downloadButton': 'Télécharger cette image',
@@ -203,7 +202,6 @@ const fr = {
   'admin.navJournal': "Journal d'audit",
   'admin.checkingAccess': 'Vérification des accès…',
   'admin.roleLabel': 'role : {role}',
-  'admin.phaseTag': 'Phase 6 — finition',
   'admin.backToApp': "Retour à l'app",
 
   'admin.overview.title': "Vue d'ensemble",

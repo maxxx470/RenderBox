@@ -376,7 +376,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Link>
             <Link
               href={ctaHref}
-              className="inline-flex items-center gap-2 rounded-full bg-[#17161F] px-5 py-2.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
+              className={`inline-flex items-center gap-2 rounded-full ${GRADIENT} px-5 py-2.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
             >
               {t('landing.navStart')}
             </Link>
@@ -544,7 +544,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               />
               <Link
                 href={ctaHref}
-                className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#17161F] px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
+                className={`mt-7 inline-flex items-center gap-2 rounded-full ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
               >
                 {t('landing.checklistCta')}
               </Link>

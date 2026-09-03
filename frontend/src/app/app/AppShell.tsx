@@ -520,9 +520,6 @@ export function AppShell({
                 : t('app.authDisabledBanner')}
             </span>
           )}
-          <span className="rounded-2xl bg-[#716FFF12] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#716FFF]">
-            {t('app.phaseTag')}
-          </span>
           {!authDisabled && (
             <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
               {tier && max !== null && remaining !== null
