@@ -9,7 +9,10 @@ import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
 import { EngineSelect } from './EngineSelect';
 import { PresetSelect } from './PresetSelect';
 import { RatioChip } from './RatioChip';
+import { RatioSelect } from './RatioSelect';
+import { ModeSelect } from './ModeSelect';
 import { CHIP_ACTIVE, CHIP_STATIC } from './chip';
+import type { RatioKey } from '@/lib/server/generation/ratios';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
 
@@ -27,6 +30,10 @@ function StatusPill({ active, label }: { active: boolean; label: string }) {
 // status in "retouch"/"add".
 export function CommandBar({
   mode,
+  onModeChange,
+  editEnabled,
+  ratio,
+  onRatioChange,
   prompt,
   onPromptChange,
   preset,
@@ -44,6 +51,11 @@ export function CommandBar({
   imageSrc,
 }: {
   mode: AppMode;
+  onModeChange: (mode: AppMode) => void;
+  /** False when no generated render is selected: retouch/add have no target. */
+  editEnabled: boolean;
+  ratio: RatioKey;
+  onRatioChange: (ratio: RatioKey) => void;
   prompt: string;
   onPromptChange: (v: string) => void;
   preset: PresetKey;
@@ -123,10 +135,29 @@ export function CommandBar({
         {/* Chips grouped tight on the left, generate alone on the right —
             not one control per option spread across the width. */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Mode first: it decides what every chip after it means. */}
+          <ModeSelect
+            mode={mode}
+            onChange={onModeChange}
+            editEnabled={editEnabled}
+            disabled={inputDisabled}
+          />
           {mode === 'generate' && (
             <PresetSelect preset={preset} onChange={onPresetChange} disabled={inputDisabled} />
           )}
-          {imageSrc && <RatioChip src={imageSrc} />}
+          {/* Chosen in "generate", reported in the edit modes: a retouch or an
+              added element keeps the framing of the render it works on, so
+              offering a ratio there would be a control with no effect. */}
+          {mode === 'generate' ? (
+            <RatioSelect
+              ratio={ratio}
+              onChange={onRatioChange}
+              engine={engine}
+              disabled={inputDisabled}
+            />
+          ) : (
+            imageSrc && <RatioChip src={imageSrc} />
+          )}
           {mode === 'retouch' && (
             <StatusPill
               active={zoneSelected}

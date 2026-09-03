@@ -1,16 +1,16 @@
 'use client';
 
-// Sidebar for the /app home ("Espace de génération") — distinct from
-// ModeSidebar (used inside an open project: same 3 mode buttons, but with a
-// render tree underneath instead of project nav + account). No link to
+// Sidebar for the /app home ("Espace de génération") and for the dashboard —
+// distinct from ModeSidebar (used inside an open project: same output-kind
+// entries, but with a render tree underneath instead of project nav +
+// account). No link to
 // /admin here, ever — the admin back-office is a fully separate space
 // reached by typing the URL directly, never surfaced from this sidebar.
 import Link from 'next/link';
 import {
   Folder,
   Image as ImageIcon,
-  Edit,
-  PaperPlus,
+  InfoSquare,
   Setting,
   ChevronLeft,
   ChevronRight,
@@ -21,13 +21,6 @@ import type { PricingTierId } from '@/lib/pricing-tiers';
 import type { AppMode } from './CommandBar';
 import { VideoModeSoon } from './VideoModeSoon';
 import { useSidebarCollapsed } from './useSidebarCollapsed';
-
-const MODE_ICON = { generate: ImageIcon, retouch: Edit, add: PaperPlus } as const;
-const MODE_LABEL_KEY = {
-  generate: 'app.modeGenerate',
-  retouch: 'app.modeRetouch',
-  add: 'app.modeAdd',
-} as const;
 
 const TIER_LABEL_KEY: Record<
   PricingTierId,
@@ -45,15 +38,15 @@ const NEXT_TIER: Record<PricingTierId, PricingTierId | null> = {
 };
 
 export function HomeSidebar({
-  mode,
   onModeChange,
   tier,
   max,
   remaining,
   userEmail,
 }: {
-  mode: AppMode;
-  onModeChange: (mode: AppMode) => void;
+  /** Absent on the dashboard, which has no mode state — the Image entry
+      becomes a link back to the generation space instead of a button. */
+  onModeChange?: (mode: AppMode) => void;
   tier: PricingTierId | null;
   max: number | null;
   remaining: number | null;
@@ -116,28 +109,33 @@ export function HomeSidebar({
       >
         {t('app.modesLabel')}
       </h3>
+      {/* Only the output kind. Generate / retouch / add are now chosen in the
+          command bar, next to the action they run. On the dashboard there is
+          no mode state at all, so the entry is a plain link back to /app. */}
       <div className="mb-4.5 flex flex-col gap-1">
-        {(['generate', 'retouch', 'add'] as const).map((m) => {
-          const Icon = MODE_ICON[m];
-          const active = mode === m;
-          return (
-            <button
-              key={m}
-              type="button"
-              onClick={() => onModeChange(m)}
-              {...(collapsed ? { title: t(MODE_LABEL_KEY[m]) } : {})}
-              aria-label={t(MODE_LABEL_KEY[m])}
-              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium transition-colors ${centerOnCollapse} ${
-                active
-                  ? 'bg-white font-semibold shadow-[0_1px_4px_#17161F14]'
-                  : 'text-[#17161F] hover:bg-[#F1F0F6]'
-              }`}
-            >
-              <Icon set="light" size={16} primaryColor={active ? '#716FFF' : '#8A8896'} />
-              <span className={hideOnCollapse}>{t(MODE_LABEL_KEY[m])}</span>
-            </button>
-          );
-        })}
+        {onModeChange ? (
+          <button
+            type="button"
+            onClick={() => onModeChange('generate')}
+            {...(collapsed ? { title: t('app.modeGenerate') } : {})}
+            aria-label={t('app.modeGenerate')}
+            aria-current="page"
+            className={`flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-left text-[13.5px] font-semibold shadow-[0_1px_4px_#17161F14] ${centerOnCollapse}`}
+          >
+            <ImageIcon set="light" size={16} primaryColor="#716FFF" />
+            <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
+          </button>
+        ) : (
+          <Link
+            href="/app"
+            {...(collapsed ? { title: t('app.modeGenerate') } : {})}
+            aria-label={t('app.modeGenerate')}
+            className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${centerOnCollapse}`}
+          >
+            <ImageIcon set="light" size={16} primaryColor="#8A8896" />
+            <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
+          </Link>
+        )}
         <VideoModeSoon
           collapsed={collapsed}
           className={`text-[13.5px] ${centerOnCollapse}`}
@@ -159,6 +157,15 @@ export function HomeSidebar({
         >
           <Setting set="light" size={16} primaryColor="#8A8896" />
           <span className={hideOnCollapse}>{t('parametres.title')}</span>
+        </Link>
+        <Link
+          href="/info"
+          {...(collapsed ? { title: t('info.title') } : {})}
+          aria-label={t('info.title')}
+          className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${centerOnCollapse}`}
+        >
+          <InfoSquare set="light" size={16} primaryColor="#8A8896" />
+          <span className={hideOnCollapse}>{t('info.title')}</span>
         </Link>
       </div>
 

@@ -13,6 +13,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { DashboardStats, type DashboardData } from './DashboardStats';
+import { HomeSidebar } from './HomeSidebar';
 
 export interface ProjectCardData {
   id: string;
@@ -110,11 +111,14 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
 export function ProjectsGrid({
   initialProjects,
   dashboard,
+  userEmail = '',
   authDisabled = false,
 }: {
   initialProjects: ProjectCardData[];
   /** Absent when the grid is rendered outside the dashboard. */
   dashboard?: DashboardData;
+  /** Shown in the sidebar's account row; only used alongside `dashboard`. */
+  userEmail?: string;
   authDisabled?: boolean;
 }) {
   const t = useTranslations();
@@ -195,8 +199,8 @@ export function ProjectsGrid({
     }
   }
 
-  return (
-    <main className="min-h-screen bg-white px-6 py-8">
+  const content = (
+    <>
       <div className="mx-auto max-w-[1100px]">
         <div className="mb-7 flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5">
@@ -353,6 +357,28 @@ export function ProjectsGrid({
           </div>
         </Modal>
       )}
-    </main>
+    </>
+  );
+
+  // The rail only appears on the dashboard: it needs the plan figures the
+  // dashboard already loaded, and this grid is also rendered on its own
+  // elsewhere, where a second nav rail would just be noise. Hidden below
+  // 900px like every other rail in the workspace.
+  if (!dashboard) {
+    return <main className="min-h-screen bg-white px-6 py-8">{content}</main>;
+  }
+
+  return (
+    <div className="flex min-h-screen bg-white">
+      <div className="hidden min-[900px]:flex">
+        <HomeSidebar
+          tier={dashboard.tier}
+          max={dashboard.quotaMax}
+          remaining={dashboard.quotaRemaining}
+          userEmail={userEmail}
+        />
+      </div>
+      <main className="flex-1 overflow-x-hidden px-6 py-8">{content}</main>
+    </div>
   );
 }

@@ -11,6 +11,7 @@ import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { collectBranch, type RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
+import { isRatioSupported, RATIO_KEYS, type RatioKey } from '@/lib/server/generation/ratios';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Filter2, Download, Upload, Swap } from 'react-iconly';
@@ -112,6 +113,11 @@ export function AppShell({
   });
   const [engine, setEngine] = useState<EngineName>('nanobanana');
   const [mode, setMode] = useState<AppMode>('generate');
+  // Carried over from the /app quick-start bar (?ratio=), like prompt/preset.
+  const [ratio, setRatio] = useState<RatioKey>(() => {
+    const r = searchParams.get('ratio');
+    return r && (RATIO_KEYS as readonly string[]).includes(r) ? (r as RatioKey) : 'auto';
+  });
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [zone, setZone] = useState<Zone | null>(null);
   const [variantCount, setVariantCount] = useState(3);
@@ -153,6 +159,10 @@ export function AppShell({
 
   function handleEngineChange(next: EngineName) {
     setEngine(next);
+    // Not every engine can produce every ratio (gpt-image-1 has no 16:9).
+    // Falling back to 'auto' keeps the chip honest about what the new engine
+    // will actually do, and stops the route ever seeing a ratio it refuses.
+    if (!isRatioSupported(ratio, next)) setRatio('auto');
     void api('/api/users/me', {
       method: 'PATCH',
       body: { defaultEngine: next },
@@ -311,6 +321,8 @@ export function AppShell({
           preset,
           engine,
           customPrompt: prompt.trim() || undefined,
+          // 'auto' is the absence of a request, so it is not sent at all.
+          ratio: ratio === 'auto' ? undefined : ratio,
         },
       });
       setTree(res.tree);
@@ -548,7 +560,6 @@ export function AppShell({
           }`}
         >
           <ModeSidebar
-            mode={mode}
             onModeChange={handleModeChange}
             tree={tree}
             selectedId={selectedId}
@@ -813,6 +824,10 @@ export function AppShell({
 
       <CommandBar
         mode={mode}
+        onModeChange={handleModeChange}
+        editEnabled={selectedNode?.kind === 'GENERATED'}
+        ratio={ratio}
+        onRatioChange={setRatio}
         prompt={prompt}
         onPromptChange={setPrompt}
         preset={preset}

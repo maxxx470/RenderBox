@@ -4,6 +4,11 @@
 // generation/presets.ts shares its PRESET_KEYS with the client. Only
 // ./nanobanana.ts, ./gpt-image.ts and ./index.ts (which hold real API keys
 // and call out to Google/OpenAI) are server-only.
+// Type-only both ways with ../ratios (which imports EngineName from here):
+// `import type` is erased at compile time, so neither module creates a
+// runtime edge and there is no import cycle to resolve.
+import type { RatioKey } from '../ratios';
+
 export type EngineName = 'nanobanana' | 'gpt_image';
 
 export const ENGINE_NAMES = ['nanobanana', 'gpt_image'] as const satisfies readonly EngineName[];
@@ -25,6 +30,11 @@ export interface GenerateRenderInput {
   // Both engines accept multiple input images natively (Gemini via multiple
   // inlineData parts, gpt-image-1 via an array in `image`).
   referenceImages?: ReferenceImage[] | undefined;
+  // Requested output aspect ratio. Omitted (or 'auto') means the engine keeps
+  // whatever framing it would have chosen from the source, which is how every
+  // generation behaved before the ratio control existed. Each engine
+  // translates this itself — see generation/ratios.ts.
+  aspectRatio?: RatioKey | undefined;
 }
 
 export interface GenerateRenderOutput {

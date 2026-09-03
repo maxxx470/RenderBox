@@ -4,6 +4,7 @@ import 'server-only';
 import { GoogleGenAI } from '@google/genai';
 import type { GenerateRenderInput, GenerateRenderOutput } from './types';
 import { EngineNotConfiguredError } from './types';
+import { RATIOS } from '../ratios';
 
 const MODEL = 'gemini-2.5-flash-image';
 
@@ -18,8 +19,14 @@ export async function generateWithNanobanana(
     inlineData: { mimeType: ref.mimeType, data: ref.buffer.toString('base64') },
   }));
 
+  // Only sent when a ratio was actually chosen: passing an empty imageConfig
+  // is not the same as passing none, and 'auto' must leave the call byte-for-
+  // byte as it was before this option existed.
+  const aspectRatio = input.aspectRatio ? RATIOS[input.aspectRatio].gemini : null;
+
   const response = await client.models.generateContent({
     model: MODEL,
+    ...(aspectRatio ? { config: { imageConfig: { aspectRatio } } } : {}),
     contents: [
       {
         role: 'user',

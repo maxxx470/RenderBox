@@ -5,6 +5,7 @@ import 'server-only';
 import OpenAI, { toFile } from 'openai';
 import type { GenerateRenderInput, GenerateRenderOutput } from './types';
 import { EngineNotConfiguredError } from './types';
+import { RATIOS } from '../ratios';
 
 const MODEL = 'gpt-image-1';
 
@@ -35,10 +36,16 @@ export async function generateWithGptImage(
     ),
   );
 
+  // gpt-image-1 takes a pixel size, not a ratio. Omitted for 'auto' (and for
+  // any ratio this engine cannot produce — the route refuses those before we
+  // get here, so reaching this with null means 'auto').
+  const size = input.aspectRatio ? RATIOS[input.aspectRatio].openai : null;
+
   const response = await client.images.edit({
     model: MODEL,
     image: referenceFiles.length > 0 ? [file, ...referenceFiles] : file,
     prompt: input.prompt,
+    ...(size ? { size } : {}),
   });
 
   const b64 = response.data?.[0]?.b64_json;

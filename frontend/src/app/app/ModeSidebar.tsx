@@ -5,22 +5,15 @@
 // click (per the addendum spec). The active mode is the only place the red
 // gradient appears here — the rail itself stays on the neutral surface
 // color, never a gradient background.
-import { Image as ImageIcon, Edit, PaperPlus, ChevronLeft, ChevronRight } from 'react-iconly';
+import { Image as ImageIcon, ChevronLeft, ChevronRight, InfoSquare } from 'react-iconly';
+import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { ProjectTree } from './ProjectTree';
 import { VideoModeSoon } from './VideoModeSoon';
 import type { AppMode } from './CommandBar';
 
-const MODE_ICON = { generate: ImageIcon, retouch: Edit, add: PaperPlus } as const;
-const MODE_LABEL_KEY = {
-  generate: 'app.modeGenerate',
-  retouch: 'app.modeRetouch',
-  add: 'app.modeAdd',
-} as const;
-
 export function ModeSidebar({
-  mode,
   onModeChange,
   tree,
   selectedId,
@@ -29,7 +22,7 @@ export function ModeSidebar({
   collapsed,
   onToggleCollapse,
 }: {
-  mode: AppMode;
+  /** Still needed: clicking "Image" returns from an edit mode to generate. */
   onModeChange: (mode: AppMode) => void;
   tree: RenderTreeNode[];
   selectedId: string | null;
@@ -62,30 +55,23 @@ export function ModeSidebar({
         )}
       </button>
 
+      {/* Only the output kind lives here now. Generate / retouch / add moved
+          into the command bar, where the action is actually fired — they are
+          three ways of producing an image, not three destinations. */}
       <div className="mb-4 flex flex-col gap-1">
-        {(['generate', 'retouch', 'add'] as const).map((m) => {
-          const Icon = MODE_ICON[m];
-          const active = mode === m;
-          return (
-            <button
-              key={m}
-              type="button"
-              onClick={() => onModeChange(m)}
-              {...(collapsed ? { title: t(MODE_LABEL_KEY[m]) } : {})}
-              aria-label={t(MODE_LABEL_KEY[m])}
-              className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium transition-colors ${
-                collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
-              } ${
-                active
-                  ? 'bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white'
-                  : 'text-[#17161F] hover:bg-[#F1F0F6]'
-              }`}
-            >
-              <Icon set="light" size={16} primaryColor={active ? '#ffffff' : '#8A8896'} />
-              <span className={hideOnCollapse}>{t(MODE_LABEL_KEY[m])}</span>
-            </button>
-          );
-        })}
+        <button
+          type="button"
+          onClick={() => onModeChange('generate')}
+          {...(collapsed ? { title: t('app.modeGenerate') } : {})}
+          aria-label={t('app.modeGenerate')}
+          aria-current="page"
+          className={`flex items-center gap-2.5 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3 py-2.5 text-left text-[13px] font-medium text-white ${
+            collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
+          }`}
+        >
+          <ImageIcon set="light" size={16} primaryColor="#ffffff" />
+          <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
+        </button>
         <VideoModeSoon
           collapsed={collapsed}
           className={`text-[13px] ${collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''}`}
@@ -108,6 +94,20 @@ export function ModeSidebar({
           onDelete={onDeleteNode}
         />
       </div>
+
+      {/* Pinned to the bottom so it never competes with the tree for
+          attention, but reachable without leaving the workspace. */}
+      <Link
+        href="/info"
+        {...(collapsed ? { title: t('info.title') } : {})}
+        aria-label={t('info.title')}
+        className={`mt-auto flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${
+          collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
+        }`}
+      >
+        <InfoSquare set="light" size={16} primaryColor="#8A8896" />
+        <span className={hideOnCollapse}>{t('info.title')}</span>
+      </Link>
     </>
   );
 }

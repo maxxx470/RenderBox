@@ -21,7 +21,8 @@ import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
 import { EngineSelect } from './EngineSelect';
 import { PresetSelect } from './PresetSelect';
-import { RatioChip } from './RatioChip';
+import { RatioSelect } from './RatioSelect';
+import { isRatioSupported, type RatioKey } from '@/lib/server/generation/ratios';
 import { CHIP_ACTIVE, CHIP_BASE } from './chip';
 import { HomeSidebar } from './HomeSidebar';
 import type { AppMode } from './CommandBar';
@@ -132,6 +133,14 @@ export function GenerationHome({
 
   const [mode, setMode] = useState<AppMode>('generate');
   const [engine, setEngine] = useState<EngineName>('nanobanana');
+  const [ratio, setRatio] = useState<RatioKey>('auto');
+
+  // Mirrors AppShell: an engine that cannot produce the chosen ratio drops the
+  // choice back to 'auto' rather than carrying a request it will not honour.
+  function handleEngineChange(next: EngineName) {
+    setEngine(next);
+    if (!isRatioSupported(ratio, next)) setRatio('auto');
+  }
   const [prompt, setPrompt] = useState('');
   const [preset, setPreset] = useState<PresetKey>('jour_ext');
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
@@ -183,6 +192,8 @@ export function GenerationHome({
       if (prompt.trim()) params.set('prompt', prompt.trim());
       params.set('preset', preset);
       params.set('engine', engine);
+      // 'auto' is the default on the other side — no need to spell it out.
+      if (ratio !== 'auto') params.set('ratio', ratio);
       router.push(`/app/${project.id}?${params.toString()}`);
     } catch {
       toast(t('app.genHomeQuickStartError'), 'error');
@@ -202,7 +213,6 @@ export function GenerationHome({
   return (
     <div className="flex h-screen bg-white">
       <HomeSidebar
-        mode={mode}
         onModeChange={handleModeChange}
         tier={tier}
         max={max}
@@ -348,7 +358,15 @@ export function GenerationHome({
                       </>
                     )}
                   </button>
-                  <RatioChip file={referenceFile} />
+                  {/* Same control as the workspace bar: this launches a real
+                      generation through the URL params below, so the ratio has
+                      to be choosable here too. */}
+                  <RatioSelect
+                    ratio={ratio}
+                    onChange={setRatio}
+                    engine={engine}
+                    disabled={creating}
+                  />
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -359,7 +377,7 @@ export function GenerationHome({
                   {/* The engine belongs with the other generation attributes,
                       not alone in the page header where it used to sit. */}
                   <div className="ml-auto flex items-center gap-2">
-                    <EngineSelect engine={engine} onChange={setEngine} placement="up" />
+                    <EngineSelect engine={engine} onChange={handleEngineChange} placement="up" />
                     <button
                       type="button"
                       disabled={sendDisabled}

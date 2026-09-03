@@ -24,6 +24,7 @@ import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/ver
 import { buildRenderTree } from '@/lib/server/render-tree';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
 import { PRESET_KEYS } from '@/lib/server/generation/presets';
+import { RATIO_KEYS, isRatioSupported } from '@/lib/server/generation/ratios';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
 import { log } from '@/lib/server/observability/log';
 
@@ -32,6 +33,7 @@ const Body = z.object({
   preset: z.enum(PRESET_KEYS),
   engine: z.enum(ENGINE_NAMES),
   customPrompt: z.string().trim().max(2000).optional(),
+  ratio: z.enum(RATIO_KEYS).optional(),
 });
 
 export async function POST(
@@ -84,7 +86,20 @@ export async function POST(
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    const { sourceNodeId, preset, engine, customPrompt } = parsed.data;
+    const { sourceNodeId, preset, engine, customPrompt, ratio } = parsed.data;
+
+    // Refused rather than silently approximated: 16:9 on gpt-image-1 would
+    // come back as 3:2, and the user would have no way to tell that the
+    // control they set had been ignored.
+    if (ratio && !isRatioSupported(ratio, engine)) {
+      return NextResponse.json(
+        {
+          error: 'RATIO_NOT_SUPPORTED_BY_ENGINE',
+          message: `Engine "${engine}" cannot produce a ${ratio} image`,
+        },
+        { status: 400, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
 
     const sourceNode = await prisma.renderNode.findUnique({
       where: { id: sourceNodeId },
@@ -137,6 +152,7 @@ export async function POST(
         sourceImageBuffer,
         sourceMimeType: sourceNode.mimeType,
         prompt: assembledPrompt,
+        ...(ratio ? { aspectRatio: ratio } : {}),
       });
     } catch (e) {
       if (e instanceof EngineNotConfiguredError) {

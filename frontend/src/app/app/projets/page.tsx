@@ -77,6 +77,11 @@ export default async function AppDashboardPage() {
   };
 
   return (
-    <ProjectsGrid initialProjects={items} dashboard={dashboard} authDisabled={isAuthDisabled()} />
+    <ProjectsGrid
+      initialProjects={items}
+      dashboard={dashboard}
+      userEmail={auth.user.email ?? ''}
+      authDisabled={isAuthDisabled()}
+    />
   );
 }
