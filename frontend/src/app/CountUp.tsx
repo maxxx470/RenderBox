@@ -20,7 +20,12 @@ export function CountUp({
 }) {
   const [ref, inView] = useInView<HTMLSpanElement>({ threshold: 0.4 });
   const reducedMotion = usePrefersReducedMotion();
-  const [value, setValue] = useState(0);
+  // Starts at the real figure, not at zero. The server-rendered HTML is what a
+  // crawler and a JS-less visitor read, and these numbers sit inside a claim
+  // sentence ("5 ambiances de rendu") — shipping "0 ambiances de rendu" would
+  // put the opposite of the truth in the markup. The first animation frame
+  // drops it back to 0, so the count-up still reads as a count-up.
+  const [value, setValue] = useState(to);
   const startedRef = useRef(false);
 
   useEffect(() => {
