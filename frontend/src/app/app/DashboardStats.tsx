@@ -31,29 +31,40 @@ const TIER_LABEL_KEY = {
   pro: 'app.tierPro',
 } as const;
 
-// One accent per card so the row reads as three distinct facts rather than
-// three copies of the same box. The three hues are the ones already used by
-// the landing's audience tabs — violet, sky, amber — so nothing new enters
-// the palette. Error red is deliberately absent: it means "something is
-// wrong", never "this is the third card".
+// One tinted ground per card, so the row reads as four distinct facts rather
+// than four copies of the same white box.
+//
+// The hues are charter tokens already in use elsewhere (violet #716FFF and
+// the sky/amber pair from the landing's audience tabs) plus the neutral band
+// #F7F7FA. Two colours are deliberately NOT here:
+//   - error red #E5484D — it means "something is wrong", never "third card";
+//   - success green #1E7A3D — it already means "paid / active" across the
+//     admin, and spending it on decoration would weaken that everywhere.
+//
+// "Last activity" is neutral on purpose: it is a date, not a quantity. It is
+// context for the three figures beside it, not a fourth measurement, and the
+// palette has no fourth hue that would not collide with a meaning.
+//
+// Every ground stays light enough for #17161F body text to keep well above
+// the 4.5:1 contrast floor.
 //
 // Full literal class strings: Tailwind's scanner cannot see a class built by
 // interpolating a colour value (see the JIT note in CLAUDE.md).
 const ACCENTS = {
-  violet: {
-    frame: 'rounded-2xl border border-[#DEDEE8] bg-white p-4 shadow-[0_1px_3px_#17161F0A]',
-    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#DCDBFF] bg-[#EFECFF]',
-    color: '#716FFF',
-  },
   sky: {
-    frame: 'rounded-2xl border border-[#DEDEE8] bg-white p-4 shadow-[0_1px_3px_#17161F0A]',
-    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#C7E7F7] bg-[#E6F4FC]',
+    frame: 'rounded-2xl border border-[#C7E7F7] bg-[#F1F9FE] p-4 shadow-[0_1px_3px_#17161F0A]',
+    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#C7E7F7] bg-white',
     color: '#0EA5E9',
   },
   amber: {
-    frame: 'rounded-2xl border border-[#DEDEE8] bg-white p-4 shadow-[0_1px_3px_#17161F0A]',
-    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#F3E0BC] bg-[#FCF3E2]',
-    color: '#E9A21B',
+    frame: 'rounded-2xl border border-[#F3E0BC] bg-[#FDF8EE] p-4 shadow-[0_1px_3px_#17161F0A]',
+    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#F3E0BC] bg-white',
+    color: '#B8710B',
+  },
+  neutral: {
+    frame: 'rounded-2xl border border-[#DEDEE8] bg-[#F7F7FA] p-4 shadow-[0_1px_3px_#17161F0A]',
+    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#ECECF2] bg-white',
+    color: '#6B6880',
   },
 } as const;
 
@@ -77,7 +88,7 @@ function StatCard({
       <div className="font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]">
         {value}
       </div>
-      <div className="mt-1.5 text-[12px] text-[#8A8896]">{label}</div>
+      <div className="mt-1.5 text-[12px] text-[#6B6880]">{label}</div>
     </div>
   );
 }
@@ -101,18 +112,18 @@ export function DashboardStats({ data }: { data: DashboardData }) {
     <div className="mb-8 grid grid-cols-1 gap-4 min-[860px]:grid-cols-[1.4fr_1fr_1fr_1fr]">
       {/* Quota — the one card that changes behaviour rather than just its
           number, so it leads and takes the widest column. */}
-      <div className="rounded-2xl border border-[#DEDEE8] bg-[#FBFBFD] p-4 shadow-[0_1px_3px_#17161F0A]">
+      <div className="rounded-2xl border border-[#DCD8FF] bg-[#F5F3FF] p-4 shadow-[0_1px_3px_#17161F0A]">
         {data.tier && data.quotaMax !== null && data.quotaRemaining !== null ? (
           <>
             <div className="mb-2.5 flex items-center justify-between gap-2">
-              <span className="text-[12px] text-[#8A8896]">{t('dashboard.quotaLabel')}</span>
+              <span className="text-[12px] text-[#6B6880]">{t('dashboard.quotaLabel')}</span>
               <span className="rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-2.5 py-1 text-[10.5px] font-semibold text-white">
                 {t(TIER_LABEL_KEY[data.tier])}
               </span>
             </div>
             <div className="font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]">
               {data.quotaRemaining.toLocaleString(intl)}
-              <span className="ml-1.5 text-[13px] font-medium text-[#8A8896]">
+              <span className="ml-1.5 text-[13px] font-medium text-[#6B6880]">
                 {t('dashboard.quotaOf', { max: data.quotaMax.toLocaleString(intl) })}
               </span>
             </div>
@@ -130,18 +141,18 @@ export function DashboardStats({ data }: { data: DashboardData }) {
               />
             </div>
             {data.periodEndsAt && (
-              <div className="mt-2.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+              <div className="mt-2.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#6B6880]">
                 {t('dashboard.renewsOn', { date: shortDate(data.periodEndsAt) })}
               </div>
             )}
           </>
         ) : (
           <>
-            <div className="mb-1.5 text-[12px] text-[#8A8896]">{t('dashboard.quotaLabel')}</div>
+            <div className="mb-1.5 text-[12px] text-[#6B6880]">{t('dashboard.quotaLabel')}</div>
             <div className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
               {t('dashboard.noTierTitle')}
             </div>
-            <p className="mt-1.5 text-[12px] leading-[1.5] text-[#8A8896]">
+            <p className="mt-1.5 text-[12px] leading-[1.5] text-[#6B6880]">
               {t('dashboard.noTierBody')}
             </p>
             <Link
@@ -155,19 +166,19 @@ export function DashboardStats({ data }: { data: DashboardData }) {
       </div>
 
       <StatCard
-        accent="violet"
+        accent="sky"
         icon={(c) => <Folder set="light" size={16} primaryColor={c} />}
         value={data.projectCount.toLocaleString(intl)}
         label={t('dashboard.statProjects')}
       />
       <StatCard
-        accent="sky"
+        accent="amber"
         icon={(c) => <ImageIcon set="light" size={16} primaryColor={c} />}
         value={data.renderCount.toLocaleString(intl)}
         label={t('dashboard.statRenders')}
       />
       <StatCard
-        accent="amber"
+        accent="neutral"
         icon={(c) =>
           data.lastActivityAt ? (
             <TimeCircle set="light" size={16} primaryColor={c} />
