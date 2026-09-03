@@ -26,6 +26,7 @@ import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+import { EXAMPLE_RENDERS, type ExampleRender } from './generer-examples';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
 import { EngineSelect } from './EngineSelect';
@@ -146,6 +147,39 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
   );
 }
 
+// An example render, shown only to an account with nothing of its own yet.
+//
+// Same geometry as RenderFanCard so the fan never shifts, but two things are
+// deliberately different: the tag reads "exemple" rather than the preset, and
+// the link goes to /exemple instead of a project. A card that looked like the
+// user's own work and led nowhere would be worse than an empty slot.
+function ExampleFanCard({ example, index }: { example: ExampleRender; index: number }) {
+  const { locale } = useLocale();
+  const t = useTranslations();
+
+  return (
+    <Link
+      href="/exemple"
+      style={{ animationDelay: `${index * 90}ms` }}
+      className={`rb-card-in ${CARD_SHAPE} border border-[#ECECF2] bg-[#F7F7FA] ${
+        index === 0 ? '' : '-ml-6'
+      } ${CARD_TRANSFORM[index] ?? ''}`}
+    >
+      <img src={example.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      {/* Deeper than RenderFanCard's scrim: these images are not known in
+          advance, and a pale one would drop the white caption below the
+          contrast floor — the same defect the hero fan hit. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+      <span className="absolute left-3 top-3 rounded-2xl bg-[#17161F] px-2 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[9.5px] text-white">
+        {t('app.genHomeExampleTag')}
+      </span>
+      <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-general-sans)] text-sm font-semibold text-white">
+        {PRESETS[example.preset].label[locale]}
+      </span>
+    </Link>
+  );
+}
+
 export function GenerationHome({
   recentRenders,
   tier,
@@ -242,6 +276,10 @@ export function GenerationHome({
     const file = e.dataTransfer.files?.[0];
     if (file) setReferenceFile(file);
   }
+
+  // Examples are an empty-state device, not decoration: the moment the user
+  // has anything of their own, the fan belongs to them.
+  const showExamples = recentRenders.length === 0 && EXAMPLE_RENDERS.length > 0;
 
   const sendDisabled = creating || !referenceFile;
 
@@ -348,9 +386,14 @@ export function GenerationHome({
             >
               {Array.from({ length: FAN_SLOTS }, (_, i) => {
                 const render = recentRenders[i];
-                return render ? (
-                  <RenderFanCard key={render.id} render={render} index={i} />
-                ) : (
+                if (render) return <RenderFanCard key={render.id} render={render} index={i} />;
+                // All or nothing: examples show only while the account has no
+                // render of its own, so they vanish together on the first one
+                // instead of being eaten slot by slot as real renders arrive.
+                const example = showExamples ? EXAMPLE_RENDERS[i] : undefined;
+                if (example)
+                  return <ExampleFanCard key={`example-${i}`} example={example} index={i} />;
+                return (
                   <EmptyFanCard
                     key={`slot-${i}`}
                     index={i}

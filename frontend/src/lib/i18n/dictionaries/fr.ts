@@ -107,6 +107,7 @@ const fr = {
   'app.genHomeNoTierBody':
     'Choisis un palier pour débloquer tes générations mensuelles (Nanobanana + ChatGPT Image).',
   'app.genHomeChooseTier': 'Voir les tarifs',
+  'app.genHomeExampleTag': 'exemple',
   'app.genHomeCardPlaceholder': 'Ajoute une photo pour lancer ton premier rendu',
   'landing.heroFanTag': 'ambiance',
   'app.noTierLabel': 'Aucun palier actif',

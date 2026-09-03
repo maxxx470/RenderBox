@@ -109,6 +109,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.genHomeNoTierBody':
     'Choose a plan to unlock your monthly generations (Nanobanana + ChatGPT Image).',
   'app.genHomeChooseTier': 'View pricing',
+  'app.genHomeExampleTag': 'example',
   'app.genHomeCardPlaceholder': 'Add a photo to start your first render',
   'landing.heroFanTag': 'ambiance',
   'app.noTierLabel': 'No active plan',
