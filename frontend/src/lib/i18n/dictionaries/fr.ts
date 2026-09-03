@@ -324,9 +324,12 @@ const fr = {
   'landing.heroChipMaterials': 'Matériaux mémorisés : 12/12',
   'landing.heroChipFacade': 'Façade nord → enduit blanc',
 
-  'landing.trustPresets': 'Presets de rendu',
-  'landing.trustEngines': 'Moteurs IA au choix',
-  'landing.trustMaterials': 'Matériau oublié entre les vues',
+  'landing.proofPresets': 'ambiances de rendu',
+  'landing.proofEngines': 'moteurs IA au choix',
+  'landing.proofMaterials': "matériau oublié d'une vue à l'autre",
+  // « vos exports » et pas « fonctionne avec » : RenderBox lit les images que
+  // ces logiciels exportent, il ne s'y branche pas. Ne pas raccourcir.
+  'landing.proofCompatible': 'Compatible avec vos exports',
 
   'landing.beforeAfterTitlePrefix': "De l'esquisse au ",
   'landing.beforeAfterTitleAccent': 'rendu photoréaliste',

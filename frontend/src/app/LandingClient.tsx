@@ -45,7 +45,7 @@ import { Reveal } from './Reveal';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { FaqAccordion } from './FaqAccordion';
 import { Kicker } from './Kicker';
-import { CountUp } from './CountUp';
+import { HeroProof } from './HeroProof';
 import { AudienceTabs, type AudienceTabData } from './AudienceTabs';
 import { StaggeredChecklist } from './StaggeredChecklist';
 import { MaterialsFeedStudio } from './MaterialsFeedStudio';
@@ -470,26 +470,9 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
         <div ref={heroSentinelRef} aria-hidden />
 
-        {/* TRUST STRIP */}
-        <Reveal className="flex flex-wrap justify-center gap-11 border-b border-[#ECECF2] py-9 pb-15 pt-20">
-          <div className="text-center">
-            <b className="block text-xl text-[#17161F]">
-              <CountUp to={5} />
-            </b>
-            <span className="text-xs text-[#8A8896]">{t('landing.trustPresets')}</span>
-          </div>
-          <div className="text-center">
-            <b className="block text-xl text-[#17161F]">
-              <CountUp to={2} />
-            </b>
-            <span className="text-xs text-[#8A8896]">{t('landing.trustEngines')}</span>
-          </div>
-          <div className="text-center">
-            <b className="block text-xl text-[#17161F]">
-              <CountUp to={0} />
-            </b>
-            <span className="text-xs text-[#8A8896]">{t('landing.trustMaterials')}</span>
-          </div>
+        {/* PROOF STRIP */}
+        <Reveal>
+          <HeroProof />
         </Reveal>
 
         {/* BEFORE / AFTER */}

@@ -325,9 +325,12 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroChipMaterials': 'Materials remembered: 12/12',
   'landing.heroChipFacade': 'North façade → white render',
 
-  'landing.trustPresets': 'Render presets',
-  'landing.trustEngines': 'AI engines to choose from',
-  'landing.trustMaterials': 'Material forgotten between views',
+  'landing.proofPresets': 'render ambiances',
+  'landing.proofEngines': 'AI engines to choose from',
+  'landing.proofMaterials': 'material lost between views',
+  // "your exports", not "works with": RenderBox reads the images these tools
+  // export, it does not integrate with them. Do not shorten.
+  'landing.proofCompatible': 'Works with your exports from',
 
   'landing.beforeAfterTitlePrefix': 'From sketch to ',
   'landing.beforeAfterTitleAccent': 'photorealistic render',
