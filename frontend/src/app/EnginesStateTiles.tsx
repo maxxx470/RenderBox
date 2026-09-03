@@ -66,12 +66,16 @@ function EngineTile({
     >
       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F7F7FA]">
         {state === 'ok' ? (
-          <TickSquare set="bold" size={18} primaryColor="#1E7A3D" />
+          <TickSquare set="light" size={18} primaryColor="#1E7A3D" />
         ) : (
           <span
             className={state === 'run' && !reducedMotion ? 'rb-spin inline-flex' : 'inline-flex'}
           >
-            <Category set="bold" size={18} primaryColor={state === 'run' ? '#716FFF' : '#8A8896'} />
+            <Category
+              set="light"
+              size={18}
+              primaryColor={state === 'run' ? '#716FFF' : '#8A8896'}
+            />
           </span>
         )}
       </div>

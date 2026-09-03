@@ -52,7 +52,7 @@ export function Dropzone({
         }}
       />
       <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-        <Upload set="bold" size={24} primaryColor="#ffffff" />
+        <Upload set="light" size={24} primaryColor="#ffffff" />
       </div>
       <h3 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
         {t('app.dropzoneTitle')}

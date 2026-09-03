@@ -227,7 +227,7 @@ export function MaterialsFeedStudio({
           className="flex items-center gap-1.5 rounded-full bg-[#1E7A3D14] px-2.5 py-1 text-[10.5px] text-[#1E7A3D] transition-opacity duration-300"
           style={{ opacity: phase === 'badge' || phase === 'pause' || reducedMotion ? 1 : 0 }}
         >
-          <TickSquare set="bold" size={12} primaryColor="#1E7A3D" />
+          <TickSquare set="light" size={12} primaryColor="#1E7A3D" />
           {badgeLabel}
         </span>
       </div>

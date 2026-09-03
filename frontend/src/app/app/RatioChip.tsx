@@ -55,7 +55,7 @@ export function RatioChip({ file, src }: { file?: File | null; src?: string | nu
 
   return (
     <span className={CHIP_STATIC}>
-      <Scan set="bold" size={13} primaryColor="#8A8896" />
+      <Scan set="light" size={13} primaryColor="#8A8896" />
       {ratio}
     </span>
   );

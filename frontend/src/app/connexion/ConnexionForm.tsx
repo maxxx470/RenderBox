@@ -75,7 +75,7 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
           {t('connexion.emailLabel')}
         </label>
         <div className="mb-3.5 flex items-center gap-2 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-3 focus-within:border-[#716FFF]">
-          <Message set="bold" size={18} primaryColor="#8A8896" />
+          <Message set="light" size={18} primaryColor="#8A8896" />
           <input
             id="connexion-email"
             type="email"

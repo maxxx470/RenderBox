@@ -50,7 +50,7 @@ function ProjectCard({
             />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-[#8A8896]">
-              <Folder set="bold" size={26} primaryColor="#8A8896" style={{ opacity: 0.5 }} />
+              <Folder set="light" size={26} primaryColor="#8A8896" style={{ opacity: 0.5 }} />
               <span className="text-xs">{t('projects.cardEmpty')}</span>
             </div>
           )}
@@ -79,7 +79,7 @@ function ProjectCard({
           title={t('projects.renameAction')}
           className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#DEDEE8]"
         >
-          <Edit set="bold" size={14} primaryColor="#17161F" />
+          <Edit set="light" size={14} primaryColor="#17161F" />
         </button>
         <button
           type="button"
@@ -88,7 +88,7 @@ function ProjectCard({
           title={t('projects.deleteAction')}
           className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#E5484D]"
         >
-          <Delete set="bold" size={14} primaryColor="#E5484D" />
+          <Delete set="light" size={14} primaryColor="#E5484D" />
         </button>
       </div>
     </div>
@@ -214,7 +214,7 @@ export function ProjectsGrid({
                 onClick={openCreate}
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-4.5 py-2.5 text-[13px] font-semibold text-white"
               >
-                <Plus set="bold" size={16} primaryColor="#ffffff" />
+                <Plus set="light" size={16} primaryColor="#ffffff" />
                 {t('projects.newButton')}
               </button>
             )}
@@ -224,7 +224,7 @@ export function ProjectsGrid({
         {/* Only worth the row once there is enough to sift through. */}
         {projects.length > 5 && (
           <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 focus-within:border-[#716FFF]">
-            <Search set="bold" size={15} primaryColor="#8A8896" />
+            <Search set="light" size={15} primaryColor="#8A8896" />
             <input
               type="search"
               value={query}
@@ -239,7 +239,7 @@ export function ProjectsGrid({
         {projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-[#ECECF2] bg-[#F7F7FA] py-20 text-center">
             <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-              <Folder set="bold" size={24} primaryColor="#ffffff" />
+              <Folder set="light" size={24} primaryColor="#ffffff" />
             </div>
             <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
               {t('projects.emptyTitle')}
@@ -250,7 +250,7 @@ export function ProjectsGrid({
               onClick={openCreate}
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_20px_-6px_#716FFF50]"
             >
-              <Plus set="bold" size={16} primaryColor="#ffffff" />
+              <Plus set="light" size={16} primaryColor="#ffffff" />
               {t('projects.newButton')}
             </button>
           </div>

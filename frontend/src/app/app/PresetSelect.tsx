@@ -45,13 +45,13 @@ export function PresetSelect({
         onClick={() => setOpen((v) => !v)}
         className={CHIP_BASE}
       >
-        <Star set="bold" size={13} primaryColor="#716FFF" />
+        <Star set="light" size={13} primaryColor="#716FFF" />
         {PRESETS[preset].label[locale]}
         <span className="flex-shrink-0">
           {open ? (
-            <ChevronUp set="bold" size={12} primaryColor="#8A8896" />
+            <ChevronUp set="light" size={12} primaryColor="#8A8896" />
           ) : (
-            <ChevronDown set="bold" size={12} primaryColor="#8A8896" />
+            <ChevronDown set="light" size={12} primaryColor="#8A8896" />
           )}
         </span>
       </button>
@@ -85,7 +85,7 @@ export function PresetSelect({
                     {t('app.presetNewBadge')}
                   </span>
                 )}
-                {selected && <TickSquare set="bold" size={15} primaryColor="#716FFF" />}
+                {selected && <TickSquare set="light" size={15} primaryColor="#716FFF" />}
               </button>
             );
           })}

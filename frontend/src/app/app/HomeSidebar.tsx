@@ -92,9 +92,9 @@ export function HomeSidebar({
         }`}
       >
         {collapsed ? (
-          <ChevronRight set="bold" size={15} primaryColor="#8A8896" />
+          <ChevronRight set="light" size={15} primaryColor="#8A8896" />
         ) : (
-          <ChevronLeft set="bold" size={15} primaryColor="#8A8896" />
+          <ChevronLeft set="light" size={15} primaryColor="#8A8896" />
         )}
       </button>
 
@@ -105,7 +105,7 @@ export function HomeSidebar({
           aria-label={t('projects.title')}
           className={`flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-[13.5px] font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14] ${centerOnCollapse}`}
         >
-          <Folder set="bold" size={16} primaryColor="#716FFF" />
+          <Folder set="light" size={16} primaryColor="#716FFF" />
           <span className={hideOnCollapse}>{t('projects.title')}</span>
         </Link>
       </div>
@@ -132,7 +132,7 @@ export function HomeSidebar({
                   : 'text-[#17161F] hover:bg-[#F1F0F6]'
               }`}
             >
-              <Icon set="bold" size={16} primaryColor={active ? '#716FFF' : '#8A8896'} />
+              <Icon set="light" size={16} primaryColor={active ? '#716FFF' : '#8A8896'} />
               <span className={hideOnCollapse}>{t(MODE_LABEL_KEY[m])}</span>
             </button>
           );
@@ -151,7 +151,7 @@ export function HomeSidebar({
           aria-label={t('parametres.title')}
           className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${centerOnCollapse}`}
         >
-          <Setting set="bold" size={16} primaryColor="#8A8896" />
+          <Setting set="light" size={16} primaryColor="#8A8896" />
           <span className={hideOnCollapse}>{t('parametres.title')}</span>
         </Link>
       </div>
@@ -182,7 +182,7 @@ export function HomeSidebar({
         {...(collapsed ? { title: userEmail } : {})}
       >
         <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-          <User set="bold" size={14} primaryColor="#ffffff" />
+          <User set="light" size={14} primaryColor="#ffffff" />
         </div>
         <div className={`min-w-0 ${hideOnCollapse}`}>
           <div className="truncate text-[12.5px] font-medium text-[#17161F]">{userEmail}</div>

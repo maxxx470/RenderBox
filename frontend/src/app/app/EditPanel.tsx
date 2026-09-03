@@ -75,7 +75,7 @@ export function EditPanel({
               />
             ) : (
               <span className="mx-auto mb-2 flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-[#F1F0F6]">
-                <Upload set="bold" size={15} primaryColor="#8A8896" />
+                <Upload set="light" size={15} primaryColor="#8A8896" />
               </span>
             )}
             <span className="block truncate">
@@ -97,7 +97,7 @@ export function EditPanel({
               onClick={() => onReferenceChange(null)}
               className="mt-2 flex items-center gap-1.5 text-[11.5px] text-[#8A8896] hover:text-[#E5484D]"
             >
-              <CloseSquare set="bold" size={13} primaryColor="currentColor" />
+              <CloseSquare set="light" size={13} primaryColor="currentColor" />
               {t('edit.referenceRemove')}
             </button>
           )}

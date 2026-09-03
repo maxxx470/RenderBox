@@ -489,7 +489,7 @@ export function AppShell({
             className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
             aria-label={t('app.treeTitle')}
           >
-            <Category set="bold" size={16} primaryColor="#8A8896" />
+            <Category set="light" size={16} primaryColor="#8A8896" />
           </button>
           <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
           <span className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
@@ -524,7 +524,7 @@ export function AppShell({
             className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
             aria-label={mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')}
           >
-            <Filter2 set="bold" size={16} primaryColor="#8A8896" />
+            <Filter2 set="light" size={16} primaryColor="#8A8896" />
           </button>
         </div>
       </header>
@@ -669,7 +669,7 @@ export function AppShell({
                           style={{ left: `${comparePos}%` }}
                         >
                           <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_10px_26px_-6px_rgba(113,111,255,0.6)]">
-                            <Swap set="bold" size={15} primaryColor="#716FFF" />
+                            <Swap set="light" size={15} primaryColor="#716FFF" />
                           </div>
                         </div>
                       </>
@@ -693,7 +693,7 @@ export function AppShell({
                           }`}
                         >
                           <Swap
-                            set="bold"
+                            set="light"
                             size={15}
                             primaryColor={comparing ? '#ffffff' : '#17161F'}
                           />
@@ -707,7 +707,7 @@ export function AppShell({
                         title={t('app.downloadButton')}
                         className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
                       >
-                        <Download set="bold" size={15} primaryColor="#17161F" />
+                        <Download set="light" size={15} primaryColor="#17161F" />
                       </a>
                     </div>
                     {mode === 'retouch' && zone && (zone.width > 0 || zone.height > 0) && (
@@ -732,7 +732,7 @@ export function AppShell({
                 {fileDragOver && (
                   <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#716FFF] bg-[#EFECFFF2] px-6">
                     <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-                      <Upload set="bold" size={24} primaryColor="#ffffff" />
+                      <Upload set="light" size={24} primaryColor="#ffffff" />
                     </div>
                     <h3 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
                       {t('app.canvasDropTitle')}

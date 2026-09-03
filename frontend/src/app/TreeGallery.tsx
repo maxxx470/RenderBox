@@ -113,7 +113,7 @@ export function TreeGallery({ items }: { items: TreeGalleryItem[] }) {
             <div
               className={`flex h-[92px] w-full flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[#ECECF2] ${GRADIENT}`}
             >
-              <ImageIcon set="bold" size={18} primaryColor="#ffffff" />
+              <ImageIcon set="light" size={18} primaryColor="#ffffff" />
             </div>
             <div className="mt-1.5 text-center">
               <div className="text-xs font-medium text-[#17161F]">{item.label}</div>

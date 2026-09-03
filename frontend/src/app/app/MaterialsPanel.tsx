@@ -125,7 +125,7 @@ export function MaterialsPanel({
 
       {materials.length === 0 ? (
         <div className="flex h-[80%] flex-col items-center justify-center gap-2.5 text-center">
-          <Lock set="bold" size={22} primaryColor="#8A8896" style={{ opacity: 0.5 }} />
+          <Lock set="light" size={22} primaryColor="#8A8896" style={{ opacity: 0.5 }} />
           <p className="max-w-[180px] text-xs leading-relaxed text-[#8A8896]">
             {t('app.materialsEmptyBody')}
           </p>

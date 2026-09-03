@@ -63,7 +63,7 @@ function EmptyFanCard({ index, onClick }: { index: number; onClick: () => void }
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
       <span className="flex h-[46px] w-[46px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-        <Upload set="bold" size={20} primaryColor="#ffffff" />
+        <Upload set="light" size={20} primaryColor="#ffffff" />
       </span>
       <span className="max-w-[150px] text-center text-[12.5px] font-medium text-[#8A8896]">
         {t('app.genHomeCardPlaceholder')}
@@ -230,7 +230,7 @@ export function GenerationHome({
           // the mode hint below.
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
             <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-              <Folder set="bold" size={24} primaryColor="#ffffff" />
+              <Folder set="light" size={24} primaryColor="#ffffff" />
             </div>
             <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
               {t('app.genHomeNoTierTitle')}
@@ -246,7 +246,7 @@ export function GenerationHome({
         ) : mode !== 'generate' ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
             <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-              <Folder set="bold" size={24} primaryColor="#ffffff" />
+              <Folder set="light" size={24} primaryColor="#ffffff" />
             </div>
             <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeModeHint')}</p>
             <Link
@@ -260,7 +260,7 @@ export function GenerationHome({
           <>
             <div className="mb-6.5 flex items-center justify-center gap-3.5">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-                <ImageIcon set="bold" size={22} primaryColor="#ffffff" />
+                <ImageIcon set="light" size={22} primaryColor="#ffffff" />
               </div>
               <h1 className="font-[family-name:var(--font-general-sans)] text-[32px] font-bold text-[#17161F]">
                 {t('app.genHomeTitle')}
@@ -337,13 +337,13 @@ export function GenerationHome({
                   >
                     {referenceFile ? (
                       <>
-                        <TickSquare set="bold" size={13} primaryColor="#ffffff" />
+                        <TickSquare set="light" size={13} primaryColor="#ffffff" />
                         {t('app.pillReferenceAdded')}
-                        <CloseSquare set="bold" size={13} primaryColor="#ffffff" />
+                        <CloseSquare set="light" size={13} primaryColor="#ffffff" />
                       </>
                     ) : (
                       <>
-                        <Upload set="bold" size={13} primaryColor="#8A8896" />
+                        <Upload set="light" size={13} primaryColor="#8A8896" />
                         {t('app.pillReferenceEmpty')}
                       </>
                     )}
@@ -367,7 +367,7 @@ export function GenerationHome({
                       aria-label={t('app.genHomeTitle')}
                       className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
                     >
-                      <Send set="bold" size={17} primaryColor="#ffffff" />
+                      <Send set="light" size={17} primaryColor="#ffffff" />
                     </button>
                   </div>
                 </div>

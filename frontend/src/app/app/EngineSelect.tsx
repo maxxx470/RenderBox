@@ -48,16 +48,16 @@ export function EngineSelect({
         <span
           className={`flex h-[22px] w-[22px] items-center justify-center rounded-md ${ENGINE_ICON_CLASS[engine]}`}
         >
-          <Image set="bold" size={12} primaryColor="#ffffff" />
+          <Image set="light" size={12} primaryColor="#ffffff" />
         </span>
         <span className="text-[12.5px] font-medium text-[#17161F]">
           {ENGINE_LABELS[engine].name}
         </span>
         <span className="ml-0.5 flex-shrink-0">
           {open ? (
-            <ChevronUp set="bold" size={13} primaryColor="#8A8896" />
+            <ChevronUp set="light" size={13} primaryColor="#8A8896" />
           ) : (
-            <ChevronDown set="bold" size={13} primaryColor="#8A8896" />
+            <ChevronDown set="light" size={13} primaryColor="#8A8896" />
           )}
         </span>
       </button>
@@ -85,7 +85,7 @@ export function EngineSelect({
                 <span
                   className={`flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-lg ${ENGINE_ICON_CLASS[key]}`}
                 >
-                  <Image set="bold" size={15} primaryColor="#ffffff" />
+                  <Image set="light" size={15} primaryColor="#ffffff" />
                 </span>
                 <span className="flex-1">
                   <span className="block text-[13px] font-semibold text-[#17161F]">
@@ -95,7 +95,7 @@ export function EngineSelect({
                     {ENGINE_LABELS[key].description[locale]}
                   </span>
                 </span>
-                {selected && <TickSquare set="bold" size={16} primaryColor="#716FFF" />}
+                {selected && <TickSquare set="light" size={16} primaryColor="#716FFF" />}
               </button>
             );
           })}

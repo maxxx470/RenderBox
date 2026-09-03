@@ -49,7 +49,7 @@ export function AdminNav({ role }: { role: string }) {
                   : 'text-[#8A8896] hover:text-[#17161F]'
               }`}
             >
-              <Icon set="bold" size={16} primaryColor={active ? '#716FFF' : 'currentColor'} />
+              <Icon set="light" size={16} primaryColor={active ? '#716FFF' : 'currentColor'} />
               {t(LABEL_KEY[href])}
             </Link>
           );

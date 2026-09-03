@@ -73,7 +73,7 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
                     // block someone forgot to fill.
                     <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
                       <span className="flex h-[86px] w-[86px] items-center justify-center rounded-2xl border-2 border-dashed border-white/40 bg-white/10 backdrop-blur-sm">
-                        <ImageIcon set="bold" size={26} primaryColor="#ffffff" />
+                        <ImageIcon set="light" size={26} primaryColor="#ffffff" />
                       </span>
                       <span
                         aria-hidden
@@ -111,7 +111,7 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
           className="rb-card-in inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_16px_36px_-12px_rgba(23,22,31,0.45)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
         >
           {ctaLabel}
-          <ArrowRight set="bold" size={15} primaryColor="#716FFF" />
+          <ArrowRight set="light" size={15} primaryColor="#716FFF" />
         </Link>
       </div>
     </div>

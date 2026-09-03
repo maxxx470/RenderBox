@@ -55,9 +55,9 @@ export function ModeSidebar({
         }`}
       >
         {collapsed ? (
-          <ChevronRight set="bold" size={15} primaryColor="#8A8896" />
+          <ChevronRight set="light" size={15} primaryColor="#8A8896" />
         ) : (
-          <ChevronLeft set="bold" size={15} primaryColor="#8A8896" />
+          <ChevronLeft set="light" size={15} primaryColor="#8A8896" />
         )}
       </button>
 
@@ -80,7 +80,7 @@ export function ModeSidebar({
                   : 'text-[#17161F] hover:bg-[#F1F0F6]'
               }`}
             >
-              <Icon set="bold" size={16} primaryColor={active ? '#ffffff' : '#8A8896'} />
+              <Icon set="light" size={16} primaryColor={active ? '#ffffff' : '#8A8896'} />
               <span className={hideOnCollapse}>{t(MODE_LABEL_KEY[m])}</span>
             </button>
           );

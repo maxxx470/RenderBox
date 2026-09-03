@@ -16,7 +16,7 @@ export type AppMode = 'generate' | 'retouch' | 'add';
 function StatusPill({ active, label }: { active: boolean; label: string }) {
   return (
     <span className={active ? CHIP_ACTIVE : CHIP_STATIC}>
-      {active && <TickSquare set="bold" size={13} primaryColor="#ffffff" />}
+      {active && <TickSquare set="light" size={13} primaryColor="#ffffff" />}
       {label}
     </span>
   );
@@ -97,7 +97,7 @@ export function CommandBar({
                 title={t('app.commandBarUpload')}
                 className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[10px] border border-[#ECECF2] bg-white transition-colors hover:border-[#DEDEE8] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Upload set="bold" size={15} primaryColor="#8A8896" />
+                <Upload set="light" size={15} primaryColor="#8A8896" />
               </button>
             </>
           )}
@@ -149,7 +149,7 @@ export function CommandBar({
               onClick={onSubmit}
               className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
             >
-              <Send set="bold" size={17} primaryColor="#ffffff" />
+              <Send set="light" size={17} primaryColor="#ffffff" />
             </button>
           </div>
         </div>

@@ -117,7 +117,7 @@ function CheckItem({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-2.5 text-[13.5px] text-[#3D3B49]">
       <span className="mt-0.5 flex-shrink-0 text-[#716FFF]">
-        <TickSquare set="bold" size={15} primaryColor="#716FFF" />
+        <TickSquare set="light" size={15} primaryColor="#716FFF" />
       </span>
       {children}
     </li>
@@ -130,7 +130,7 @@ function PresetCard({ title, body }: { title: string; body: string }) {
       <div
         className={`mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] ${GRADIENT}`}
       >
-        <Category set="bold" size={18} primaryColor="#ffffff" />
+        <Category set="light" size={18} primaryColor="#ffffff" />
       </div>
       <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
       <p className="text-[13px] leading-[1.55] text-[#6B6880]">{body}</p>
@@ -268,7 +268,7 @@ function HeroPresetTags() {
 function RenderVisual() {
   return (
     <div className={`flex h-full w-full items-center justify-center ${GRADIENT}`}>
-      <ImageIcon set="bold" size={40} primaryColor="#ffffff" />
+      <ImageIcon set="light" size={40} primaryColor="#ffffff" />
     </div>
   );
 }
@@ -424,15 +424,15 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
 
               {/* Floating badges around the mockup */}
               <div className="absolute -left-4 top-8 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
-                <ImageIcon set="bold" size={18} primaryColor="#716FFF" />
+                <ImageIcon set="light" size={18} primaryColor="#716FFF" />
               </div>
               <div className="absolute -right-4 top-20 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
                 <div className={`flex h-6 w-6 items-center justify-center rounded-md ${GRADIENT}`}>
-                  <Edit set="bold" size={12} primaryColor="#ffffff" />
+                  <Edit set="light" size={12} primaryColor="#ffffff" />
                 </div>
               </div>
               <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
-                <ImageIcon set="bold" size={14} primaryColor="#716FFF" />
+                <ImageIcon set="light" size={14} primaryColor="#716FFF" />
                 {t('landing.heroChipFacade')}
               </div>
               <div
@@ -491,21 +491,21 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               tabs={
                 [
                   {
-                    icon: <Home set="bold" size={20} primaryColor="#716FFF" />,
+                    icon: <Home set="light" size={20} primaryColor="#716FFF" />,
                     color: '#716FFF',
                     label: t('landing.audience1Tab'),
                     title: t('landing.audience1Title'),
                     body: t('landing.audience1Body'),
                   },
                   {
-                    icon: <Location set="bold" size={20} primaryColor="#0EA5E9" />,
+                    icon: <Location set="light" size={20} primaryColor="#0EA5E9" />,
                     color: '#0EA5E9',
                     label: t('landing.audience2Tab'),
                     title: t('landing.audience2Title'),
                     body: t('landing.audience2Body'),
                   },
                   {
-                    icon: <Graph set="bold" size={20} primaryColor="#E9A21B" />,
+                    icon: <Graph set="light" size={20} primaryColor="#E9A21B" />,
                     color: '#E9A21B',
                     label: t('landing.audience3Tab'),
                     title: t('landing.audience3Title'),
