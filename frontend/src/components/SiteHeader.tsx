@@ -65,6 +65,12 @@ export function SiteHeader({
             >
               {t('landing.navExamples')}
             </Link>
+            <Link
+              href="/info"
+              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+            >
+              {t('info.navLabel')}
+            </Link>
           </nav>
         )}
 

@@ -140,6 +140,14 @@ const fr = {
   'edit.submitError': "L'édition a échoué. Réessaie.",
   'edit.partialSuccess': '{created} sur {requested} variantes générées.',
 
+  'info.title': 'Informations',
+  'info.subtitle': 'Les mises à jour de RenderBox et ce qui arrive ensuite.',
+  'info.plannedHeading': 'À venir',
+  'info.shippedHeading': 'Mises à jour',
+  'info.badgePlanned': 'à venir',
+  'info.empty': 'Aucune mise à jour publiée pour le moment.',
+  'info.navLabel': 'Infos',
+
   'dashboard.title': 'Tableau de bord',
   'dashboard.quotaLabel': 'Générations restantes ce mois-ci',
   'dashboard.quotaOf': 'sur {max}',

@@ -142,6 +142,14 @@ const en: Record<keyof typeof fr, string> = {
   'edit.submitError': 'Edit failed. Try again.',
   'edit.partialSuccess': '{created} of {requested} variants generated.',
 
+  'info.title': 'Updates',
+  'info.subtitle': 'What changed in RenderBox, and what is coming next.',
+  'info.plannedHeading': 'Coming up',
+  'info.shippedHeading': 'Updates',
+  'info.badgePlanned': 'planned',
+  'info.empty': 'No update published yet.',
+  'info.navLabel': 'Updates',
+
   'dashboard.title': 'Dashboard',
   'dashboard.quotaLabel': 'Generations left this month',
   'dashboard.quotaOf': 'of {max}',

@@ -359,6 +359,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             >
               {t('landing.navExamples')}
             </Link>
+            <Link
+              href="/info"
+              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+            >
+              {t('info.navLabel')}
+            </Link>
           </div>
           <div className="flex items-center gap-3.5">
             <LanguageInlineSwitch />
@@ -734,6 +740,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 <h5 className="mb-3.5 text-xs uppercase tracking-wide text-[#8A8896]">
                   {t('landing.footerResourcesHeading')}
                 </h5>
+                {/* The only live link in this column — the others are labels
+                    for pages that do not exist yet, and stay unclickable
+                    rather than pretending. */}
+                <Link href="/info" className="mb-2.5 block text-[13px] text-[#17161F]">
+                  {t('info.navLabel')}
+                </Link>
                 <span className="mb-2.5 block text-[13px] text-[#8A8896]">
                   {t('landing.footerLinkGuide')}
                 </span>
