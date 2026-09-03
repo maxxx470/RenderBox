@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useLocale } from '@/lib/i18n/LocaleContext';
 import { useInView } from './hooks/useInView';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
@@ -20,6 +21,7 @@ export function CountUp({
 }) {
   const [ref, inView] = useInView<HTMLSpanElement>({ threshold: 0.4 });
   const reducedMotion = usePrefersReducedMotion();
+  const { locale } = useLocale();
   // Starts at the real figure, not at zero. The server-rendered HTML is what a
   // crawler and a JS-less visitor read, and these numbers sit inside a claim
   // sentence ("5 ambiances de rendu") — shipping "0 ambiances de rendu" would
@@ -48,7 +50,10 @@ export function CountUp({
 
   return (
     <span ref={ref} className={className}>
-      {value.toLocaleString('fr-FR')}
+      {/* Grouped in the reader's own locale: 100 000 in French, 100,000 in
+          English. Hardcoding fr-FR printed a French-spaced number on the
+          English page. */}
+      {value.toLocaleString(locale === 'en' ? 'en-US' : 'fr-FR')}
     </span>
   );
 }

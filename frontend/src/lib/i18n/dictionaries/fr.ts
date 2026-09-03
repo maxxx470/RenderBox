@@ -324,6 +324,10 @@ const fr = {
   'landing.heroChipMaterials': 'Matériaux mémorisés : 12/12',
   'landing.heroChipFacade': 'Façade nord → enduit blanc',
 
+  // Le chiffre est l'audience TikTok du fondateur, pas le nombre d'utilisateurs
+  // du produit. Garder « sur TikTok » dans le libellé : sans la plateforme
+  // nommée, le nombre devient une affirmation invérifiable sur RenderBox.
+  'landing.proofCommunity': 'abonnés sur TikTok',
   'landing.proofPresets': 'ambiances de rendu',
   'landing.proofEngines': 'moteurs IA au choix',
   'landing.proofMaterials': "matériau oublié d'une vue à l'autre",

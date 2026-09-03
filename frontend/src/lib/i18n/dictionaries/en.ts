@@ -325,6 +325,10 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroChipMaterials': 'Materials remembered: 12/12',
   'landing.heroChipFacade': 'North façade → white render',
 
+  // The figure is the founder's TikTok following, not a product user count.
+  // Keep "on TikTok" in the label: without the platform named, the number
+  // becomes an unverifiable claim about RenderBox itself.
+  'landing.proofCommunity': 'followers on TikTok',
   'landing.proofPresets': 'render ambiances',
   'landing.proofEngines': 'AI engines to choose from',
   'landing.proofMaterials': 'material lost between views',
