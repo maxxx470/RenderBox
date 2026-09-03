@@ -5,14 +5,24 @@
 // render: fill it and the card shows the image instead of its gradient, with
 // no other change anywhere.
 //
-// It stays null until real RenderBox output exists. Dropping stock or
-// generated imagery in here would advertise renders the product never made,
-// on the page where someone decides whether to pay for it.
+// Filled in on 2026-09-03 with renders supplied by the project owner, one per
+// ambiance, each matched to what it actually shows rather than to its position
+// in the list:
+//   jour_ext  — villa, clear blue sky, sharp cast shadows, pool
+//   jour_int  — bedroom crossed by direct sunlight, window shadows on the wall
+//   nuit_ext  — street facade at night, star sky, warm lit windows
+//   nuit_int  — bedroom at night, single wall lamp, dark windows
+//   esquisse  — annotated white axonometric, massing only, no photoreal material
 //
-// To show real renders:
-//   1. Put the images in `frontend/public/hero/` (portrait, ~880x1200,
-//      JPG or WebP — the cards are 220x300).
-//   2. Set `src` on the matching entries, e.g. "/hero/villa-jour.jpg".
+// Served from /public rather than hotlinked: the site's CSP is
+// `img-src 'self' data: blob:`, so an external host would simply be blocked.
+// Downscaled to 880px wide (the cards render at 220x300) — the full-size
+// originals were ~1170px and would have cost ~930KB on the first screen every
+// visitor loads.
+//
+// To swap one: drop a portrait JPG/WebP in `frontend/public/hero/` and point
+// `src` at it. Leave `src` null and the card falls back to its gradient — no
+// other change needed anywhere.
 import type { PresetKey } from '@/lib/server/generation/presets';
 
 export interface HeroCard {
@@ -39,9 +49,9 @@ export const HERO_CARD_GRADIENT: Record<PresetKey, string> = {
 };
 
 export const HERO_CARDS: readonly HeroCard[] = [
-  { preset: 'jour_ext', src: null },
-  { preset: 'jour_int', src: null },
-  { preset: 'nuit_ext', src: null },
-  { preset: 'nuit_int', src: null },
-  { preset: 'esquisse', src: null },
+  { preset: 'jour_ext', src: '/hero/jour-exterieur.jpg' },
+  { preset: 'jour_int', src: '/hero/jour-interieur.jpg' },
+  { preset: 'nuit_ext', src: '/hero/nuit-exterieur.jpg' },
+  { preset: 'nuit_int', src: '/hero/nuit-interieur.jpg' },
+  { preset: 'esquisse', src: '/hero/esquisse.jpg' },
 ];

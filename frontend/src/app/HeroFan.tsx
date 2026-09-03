@@ -83,13 +83,19 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
                   )}
 
                   {/* Scrim only where the caption sits, so a real photo keeps
-                      its own contrast everywhere else. */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+                      its own contrast everywhere else.
+                      Tuned for the worst case rather than the average: the
+                      sketch ambiance is a near-white axonometric, and at
+                      black/60 over a third of the card the white caption sat
+                      around 3:1 on it — readable on the four dark renders,
+                      not on that one. Deeper and slightly taller fixes every
+                      image, including whichever ones replace these later. */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
                   <div className="pointer-events-none absolute inset-x-4 bottom-4">
                     <div className="font-[family-name:var(--font-general-sans)] text-[17px] font-bold text-white">
                       {label}
                     </div>
-                    <div className="mt-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-white/75">
+                    <div className="mt-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-white/85">
                       {t('landing.heroFanTag')}
                     </div>
                   </div>
