@@ -446,13 +446,6 @@ const fr = {
   'landing.pricingCtaLoading': 'Redirection…',
   'landing.pricingError': 'Impossible de démarrer le paiement. Réessaie.',
 
-  'landing.kicker1': 'Architectes',
-  'landing.kicker2': 'Promoteurs immobiliers',
-  'landing.kicker3': 'Agences immobilières',
-  'landing.kicker4': "Bureaux d'études",
-  'landing.kicker5': 'Constructeurs',
-  'landing.kickerReducedMotion': 'Architectes & Promoteurs',
-
   'landing.audience1Tab': 'Architectes',
   'landing.audience2Tab': 'Agences',
   'landing.audience3Tab': 'Promoteurs',

@@ -448,13 +448,6 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingCtaLoading': 'Redirecting…',
   'landing.pricingError': 'Could not start checkout. Try again.',
 
-  'landing.kicker1': 'Architects',
-  'landing.kicker2': 'Real estate developers',
-  'landing.kicker3': 'Real estate agencies',
-  'landing.kicker4': 'Engineering firms',
-  'landing.kicker5': 'Construction companies',
-  'landing.kickerReducedMotion': 'Architects & Developers',
-
   'landing.audience1Tab': 'Architects',
   'landing.audience2Tab': 'Agencies',
   'landing.audience3Tab': 'Developers',

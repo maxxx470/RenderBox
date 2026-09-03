@@ -44,7 +44,6 @@ import { PRICING_TIERS, type PricingTier, type PricingTierId } from '@/lib/prici
 import { Reveal } from './Reveal';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { FaqAccordion } from './FaqAccordion';
-import { Kicker } from './Kicker';
 import { HeroProof } from './HeroProof';
 import { AudienceTabs, type AudienceTabData } from './AudienceTabs';
 import { StaggeredChecklist } from './StaggeredChecklist';
@@ -384,20 +383,6 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         <section className="pb-6 pt-14 text-center">
           <div className="relative mx-auto flex flex-col items-center">
             <HeroPresetTags />
-            <Reveal delayMs={0}>
-              <span className={`text-[13px] font-medium text-[#716FFF] ${MONO}`}>
-                <Kicker
-                  phrases={[
-                    t('landing.kicker1'),
-                    t('landing.kicker2'),
-                    t('landing.kicker3'),
-                    t('landing.kicker4'),
-                    t('landing.kicker5'),
-                  ]}
-                  reducedMotionLabel={t('landing.kickerReducedMotion')}
-                />
-              </span>
-            </Reveal>
             {/* No Reveal wrapper here: rb-word-in is the entrance, and
                 stacking Reveal's own opacity/translate on top would fight it
                 for the same properties. */}
@@ -405,7 +390,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               prefix={t('landing.heroTitlePrefix')}
               accent={t('landing.heroTitleAccent')}
               suffix={t('landing.heroTitleSuffix')}
-              className="mx-auto mt-5 max-w-[760px] text-[40px] font-bold leading-[1.12] tracking-[-1px] min-[640px]:text-[52px]"
+              className="mx-auto max-w-[760px] text-[40px] font-bold leading-[1.12] tracking-[-1px] min-[640px]:text-[52px]"
             />
           </div>
 
