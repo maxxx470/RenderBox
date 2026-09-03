@@ -80,7 +80,10 @@ function EngineTile({
         )}
       </div>
       <span className="text-[13px] font-semibold text-[#17161F]">{name}</span>
-      <span className={`text-[9.5px] uppercase tracking-wide text-[#8A8896] ${MONO}`}>{state}</span>
+      {/* The raw state name used to be printed here — "idle" / "run" / "ok",
+          untranslated developer vocabulary shown to every visitor whatever
+          their language. The spinner and the tick already carry the same
+          progression, so the word was noise on top of jargon. */}
     </div>
   );
 }

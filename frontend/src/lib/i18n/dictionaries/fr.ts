@@ -379,13 +379,13 @@ const fr = {
   'landing.beforeAfterLabelAfter': 'Rendu RenderBox',
 
   'landing.audienceTitle': 'Conçu pour tous ceux qui vendent avant de construire',
-  'landing.audience1Title': 'Architectes',
+  'landing.audience1Title': 'Les mêmes matériaux à chaque révision',
   'landing.audience1Body':
     'Présentez vos projets avec des rendus cohérents à chaque itération, sans repartir de zéro à chaque révision client.',
-  'landing.audience2Title': 'Agences immobilières',
+  'landing.audience2Title': 'Le bien vendu avant la première pierre',
   'landing.audience2Body':
     'Donnez vie aux biens sur plan pour vos acquéreurs — un rendu jour, un rendu nuit, un rendu meublé, en quelques minutes.',
-  'landing.audience3Title': 'Promoteurs',
+  'landing.audience3Title': 'Tout un programme sans infographiste',
   'landing.audience3Body':
     'Produisez les visuels de vente de tout un programme immobilier sans multiplier les allers-retours avec un infographiste.',
 
@@ -426,10 +426,18 @@ const fr = {
   'landing.presetsCard1Title': 'Jour extérieur',
   'landing.presetsCard1Body': 'Lumière naturelle franche, ombres portées nettes, ciel dégagé.',
   'landing.presetsCard2Title': 'Nuit extérieur',
-  'landing.presetsCard2Body': 'Éclairage architectural, ambiance nocturne, ciel sombre maîtrisé.',
-  'landing.presetsCard3Title': 'Jour / Nuit intérieur',
-  'landing.presetsCard3Body': "Lumière naturelle ou artificielle selon l'heure, matériaux fidèles.",
-
+  'landing.presetsCard2Body':
+    'Éclairage de façade, lueur chaude aux fenêtres, ciel sombre maîtrisé.',
+  'landing.presetsCard3Title': 'Jour intérieur',
+  'landing.presetsCard3Body':
+    'Vue intérieure éclairée par les fenêtres, lumière douce, aucun éclairage artificiel.',
+  'landing.presetsCard4Title': 'Nuit intérieur',
+  'landing.presetsCard4Body':
+    'Vue intérieure de nuit : plafonniers et lampes, fenêtres sombres, ambiance chaude.',
+  'landing.presetsSketchLabel': 'Et une cinquième, volontairement pas photoréaliste',
+  'landing.presetsSketchTitle': 'Esquisse',
+  'landing.presetsSketchBody':
+    'Traits de crayon visibles, volumes posés, ombres minimales — le rendu de revue de projet, quand il est trop tôt pour montrer du photoréalisme.',
   'landing.integrationsTitlePrefix': 'Deux moteurs, ',
   'landing.integrationsTitleAccent': 'un seul projet',
   'landing.integrationsSubtitle':

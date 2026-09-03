@@ -380,13 +380,13 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterLabelAfter': 'RenderBox render',
 
   'landing.audienceTitle': 'Built for everyone who sells before they build',
-  'landing.audience1Title': 'Architects',
+  'landing.audience1Title': 'The same materials at every revision',
   'landing.audience1Body':
     'Present your projects with consistent renders at every iteration, without starting from scratch at every client revision.',
-  'landing.audience2Title': 'Real estate agencies',
+  'landing.audience2Title': 'Sold before the first stone is laid',
   'landing.audience2Body':
     'Bring off-plan properties to life for your buyers — a day render, a night render, a furnished render, in minutes.',
-  'landing.audience3Title': 'Developers',
+  'landing.audience3Title': 'A whole development, no design studio',
   'landing.audience3Body':
     'Produce the sales visuals for an entire development without multiplying back-and-forths with a graphic designer.',
 
@@ -427,10 +427,17 @@ const en: Record<keyof typeof fr, string> = {
   'landing.presetsCard1Title': 'Exterior day',
   'landing.presetsCard1Body': 'Crisp natural light, sharp cast shadows, clear sky.',
   'landing.presetsCard2Title': 'Exterior night',
-  'landing.presetsCard2Body': 'Architectural lighting, night-time mood, controlled dark sky.',
-  'landing.presetsCard3Title': 'Interior day / night',
+  'landing.presetsCard2Body': 'Facade lighting, warm window glow, controlled dark sky.',
+  'landing.presetsCard3Title': 'Interior day',
   'landing.presetsCard3Body':
-    'Natural or artificial light depending on the time, faithful materials.',
+    'Interior viewpoint lit through the windows, soft ambient fill, no artificial light.',
+  'landing.presetsCard4Title': 'Interior night',
+  'landing.presetsCard4Body':
+    'Interior viewpoint at night: ceiling fixtures and lamps, dark windows, warm mood.',
+  'landing.presetsSketchLabel': 'And a fifth one, deliberately not photorealistic',
+  'landing.presetsSketchTitle': 'Sketch',
+  'landing.presetsSketchBody':
+    'Visible pencil strokes, loose massing, minimal shading — the design-review render, for when it is too early to show photorealism.',
 
   'landing.integrationsTitlePrefix': 'Two engines, ',
   'landing.integrationsTitleAccent': 'one project',

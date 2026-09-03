@@ -124,13 +124,65 @@ function CheckItem({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PresetCard({ title, body }: { title: string; body: string }) {
+// The four photoreal ambiances, encoded on two channels so a card is readable
+// without reading its title.
+//
+//   colour = the light the preset produces (day is bright and cool, night is
+//            deep and warm-lit) — this is the informative channel, it previews
+//            the actual result;
+//   glyph  = the kind of shot — Home for the two exteriors, Category (a
+//            floor-plan-like grid) for the two interiors.
+//
+// Iconly ships no sun or moon, so forcing five arbitrary glyphs would have said
+// less than this does. Full literal class strings for the Tailwind scanner.
+const AMBIANCES = {
+  jourExt: {
+    chip: 'mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#7FC4FF_0%,#A9D9FF_55%,#EAF6FF_100%)]',
+    glyph: 'home',
+  },
+  nuitExt: {
+    chip: 'mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#141B3D_0%,#2B2F6B_50%,#6E6BFF_100%)]',
+    glyph: 'home',
+  },
+  jourInt: {
+    chip: 'mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#FFD9A0_0%,#FFEBD1_55%,#FFF8EE_100%)]',
+    glyph: 'category',
+  },
+  nuitInt: {
+    chip: 'mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#2A1D12_0%,#7A4A1C_55%,#F5A94B_100%)]',
+    glyph: 'category',
+  },
+} as const;
+
+type AmbianceKey = keyof typeof AMBIANCES;
+
+/** Pale grounds need a dark glyph to stay above the contrast floor. */
+const LIGHT_CHIP: Record<AmbianceKey, boolean> = {
+  jourExt: true,
+  nuitExt: false,
+  jourInt: true,
+  nuitInt: false,
+};
+
+function PresetCard({
+  ambiance,
+  title,
+  body,
+}: {
+  ambiance: AmbianceKey;
+  title: string;
+  body: string;
+}) {
+  const a = AMBIANCES[ambiance];
+  const ink = LIGHT_CHIP[ambiance] ? '#17161F' : '#ffffff';
   return (
-    <div className="rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-6.5 transition-colors hover:border-[#CFCADF]">
-      <div
-        className={`mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] ${GRADIENT}`}
-      >
-        <Category set="light" size={18} primaryColor="#ffffff" />
+    <div className="h-full rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-6.5 transition-colors hover:border-[#CFCADF]">
+      <div className={a.chip}>
+        {a.glyph === 'home' ? (
+          <Home set="light" size={18} primaryColor={ink} />
+        ) : (
+          <Category set="light" size={18} primaryColor={ink} />
+        )}
       </div>
       <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
       <p className="text-[13px] leading-[1.55] text-[#6B6880]">{body}</p>
@@ -467,7 +519,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </Reveal>
 
         {/* BEFORE / AFTER */}
-        <section className="py-20">
+        <section className="py-10 min-[860px]:py-12">
           <Reveal className="mx-auto mb-9 max-w-[560px] text-center">
             <h2 className="mx-auto text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
               {t('landing.beforeAfterTitlePrefix')}
@@ -486,7 +538,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
 
         {/* AUDIENCE — tabs */}
-        <section className="py-20">
+        <section className="py-10 min-[860px]:py-12">
           <Reveal className="mx-auto mb-10 max-w-[560px] text-center">
             <h2 className="mx-auto text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
               {t('landing.audienceTitle')}
@@ -504,15 +556,15 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                     body: t('landing.audience1Body'),
                   },
                   {
-                    icon: <Location set="light" size={20} primaryColor="#0EA5E9" />,
-                    color: '#0EA5E9',
+                    icon: <Location set="light" size={20} primaryColor="#716FFF" />,
+                    color: '#716FFF',
                     label: t('landing.audience2Tab'),
                     title: t('landing.audience2Title'),
                     body: t('landing.audience2Body'),
                   },
                   {
-                    icon: <Graph set="light" size={20} primaryColor="#E9A21B" />,
-                    color: '#E9A21B',
+                    icon: <Graph set="light" size={20} primaryColor="#716FFF" />,
+                    color: '#716FFF',
                     label: t('landing.audience3Tab'),
                     title: t('landing.audience3Title'),
                     body: t('landing.audience3Body'),
@@ -526,7 +578,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         {/* CHECKLIST */}
         <section
           id="fonctionnalites"
-          className="rounded-[32px] bg-[#F7F7FA] px-6 py-20 min-[640px]:px-14"
+          className="rounded-[32px] bg-[#F7F7FA] px-6 py-12 min-[640px]:px-14 min-[860px]:py-16"
         >
           <div className="grid grid-cols-1 items-center gap-10 min-[860px]:grid-cols-2">
             <Reveal>
@@ -572,7 +624,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
 
         {/* FEATURE BLOCKS */}
-        <section className="py-20">
+        <section className="py-10 min-[860px]:py-12">
           <div className="grid grid-cols-1 items-center gap-14 py-12.5 min-[860px]:grid-cols-2">
             <Reveal>
               <span className={`mb-2.5 block text-[11px] text-[#716FFF] ${MONO}`}>
@@ -630,37 +682,70 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
 
         {/* PRESETS */}
-        <section className="py-20">
+        <section className="py-10 min-[860px]:py-12">
           <Reveal className="mx-auto mb-11.5 max-w-[560px] text-center">
             <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
               {t('landing.presetsTitlePrefix')}
               <GradientText>{t('landing.presetsTitleAccent')}</GradientText>
             </h2>
           </Reveal>
-          <div className="grid grid-cols-1 gap-5.5 min-[860px]:grid-cols-3">
+          {/* Four photoreal ambiances in a row that fills, then Esquisse on its
+              own. That split is the product's own: the sketch preset is the one
+              that is deliberately NOT photorealistic, so grouping it with the
+              other four would misdescribe it. */}
+          <div className="grid grid-cols-1 gap-5.5 min-[640px]:grid-cols-2 min-[1000px]:grid-cols-4">
             <Reveal>
               <PresetCard
+                ambiance="jourExt"
                 title={t('landing.presetsCard1Title')}
                 body={t('landing.presetsCard1Body')}
               />
             </Reveal>
             <Reveal delayMs={60}>
               <PresetCard
+                ambiance="nuitExt"
                 title={t('landing.presetsCard2Title')}
                 body={t('landing.presetsCard2Body')}
               />
             </Reveal>
             <Reveal delayMs={120}>
               <PresetCard
+                ambiance="jourInt"
                 title={t('landing.presetsCard3Title')}
                 body={t('landing.presetsCard3Body')}
               />
             </Reveal>
+            <Reveal delayMs={180}>
+              <PresetCard
+                ambiance="nuitInt"
+                title={t('landing.presetsCard4Title')}
+                body={t('landing.presetsCard4Body')}
+              />
+            </Reveal>
           </div>
+
+          <Reveal delayMs={240} className="mt-5.5">
+            <div className="flex flex-col gap-4.5 rounded-2xl border border-dashed border-[#DEDEE8] bg-white p-6.5 min-[640px]:flex-row min-[640px]:items-start">
+              <div className="flex h-10.5 w-10.5 flex-shrink-0 items-center justify-center rounded-[10px] border border-[#DEDEE8] bg-[#F7F7FA]">
+                <Edit set="light" size={18} primaryColor="#6B6880" />
+              </div>
+              <div className="min-w-0">
+                <p className={`mb-1.5 text-[11px] uppercase tracking-wide text-[#8A8896] ${MONO}`}>
+                  {t('landing.presetsSketchLabel')}
+                </p>
+                <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">
+                  {t('landing.presetsSketchTitle')}
+                </h4>
+                <p className="max-w-[62ch] text-[13px] leading-[1.55] text-[#6B6880]">
+                  {t('landing.presetsSketchBody')}
+                </p>
+              </div>
+            </div>
+          </Reveal>
         </section>
 
         {/* PRICING */}
-        <section id="tarifs" className="py-20">
+        <section id="tarifs" className="py-10 min-[860px]:py-12">
           <Reveal className="mx-auto mb-3 max-w-[560px] text-center">
             <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
               {t('landing.pricingTitlePrefix')}
@@ -683,7 +768,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
 
         {/* FAQ */}
-        <section className="py-20">
+        <section className="py-10 min-[860px]:py-12">
           <Reveal className="mx-auto mb-11.5 max-w-[560px] text-center">
             <h2 className="text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
               {t('landing.faqTitle')}
@@ -695,7 +780,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
 
         {/* FINAL CTA */}
-        <section className="py-20">
+        <section className="py-10 min-[860px]:py-12">
           <Reveal
             className={`rounded-[32px] ${GRADIENT} px-8 py-16 text-center text-white min-[640px]:px-16`}
           >
