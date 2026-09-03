@@ -24,6 +24,16 @@ export interface TierQuotaResult {
   max: number | null;
   /** Generations left in the current period, or null when there's no active tier. */
   remaining: number | null;
+  /**
+   * When the current period ends, or null when there's no active tier.
+   *
+   * Returned here rather than re-read by callers: this function already loads
+   * `tierPeriodStart`, and on a `connection_limit=1` pooled connection every
+   * extra query is a serialized round trip to the database, not a parallel
+   * one. It is also the only place that knows whether the period is still
+   * valid — a caller reading the column itself could show a lapsed date.
+   */
+  periodEndsAt: Date | null;
 }
 
 /**
@@ -44,14 +54,28 @@ export async function checkTierQuota(
   });
 
   if (!user?.currentTier) {
-    return { allowed: false, reason: 'NO_ACTIVE_TIER', tier: null, max: null, remaining: null };
+    return {
+      allowed: false,
+      reason: 'NO_ACTIVE_TIER',
+      tier: null,
+      max: null,
+      remaining: null,
+      periodEndsAt: null,
+    };
   }
 
   const tier = getPricingTier(user.currentTier);
   if (!tier) {
     // Defensive — currentTier holds a value pricing-tiers.ts no longer
     // recognizes (e.g. a retired tier id). Treat exactly like no active tier.
-    return { allowed: false, reason: 'NO_ACTIVE_TIER', tier: null, max: null, remaining: null };
+    return {
+      allowed: false,
+      reason: 'NO_ACTIVE_TIER',
+      tier: null,
+      max: null,
+      remaining: null,
+      periodEndsAt: null,
+    };
   }
 
   if (!user.tierPeriodStart || Date.now() - user.tierPeriodStart.getTime() >= TIER_PERIOD_MS) {
@@ -61,9 +85,17 @@ export async function checkTierQuota(
       where: { id: userId },
       data: { currentTier: null, tierPeriodStart: null, generationsUsedInPeriod: 0 },
     });
-    return { allowed: false, reason: 'TIER_EXPIRED', tier: null, max: null, remaining: null };
+    return {
+      allowed: false,
+      reason: 'TIER_EXPIRED',
+      tier: null,
+      max: null,
+      remaining: null,
+      periodEndsAt: null,
+    };
   }
 
+  const periodEndsAt = new Date(user.tierPeriodStart.getTime() + TIER_PERIOD_MS);
   const remaining = tier.generationsPerMonth - user.generationsUsedInPeriod;
   if (remaining < count) {
     return {
@@ -72,10 +104,11 @@ export async function checkTierQuota(
       tier: tier.id,
       max: tier.generationsPerMonth,
       remaining: Math.max(0, remaining),
+      periodEndsAt,
     };
   }
 
-  return { allowed: true, tier: tier.id, max: tier.generationsPerMonth, remaining };
+  return { allowed: true, tier: tier.id, max: tier.generationsPerMonth, remaining, periodEndsAt };
 }
 
 /**

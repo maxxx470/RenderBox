@@ -206,6 +206,24 @@
   animation: rb-gradient-pan 7s linear infinite;
 }
 
+/* Skeleton placeholders. A slow opacity pulse rather than a sweeping
+   gradient: opacity is composited, so a page full of these costs nothing to
+   animate, whereas a moving background repaints every block every frame —
+   precisely when the browser is already busy with the real page. */
+@keyframes rb-skeleton {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.rb-skeleton {
+  animation: rb-skeleton 1.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rb-pulse,
   .rb-spark,
@@ -217,6 +235,7 @@
   .rb-float,
   .rb-shimmer,
   .rb-word-in,
+  .rb-skeleton,
   /* Only the pan stops — `.rb-gradient-pan` keeps its clipped gradient, so
      the accent stays coloured rather than collapsing to transparent text. */
   .rb-gradient-pan {

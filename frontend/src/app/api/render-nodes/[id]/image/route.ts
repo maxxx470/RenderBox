@@ -42,7 +42,15 @@ export async function GET(
     status: 200,
     headers: {
       'Content-Type': node.mimeType,
-      'Cache-Control': 'private, max-age=60',
+      // A RenderNode's bytes never change: the id addresses one immutable
+      // upload or one immutable generation, and editing produces a NEW node
+      // with a new id. So the browser can keep it for good.
+      //
+      // `private` keeps it out of shared caches — this is someone's project,
+      // and the ownership check above is the only thing standing between it
+      // and another account. A year of `max-age=60` meant every dashboard
+      // visit re-fetched every thumbnail through this proxy.
+      'Cache-Control': 'private, max-age=31536000, immutable',
     },
   });
 }

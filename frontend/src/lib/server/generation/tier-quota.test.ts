@@ -26,6 +26,7 @@ describe('checkTierQuota', () => {
       tier: null,
       max: null,
       remaining: null,
+      periodEndsAt: null,
     });
   });
 
@@ -44,6 +45,7 @@ describe('checkTierQuota', () => {
       tier: null,
       max: null,
       remaining: null,
+      periodEndsAt: null,
     });
     expect(prismaMock.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
@@ -65,6 +67,7 @@ describe('checkTierQuota', () => {
       tier: 'decouverte',
       max: 30,
       remaining: 0,
+      periodEndsAt: new Date('2026-07-01T00:00:00.000Z'),
     });
     expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
@@ -77,7 +80,15 @@ describe('checkTierQuota', () => {
     } as never);
 
     const result = await checkTierQuota(prismaMock, 'user-1');
-    expect(result).toEqual({ allowed: true, tier: 'standard', max: 100, remaining: 42 });
+    expect(result).toEqual({
+      allowed: true,
+      tier: 'standard',
+      max: 100,
+      remaining: 42,
+      // 30 days after tierPeriodStart — the dashboard renders this date, so a
+      // drift here would show the wrong renewal day to a paying user.
+      periodEndsAt: new Date('2026-07-01T00:00:00.000Z'),
+    });
   });
 
   it('refuses a multi-count request that would overshoot the remaining quota', async () => {
@@ -94,6 +105,7 @@ describe('checkTierQuota', () => {
       tier: 'decouverte',
       max: 30,
       remaining: 2,
+      periodEndsAt: new Date('2026-07-01T00:00:00.000Z'),
     });
   });
 });

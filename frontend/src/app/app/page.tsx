@@ -7,18 +7,34 @@ import { checkTierQuota } from '@/lib/server/generation/tier-quota';
 import { ProjectsGrid, type ProjectCardData } from './ProjectsGrid';
 import type { DashboardData } from './DashboardStats';
 
-// 30 days, matching TIER_PERIOD_MS in lib/server/generation/tier-quota.ts.
-// Kept as a local constant rather than exported from there: this is display
-// arithmetic, and the gate must stay the single authority on whether a period
-// has actually lapsed.
-const TIER_PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
-
 // /app — the dashboard, and the first screen after sign-in: plan and quota,
 // activity figures, then the project grid underneath. One page rather than
 // two, because every figure here is about the projects listed below it.
 //
 // The generation space it used to share this route with now lives at
 // /app/generer, reachable from the sidebar.
+//
+// ---------------------------------------------------------------------------
+// Why this page makes exactly two database calls
+// ---------------------------------------------------------------------------
+// DATABASE_URL pins `connection_limit=1` (Neon serverless tuning), so Prisma
+// holds a single connection and a Promise.all of N queries runs them one after
+// another, not in parallel. Every query is therefore a full round trip added
+// to the page's time to first byte — measured at ~600ms each in production.
+//
+// This page used to issue eight, which is exactly why it took ~5s to load on a
+// database holding five projects and zero renders. The work below is now:
+//   1. projects (+ their newest node, for the fallback thumbnail and date)
+//   2. every generated node of this user, in one go
+//   3. checkTierQuota — which also returns periodEndsAt, so no separate
+//      user lookup
+// Thumbnails, per-project ambiances and per-project counts are all derived in
+// memory from (2) instead of costing three more round trips.
+//
+// The size of (2) is bounded by the paid quota (300/month on the top tier) and
+// selects four small columns, so it stays far cheaper than the round trips it
+// replaces. If a single account ever holds tens of thousands of renders, move
+// this to one `DISTINCT ON` raw query rather than back to several Prisma ones.
 export default async function AppDashboardPage() {
   const auth = await requireAuth();
   if (auth instanceof NextResponse) {
@@ -30,16 +46,7 @@ export default async function AppDashboardPage() {
   // checkTierQuota with count: 0 reads status without consuming anything —
   // and, by design, is also what clears a lapsed period, so loading the
   // dashboard keeps the displayed plan honest.
-  const [
-    projects,
-    quota,
-    user,
-    renderCount,
-    lastRender,
-    lastGenerated,
-    projectPresets,
-    countsByProject,
-  ] = await Promise.all([
+  const [projects, generatedNodes, quota] = await Promise.all([
     prisma.project.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -54,46 +61,29 @@ export default async function AppDashboardPage() {
         },
       },
     }),
+    prisma.renderNode.findMany({
+      where: { project: { userId }, kind: 'GENERATED' },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, projectId: true, preset: true, createdAt: true },
+    }),
     checkTierQuota(prisma, userId, 0),
-    prisma.user.findUnique({ where: { id: userId }, select: { tierPeriodStart: true } }),
-    prisma.renderNode.count({ where: { project: { userId }, kind: 'GENERATED' } }),
-    prisma.renderNode.findFirst({
-      where: { project: { userId } },
-      orderBy: { createdAt: 'desc' },
-      select: { createdAt: true },
-    }),
-    // The thumbnail is the project's most recent GENERATED node. The relation
-    // select above cannot be filtered separately, hence its own query:
-    // ordered newest-first then reduced to one row per project, so each entry
-    // is that project's latest render.
-    prisma.renderNode.findMany({
-      where: { project: { userId }, kind: 'GENERATED' },
-      orderBy: { createdAt: 'desc' },
-      distinct: ['projectId'],
-      select: { id: true, projectId: true },
-    }),
-    // Which ambiances each project contains, for the filter above the grid.
-    prisma.renderNode.findMany({
-      where: { project: { userId }, kind: 'GENERATED', preset: { not: null } },
-      distinct: ['projectId', 'preset'],
-      select: { projectId: true, preset: true },
-    }),
-    prisma.renderNode.groupBy({
-      by: ['projectId'],
-      where: { project: { userId }, kind: 'GENERATED' },
-      _count: { _all: true },
-    }),
   ]);
 
-  const thumbnailByProject = new Map(lastGenerated.map((n) => [n.projectId, n.id]));
-  const countByProject = new Map(countsByProject.map((r) => [r.projectId, r._count._all]));
-
+  // Newest-first, so the first node seen for a project is its latest render.
+  const thumbnailByProject = new Map<string, string>();
+  const countByProject = new Map<string, number>();
   const presetsByProject = new Map<string, string[]>();
-  for (const row of projectPresets) {
-    if (!row.preset) continue;
-    const list = presetsByProject.get(row.projectId);
-    if (list) list.push(row.preset);
-    else presetsByProject.set(row.projectId, [row.preset]);
+
+  for (const node of generatedNodes) {
+    if (!thumbnailByProject.has(node.projectId)) {
+      thumbnailByProject.set(node.projectId, node.id);
+    }
+    countByProject.set(node.projectId, (countByProject.get(node.projectId) ?? 0) + 1);
+    if (node.preset) {
+      const list = presetsByProject.get(node.projectId);
+      if (!list) presetsByProject.set(node.projectId, [node.preset]);
+      else if (!list.includes(node.preset)) list.push(node.preset);
+    }
   }
 
   const items: ProjectCardData[] = projects.map((p) => ({
@@ -109,21 +99,21 @@ export default async function AppDashboardPage() {
     renderCount: countByProject.get(p.id) ?? 0,
   }));
 
-  // Only meaningful while a tier is active: checkTierQuota nulls the period
-  // out the moment it lapses, so a stale tierPeriodStart never surfaces.
-  const periodEndsAt =
-    quota.tier && user?.tierPeriodStart
-      ? new Date(user.tierPeriodStart.getTime() + TIER_PERIOD_MS).toISOString()
-      : null;
+  // Most recent activity across the account: the projects query already
+  // carries each project's newest node, so this needs no query of its own.
+  const lastActivity = projects.reduce<Date | null>((newest, p) => {
+    const at = p.renderNodes[0]?.createdAt;
+    return at && (!newest || at > newest) ? at : newest;
+  }, null);
 
   const dashboard: DashboardData = {
     projectCount: projects.length,
-    renderCount,
-    lastActivityAt: lastRender?.createdAt.toISOString() ?? null,
+    renderCount: generatedNodes.length,
+    lastActivityAt: lastActivity?.toISOString() ?? null,
     tier: quota.tier,
     quotaMax: quota.max,
     quotaRemaining: quota.remaining,
-    periodEndsAt,
+    periodEndsAt: quota.periodEndsAt?.toISOString() ?? null,
   };
 
   return (
