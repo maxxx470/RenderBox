@@ -13,13 +13,27 @@ import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { DashboardStats, type DashboardData } from './DashboardStats';
+import { DashboardVideoCard } from './DashboardVideoCard';
+import { DashboardCarousel } from './DashboardCarousel';
 import { HomeSidebar } from './HomeSidebar';
+import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+
+// Full literal class strings — Tailwind's scanner cannot see a class built
+// from an interpolated value (see the JIT note in CLAUDE.md).
+const FILTER_PILL =
+  'rounded-full border border-[#ECECF2] bg-white px-3 py-1.5 text-[12px] font-medium text-[#6B6880] transition-colors hover:border-[#DEDEE8] hover:text-[#17161F]';
+const FILTER_PILL_ACTIVE =
+  'rounded-full border border-[#716FFF] bg-[#EFECFF] px-3 py-1.5 text-[12px] font-semibold text-[#716FFF]';
 
 export interface ProjectCardData {
   id: string;
   name: string;
+  /** Newest GENERATED node, falling back to the starting photo. */
   thumbnailNodeId: string | null;
   lastActivityAt: string;
+  /** Ambiances this project contains — drives the filter row. */
+  presets: string[];
+  renderCount: number;
 }
 
 type Dialog =
@@ -43,6 +57,9 @@ function ProjectCard({
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-[#ECECF2] bg-white transition-colors hover:border-[#DEDEE8]">
       <Link href={`/app/${project.id}`} className="block">
+        {/* Landscape, not the reference's portrait poster: film posters are
+            portrait by nature, architectural renders are not, and a 2:3 frame
+            would crop every one of them badly. */}
         <div className="relative aspect-[4/3] overflow-hidden bg-[#F7F7FA]">
           {project.thumbnailNodeId ? (
             <img
@@ -57,15 +74,19 @@ function ProjectCard({
             </div>
           )}
         </div>
-        <div className="p-3.5">
-          <div className="truncate text-[13.5px] font-semibold text-[#17161F]">{project.name}</div>
-          <div className="mt-1 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
-            {t('projects.lastModified', {
-              date: new Date(project.lastActivityAt).toLocaleDateString(
+        {/* Compact meta line under the image, like the reference: the poster
+            carries the page, the text stays to one row of small facts. */}
+        <div className="px-3 pb-3 pt-2.5">
+          <div className="truncate text-[13px] font-semibold text-[#17161F]">{project.name}</div>
+          <div className="mt-1 flex items-center gap-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#8A8896]">
+            <span>{t('projects.renderCount', { n: String(project.renderCount) })}</span>
+            <span className="text-[#DEDEE8]">·</span>
+            <span>
+              {new Date(project.lastActivityAt).toLocaleDateString(
                 locale === 'fr' ? 'fr-FR' : 'en-US',
-                { day: 'numeric', month: 'short', year: 'numeric' },
-              ),
-            })}
+                { day: 'numeric', month: 'short' },
+              )}
+            </span>
           </div>
         </div>
       </Link>
@@ -128,15 +149,26 @@ export function ProjectsGrid({
 
   const [projects, setProjects] = useState(initialProjects);
   const [query, setQuery] = useState('');
+  const [presetFilter, setPresetFilter] = useState<PresetKey | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [draftName, setDraftName] = useState('');
   const [busy, setBusy] = useState(false);
 
+  // Only the ambiances the user actually has: an empty filter pill would be a
+  // control that can only ever return nothing.
+  const availablePresets = useMemo(
+    () => PRESET_KEYS.filter((k) => projects.some((p) => p.presets.includes(k))),
+    [projects],
+  );
+
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return projects;
-    return projects.filter((p) => p.name.toLowerCase().includes(q));
-  }, [projects, query]);
+    return projects.filter(
+      (p) =>
+        (!q || p.name.toLowerCase().includes(q)) &&
+        (!presetFilter || p.presets.includes(presetFilter)),
+    );
+  }, [projects, query, presetFilter]);
 
   function openCreate() {
     setDraftName(
@@ -229,14 +261,49 @@ export function ProjectsGrid({
           </div>
         </div>
 
-        {dashboard && <DashboardStats data={dashboard} />}
+        {dashboard && (
+          <>
+            {/* Two banners on top, as in the reference — the video narrower
+                than the carousel beside it. */}
+            <div className="mb-5 grid grid-cols-1 gap-4 min-[900px]:grid-cols-[42fr_58fr]">
+              <DashboardVideoCard />
+              <DashboardCarousel />
+            </div>
+            <DashboardStats data={dashboard} />
+          </>
+        )}
 
         {/* The grid keeps its own heading under the dashboard: without it the
-            cards would read as a continuation of the stat row. */}
+            cards would read as a continuation of the stat row. The ambiance
+            filter sits on the same row, where the reference puts its own
+            filter controls. */}
         {dashboard && projects.length > 0 && (
-          <h2 className="mb-4 font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
-            {t('projects.title')}
-          </h2>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+              {t('projects.title')}
+            </h2>
+            {availablePresets.length > 1 && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setPresetFilter(null)}
+                  className={presetFilter === null ? FILTER_PILL_ACTIVE : FILTER_PILL}
+                >
+                  {t('projects.filterAll')}
+                </button>
+                {availablePresets.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setPresetFilter(key)}
+                    className={presetFilter === key ? FILTER_PILL_ACTIVE : FILTER_PILL}
+                  >
+                    {PRESETS[key].label[locale]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {/* Only worth the row once there is enough to sift through. */}
@@ -277,7 +344,7 @@ export function ProjectsGrid({
             {t('projects.searchEmpty', { query: query.trim() })}
           </p>
         ) : (
-          <div className="grid grid-cols-2 gap-4 min-[640px]:grid-cols-3 min-[900px]:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3.5 min-[640px]:grid-cols-3 min-[1000px]:grid-cols-4 min-[1280px]:grid-cols-5">
             {visible.map((p) => (
               <ProjectCard
                 key={p.id}

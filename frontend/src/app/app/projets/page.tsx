@@ -27,7 +27,16 @@ export default async function AppDashboardPage() {
   // checkTierQuota with count: 0 reads status without consuming anything —
   // and, by design, is also what clears a lapsed period, so loading the
   // dashboard keeps the displayed plan honest.
-  const [projects, quota, user, renderCount, lastRender] = await Promise.all([
+  const [
+    projects,
+    quota,
+    user,
+    renderCount,
+    lastRender,
+    lastGenerated,
+    projectPresets,
+    countsByProject,
+  ] = await Promise.all([
     prisma.project.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -50,13 +59,51 @@ export default async function AppDashboardPage() {
       orderBy: { createdAt: 'desc' },
       select: { createdAt: true },
     }),
+    // The thumbnail is the project's most recent GENERATED node. The relation
+    // select above cannot be filtered separately, hence its own query:
+    // ordered newest-first then reduced to one row per project, so each entry
+    // is that project's latest render.
+    prisma.renderNode.findMany({
+      where: { project: { userId }, kind: 'GENERATED' },
+      orderBy: { createdAt: 'desc' },
+      distinct: ['projectId'],
+      select: { id: true, projectId: true },
+    }),
+    // Which ambiances each project contains, for the filter above the grid.
+    prisma.renderNode.findMany({
+      where: { project: { userId }, kind: 'GENERATED', preset: { not: null } },
+      distinct: ['projectId', 'preset'],
+      select: { projectId: true, preset: true },
+    }),
+    prisma.renderNode.groupBy({
+      by: ['projectId'],
+      where: { project: { userId }, kind: 'GENERATED' },
+      _count: { _all: true },
+    }),
   ]);
+
+  const thumbnailByProject = new Map(lastGenerated.map((n) => [n.projectId, n.id]));
+  const countByProject = new Map(countsByProject.map((r) => [r.projectId, r._count._all]));
+
+  const presetsByProject = new Map<string, string[]>();
+  for (const row of projectPresets) {
+    if (!row.preset) continue;
+    const list = presetsByProject.get(row.projectId);
+    if (list) list.push(row.preset);
+    else presetsByProject.set(row.projectId, [row.preset]);
+  }
 
   const items: ProjectCardData[] = projects.map((p) => ({
     id: p.id,
     name: p.name,
-    thumbnailNodeId: p.renderNodes[0]?.id ?? null,
+    // Falls back to the last node of any kind — the starting photo — while a
+    // project has no render yet. Before this, that fallback was the ONLY rule,
+    // so a project whose latest action was an upload showed its source photo
+    // instead of the render the user had already produced.
+    thumbnailNodeId: thumbnailByProject.get(p.id) ?? p.renderNodes[0]?.id ?? null,
     lastActivityAt: (p.renderNodes[0]?.createdAt ?? p.createdAt).toISOString(),
+    presets: presetsByProject.get(p.id) ?? [],
+    renderCount: countByProject.get(p.id) ?? 0,
   }));
 
   // Only meaningful while a tier is active: checkTierQuota nulls the period
