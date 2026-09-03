@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { SiteHeader } from '@/components/SiteHeader';
+import { SiteFooter } from '@/components/SiteFooter';
 
 type Tab = 'terms' | 'privacy';
 
@@ -12,7 +13,7 @@ export default function LegalPage() {
 
   return (
     <main className="min-h-screen">
-      <SiteHeader links />
+      <SiteHeader links cta={{ href: '/app', label: t('landing.navStart') }} />
       <div className="mx-auto max-w-2xl px-6 py-12">
         <h1 className="mb-6 font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
           {t('legal.title')}
@@ -39,6 +40,7 @@ export default function LegalPage() {
           {tab === 'terms' ? t('legal.termsBody') : t('legal.privacyBody')}
         </p>
       </div>
+      <SiteFooter />
     </main>
   );
 }

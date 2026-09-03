@@ -37,6 +37,7 @@ import {
 } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
+import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
@@ -45,6 +46,7 @@ import { Reveal } from './Reveal';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { FaqAccordion } from './FaqAccordion';
 import { HeroProof } from './HeroProof';
+import { SiteFooter } from '@/components/SiteFooter';
 import { AudienceTabs, type AudienceTabData } from './AudienceTabs';
 import { StaggeredChecklist } from './StaggeredChecklist';
 import { MaterialsFeedStudio } from './MaterialsFeedStudio';
@@ -649,9 +651,9 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               <TreeGallery
                 items={[
                   { label: t('landing.split2NodeUpload'), tag: t('landing.split2NodeSource') },
-                  { label: t('landing.split2NodeDay'), tag: t('landing.heroPreviewEngine') },
-                  { label: t('landing.split2NodeNight'), tag: t('landing.heroPreviewEngine') },
-                  { label: t('landing.split2NodeExtra'), tag: 'gpt image' },
+                  { label: t('landing.split2NodeDay'), tag: t('landing.split2TagRender') },
+                  { label: t('landing.split2NodeNight'), tag: t('landing.split2TagRender') },
+                  { label: t('landing.split2NodeExtra'), tag: t('landing.split2TagEdit') },
                 ]}
               />
             </Reveal>
@@ -669,7 +671,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Reveal>
             <Reveal className="min-[860px]:order-1">
               <EnginesStateTiles
-                engines={[t('landing.heroPreviewEngine'), 'GPT Image']}
+                engines={[ENGINE_LABELS.nanobanana.name, ENGINE_LABELS.gpt_image.name]}
                 events={[
                   t('landing.enginesEvent1'),
                   t('landing.enginesEvent2'),
@@ -798,67 +800,9 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Link>
           </Reveal>
         </section>
-
-        {/* FOOTER */}
-        <footer className="mt-5 border-t border-[#ECECF2] py-15 pb-7.5">
-          <div className="flex flex-wrap justify-between gap-10 pb-10">
-            <Link href="/" className="flex items-center gap-2 text-[17px] font-bold text-[#17161F]">
-              <div className={`h-6.5 w-6.5 rounded-[7px] ${GRADIENT}`} />
-              RenderBox
-            </Link>
-            <div className="flex flex-wrap gap-15">
-              <div>
-                <h5 className="mb-3.5 text-xs uppercase tracking-wide text-[#8A8896]">
-                  {t('landing.footerProductHeading')}
-                </h5>
-                <a href="#fonctionnalites" className="mb-2.5 block text-[13px] text-[#17161F]">
-                  {t('landing.navFeatures')}
-                </a>
-                <a href="#tarifs" className="mb-2.5 block text-[13px] text-[#17161F]">
-                  {t('landing.navPricing')}
-                </a>
-                <Link href="/exemple" className="mb-2.5 block text-[13px] text-[#17161F]">
-                  {t('landing.navExamples')}
-                </Link>
-              </div>
-              <div>
-                <h5 className="mb-3.5 text-xs uppercase tracking-wide text-[#8A8896]">
-                  {t('landing.footerResourcesHeading')}
-                </h5>
-                {/* The only live link in this column — the others are labels
-                    for pages that do not exist yet, and stay unclickable
-                    rather than pretending. */}
-                <Link href="/info" className="mb-2.5 block text-[13px] text-[#17161F]">
-                  {t('info.navLabel')}
-                </Link>
-                <span className="mb-2.5 block text-[13px] text-[#8A8896]">
-                  {t('landing.footerLinkGuide')}
-                </span>
-                <span className="mb-2.5 block text-[13px] text-[#8A8896]">
-                  {t('landing.footerLinkBlog')}
-                </span>
-              </div>
-              <div>
-                <h5 className="mb-3.5 text-xs uppercase tracking-wide text-[#8A8896]">
-                  {t('landing.footerSupportHeading')}
-                </h5>
-                <span className="mb-2.5 block text-[13px] text-[#8A8896]">
-                  {t('landing.footerLinkContact')}
-                </span>
-                <span className="mb-2.5 block text-[13px] text-[#8A8896]">
-                  {t('landing.footerLinkHelp')}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-wrap justify-between gap-2 border-t border-[#ECECF2] pt-6 text-xs text-[#8A8896]">
-            <span>{t('landing.footerCopyright', { year: new Date().getFullYear() })}</span>
-            <Link href="/legal" className="hover:text-[#17161F]">
-              {t('landing.footerLegalLinks')}
-            </Link>
-          </div>
-        </footer>
       </div>
+
+      <SiteFooter />
 
       {/* Points at the example page, not at signup: the hero fan and the
           header already carry the "start" CTA, so the persistent bar is more

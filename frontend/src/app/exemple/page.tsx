@@ -7,6 +7,7 @@
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { SiteHeader } from '@/components/SiteHeader';
+import { SiteFooter } from '@/components/SiteFooter';
 import { PRESET_KEYS, PRESETS } from '@/lib/server/generation/presets';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 
@@ -89,6 +90,7 @@ export default function ExemplePage() {
           </Link>
         </section>
       </div>
+      <SiteFooter />
     </main>
   );
 }

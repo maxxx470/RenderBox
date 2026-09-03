@@ -418,7 +418,9 @@ const en: Record<keyof typeof fr, string> = {
   'landing.split2Check2': 'Pick up any render as a new starting point',
   'landing.split2Check3': 'No variant lost while exploring another',
   'landing.split2NodeUpload': 'Photo upload',
-  'landing.split2NodeSource': 'source',
+  'landing.split2NodeSource': 'starting photo',
+  'landing.split2TagRender': 'render',
+  'landing.split2TagEdit': 'added element',
   'landing.split2NodeDay': 'Exterior day',
   'landing.split2NodeNight': 'Exterior night',
   'landing.split2NodeExtra': '+ character',
@@ -467,12 +469,9 @@ const en: Record<keyof typeof fr, string> = {
     'Yes, no commitment. Your access stays active until the already-paid period ends.',
 
   'landing.footerProductHeading': 'Product',
+  'landing.footerTagline':
+    'Photorealistic 3D renders from your plans, with the same materials from one view to the next.',
   'landing.footerResourcesHeading': 'Resources',
-  'landing.footerSupportHeading': 'Support',
-  'landing.footerLinkGuide': 'Guide',
-  'landing.footerLinkBlog': 'Blog',
-  'landing.footerLinkContact': 'Contact',
-  'landing.footerLinkHelp': 'Help',
   'landing.footerCopyright': '© {year} RenderBox. All rights reserved.',
   'landing.footerLegalLinks': 'Terms · Privacy',
 
