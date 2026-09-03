@@ -9,6 +9,7 @@ import { Image as ImageIcon, Edit, PaperPlus, ChevronLeft, ChevronRight } from '
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { ProjectTree } from './ProjectTree';
+import { VideoModeSoon } from './VideoModeSoon';
 import type { AppMode } from './CommandBar';
 
 const MODE_ICON = { generate: ImageIcon, retouch: Edit, add: PaperPlus } as const;
@@ -85,6 +86,11 @@ export function ModeSidebar({
             </button>
           );
         })}
+        <VideoModeSoon
+          collapsed={collapsed}
+          className={`text-[13px] ${collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''}`}
+          labelClassName={hideOnCollapse}
+        />
       </div>
 
       <div className="mb-2 h-px bg-[#ECECF2]" />

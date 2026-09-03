@@ -19,6 +19,7 @@ import {
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import type { AppMode } from './CommandBar';
+import { VideoModeSoon } from './VideoModeSoon';
 import { useSidebarCollapsed } from './useSidebarCollapsed';
 
 const MODE_ICON = { generate: ImageIcon, retouch: Edit, add: PaperPlus } as const;
@@ -137,6 +138,11 @@ export function HomeSidebar({
             </button>
           );
         })}
+        <VideoModeSoon
+          collapsed={collapsed}
+          className={`text-[13.5px] ${centerOnCollapse}`}
+          labelClassName={hideOnCollapse}
+        />
       </div>
 
       <h3
