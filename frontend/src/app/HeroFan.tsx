@@ -109,15 +109,22 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
       {/* Floating CTA over the middle card, as in the reference.
           The centring translate lives on the wrapper and the entrance on the
           link: rb-card-in animates `transform`, so sharing one element would
-          wipe the -50% offset mid-animation and slide the button sideways. */}
+          wipe the -50% offset mid-animation and slide the button sideways.
+
+          The yellow carried a 10px hard offset block of the SAME yellow plus a
+          5px white ring — a sticker/brutalist device on a page whose every
+          other surface is soft-shadowed and violet, so it read as pasted on.
+          What the button actually needs, floating over photographs, is
+          separation from busy imagery: a thin white ring does that, and one
+          soft shadow gives it the same depth as the cards it sits on. */}
       <div className="absolute left-1/2 top-0 z-30 -translate-x-1/2">
         <Link
           href={ctaHref}
           style={{ animationDelay: `${middle * 90 + 220}ms` }}
-          className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[#FFC53D] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_0_0_5px_#FFFFFF,10px_10px_0_0_#FFC53D,0_20px_40px_-14px_rgba(180,120,0,0.45)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+          className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[#FFC53D] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_0_0_3px_#FFFFFF,0_10px_22px_-8px_rgba(23,22,31,0.38)] transition-[transform,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:bg-[#FFB92B] active:scale-[0.97]"
         >
           {ctaLabel}
-          <ArrowRight set="light" size={15} primaryColor="#ffffff" />
+          <ArrowRight set="light" size={15} primaryColor="#17161F" />
         </Link>
       </div>
     </div>
