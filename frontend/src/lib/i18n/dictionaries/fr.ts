@@ -293,10 +293,20 @@ const fr = {
   'admin.journal.action.user_restore_deleted': 'a restauré le compte {target}',
   'admin.journal.action.generic': '{action} sur {targetType} {targetId}',
 
-  'exemple.title': 'Villa Kalia — projet exemple',
+  // La page montre plusieurs projets classés par ambiance, plus un exemple de
+  // fiche matériaux. Elle annonçait « Villa Kalia — projet exemple » avec
+  // « la fiche déjà remplie et les 4 ambiances générées », ce qui décrivait un
+  // projet unique : le titre aurait démenti la galerie dès la première section.
+  'exemple.title': 'Exemples de rendus',
   'exemple.subtitle':
-    'Une fiche matériaux déjà remplie et les 4 ambiances déjà générées — pour te donner une idée avant de créer ton compte.',
-  'exemple.materialsTitle': 'Fiche matériaux',
+    'Chaque preset donne une lumière différente. Voici à quoi ressemble chacun, sur plusieurs projets.',
+  'exemple.batchCountOne': '1 rendu',
+  'exemple.batchCount': '{n} rendus',
+  'exemple.esquisseNote':
+    'La seule ambiance volontairement non photoréaliste : traits visibles, volumes posés, ombres minimales. Le rendu de revue de projet, quand il est trop tôt pour montrer du photoréalisme.',
+  'exemple.materialsTitle': 'À quoi ressemble une fiche matériaux',
+  'exemple.materialsIntro':
+    "Détectée automatiquement après ton premier rendu, puis réinjectée dans les suivants — c'est ce qui garde les mêmes matériaux d'une ambiance à l'autre. Exemple de fiche :",
   'exemple.materialsFacade': 'Façade principale',
   'exemple.materialsFacadeValue': 'Enduit taloché blanc cassé',
   'exemple.materialsRoof': 'Toiture',

@@ -290,10 +290,16 @@ const en: Record<keyof typeof fr, string> = {
   'admin.journal.action.user_restore_deleted': 'restored deleted account {target}',
   'admin.journal.action.generic': '{action} on {targetType} {targetId}',
 
-  'exemple.title': 'Villa Kalia — sample project',
+  'exemple.title': 'Render examples',
   'exemple.subtitle':
-    'A materials sheet already filled in and the 4 moods already generated — to give you an idea before creating your account.',
-  'exemple.materialsTitle': 'Materials sheet',
+    'Each preset gives a different light. Here is what each one looks like, across several projects.',
+  'exemple.batchCountOne': '1 render',
+  'exemple.batchCount': '{n} renders',
+  'exemple.esquisseNote':
+    'The one mood that is deliberately not photorealistic: visible strokes, loose massing, minimal shading. The design-review render, for when it is too early to show photorealism.',
+  'exemple.materialsTitle': 'What a materials sheet looks like',
+  'exemple.materialsIntro':
+    'Detected automatically after your first render, then fed back into the next ones — that is what keeps the same materials from one mood to the next. Sample sheet:',
   'exemple.materialsFacade': 'Main facade',
   'exemple.materialsFacadeValue': 'Off-white smooth render',
   'exemple.materialsRoof': 'Roof',
