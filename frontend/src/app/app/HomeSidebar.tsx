@@ -65,6 +65,9 @@ export function HomeSidebar({
   // The drawer only ever opens below 900px (its trigger is `min-[900px]:hidden`),
   // so an open drawer means "narrow screen" and the persisted desktop collapse
   // must not apply — a 68px drawer with no labels would be useless.
+  // Only the generation screen passes onModeChange, so its absence means the
+  // dashboard is the current page.
+  const onDashboard = !onModeChange;
   const collapsedUi = mobileOpen ? false : collapsed;
   // Always a function: `exactOptionalPropertyTypes` rejects a possibly-undefined
   // onClick, and every nav item wants to dismiss the drawer it was tapped in.
@@ -122,15 +125,26 @@ export function HomeSidebar({
         )}
       </button>
 
+      {/* Active only when you are actually on the dashboard. It used to carry
+          the raised-white-card treatment unconditionally, so on /app/generer
+          BOTH this entry and "Image" looked selected at the same time — the
+          rail said you were in two places at once. `onModeChange` is only
+          passed by the generation screen, so its absence is exactly "we are on
+          the dashboard". */}
       <div className="mb-4.5">
         <Link
           href="/app"
           {...(collapsedUi ? { title: t('dashboard.title') } : {})}
           onClick={closeDrawer}
           aria-label={t('dashboard.title')}
-          className={`flex items-center gap-2.5 rounded-xl border border-[#DEDEE8] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14] ${centerOnCollapse}`}
+          {...(onDashboard ? { 'aria-current': 'page' as const } : {})}
+          className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13.5px] ${
+            onDashboard
+              ? 'border border-[#DEDEE8] bg-white font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14]'
+              : 'border border-transparent font-medium text-[#17161F] hover:border-[#DEDEE8] hover:bg-white'
+          } ${centerOnCollapse}`}
         >
-          <Category set="light" size={16} primaryColor="#716FFF" />
+          <Category set="light" size={16} primaryColor={onDashboard ? '#716FFF' : '#8A8896'} />
           <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
       </div>
