@@ -114,6 +114,7 @@ const fr = {
   'app.genHomeExampleTag': 'exemple',
   'app.genHomeCardPlaceholder': 'Ajoute une photo pour lancer ton premier rendu',
   'landing.heroFanTag': 'ambiance',
+  'landing.heroSliderLabel': 'Aperçus de rendus, une ambiance par carte',
   'app.noTierLabel': 'Aucun palier actif',
   // Formule le RESTANT, comme la carte du tableau de bord. Les deux
   // coexistaient a l'envers l'une de l'autre sur le meme ecran : la carte

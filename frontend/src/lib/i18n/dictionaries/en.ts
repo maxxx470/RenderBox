@@ -116,6 +116,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.genHomeExampleTag': 'example',
   'app.genHomeCardPlaceholder': 'Add a photo to start your first render',
   'landing.heroFanTag': 'ambiance',
+  'landing.heroSliderLabel': 'Render previews, one ambiance per card',
   'app.noTierLabel': 'No active plan',
   'app.quotaLabel': '{remaining}/{max} left this month',
   'app.quotaExceededError': 'Monthly quota reached. Switch plans or wait for renewal.',
