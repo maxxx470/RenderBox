@@ -380,9 +380,6 @@ const fr = {
   // du produit. Garder « sur TikTok » dans le libellé : sans la plateforme
   // nommée, le nombre devient une affirmation invérifiable sur RenderBox.
   'landing.proofCommunity': 'abonnés sur TikTok',
-  'landing.proofPresets': 'ambiances de rendu',
-  'landing.proofEngines': 'moteurs IA au choix',
-  'landing.proofMaterials': "matériau oublié d'une vue à l'autre",
   // « vos exports » et pas « fonctionne avec » : RenderBox lit les images que
   // ces logiciels exportent, il ne s'y branche pas. Ne pas raccourcir.
   'landing.proofCompatible': 'Compatible avec vos exports',

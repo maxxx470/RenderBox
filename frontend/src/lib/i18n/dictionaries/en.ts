@@ -373,9 +373,6 @@ const en: Record<keyof typeof fr, string> = {
   // Keep "on TikTok" in the label: without the platform named, the number
   // becomes an unverifiable claim about RenderBox itself.
   'landing.proofCommunity': 'followers on TikTok',
-  'landing.proofPresets': 'render ambiances',
-  'landing.proofEngines': 'AI engines to choose from',
-  'landing.proofMaterials': 'material lost between views',
   // "your exports", not "works with": RenderBox reads the images these tools
   // export, it does not integrate with them. Do not shorten.
   'landing.proofCompatible': 'Works with your exports from',

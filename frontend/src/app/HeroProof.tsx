@@ -1,10 +1,12 @@
 'use client';
 
-// Proof strip under the hero. Replaces the three lonely CountUp figures that
-// stood here before: the numbers were true but read as a feature list, so they
-// convinced nobody. Same facts, said as one sentence, plus the row that
-// actually answers the visitor's question — "does this take what I already
-// have?".
+// Proof strip under the hero: who is watching, and what the tool plugs into.
+//
+// It used to also carry three counters — "5 ambiances · 2 moteurs IA ·
+// 0 matériau oublié". Removed: the presets and the engines each have their own
+// section further down, where they are shown rather than counted, and the
+// third opened on a zero, which reads as an empty counter before it reads as a
+// promise. What is left is what only this strip can say.
 //
 // The audience figure is the owner's TikTok following, and it says exactly
 // that. It is NOT a user count — RenderBox has none yet — and the copy must
@@ -88,25 +90,15 @@ export function HeroProof() {
 
   return (
     <div className="border-b border-[#ECECF2] pb-15 pt-16">
+      {/* The three counters that used to sit here are gone — "5 ambiances ·
+          2 moteurs IA · 0 matériau oublié". The presets and the engines are
+          both stated further down the page, in the sections that show them,
+          and a proof line opening on a zero read as an empty counter before it
+          read as a promise. What is left is the part that is only true here:
+          the audience, and what the tool plugs into. */}
       <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3.5">
         <PresetCluster />
         <CommunityBadge />
-        <p className="text-center text-[15px] text-[#3D3B49]">
-          <b className="font-semibold text-[#17161F]">
-            <CountUp to={5} />
-          </b>{' '}
-          {t('landing.proofPresets')}
-          <span className="mx-2 text-[#DEDEE8]">·</span>
-          <b className="font-semibold text-[#17161F]">
-            <CountUp to={2} />
-          </b>{' '}
-          {t('landing.proofEngines')}
-          <span className="mx-2 text-[#DEDEE8]">·</span>
-          <b className="font-semibold text-[#17161F]">
-            <CountUp to={0} />
-          </b>{' '}
-          {t('landing.proofMaterials')}
-        </p>
       </div>
 
       <div className="mt-7 flex flex-wrap items-center justify-center gap-2.5">
