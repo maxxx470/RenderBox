@@ -393,6 +393,10 @@ const fr = {
   'landing.beforeAfterTitleAccent': 'rendu photoréaliste',
   'landing.beforeAfterBody':
     'Glissez pour comparer. Chaque matériau, chaque ouverture, chaque proportion conservée — RenderBox ne réinvente pas votre projet, il le révèle.',
+  'landing.beforeAfterAltBefore':
+    "Croquis à main levée d'une maison contemporaine, vue d'angle depuis la rue.",
+  'landing.beforeAfterAltAfter':
+    'Le même bâtiment en rendu photoréaliste, au crépuscule après la pluie.',
   'landing.beforeAfterLabelBefore': 'Esquisse',
   'landing.beforeAfterLabelAfter': 'Rendu RenderBox',
 

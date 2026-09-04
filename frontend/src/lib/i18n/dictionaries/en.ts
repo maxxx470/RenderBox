@@ -386,6 +386,10 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterTitleAccent': 'photorealistic render',
   'landing.beforeAfterBody':
     "Drag to compare. Every material, every opening, every proportion kept — RenderBox doesn't reinvent your project, it reveals it.",
+  'landing.beforeAfterAltBefore':
+    'Hand-drawn sketch of a contemporary house, corner view from the street.',
+  'landing.beforeAfterAltAfter':
+    'The same building as a photorealistic render, at dusk after rain.',
   'landing.beforeAfterLabelBefore': 'Sketch',
   'landing.beforeAfterLabelAfter': 'RenderBox render',
 

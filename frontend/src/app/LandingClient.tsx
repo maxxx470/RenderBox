@@ -38,6 +38,7 @@ import {
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { BEFORE_AFTER } from './before-after';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
@@ -532,8 +533,34 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </Reveal>
           <Reveal delayMs={100} className="mx-auto max-w-[820px]">
             <BeforeAfterSlider
-              before={<SketchVisual />}
-              after={<RenderVisual />}
+              // Real images when they exist, the drawn placeholders otherwise.
+              // Lazy: this sits below the fold, and the pair is ~510KB.
+              before={
+                BEFORE_AFTER.before ? (
+                  <img
+                    src={BEFORE_AFTER.before}
+                    alt={t('landing.beforeAfterAltBefore')}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <SketchVisual />
+                )
+              }
+              after={
+                BEFORE_AFTER.after ? (
+                  <img
+                    src={BEFORE_AFTER.after}
+                    alt={t('landing.beforeAfterAltAfter')}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <RenderVisual />
+                )
+              }
               beforeLabel={t('landing.beforeAfterLabelBefore')}
               afterLabel={t('landing.beforeAfterLabelAfter')}
             />
