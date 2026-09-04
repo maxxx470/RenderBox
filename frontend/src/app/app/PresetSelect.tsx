@@ -8,10 +8,33 @@
 // list, the row keeps the reference's density: a few equal-weight chips, then
 // the generate button.
 import { useState, useRef, useEffect } from 'react';
-import { ChevronUp, ChevronDown, TickSquare, Star } from 'react-iconly';
+import { ChevronUp, ChevronDown, TickSquare } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import { CHIP_BASE } from './chip';
+
+// The light each preset produces, as a swatch. Same encoding as the landing's
+// preset cards — it previews the result instead of naming a category, and it
+// replaces a star icon that meant "favourite" everywhere else in the world.
+//
+// Full literal class strings: Tailwind's scanner cannot see a class built by
+// interpolating a colour value (see the JIT note in CLAUDE.md).
+const AMBIANCE_SWATCH: Record<PresetKey, string> = {
+  jour_ext: 'bg-[linear-gradient(135deg,#7FC4FF_0%,#EAF6FF_100%)]',
+  jour_int: 'bg-[linear-gradient(135deg,#FFD9A0_0%,#FFF8EE_100%)]',
+  nuit_ext: 'bg-[linear-gradient(135deg,#141B3D_0%,#6E6BFF_100%)]',
+  nuit_int: 'bg-[linear-gradient(135deg,#2A1D12_0%,#F5A94B_100%)]',
+  esquisse: 'bg-[linear-gradient(135deg,#D9D9E2_0%,#F7F7FA_100%)]',
+};
+
+function Swatch({ preset }: { preset: PresetKey }) {
+  return (
+    <span
+      aria-hidden
+      className={`h-3 w-3 flex-shrink-0 rounded-full border border-[#DEDEE8] ${AMBIANCE_SWATCH[preset]}`}
+    />
+  );
+}
 
 export function PresetSelect({
   preset,
@@ -45,7 +68,7 @@ export function PresetSelect({
         onClick={() => setOpen((v) => !v)}
         className={CHIP_BASE}
       >
-        <Star set="light" size={13} primaryColor="#716FFF" />
+        <Swatch preset={preset} />
         {PRESETS[preset].label[locale]}
         <span className="flex-shrink-0">
           {open ? (
@@ -77,6 +100,7 @@ export function PresetSelect({
                   selected ? 'bg-[#716FFF12]' : ''
                 }`}
               >
+                <Swatch preset={key} />
                 <span className="flex-1 text-[13px] font-medium text-[#17161F]">
                   {PRESETS[key].label[locale]}
                 </span>

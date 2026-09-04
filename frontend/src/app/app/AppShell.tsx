@@ -491,6 +491,27 @@ export function AppShell({
         !prompt.trim() ||
         (mode === 'add' ? !referenceFile : !zoneSelected);
 
+  // Names the FIRST missing thing, in the order the user would fix them.
+  // The bar used to just dim its button and say nothing, so a blocked user had
+  // no way to find out what the app was waiting for.
+  const sendHint = !sendDisabled
+    ? undefined
+    : !tier
+      ? t('app.hintNoTier')
+      : mode === 'generate'
+        ? !selectedId
+          ? t('app.hintNoImage')
+          : undefined
+        : !canEdit
+          ? t('app.modeSelectNodeHint')
+          : mode === 'add' && !referenceFile
+            ? t('edit.referenceRequired')
+            : mode === 'retouch' && !zoneSelected
+              ? t('edit.zoneRequired')
+              : !prompt.trim()
+                ? t('app.hintNoPrompt')
+                : undefined;
+
   return (
     <div className="flex h-screen flex-col bg-white">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#ECECF2] px-5.5 py-3.5">
@@ -834,6 +855,14 @@ export function AppShell({
         onSubmit={handleSubmit}
         inputDisabled={inputDisabled}
         sendDisabled={sendDisabled}
+        sendHint={sendHint}
+        submitLabel={
+          mode === 'generate'
+            ? t('app.submitGenerate')
+            : mode === 'retouch'
+              ? t('app.modeRetouch')
+              : t('app.modeAdd')
+        }
         generating={generating || submittingEdit}
         engine={engine}
         onEngineChange={handleEngineChange}

@@ -33,7 +33,7 @@ import { EngineSelect } from './EngineSelect';
 import { PresetSelect } from './PresetSelect';
 import { RatioSelect } from './RatioSelect';
 import { isRatioSupported, type RatioKey } from '@/lib/server/generation/ratios';
-import { CHIP_ACTIVE, CHIP_BASE } from './chip';
+import { CHIP_ACTIVE, CHIP_SLOT } from './chip';
 import { HomeSidebar } from './HomeSidebar';
 import type { AppMode } from './CommandBar';
 
@@ -451,7 +451,7 @@ export function GenerationHome({
                     onClick={() =>
                       referenceFile ? setReferenceFile(null) : fileInputRef.current?.click()
                     }
-                    className={referenceFile ? CHIP_ACTIVE : CHIP_BASE}
+                    className={referenceFile ? CHIP_ACTIVE : CHIP_SLOT}
                   >
                     {referenceFile ? (
                       <>
@@ -491,12 +491,22 @@ export function GenerationHome({
                       disabled={sendDisabled}
                       onClick={() => referenceFile && void quickStart(referenceFile)}
                       aria-label={t('app.genHomeTitle')}
-                      className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
+                      className="flex h-[38px] flex-shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3 text-[13px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(113,111,255,0.7)] transition-transform duration-150 ease-out enabled:hover:-translate-y-0.5 enabled:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none min-[480px]:px-4"
                     >
                       <Send set="light" size={17} primaryColor="#ffffff" />
+                      <span className="hidden min-[480px]:inline">{t('app.submitGenerate')}</span>
                     </button>
                   </div>
                 </div>
+
+                {/* Same rule as the workspace bar: a dimmed button that never
+                    says what it is waiting for is a dead end. Here the missing
+                    thing is always the photo. */}
+                {!referenceFile && !creating && (
+                  <p className="mt-2 px-1 text-[11.5px] text-[#6B6880]">
+                    {t('app.genHomeCardPlaceholder')}
+                  </p>
+                )}
               </div>
             </div>
           </>

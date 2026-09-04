@@ -43,6 +43,8 @@ export function CommandBar({
   onSubmit,
   inputDisabled,
   sendDisabled,
+  sendHint,
+  submitLabel,
   generating,
   engine,
   onEngineChange,
@@ -65,6 +67,10 @@ export function CommandBar({
   onSubmit: () => void;
   inputDisabled: boolean;
   sendDisabled: boolean;
+  /** Why the send button is off, shown under the row. */
+  sendHint?: string | undefined;
+  /** The verb on the send button — the action differs per mode. */
+  submitLabel: string;
   generating: boolean;
   engine: EngineName;
   onEngineChange: (engine: EngineName) => void;
@@ -174,16 +180,30 @@ export function CommandBar({
               wrap together rather than stranding the send button alone. */}
           <div className="ml-auto flex items-center gap-2">
             <EngineSelect engine={engine} onChange={onEngineChange} placement="up" />
+            {/* The control that spends a generation. It was a 38px circle
+                carrying only an icon, dimmed to 50% when disabled — the least
+                visible thing on the screen doing the most important job, and
+                indistinguishable from an enabled one at a glance. It now
+                carries its own verb from 480px up. */}
             <button
               type="button"
               disabled={sendDisabled || generating}
               onClick={onSubmit}
-              className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] text-white disabled:opacity-50"
+              aria-label={submitLabel}
+              className="flex h-[38px] flex-shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3 text-[13px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(113,111,255,0.7)] transition-transform duration-150 ease-out enabled:hover:-translate-y-0.5 enabled:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none min-[480px]:px-4"
             >
               <Send set="light" size={17} primaryColor="#ffffff" />
+              <span className="hidden min-[480px]:inline">{submitLabel}</span>
             </button>
           </div>
         </div>
+
+        {/* Why the button is off. Without this the bar is a dead end: you type
+            a prompt, the button stays dim, and nothing on screen says what is
+            missing. */}
+        {sendHint && sendDisabled && !generating && (
+          <p className="mt-2 px-1 text-[11.5px] text-[#6B6880]">{sendHint}</p>
+        )}
       </div>
     </div>
   );
