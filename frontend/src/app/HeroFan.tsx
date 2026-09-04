@@ -114,7 +114,7 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
         <Link
           href={ctaHref}
           style={{ animationDelay: `${middle * 90 + 220}ms` }}
-          className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[#FFC53D] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_16px_36px_-12px_rgba(180,120,0,0.55)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+          className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[#FFC53D] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_0_0_5px_#FFFFFF,10px_10px_0_0_#FFC53D,0_20px_40px_-14px_rgba(180,120,0,0.45)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
         >
           {ctaLabel}
           <ArrowRight set="light" size={15} primaryColor="#ffffff" />
