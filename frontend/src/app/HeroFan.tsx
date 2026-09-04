@@ -73,7 +73,7 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
                     // block someone forgot to fill.
                     <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
                       <span className="flex h-[86px] w-[86px] items-center justify-center rounded-2xl border-2 border-dashed border-white/40 bg-white/10 backdrop-blur-sm">
-                        <ImageIcon set="light" size={26} primaryColor="#ffffff" />
+                        <ImageIcon set="light" size={26} primaryColor="#17161F" />
                       </span>
                       <span
                         aria-hidden
@@ -114,10 +114,10 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
         <Link
           href={ctaHref}
           style={{ animationDelay: `${middle * 90 + 220}ms` }}
-          className="rb-card-in inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_16px_36px_-12px_rgba(23,22,31,0.45)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+          className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[#FFC53D] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_16px_36px_-12px_rgba(180,120,0,0.55)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
         >
           {ctaLabel}
-          <ArrowRight set="light" size={15} primaryColor="#716FFF" />
+          <ArrowRight set="light" size={15} primaryColor="#ffffff" />
         </Link>
       </div>
     </div>
