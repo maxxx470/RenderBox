@@ -28,8 +28,23 @@ import type { PresetKey } from '@/lib/server/generation/presets';
 export interface ExampleRender {
   /** Path under /public, e.g. "/exemples/villa-jour.jpg". */
   src: string;
-  /** The ambiance the image actually shows — drives the card's label. */
-  preset: PresetKey;
+  /**
+   * The ambiance the image actually shows. Optional, and left unset when the
+   * set does not span several — four cards all captioned "Jour extérieur"
+   * would repeat one word four times without telling anyone anything, which
+   * is the defect that was removed from the empty state of this very fan.
+   * Set it only where the labels differ and therefore teach the vocabulary.
+   */
+  preset?: PresetKey;
 }
 
-export const EXAMPLE_RENDERS: readonly ExampleRender[] = [];
+// The current four are all daylight exteriors — a terraced building in full
+// sun, a dark house under overcast light, a stone house in soft haze, a villa
+// in late afternoon. They differ by building and by quality of light, not by
+// ambiance, so none carries a preset caption.
+export const EXAMPLE_RENDERS: readonly ExampleRender[] = [
+  { src: '/exemples/terrasses.jpg' },
+  { src: '/exemples/maison-foret.jpg' },
+  { src: '/exemples/maison-pierre.jpg' },
+  { src: '/exemples/villa-palmiers.jpg' },
+];

@@ -166,16 +166,25 @@ function ExampleFanCard({ example, index }: { example: ExampleRender; index: num
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
       <img src={example.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      {/* Deeper than RenderFanCard's scrim: these images are not known in
-          advance, and a pale one would drop the white caption below the
-          contrast floor — the same defect the hero fan hit. */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+      {/* Scrim only when something has to be read over the image, and deeper
+          than RenderFanCard's: these images are not known in advance, and a
+          pale one would drop a white caption below the contrast floor — the
+          defect the hero fan hit. With no caption it would just dim the
+          example on the screen meant to show what the product produces. */}
+      {example.preset && (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+      )}
+      {/* The badge carries its own ground, so it stays legible either way. */}
       <span className="absolute left-3 top-3 rounded-2xl bg-[#17161F] px-2 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[9.5px] text-white">
         {t('app.genHomeExampleTag')}
       </span>
-      <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-general-sans)] text-sm font-semibold text-white">
-        {PRESETS[example.preset].label[locale]}
-      </span>
+      {/* Only when the set spans several ambiances — see generer-examples.ts.
+          Four cards captioned with the same word would say nothing. */}
+      {example.preset && (
+        <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-general-sans)] text-sm font-semibold text-white">
+          {PRESETS[example.preset].label[locale]}
+        </span>
+      )}
     </Link>
   );
 }
