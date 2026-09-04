@@ -648,12 +648,31 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               delayMs={100}
               className="rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-5.5"
             >
+              {/* One building, four views of it — the section's own sentence is
+                  "à partir d'une même image". Four different buildings here
+                  would contradict the line directly above them. */}
               <TreeGallery
-                items={[
-                  { label: t('landing.split2NodeUpload'), tag: t('landing.split2NodeSource') },
-                  { label: t('landing.split2NodeDay'), tag: t('landing.split2TagRender') },
-                  { label: t('landing.split2NodeNight'), tag: t('landing.split2TagRender') },
-                  { label: t('landing.split2NodeExtra'), tag: t('landing.split2TagEdit') },
+                root={{
+                  label: t('landing.split2NodeBase'),
+                  tag: t('landing.split2TagBase'),
+                  src: '/arbre/base.jpg',
+                }}
+                branches={[
+                  {
+                    label: t('landing.split2NodeNight'),
+                    tag: t('landing.split2TagVariant'),
+                    src: '/arbre/nuit.jpg',
+                  },
+                  {
+                    label: t('landing.split2NodeInterior'),
+                    tag: t('landing.split2TagVariant'),
+                    src: '/arbre/interieur.jpg',
+                  },
+                  {
+                    label: t('landing.split2NodeExtra'),
+                    tag: t('landing.split2TagEdit'),
+                    src: '/arbre/personnage.jpg',
+                  },
                 ]}
               />
             </Reveal>

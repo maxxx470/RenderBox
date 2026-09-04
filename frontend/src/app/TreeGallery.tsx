@@ -25,9 +25,17 @@ function easeInOutCubic(t: number): number {
 export interface TreeGalleryItem {
   label: string;
   tag: string;
+  /** Path under /public. Without it the node falls back to its gradient. */
+  src?: string;
 }
 
-export function TreeGallery({ items }: { items: TreeGalleryItem[] }) {
+export function TreeGallery({
+  root,
+  branches,
+}: {
+  root: TreeGalleryItem;
+  branches: TreeGalleryItem[];
+}) {
   const [sectionRef, inView] = useInView<HTMLDivElement>({ threshold: 0.5 });
   const reducedMotion = usePrefersReducedMotion();
   const rowRef = useRef<HTMLDivElement>(null);
@@ -100,28 +108,62 @@ export function TreeGallery({ items }: { items: TreeGalleryItem[] }) {
 
   return (
     <div ref={sectionRef}>
+      {/* The root, then a connector, then the branches that come off it.
+          This used to be four equal tiles in a flat row — under a heading that
+          says "galerie en arbre", beside a claim that any render can become a
+          new starting point. The visitor read the argument without ever seeing
+          it. A visible parent and visible children make it the picture. */}
+      <Reveal>
+        <NodeCard item={root} tall />
+      </Reveal>
+
+      {/* Connector: a stem down from the root, a rail across the branches, and
+          a stub down into each. Pure boxes rather than an SVG — it has to sit
+          exactly on the grid gaps, and the grid already knows where those are. */}
+      <div aria-hidden className="relative h-6">
+        <div className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-[#DEDEE8]" />
+        <div className="absolute left-[16.6%] right-[16.6%] top-3 h-px bg-[#DEDEE8]" />
+        <div className="absolute left-[16.6%] top-3 h-3 w-px bg-[#DEDEE8]" />
+        <div className="absolute left-1/2 top-3 h-3 w-px -translate-x-1/2 bg-[#DEDEE8]" />
+        <div className="absolute right-[16.6%] top-3 h-3 w-px bg-[#DEDEE8]" />
+      </div>
+
       <div
         ref={rowRef}
-        className="flex gap-2.5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] min-[620px]:grid min-[620px]:grid-cols-4 min-[620px]:overflow-visible [&::-webkit-scrollbar]:hidden"
+        className="flex gap-2.5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] min-[620px]:grid min-[620px]:grid-cols-3 min-[620px]:overflow-visible [&::-webkit-scrollbar]:hidden"
       >
-        {items.map((item, i) => (
+        {branches.map((item, i) => (
           <Reveal
             key={item.label}
-            delayMs={i * 100}
+            delayMs={(i + 1) * 100}
             className="min-w-[120px] flex-shrink-0 min-[620px]:min-w-0"
           >
-            <div
-              className={`flex h-[92px] w-full flex-col items-center justify-center gap-1.5 rounded-[10px] border border-[#ECECF2] ${GRADIENT}`}
-            >
-              <ImageIcon set="light" size={18} primaryColor="#ffffff" />
-            </div>
-            <div className="mt-1.5 text-center">
-              <div className="text-xs font-medium text-[#17161F]">{item.label}</div>
-              <div className={`text-[9px] text-[#8A8896] ${MONO}`}>{item.tag}</div>
-            </div>
+            <NodeCard item={item} />
           </Reveal>
         ))}
       </div>
     </div>
+  );
+}
+
+function NodeCard({ item, tall = false }: { item: TreeGalleryItem; tall?: boolean }) {
+  return (
+    <>
+      <div
+        className={`relative w-full overflow-hidden rounded-[10px] border border-[#ECECF2] ${
+          tall ? 'h-[176px]' : 'h-[96px]'
+        } ${item.src ? 'bg-[#F7F7FA]' : `flex items-center justify-center ${GRADIENT}`}`}
+      >
+        {item.src ? (
+          <img src={item.src} alt="" loading="lazy" className="h-full w-full object-cover" />
+        ) : (
+          <ImageIcon set="light" size={18} primaryColor="#ffffff" />
+        )}
+      </div>
+      <div className="mt-1.5 text-center">
+        <div className="text-xs font-medium text-[#17161F]">{item.label}</div>
+        <div className={`text-[9px] text-[#8A8896] ${MONO}`}>{item.tag}</div>
+      </div>
+    </>
   );
 }

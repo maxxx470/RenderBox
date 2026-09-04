@@ -431,15 +431,19 @@ const fr = {
   'landing.split2Check1': 'Historique complet et navigable',
   'landing.split2Check2': "Reprends n'importe quel rendu comme point de départ",
   'landing.split2Check3': "Aucune perte d'une variante en explorant une autre",
-  'landing.split2NodeUpload': 'Photo upload',
   // Ce que la tuile EST dans l'arbre, pas quel moteur l'a produite. Les
   // sous-libellés portaient « Nanobanana » et « gpt image » : des noms de
   // moteurs internes, sur la page qui doit vendre le résultat.
   // « Photo upload » reste tel quel — c'est le libellé de la tuile, pas son tag.
-  'landing.split2NodeSource': 'photo de départ',
-  'landing.split2TagRender': 'rendu',
   'landing.split2TagEdit': "ajout d'élément",
-  'landing.split2NodeDay': 'Jour extérieur',
+  // La section montre une filiation d'UN seul batiment : son texte dit « a
+  // partir d'une meme image ». Faute de photo source, la racine est un rendu
+  // de base et non un upload — le libelle « Photo upload / photo de depart »
+  // aurait annonce une etape que l'image ne montre pas.
+  'landing.split2NodeBase': 'Rendu de base',
+  'landing.split2TagBase': 'jour extérieur',
+  'landing.split2NodeInterior': 'Jour intérieur',
+  'landing.split2TagVariant': 'variante',
   'landing.split2NodeNight': 'Nuit extérieur',
   'landing.split2NodeExtra': '+ personnage',
 
