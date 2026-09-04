@@ -21,6 +21,7 @@ import type { PricingTierId } from '@/lib/pricing-tiers';
 import type { AppMode } from './CommandBar';
 import { VideoModeSoon } from './VideoModeSoon';
 import { useSidebarCollapsed } from './useSidebarCollapsed';
+import { RAIL_TOGGLE, ROW, ROW_ACTIVE, ROW_IDLE } from './nav-row';
 
 const TIER_LABEL_KEY: Record<
   PricingTierId,
@@ -77,6 +78,8 @@ export function HomeSidebar({
   const hideOnCollapse = collapsedUi ? 'hidden' : '';
   const centerOnCollapse = collapsedUi ? 'justify-center px-0' : '';
   const showUpgradeBanner = !collapsedUi && (!tier || Boolean(nextTier));
+  const hasQuota = tier !== null && max !== null && remaining !== null && max > 0;
+  const quotaPct = hasQuota ? Math.max(0, Math.min(100, (remaining / max) * 100)) : 0;
 
   return (
     <aside
@@ -96,68 +99,65 @@ export function HomeSidebar({
         collapsedUi ? 'w-[68px] px-2.5' : 'w-[240px] px-3.5'
       }`}
     >
+      {/* Brand row. The collapse control sits here, at the end of it.
+          It used to own an entire row of its own, right-aligned and attached to
+          nothing — 40px of height spent on a control that read as misplaced.
+          Collapsed, the rail is 68px wide and the two cannot share a line, so
+          the button drops underneath the mark. */}
       <div
-        className={`mb-3 flex items-center gap-2.5 ${collapsedUi ? 'justify-center' : 'px-1.5'}`}
-      >
-        <div className="h-6.5 w-6.5 flex-shrink-0 rounded-[7px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
-        <span
-          className={`font-[family-name:var(--font-general-sans)] text-[14.5px] font-semibold text-[#17161F] ${hideOnCollapse}`}
-        >
-          RenderBox
-        </span>
-      </div>
-
-      {/* Collapsing is a desktop affordance: the drawer is already dismissed by
-          the backdrop, and a 68px drawer would defeat its own purpose. */}
-      <button
-        type="button"
-        onClick={toggleCollapsed}
-        aria-label={t(collapsedUi ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
-        title={t(collapsedUi ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
-        className={`mb-4 hidden h-8 w-8 items-center justify-center rounded-lg border border-[#ECECF2] bg-white transition-colors hover:border-[#DEDEE8] min-[900px]:flex ${
-          collapsedUi ? 'self-center' : 'self-end'
+        className={`mb-5 flex ${
+          collapsedUi ? 'flex-col items-center gap-2.5' : 'items-center gap-2 px-1.5'
         }`}
       >
-        {collapsedUi ? (
-          <ChevronRight set="light" size={15} primaryColor="#8A8896" />
-        ) : (
-          <ChevronLeft set="light" size={15} primaryColor="#8A8896" />
-        )}
-      </button>
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <div className="h-6.5 w-6.5 flex-shrink-0 rounded-[7px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
+          <span
+            className={`truncate font-[family-name:var(--font-general-sans)] text-[14.5px] font-semibold text-[#17161F] ${hideOnCollapse}`}
+          >
+            RenderBox
+          </span>
+        </div>
+        {/* Collapsing is a desktop affordance: the drawer is already dismissed
+            by the backdrop, and a 68px drawer would defeat its own purpose. */}
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={t(collapsedUi ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
+          title={t(collapsedUi ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
+          className={RAIL_TOGGLE}
+        >
+          {collapsedUi ? (
+            <ChevronRight set="light" size={15} primaryColor="#8A8896" />
+          ) : (
+            <ChevronLeft set="light" size={15} primaryColor="#8A8896" />
+          )}
+        </button>
+      </div>
 
-      {/* Active only when you are actually on the dashboard. It used to carry
-          the raised-white-card treatment unconditionally, so on /app/generer
-          BOTH this entry and "Image" looked selected at the same time — the
-          rail said you were in two places at once. `onModeChange` is only
-          passed by the generation screen, so its absence is exactly "we are on
-          the dashboard". */}
-      <div className="mb-4.5">
+      {/* No uppercase group captions any more. There were two, and the very
+          first entry sat above both of them with none of its own — an orphan by
+          construction. Five entries in two runs separated by a hairline need no
+          captions at all; the labels already say what they are. */}
+      <nav className="flex flex-col gap-0.5">
+        {/* Active only when you are actually on the dashboard. It used to carry
+            the raised-white-card treatment unconditionally, so on /app/generer
+            BOTH this entry and "Image" looked selected at the same time — the
+            rail said you were in two places at once. */}
         <Link
           href="/app"
           {...(collapsedUi ? { title: t('dashboard.title') } : {})}
           onClick={closeDrawer}
           aria-label={t('dashboard.title')}
           {...(onDashboard ? { 'aria-current': 'page' as const } : {})}
-          className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13.5px] ${
-            onDashboard
-              ? 'border border-[#DEDEE8] bg-white font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14]'
-              : 'border border-transparent font-medium text-[#17161F] hover:border-[#DEDEE8] hover:bg-white'
-          } ${centerOnCollapse}`}
+          className={`${ROW} ${onDashboard ? ROW_ACTIVE : ROW_IDLE} ${centerOnCollapse}`}
         >
           <Category set="light" size={16} primaryColor={onDashboard ? '#716FFF' : '#8A8896'} />
           <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
-      </div>
 
-      <h3
-        className={`mb-2 px-1.5 font-[family-name:var(--font-general-sans)] text-[10.5px] uppercase tracking-wide text-[#8A8896] ${hideOnCollapse}`}
-      >
-        {t('app.modesLabel')}
-      </h3>
-      {/* Only the output kind. Generate / retouch / add are now chosen in the
-          command bar, next to the action they run. On the dashboard there is
-          no mode state at all, so the entry is a plain link back to /app. */}
-      <div className="mb-4.5 flex flex-col gap-1">
+        {/* Only the output kind. Generate / retouch / add are now chosen in the
+            command bar, next to the action they run. On the dashboard there is
+            no mode state at all, so the entry is a plain link back to /app. */}
         {onModeChange ? (
           <button
             type="button"
@@ -168,7 +168,7 @@ export function HomeSidebar({
             {...(collapsedUi ? { title: t('app.modeGenerate') } : {})}
             aria-label={t('app.modeGenerate')}
             aria-current="page"
-            className={`flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-left text-[13.5px] font-semibold shadow-[0_1px_4px_#17161F14] ${centerOnCollapse}`}
+            className={`${ROW} ${ROW_ACTIVE} text-left ${centerOnCollapse}`}
           >
             <ImageIcon set="light" size={16} primaryColor="#716FFF" />
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
@@ -179,31 +179,31 @@ export function HomeSidebar({
             {...(collapsedUi ? { title: t('app.modeGenerate') } : {})}
             onClick={closeDrawer}
             aria-label={t('app.modeGenerate')}
-            className={`flex items-center gap-2.5 rounded-xl border border-transparent px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:border-[#DEDEE8] hover:bg-white ${centerOnCollapse}`}
+            className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
           >
             <ImageIcon set="light" size={16} primaryColor="#8A8896" />
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
           </Link>
         )}
+
         <VideoModeSoon
           collapsed={collapsedUi}
           className={`text-[13.5px] ${centerOnCollapse}`}
           labelClassName={hideOnCollapse}
         />
-      </div>
+      </nav>
 
-      <h3
-        className={`mb-2 px-1.5 font-[family-name:var(--font-general-sans)] text-[10.5px] uppercase tracking-wide text-[#8A8896] ${hideOnCollapse}`}
-      >
-        {t('app.accountLabel')}
-      </h3>
-      <div className="mb-4.5 flex flex-col gap-1">
+      {/* Destinations above, account below. A hairline does the work the two
+          captions used to do, in 1px instead of two lines of type. */}
+      <div className="my-3.5 h-px flex-shrink-0 bg-[#ECECF2]" />
+
+      <nav className="flex flex-col gap-0.5">
         <Link
           href="/parametres"
           {...(collapsedUi ? { title: t('parametres.title') } : {})}
           onClick={closeDrawer}
           aria-label={t('parametres.title')}
-          className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${centerOnCollapse}`}
+          className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
         >
           <Setting set="light" size={16} primaryColor="#8A8896" />
           <span className={hideOnCollapse}>{t('parametres.title')}</span>
@@ -213,52 +213,92 @@ export function HomeSidebar({
           {...(collapsedUi ? { title: t('info.title') } : {})}
           onClick={closeDrawer}
           aria-label={t('info.title')}
-          className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13.5px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${centerOnCollapse}`}
+          className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
         >
           <InfoSquare set="light" size={16} primaryColor="#8A8896" />
           <span className={hideOnCollapse}>{t('info.title')}</span>
         </Link>
-      </div>
+      </nav>
 
-      {/* Dropped rather than squeezed when collapsed: the label is a full
-          sentence, and there is no icon that carries "upgrade to Pro" alone. */}
-      {showUpgradeBanner &&
-        (!tier ? (
-          <Link
-            href="/#tarifs"
-            className="mb-3 mt-auto flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3.5 py-3 text-white"
-          >
-            <span className="text-[12.5px] font-semibold">{t('app.genHomeChooseTier')}</span>
-          </Link>
-        ) : nextTier ? (
-          <Link
-            href="/parametres"
-            className="mb-3 mt-auto flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3.5 py-3 text-white"
-          >
-            <span className="text-[12.5px] font-semibold">
-              {t('app.upgradeBannerLabel', { tier: t(TIER_LABEL_KEY[nextTier]) })}
-            </span>
-          </Link>
-        ) : null)}
+      <div className="mt-auto flex flex-col gap-2.5 pt-4">
+        {/* Dropped rather than squeezed when collapsed: the label is a full
+            sentence, and there is no icon that carries "upgrade to Pro" alone. */}
+        {showUpgradeBanner &&
+          (!tier ? (
+            <Link
+              href="/#tarifs"
+              className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3.5 py-3 text-white"
+            >
+              <span className="text-[12.5px] font-semibold">{t('app.genHomeChooseTier')}</span>
+            </Link>
+          ) : nextTier ? (
+            <Link
+              href="/parametres"
+              className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3.5 py-3 text-white"
+            >
+              <span className="text-[12.5px] font-semibold">
+                {t('app.upgradeBannerLabel', { tier: t(TIER_LABEL_KEY[nextTier]) })}
+              </span>
+            </Link>
+          ) : null)}
 
-      <div
-        className={`flex items-center gap-2.5 rounded-xl py-2 ${collapsedUi ? 'justify-center px-0' : 'px-2.5'} ${showUpgradeBanner ? '' : 'mt-auto'}`}
-        {...(collapsedUi ? { title: userEmail } : {})}
-      >
-        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-          <User set="light" size={14} primaryColor="#ffffff" />
-        </div>
-        <div className={`min-w-0 ${hideOnCollapse}`}>
-          <div className="truncate text-[12.5px] font-medium text-[#17161F]">{userEmail}</div>
-          <div className="font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#8A8896]">
-            {tier ? t(TIER_LABEL_KEY[tier]) : t('app.noTierLabel')}
-          </div>
-          {tier && max !== null && remaining !== null ? (
-            <div className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
-              {t('app.quotaLabel', { remaining, max })}
+        {/* The account block was three lines of 10-12px, two of them mono grey
+            on a grey band — the plan and the remaining quota, the two figures a
+            paying user most wants to check, set smaller than anything else on
+            screen. It is now a card: the plan is a badge, the quota is a bar
+            you can read at a glance plus its exact figure. */}
+        {collapsedUi ? (
+          <div className="flex justify-center" title={userEmail}>
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+              <User set="light" size={15} primaryColor="#ffffff" />
             </div>
-          ) : null}
-        </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-[#ECECF2] bg-white p-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+                <User set="light" size={15} primaryColor="#ffffff" />
+              </div>
+              <div
+                className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-[#17161F]"
+                title={userEmail}
+              >
+                {userEmail}
+              </div>
+            </div>
+
+            <div className="mt-2.5 flex items-center justify-between gap-2">
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${
+                  tier ? 'bg-[#EFECFF] text-[#716FFF]' : 'bg-[#F1F0F6] text-[#6B6880]'
+                }`}
+              >
+                {tier ? t(TIER_LABEL_KEY[tier]) : t('app.noTierLabel')}
+              </span>
+              {hasQuota && (
+                <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#17161F]">
+                  {remaining}/{max}
+                </span>
+              )}
+            </div>
+
+            {hasQuota && (
+              <div
+                role="progressbar"
+                aria-valuenow={remaining}
+                aria-valuemin={0}
+                aria-valuemax={max}
+                aria-label={t('app.quotaLabel', { remaining, max })}
+                className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#ECECF2]"
+              >
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]"
+                  style={{ width: `${quotaPct}%` }}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </aside>
   );

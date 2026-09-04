@@ -36,7 +36,11 @@ export function VideoModeSoon({
       <Video set="light" size={16} primaryColor="#B4B2BE" />
       <span className={`flex flex-1 items-center justify-between gap-2 ${labelClassName}`}>
         {label}
-        <span className="rounded-full bg-[#F1F0F6] px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] uppercase tracking-wide text-[#8A8896]">
+        {/* 9px uppercase mono was the smallest type in the rail, spent on the
+            one row that exists purely to say "not yet". A soft pill at a size
+            you can actually read costs nothing and stops it looking like an
+            error state. */}
+        <span className="rounded-full bg-[#F1F0F6] px-2 py-0.5 text-[10.5px] font-semibold capitalize text-[#8A8896]">
           {t('app.modeSoonBadge')}
         </span>
       </span>

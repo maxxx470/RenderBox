@@ -101,7 +101,6 @@ const fr = {
   'app.pillReferenceEmpty': 'Ajouter une référence',
 
   'app.modesLabel': 'Modes',
-  'app.accountLabel': 'Compte',
   'app.genHomeTitle': 'Générer un rendu',
   'app.genHomeInputPlaceholder': 'Décris le rendu à générer, ou glisse une image de référence…',
   'app.genHomeModeHint': 'Ouvre un projet existant pour retoucher ou ajouter un élément.',

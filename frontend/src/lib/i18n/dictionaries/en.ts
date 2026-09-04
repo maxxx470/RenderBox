@@ -103,7 +103,6 @@ const en: Record<keyof typeof fr, string> = {
   'app.pillReferenceEmpty': 'Add a reference',
 
   'app.modesLabel': 'Modes',
-  'app.accountLabel': 'Account',
   'app.genHomeTitle': 'Generate a render',
   'app.genHomeInputPlaceholder': 'Describe the render to generate, or drop a reference image…',
   'app.genHomeModeHint': 'Open an existing project to retouch or add an element.',

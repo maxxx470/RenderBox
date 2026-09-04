@@ -14,6 +14,7 @@ import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { ProjectTree } from './ProjectTree';
 import { VideoModeSoon } from './VideoModeSoon';
+import { RAIL_TOGGLE, ROW, ROW_ACTIVE, ROW_IDLE } from './nav-row';
 import type { AppMode } from './CommandBar';
 
 export function ModeSidebar({
@@ -47,7 +48,7 @@ export function ModeSidebar({
         onClick={onToggleCollapse}
         aria-label={t(collapsed ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
         title={t(collapsed ? 'app.sidebarExpand' : 'app.sidebarCollapse')}
-        className={`mb-3 hidden h-8 w-8 items-center justify-center rounded-lg border border-[#ECECF2] bg-white transition-colors hover:border-[#DEDEE8] min-[900px]:flex ${
+        className={`mb-3 ${RAIL_TOGGLE} ${
           collapsed ? 'min-[900px]:self-center' : 'min-[900px]:self-end'
         }`}
       >
@@ -67,7 +68,7 @@ export function ModeSidebar({
           href="/app"
           {...(collapsed ? { title: t('dashboard.title') } : {})}
           aria-label={t('dashboard.title')}
-          className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-[#17161F] transition-colors hover:bg-[#F1F0F6] ${
+          className={`${ROW} ${ROW_IDLE} ${
             collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
           }`}
         >
@@ -89,7 +90,7 @@ export function ModeSidebar({
           {...(collapsed ? { title: t('app.modeGenerate') } : {})}
           aria-label={t('app.modeGenerate')}
           aria-current="page"
-          className={`flex items-center gap-2.5 rounded-xl bg-white px-3 py-2.5 text-left text-[13px] font-semibold text-[#17161F] shadow-[0_1px_4px_#17161F14] ${
+          className={`${ROW} ${ROW_ACTIVE} text-left ${
             collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
           }`}
         >
@@ -98,7 +99,7 @@ export function ModeSidebar({
         </button>
         <VideoModeSoon
           collapsed={collapsed}
-          className={`text-[13px] ${collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''}`}
+          className={`text-[13.5px] ${collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''}`}
           labelClassName={hideOnCollapse}
         />
       </div>
@@ -129,7 +130,7 @@ export function ModeSidebar({
         href="/info"
         {...(collapsed ? { title: t('info.title') } : {})}
         aria-label={t('info.title')}
-        className={`mt-2 flex flex-shrink-0 items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-medium text-[#17161F] hover:bg-[#F1F0F6] ${
+        className={`mt-2 flex-shrink-0 ${ROW} ${ROW_IDLE} ${
           collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
         }`}
       >
