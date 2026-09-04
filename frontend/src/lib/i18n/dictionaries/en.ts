@@ -31,7 +31,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.treeEmpty': 'Your first upload will appear here',
   'app.viewerTitle': 'Start your first render',
   'app.viewerSubtitle':
-    'Upload a photo of your building — RenderBox generates a first version with Nanobanana.',
+    'Upload a photo of your building — RenderBox generates a first version with Engine 1.',
   'app.dropzoneTitle': 'Drag an image here',
   'app.dropzoneHint': 'or click to browse your files — JPG, PNG, up to 15MB',
   'app.dropzoneButton': 'Choose an image',
@@ -71,7 +71,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.cmdbarPlaceholder': 'Add an optional detail for this render',
   'app.presetNewBadge': 'new',
   'app.canvasPresetBadge': 'Preset: {preset} · {engine}',
-  'app.engineTag': 'Nanobanana',
+  'app.engineTag': 'Engine 1',
   'app.engineDropdownNote':
     'The materials sheet and active preset apply the same way regardless of the engine chosen.',
   'app.uploading': 'Uploading…',
@@ -111,7 +111,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.genHomeQuickStartError': 'Quick start failed. Try again.',
   'app.genHomeNoTierTitle': 'No active plan',
   'app.genHomeNoTierBody':
-    'Choose a plan to unlock your monthly generations (Nanobanana + ChatGPT Image).',
+    'Choose a plan to unlock your monthly generations (Engine 1 + Engine 2).',
   'app.genHomeChooseTier': 'View pricing',
   'app.genHomeExampleTag': 'example',
   'app.genHomeCardPlaceholder': 'Add a photo to start your first render',
@@ -369,8 +369,8 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroCtaPrimary': 'Generate my first render',
   'landing.heroCtaSecondary': 'See an example',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
-  'landing.heroPreviewEngine': 'Nanobanana',
-  'landing.heroPreviewCaption': 'Exterior day · Nanobanana',
+  'landing.heroPreviewEngine': 'Engine 1',
+  'landing.heroPreviewCaption': 'Exterior day · Engine 1',
   'landing.heroChipMaterials': 'Materials remembered: 12/12',
   'landing.heroChipFacade': 'North façade → white render',
 
@@ -469,7 +469,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faq2A': 'Yes. Every render you generate is yours, with no commercial-use limit.',
   'landing.faq3Q': "What's the difference between the two AI engines?",
   'landing.faq3A':
-    'Nanobanana and ChatGPT Image each have their strengths — you pick whichever fits each render best, any time.',
+    'Engine 1 is fast and economical, Engine 2 follows precise instructions more closely — you pick whichever fits each render best, any time.',
   'landing.faq4Q': 'What happens when I hit my monthly quota?',
   'landing.faq4A':
     'Generations are blocked until renewal or until you switch tiers — never a surprise charge.',
@@ -493,7 +493,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureQuota': '{count} generations / month',
-  'landing.pricingFeatureEngines': 'Access to both engines (Nanobanana + ChatGPT Image)',
+  'landing.pricingFeatureEngines': 'Access to both generation engines',
   'landing.pricingFeaturePresets': 'Access to all 5 mood presets',
   'landing.pricingFeatureEditing': 'Advanced editing mode (add element, targeted retouch)',
   'landing.pricingCta': 'Choose {tier}',

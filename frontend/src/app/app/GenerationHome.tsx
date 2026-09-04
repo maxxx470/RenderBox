@@ -119,7 +119,7 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
         ? t('edit.tabRetouch')
         : render.preset
           ? PRESETS[render.preset as PresetKey].label[locale]
-          : ENGINE_LABELS[(render.engine as EngineName) || 'nanobanana'].name;
+          : ENGINE_LABELS[(render.engine as EngineName) || 'nanobanana'].name[locale];
 
   return (
     <Link

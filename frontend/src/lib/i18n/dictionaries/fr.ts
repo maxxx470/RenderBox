@@ -29,7 +29,7 @@ const fr = {
   'app.treeEmpty': 'Ton premier upload apparaîtra ici',
   'app.viewerTitle': 'Commence ton premier rendu',
   'app.viewerSubtitle':
-    'Upload une photo de ton bâtiment — RenderBox génère une première version avec Nanobanana.',
+    'Upload une photo de ton bâtiment — RenderBox génère une première version avec le Moteur 1.',
   'app.dropzoneTitle': 'Glisse une image ici',
   'app.dropzoneHint': "ou clique pour parcourir tes fichiers — JPG, PNG, jusqu'à 15 Mo",
   'app.dropzoneButton': 'Choisir une image',
@@ -69,7 +69,7 @@ const fr = {
   'app.cmdbarPlaceholder': 'Précise un détail pour ce rendu (optionnel)',
   'app.presetNewBadge': 'nouveau',
   'app.canvasPresetBadge': 'Preset : {preset} · {engine}',
-  'app.engineTag': 'Nanobanana',
+  'app.engineTag': 'Moteur 1',
   'app.engineDropdownNote':
     "La fiche matériaux et le preset actif s'appliquent de la même façon, quel que soit le moteur choisi.",
   'app.uploading': 'Envoi…',
@@ -109,7 +109,7 @@ const fr = {
   'app.genHomeQuickStartError': 'La création rapide a échoué. Réessaie.',
   'app.genHomeNoTierTitle': 'Aucun palier actif',
   'app.genHomeNoTierBody':
-    'Choisis un palier pour débloquer tes générations mensuelles (Nanobanana + ChatGPT Image).',
+    'Choisis un palier pour débloquer tes générations mensuelles (Moteur 1 + Moteur 2).',
   'app.genHomeChooseTier': 'Voir les tarifs',
   'app.genHomeExampleTag': 'exemple',
   'app.genHomeCardPlaceholder': 'Ajoute une photo pour lancer ton premier rendu',
@@ -376,8 +376,8 @@ const fr = {
   'landing.heroCtaPrimary': 'Générer mon premier rendu',
   'landing.heroCtaSecondary': 'Voir un exemple',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
-  'landing.heroPreviewEngine': 'Nanobanana',
-  'landing.heroPreviewCaption': 'Jour extérieur · Nanobanana',
+  'landing.heroPreviewEngine': 'Moteur 1',
+  'landing.heroPreviewCaption': 'Jour extérieur · Moteur 1',
   'landing.heroChipMaterials': 'Matériaux mémorisés : 12/12',
   'landing.heroChipFacade': 'Façade nord → enduit blanc',
 
@@ -434,8 +434,8 @@ const fr = {
   'landing.split2Check2': "Reprends n'importe quel rendu comme point de départ",
   'landing.split2Check3': "Aucune perte d'une variante en explorant une autre",
   // Ce que la tuile EST dans l'arbre, pas quel moteur l'a produite. Les
-  // sous-libellés portaient « Nanobanana » et « gpt image » : des noms de
-  // moteurs internes, sur la page qui doit vendre le résultat.
+  // sous-libellés portaient les noms des fournisseurs : des noms de moteurs
+  // internes, sur la page qui doit vendre le résultat.
   // « Photo upload » reste tel quel — c'est le libellé de la tuile, pas son tag.
   'landing.split2TagEdit': "ajout d'élément",
   // La section montre une filiation d'UN seul batiment : son texte dit « a
@@ -484,7 +484,7 @@ const fr = {
   'landing.faq2A': "Oui. Chaque rendu généré est votre propriété, sans limite d'usage commercial.",
   'landing.faq3Q': 'Quelle est la différence entre les deux moteurs IA ?',
   'landing.faq3A':
-    'Nanobanana et ChatGPT Image ont chacun leurs forces — vous choisissez celui qui convient le mieux à chaque rendu, à tout moment.',
+    'Le Moteur 1 est rapide et économique, le Moteur 2 suit mieux les instructions précises — vous choisissez celui qui convient le mieux à chaque rendu, à tout moment.',
   'landing.faq4Q': "Que se passe-t-il si j'atteins mon quota mensuel ?",
   'landing.faq4A':
     'Les générations sont bloquées jusqu’au renouvellement ou jusqu’à ce que vous changiez de palier — jamais de facturation surprise.',
@@ -508,7 +508,7 @@ const fr = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureQuota': '{count} générations / mois',
-  'landing.pricingFeatureEngines': 'Accès aux deux moteurs (Nanobanana + ChatGPT Image)',
+  'landing.pricingFeatureEngines': 'Accès aux deux moteurs de génération',
   'landing.pricingFeaturePresets': 'Accès aux 5 presets d’ambiance',
   'landing.pricingFeatureEditing': 'Mode édition avancée (ajout d’élément, retouche ciblée)',
   'landing.pricingCta': 'Choisir {tier}',

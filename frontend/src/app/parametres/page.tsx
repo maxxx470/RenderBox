@@ -137,6 +137,7 @@ export default function ParametresPage() {
               }
               onChange={(next) => void handleEngineChange(next)}
               placement="down"
+              align="start"
             />
           </div>
           {engineSaved ? (

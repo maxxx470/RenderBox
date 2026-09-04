@@ -329,6 +329,7 @@ function RenderVisual() {
 
 export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
   const t = useTranslations();
+  const { locale } = useLocale();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [checkoutTier, setCheckoutTier] = useState<PricingTierId | null>(null);
@@ -690,7 +691,10 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Reveal>
             <Reveal className="min-[860px]:order-1">
               <EnginesStateTiles
-                engines={[ENGINE_LABELS.nanobanana.name, ENGINE_LABELS.gpt_image.name]}
+                engines={[
+                  ENGINE_LABELS.nanobanana.name[locale],
+                  ENGINE_LABELS.gpt_image.name[locale],
+                ]}
                 events={[
                   t('landing.enginesEvent1'),
                   t('landing.enginesEvent2'),

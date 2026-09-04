@@ -6,9 +6,12 @@ import { useLocale } from '@/lib/i18n/LocaleContext';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 
+// Two marks that tell the engines apart without naming their vendors. The
+// previous pair gave the game away on their own: a yellow-to-orange banana and
+// an OpenAI blue. Both now sit inside the RenderBox violet range.
 const ENGINE_ICON_CLASS: Record<EngineName, string> = {
-  nanobanana: 'bg-gradient-to-br from-[#FFC93D] to-[#E88A00]',
-  gpt_image: 'bg-gradient-to-br from-[#3D8BFF] to-[#1B4FCC]',
+  nanobanana: 'bg-gradient-to-br from-[#6E6BFF] to-[#A855F7]',
+  gpt_image: 'bg-gradient-to-br from-[#3D3B49] to-[#17161F]',
 };
 
 export function EngineSelect({
@@ -16,6 +19,7 @@ export function EngineSelect({
   onChange,
   disabled,
   placement = 'down',
+  align = 'end',
 }: {
   engine: EngineName;
   onChange: (engine: EngineName) => void;
@@ -23,6 +27,11 @@ export function EngineSelect({
   // The panel is absolutely positioned, so it has to open away from the edge
   // it sits against: 'up' from the bottom command bar, 'down' from a header.
   placement?: 'up' | 'down';
+  // Which edge the 260px panel hangs from. 'end' suits the command bar, where
+  // the trigger sits at the right of the row. It does NOT suit a trigger at
+  // the left of a card: on /parametres at 390px the panel hung 96px off the
+  // left of the screen, taking both engine names with it.
+  align?: 'start' | 'end';
 }) {
   const { locale, t } = useLocale();
   const [open, setOpen] = useState(false);
@@ -51,7 +60,7 @@ export function EngineSelect({
           <Image set="light" size={12} primaryColor="#ffffff" />
         </span>
         <span className="text-[12.5px] font-medium text-[#17161F]">
-          {ENGINE_LABELS[engine].name}
+          {ENGINE_LABELS[engine].name[locale]}
         </span>
         <span className="ml-0.5 flex-shrink-0">
           {open ? (
@@ -64,9 +73,9 @@ export function EngineSelect({
 
       {open && (
         <div
-          className={`absolute right-0 z-10 w-[260px] rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_20px_40px_-16px_#17161F30] ${
-            placement === 'up' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+10px)]'
-          }`}
+          className={`absolute z-10 w-[260px] rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_20px_40px_-16px_#17161F30] ${
+            align === 'start' ? 'left-0' : 'right-0'
+          } ${placement === 'up' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+10px)]'}`}
         >
           {ENGINE_NAMES.map((key) => {
             const selected = key === engine;
@@ -89,7 +98,7 @@ export function EngineSelect({
                 </span>
                 <span className="flex-1">
                   <span className="block text-[13px] font-semibold text-[#17161F]">
-                    {ENGINE_LABELS[key].name}
+                    {ENGINE_LABELS[key].name[locale]}
                   </span>
                   <span className="mt-0.5 block text-[11px] text-[#8A8896]">
                     {ENGINE_LABELS[key].description[locale]}

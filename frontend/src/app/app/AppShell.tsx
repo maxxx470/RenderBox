@@ -637,7 +637,7 @@ export function AppShell({
                             preset: PRESETS[selectedNode.preset as PresetKey].label[locale],
                             engine:
                               ENGINE_LABELS[(selectedNode.engine as EngineName) || 'nanobanana']
-                                .name,
+                                .name[locale],
                           })
                         : t('app.engineTag')}
                     </span>
