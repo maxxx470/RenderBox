@@ -7,18 +7,11 @@
 // /admin here, ever — the admin back-office is a fully separate space
 // reached by typing the URL directly, never surfaced from this sidebar.
 import Link from 'next/link';
-import {
-  Category,
-  Image as ImageIcon,
-  InfoSquare,
-  Setting,
-  ChevronLeft,
-  ChevronRight,
-  User,
-} from 'react-iconly';
+import { ChevronLeft, ChevronRight, User } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { isPlaceholderAccount } from '@/lib/account-label';
 import { NavPendingIcon } from './NavPending';
+import { RailIcon } from './RailIcon';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import type { AppMode } from './CommandBar';
 import { useSidebarCollapsed } from './useSidebarCollapsed';
@@ -156,7 +149,7 @@ export function HomeSidebar({
           className={`${ROW} ${onDashboard ? ROW_ACTIVE : ROW_IDLE} ${centerOnCollapse}`}
         >
           <NavPendingIcon>
-            <Category set="light" size={18} primaryColor={onDashboard ? '#716FFF' : '#6B6880'} />
+            <RailIcon name="dashboard" active={onDashboard} />
           </NavPendingIcon>
           <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
@@ -176,7 +169,7 @@ export function HomeSidebar({
             aria-current="page"
             className={`${ROW} ${ROW_ACTIVE} text-left ${centerOnCollapse}`}
           >
-            <ImageIcon set="light" size={18} primaryColor="#716FFF" />
+            <RailIcon name="image" active />
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
           </button>
         ) : (
@@ -188,7 +181,7 @@ export function HomeSidebar({
             className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
           >
             <NavPendingIcon>
-              <ImageIcon set="light" size={18} primaryColor="#6B6880" />
+              <RailIcon name="image" />
             </NavPendingIcon>
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
           </Link>
@@ -208,7 +201,7 @@ export function HomeSidebar({
           className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
         >
           <NavPendingIcon>
-            <Setting set="light" size={18} primaryColor="#6B6880" />
+            <RailIcon name="settings" />
           </NavPendingIcon>
           <span className={hideOnCollapse}>{t('parametres.title')}</span>
         </Link>
@@ -220,7 +213,7 @@ export function HomeSidebar({
           className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
         >
           <NavPendingIcon>
-            <InfoSquare set="light" size={18} primaryColor="#6B6880" />
+            <RailIcon name="info" />
           </NavPendingIcon>
           <span className={hideOnCollapse}>{t('info.title')}</span>
         </Link>

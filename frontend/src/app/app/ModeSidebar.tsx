@@ -8,13 +8,14 @@
 // link at the bottom. The two rails had drifted apart (no way back to the
 // dashboard here, and a solid gradient for "you are here" instead of the
 // card), which made the same product look like two.
-import { Image as ImageIcon, ChevronLeft, ChevronRight, InfoSquare, Category } from 'react-iconly';
+import { ChevronLeft, ChevronRight } from 'react-iconly';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { ProjectTree } from './ProjectTree';
 import { RAIL_TOGGLE, ROW, ROW_ACTIVE, ROW_IDLE } from './nav-row';
 import { NavPendingIcon } from './NavPending';
+import { RailIcon } from './RailIcon';
 import type { AppMode } from './CommandBar';
 
 export function ModeSidebar({
@@ -73,7 +74,7 @@ export function ModeSidebar({
           }`}
         >
           <NavPendingIcon>
-            <Category set="light" size={18} primaryColor="#6B6880" />
+            <RailIcon name="dashboard" />
           </NavPendingIcon>
           <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
@@ -96,7 +97,7 @@ export function ModeSidebar({
             collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
           }`}
         >
-          <ImageIcon set="light" size={18} primaryColor="#716FFF" />
+          <RailIcon name="image" active />
           <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
         </button>
       </div>
@@ -132,7 +133,7 @@ export function ModeSidebar({
         }`}
       >
         <NavPendingIcon>
-          <InfoSquare set="light" size={18} primaryColor="#6B6880" />
+          <RailIcon name="info" />
         </NavPendingIcon>
         <span className={hideOnCollapse}>{t('info.title')}</span>
       </Link>

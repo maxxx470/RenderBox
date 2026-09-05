@@ -24,8 +24,9 @@ import { useLinkStatus } from 'next/link';
  * Renders `children` normally, and a spinner in their place while the
  * enclosing link's navigation is in flight.
  *
- * Sized to the 18px rail icons it replaces so the row does not reflow on
- * click — a row that jumps as you click it is worse than one that waits.
+ * Sized to the 26px icon tile it replaces, and given the same rounded-square
+ * frame, so the row does not reflow on click — a row that jumps as you click
+ * it is worse than one that waits.
  */
 export function NavPendingIcon({ children }: { children: ReactNode }) {
   const { pending } = useLinkStatus();
@@ -34,7 +35,7 @@ export function NavPendingIcon({ children }: { children: ReactNode }) {
     <span
       role="status"
       aria-live="polite"
-      className="flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center"
+      className="flex h-6.5 w-6.5 flex-shrink-0 items-center justify-center rounded-[8px] border border-[#ECECF2] bg-white"
     >
       <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-[#DEDEE8] border-t-[#716FFF]" />
     </span>
