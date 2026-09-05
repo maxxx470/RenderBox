@@ -8,15 +8,7 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Folder,
-  Send,
-  TickSquare,
-  CloseSquare,
-  Upload,
-  Image as ImageIcon,
-  Category,
-} from 'react-iconly';
+import { Folder, Upload, Image as ImageIcon, Category } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -29,13 +21,14 @@ import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import { EXAMPLE_RENDERS, type ExampleRender } from './generer-examples';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
-import { EngineSelect } from './EngineSelect';
-import { PresetSelect } from './PresetSelect';
-import { RatioSelect } from './RatioSelect';
 import { isRatioSupported, type RatioKey } from '@/lib/server/generation/ratios';
-import { CHIP_ACTIVE, CHIP_SLOT } from './chip';
+import {
+  DEFAULT_RESOLUTION,
+  isResolutionSupported,
+  type ResolutionKey,
+} from '@/lib/server/generation/resolutions';
 import { HomeSidebar } from './HomeSidebar';
-import type { AppMode } from './CommandBar';
+import { CommandBar, type AppMode } from './CommandBar';
 
 export interface RecentRenderCardData {
   id: string;
@@ -159,7 +152,9 @@ function ExampleFanCard({ example, index }: { example: ExampleRender; index: num
 
   return (
     <Link
-      href="/exemple"
+      // The in-app gallery, not the public one: this card is inside the
+      // workspace, and /exemple would swap the rail for the landing header.
+      href="/app/exemple"
       style={{ animationDelay: `${index * 90}ms` }}
       className={`rb-card-in ${CARD_SHAPE} border border-[#ECECF2] bg-[#F7F7FA] ${
         index === 0 ? '' : '-ml-6'
@@ -222,12 +217,15 @@ export function GenerationHome({
   const [mode, setMode] = useState<AppMode>('generate');
   const [engine, setEngine] = useState<EngineName>('nanobanana');
   const [ratio, setRatio] = useState<RatioKey>('auto');
+  const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
 
-  // Mirrors AppShell: an engine that cannot produce the chosen ratio drops the
-  // choice back to 'auto' rather than carrying a request it will not honour.
+  // Mirrors AppShell: an engine that cannot produce the chosen ratio or size
+  // drops the choice back to its default rather than carrying a request it
+  // will not honour.
   function handleEngineChange(next: EngineName) {
     setEngine(next);
     if (!isRatioSupported(ratio, next)) setRatio('auto');
+    if (!isResolutionSupported(resolution, next)) setResolution(DEFAULT_RESOLUTION);
   }
   const [prompt, setPrompt] = useState('');
   const [preset, setPreset] = useState<PresetKey>('jour_ext');
@@ -314,6 +312,7 @@ export function GenerationHome({
         />
       )}
       <HomeSidebar
+        current="generate"
         onModeChange={handleModeChange}
         tier={tier}
         max={max}
@@ -357,19 +356,6 @@ export function GenerationHome({
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-2.5 text-[13px] font-semibold text-white"
             >
               {t('app.genHomeChooseTier')}
-            </Link>
-          </div>
-        ) : mode !== 'generate' ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-              <Folder set="light" size={24} primaryColor="#ffffff" />
-            </div>
-            <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeModeHint')}</p>
-            <Link
-              href="/app"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-2.5 text-[13px] font-semibold text-white"
-            >
-              {t('app.genHomeOpenProjects')}
             </Link>
           </div>
         ) : (
@@ -417,101 +403,66 @@ export function GenerationHome({
               })}
             </div>
 
-            {/* One container, Krea-style: the prompt on top, its attributes
-                below, the send button on the same row — instead of a pill row
-                floating free above a separate input. The whole block is the
-                drop target, so a photo can land anywhere on it. */}
-            <div className="pb-5.5">
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                className={`rounded-[18px] border px-3.5 pb-3 pt-3 shadow-[0_2px_10px_-6px_rgba(23,22,31,0.18)] transition-colors ${
-                  dragOver ? 'border-[#716FFF] bg-[#EFECFF]' : 'border-[#DEDEE8] bg-[#F7F7FA]'
-                }`}
-              >
-                <input
-                  type="text"
-                  placeholder={t('app.genHomeInputPlaceholder')}
-                  value={prompt}
-                  disabled={creating}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !sendDisabled && referenceFile)
-                      void quickStart(referenceFile);
-                  }}
-                  className="mb-3 w-full bg-transparent px-1 py-1.5 text-[13.5px] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
-                />
-                {/* Chips grouped tight on the left, generate alone on the
-                    right — one chip per attribute, not one per option. */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <PresetSelect preset={preset} onChange={setPreset} disabled={creating} />
-                  <button
-                    type="button"
-                    disabled={creating}
-                    onClick={() =>
-                      referenceFile ? setReferenceFile(null) : fileInputRef.current?.click()
-                    }
-                    className={referenceFile ? CHIP_ACTIVE : CHIP_SLOT}
-                  >
-                    {referenceFile ? (
-                      <>
-                        <TickSquare set="light" size={13} primaryColor="#ffffff" />
-                        {t('app.pillReferenceAdded')}
-                        <CloseSquare set="light" size={13} primaryColor="#ffffff" />
-                      </>
-                    ) : (
-                      <>
-                        <Upload set="light" size={13} primaryColor="#8A8896" />
-                        {t('app.pillReferenceEmpty')}
-                      </>
-                    )}
-                  </button>
-                  {/* Same control as the workspace bar: this launches a real
-                      generation through the URL params below, so the ratio has
-                      to be choosable here too. */}
-                  <RatioSelect
-                    ratio={ratio}
-                    onChange={setRatio}
-                    engine={engine}
-                    disabled={creating}
-                  />
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept={ACCEPTED_UPLOAD_TYPES.join(',')}
-                    className="hidden"
-                    onChange={(e) => setReferenceFile(e.target.files?.[0] ?? null)}
-                  />
-                  {/* The engine belongs with the other generation attributes,
-                      not alone in the page header where it used to sit. */}
-                  <div className="ml-auto flex items-center gap-2">
-                    <EngineSelect engine={engine} onChange={handleEngineChange} placement="up" />
-                    <button
-                      type="button"
-                      disabled={sendDisabled}
-                      onClick={() => referenceFile && void quickStart(referenceFile)}
-                      aria-label={t('app.genHomeTitle')}
-                      className="flex h-[38px] flex-shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3 text-[13px] font-semibold text-white shadow-[0_6px_16px_-6px_rgba(113,111,255,0.7)] transition-transform duration-150 ease-out enabled:hover:-translate-y-0.5 enabled:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none min-[480px]:px-4"
-                    >
-                      <Send set="light" size={17} primaryColor="#ffffff" />
-                      <span className="hidden min-[480px]:inline">{t('app.submitGenerate')}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Same rule as the workspace bar: a dimmed button that never
-                    says what it is waiting for is a dead end. Here the missing
-                    thing is always the photo. */}
-                {!referenceFile && !creating && (
-                  <p className="mt-2 px-1 text-[11.5px] text-[#6B6880]">
-                    {t('app.genHomeCardPlaceholder')}
-                  </p>
-                )}
-              </div>
+            {/* The command bar, the same component the workspace uses —
+                this screen used to assemble its own copy, which is how the
+                two bars ended up offering different controls. The drop
+                target wraps it so a photo can still land anywhere on it. */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+              className={`rounded-[22px] transition-colors ${
+                dragOver ? 'bg-[#EFECFF]' : 'bg-transparent'
+              }`}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED_UPLOAD_TYPES.join(',')}
+                className="hidden"
+                onChange={(e) => setReferenceFile(e.target.files?.[0] ?? null)}
+              />
+              <CommandBar
+                mode={mode}
+                onModeChange={handleModeChange}
+                // Nothing is selected here — there is no project yet — so
+                // retouch and add are offered and disabled, with the same
+                // explanation they carry in the workspace. That is truer than
+                // hiding them: the two modes exist, they just need a render.
+                editEnabled={false}
+                engine={engine}
+                onEngineChange={handleEngineChange}
+                ratio={ratio}
+                onRatioChange={setRatio}
+                resolution={resolution}
+                onResolutionChange={setResolution}
+                preset={preset}
+                onPresetChange={setPreset}
+                prompt={prompt}
+                onPromptChange={setPrompt}
+                // The photo is held here rather than uploaded: the project it
+                // will belong to is created by the send button.
+                onUploadFile={(file) => setReferenceFile(file)}
+                uploading={false}
+                attachmentName={referenceFile?.name ?? null}
+                onRemoveAttachment={() => setReferenceFile(null)}
+                zoneSelected={false}
+                referenceAdded={Boolean(referenceFile)}
+                imageSrc={null}
+                materials={[]}
+                elementNodes={[]}
+                onPickElement={() => {}}
+                pickingElement={false}
+                onSubmit={() => referenceFile && void quickStart(referenceFile)}
+                inputDisabled={creating}
+                sendDisabled={sendDisabled}
+                sendHint={t('app.genHomeCardPlaceholder')}
+                submitLabel={t('app.submitGenerate')}
+                generating={creating}
+              />
             </div>
           </>
         )}

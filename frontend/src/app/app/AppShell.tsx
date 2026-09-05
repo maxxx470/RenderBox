@@ -12,6 +12,11 @@ import { collectBranch, type RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { isRatioSupported, RATIO_KEYS, type RatioKey } from '@/lib/server/generation/ratios';
+import {
+  DEFAULT_RESOLUTION,
+  isResolutionSupported,
+  type ResolutionKey,
+} from '@/lib/server/generation/resolutions';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Filter2, Download, Upload, Swap } from 'react-iconly';
@@ -116,6 +121,10 @@ export function AppShell({
     const r = searchParams.get('ratio');
     return r && (RATIO_KEYS as readonly string[]).includes(r) ? (r as RatioKey) : 'auto';
   });
+  // Output size. Not sent to the route: neither adapter takes a size
+  // parameter today (see resolutions.ts), and only 1K is selectable, so the
+  // state exists to hold the choice the day one of them does.
+  const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [pickingElement, setPickingElement] = useState(false);
   const [zone, setZone] = useState<Zone | null>(null);
@@ -162,6 +171,9 @@ export function AppShell({
     // Falling back to 'auto' keeps the chip honest about what the new engine
     // will actually do, and stops the route ever seeing a ratio it refuses.
     if (!isRatioSupported(ratio, next)) setRatio('auto');
+    // Same rule for the size: an engine that cannot return 4K must not be
+    // left displaying 4K.
+    if (!isResolutionSupported(resolution, next)) setResolution(DEFAULT_RESOLUTION);
     void api('/api/users/me', {
       method: 'PATCH',
       body: { defaultEngine: next },
@@ -860,6 +872,8 @@ export function AppShell({
         editEnabled={selectedNode?.kind === 'GENERATED'}
         ratio={ratio}
         onRatioChange={setRatio}
+        resolution={resolution}
+        onResolutionChange={setResolution}
         prompt={prompt}
         onPromptChange={setPrompt}
         preset={preset}
@@ -881,9 +895,10 @@ export function AppShell({
         engine={engine}
         onEngineChange={handleEngineChange}
         onUploadFile={handleFile}
+        onAttachReference={setReferenceFile}
         uploading={uploading}
         imageSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}
-        materialCount={materials.length}
+        materials={materials}
         elementNodes={flattenTree(tree)}
         onPickElement={handlePickElement}
         pickingElement={pickingElement}

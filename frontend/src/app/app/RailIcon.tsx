@@ -2,7 +2,7 @@
 //
 // react-iconly is still right for the rest of the product, but it hands back
 // a fixed component: you get its 24x24 grid, its stroke weight, its corner
-// radii, and nothing to say about any of them. These four glyphs sit in the
+// radii, and nothing to say about any of them. These five glyphs sit in the
 // most-looked-at 200px of the app, at 15px, inside a 26px tile — a size where
 // a half-pixel of stroke weight is the difference between a shape and a
 // smudge. Authoring them means the grid, the weight and the optical sizes are
@@ -25,7 +25,7 @@
 // then it is the brand gradient.
 import type { ReactNode } from 'react';
 
-export type RailIconName = 'dashboard' | 'image' | 'settings' | 'info';
+export type RailIconName = 'dashboard' | 'image' | 'examples' | 'settings' | 'info';
 
 const GLYPH: Record<RailIconName, ReactNode> = {
   // Four panels — the product's own "everything at once" view.
@@ -46,6 +46,18 @@ const GLYPH: Record<RailIconName, ReactNode> = {
       <circle cx="8.6" cy="10" r="1.7" />
       <path d="M3.6 17.4 L9 12.4c.9-.85 2.2-.85 3.1 0l3 2.8" />
       <path d="M14.4 16.2 L16.2 14.5c.9-.85 2.2-.85 3.1 0l1.1 1" />
+    </>
+  ),
+  // Two frames, one behind the other — a set of pictures rather than one.
+  // It has to be distinguishable from `image` at 15px in the same column, so
+  // the difference is structural (a second frame, offset) rather than a
+  // detail added inside the same silhouette.
+  examples: (
+    <>
+      <path d="M7.4 6.6V5.4A2.2 2.2 0 0 1 9.6 3.2h9A2.2 2.2 0 0 1 20.8 5.4v9a2.2 2.2 0 0 1-2.2 2.2h-1.2" />
+      <rect x="3.2" y="7.4" width="13.4" height="13.4" rx="3.2" />
+      <circle cx="7.6" cy="11.8" r="1.4" />
+      <path d="M3.9 18.9 8 14.9c.85-.8 2.05-.8 2.9 0l3.4 3.2" />
     </>
   ),
   // Two sliders, not a cog.

@@ -60,3 +60,17 @@ export const GALLERY: readonly GalleryBatch[] = [
     images: ['/hero/esquisse.jpg'],
   },
 ];
+
+/**
+ * Every gallery image, flat, in the order the batches declare them.
+ *
+ * The in-app gallery at /app/exemple shows this list: someone already inside
+ * the product is browsing for what the thing can look like, not studying a
+ * taxonomy, and five headings over four images each turned a wall of renders
+ * into five short rows. The public /exemple page keeps the batches, because a
+ * visitor there IS being taught the vocabulary.
+ *
+ * Duplicates are dropped: the sketch batch reuses the hero's axonometric, and
+ * the same file twice in one grid reads as a rendering bug.
+ */
+export const GALLERY_IMAGES: readonly string[] = [...new Set(GALLERY.flatMap((b) => b.images))];

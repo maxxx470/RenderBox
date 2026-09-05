@@ -4,25 +4,19 @@
 // current one, or add an element to it.
 //
 // This used to live in the left rail as three top-level entries. The rail now
-// carries only the output kind (Image / Video), and the three ways of getting
-// an image are a choice made where the action is actually fired — one chip
-// among the others in the command bar.
+// carries only the output kind, and the three ways of getting an image are a
+// choice made where the action is actually fired — the first chip in the
+// command bar, because it decides what every chip after it means.
 //
 // Retouch and add both operate on an existing generated render, so they are
 // disabled with an explanation when nothing is selected, rather than being
 // selectable into a dead end.
-import { useState, useRef, useEffect } from 'react';
-import {
-  ChevronUp,
-  ChevronDown,
-  TickSquare,
-  Image as ImageIcon,
-  Edit,
-  PaperPlus,
-} from 'react-iconly';
+import { ChevronUp, ChevronDown, Image as ImageIcon, Edit, PaperPlus } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { AppMode } from './CommandBar';
 import { CHIP_BASE } from './chip';
+import { Radio } from './Radio';
+import { POPOVER_HEADING, popoverPanelClass, useHoverPopover } from './useHoverPopover';
 
 const MODES = [
   { key: 'generate', icon: ImageIcon, labelKey: 'app.modeGenerateAction' },
@@ -45,27 +39,21 @@ export function ModeSelect({
   placement?: 'up' | 'down';
 }) {
   const { t } = useLocale();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function onDocClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
-  }, [open]);
+  const { open, ref, toggle, closeNow, hoverProps } = useHoverPopover({
+    disabled: Boolean(disabled),
+  });
 
   const current = MODES.find((m) => m.key === mode) ?? MODES[0];
   const CurrentIcon = current.icon;
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative" ref={ref} {...hoverProps}>
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
+        aria-haspopup="menu"
+        aria-expanded={open}
         aria-label={t('app.modesLabel')}
         className={CHIP_BASE}
       >
@@ -81,11 +69,8 @@ export function ModeSelect({
       </button>
 
       {open && (
-        <div
-          className={`absolute left-0 z-10 w-[240px] rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_20px_40px_-16px_#17161F30] ${
-            placement === 'up' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+10px)]'
-          }`}
-        >
+        <div className={`${popoverPanelClass({ placement })} w-[248px]`} role="menu">
+          <p className={POPOVER_HEADING}>{t('app.modesLabel')}</p>
           {MODES.map(({ key, icon: Icon, labelKey }) => {
             const selected = key === mode;
             const available = key === 'generate' || editEnabled;
@@ -93,23 +78,21 @@ export function ModeSelect({
               <button
                 key={key}
                 type="button"
+                role="menuitemradio"
+                aria-checked={selected}
                 disabled={!available}
                 title={available ? undefined : t('app.modeSelectNodeHint')}
                 onClick={() => {
                   onChange(key);
-                  setOpen(false);
+                  closeNow();
                 }}
-                className={`flex w-full items-center gap-2.5 rounded-[10px] p-2.5 text-left ${
-                  available
-                    ? `hover:bg-[#F7F7FA] ${selected ? 'bg-[#716FFF12]' : ''}`
-                    : 'cursor-not-allowed opacity-45'
+                className={`flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-left transition-colors duration-150 ease-out ${
+                  available ? 'hover:bg-[#F7F7FA]' : 'cursor-not-allowed opacity-45'
                 }`}
               >
+                <Radio checked={selected && available} />
                 <Icon set="light" size={15} primaryColor={selected ? '#716FFF' : '#8A8896'} />
                 <span className="flex-1 text-[13px] font-medium text-[#17161F]">{t(labelKey)}</span>
-                {selected && available && (
-                  <TickSquare set="light" size={15} primaryColor="#716FFF" />
-                )}
               </button>
             );
           })}

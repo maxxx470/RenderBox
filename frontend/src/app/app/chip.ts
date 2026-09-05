@@ -7,11 +7,11 @@
 // complete class tokens, so a constant holding just a colour would silently
 // generate no CSS (see the JIT note in CLAUDE.md).
 export const CHIP_BASE =
-  'flex flex-shrink-0 items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3 py-1.5 text-[12.5px] font-medium text-[#3D3B49] transition-colors hover:border-[#DEDEE8] disabled:cursor-not-allowed disabled:opacity-50';
+  'flex flex-shrink-0 items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-2.5 py-1.5 text-[12px] font-medium text-[#3D3B49] transition-colors hover:border-[#DEDEE8] disabled:cursor-not-allowed disabled:opacity-50';
 
 /** Same shape, but read-only: no hover affordance, muted text. */
 export const CHIP_STATIC =
-  'flex flex-shrink-0 items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3 py-1.5 text-[12.5px] font-medium text-[#8A8896]';
+  'flex flex-shrink-0 items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-2.5 py-1.5 text-[12px] font-medium text-[#8A8896]';
 
 /**
  * An empty slot waiting to be filled — "add a reference", "add an image".
@@ -20,8 +20,8 @@ export const CHIP_STATIC =
  * Once filled, the chip switches to CHIP_ACTIVE.
  */
 export const CHIP_SLOT =
-  'flex flex-shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#CFCADF] bg-white px-3 py-1.5 text-[12.5px] font-medium text-[#6B6880] transition-colors hover:border-[#716FFF] hover:text-[#17161F] disabled:cursor-not-allowed disabled:opacity-50';
+  'flex flex-shrink-0 items-center gap-1.5 rounded-full border border-dashed border-[#CFCADF] bg-white px-2.5 py-1.5 text-[12px] font-medium text-[#6B6880] transition-colors hover:border-[#716FFF] hover:text-[#17161F] disabled:cursor-not-allowed disabled:opacity-50';
 
 /** Active/selected state — the violet brand accent. */
 export const CHIP_ACTIVE =
-  'flex flex-shrink-0 items-center gap-1.5 rounded-full border border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3 py-1.5 text-[12.5px] font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50';
+  'flex flex-shrink-0 items-center gap-1.5 rounded-full border border-transparent bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-2.5 py-1.5 text-[12px] font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50';

@@ -224,6 +224,67 @@
   animation: rb-skeleton 1.4s ease-in-out infinite;
 }
 
+/* ---------------------------------------------------------------------------
+   Command-bar popovers
+   ---------------------------------------------------------------------------
+   Every chip in the command bar opens its panel on hover as well as on click,
+   so the panels appear and disappear far more often than a click-only menu
+   would. That makes the entry the thing you actually notice, and two rules
+   from the design-engineering pass apply directly:
+
+     - never scale from 0. Nothing in the real world appears out of nothing;
+       0.96 with opacity reads as a panel arriving, 0 reads as a glitch.
+     - scale from the trigger, not from the centre. The bar is pinned to the
+       bottom of the workspace so its panels open upward, and their origin is
+       the bottom edge they grow out of. A panel opening downward gets the
+       mirrored origin.
+
+   ease-out, not ease-in-out: this is an entrance, and the viewer is watching
+   hardest in the first 40ms. 140ms because the pointer is already on its way
+   to the panel's contents.
+*/
+@keyframes rb-pop-up-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes rb-pop-down-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.rb-pop-up {
+  transform-origin: bottom left;
+  animation: rb-pop-up-in 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.rb-pop-down {
+  transform-origin: top left;
+  animation: rb-pop-down-in 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Right-anchored panels (the ones hanging off a trigger at the end of the
+   row) grow from the corner they are pinned to, not from the opposite one. */
+.rb-pop-end {
+  transform-origin: bottom right;
+}
+
+.rb-pop-down.rb-pop-end {
+  transform-origin: top right;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rb-pulse,
   .rb-spark,
@@ -235,6 +296,8 @@
   .rb-float,
   .rb-shimmer,
   .rb-word-in,
+  .rb-pop-up,
+  .rb-pop-down,
   .rb-skeleton,
   /* Only the pan stops — `.rb-gradient-pan` keeps its clipped gradient, so
      the accent stays coloured rather than collapsing to transparent text. */

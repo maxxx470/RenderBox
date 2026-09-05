@@ -1,17 +1,21 @@
 'use client';
 
-// Compact preset chip, modelled on EngineSelect.
+// The ambiance chip — RenderBox's own control, with no counterpart in the
+// reference bar, because the reference generates anything and this generates
+// architectural renders: the light in the output is the single decision that
+// matters most here.
 //
 // The five presets used to sit in the bar as five separate pills, which is
 // what made the row read as scattered controls rather than one command bar.
 // Collapsed into a single chip that names the current choice and opens the
 // list, the row keeps the reference's density: a few equal-weight chips, then
 // the generate button.
-import { useState, useRef, useEffect } from 'react';
-import { ChevronUp, ChevronDown, TickSquare } from 'react-iconly';
+import { ChevronUp, ChevronDown } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import { CHIP_BASE } from './chip';
+import { Radio } from './Radio';
+import { POPOVER_HEADING, popoverPanelClass, useHoverPopover } from './useHoverPopover';
 
 // The light each preset produces, as a swatch. Same encoding as the landing's
 // preset cards — it previews the result instead of naming a category, and it
@@ -27,11 +31,13 @@ const AMBIANCE_SWATCH: Record<PresetKey, string> = {
   esquisse: 'bg-[linear-gradient(135deg,#D9D9E2_0%,#F7F7FA_100%)]',
 };
 
-function Swatch({ preset }: { preset: PresetKey }) {
+function Swatch({ preset, size = 'sm' }: { preset: PresetKey; size?: 'sm' | 'md' }) {
   return (
     <span
       aria-hidden
-      className={`h-3 w-3 flex-shrink-0 rounded-full border border-[#DEDEE8] ${AMBIANCE_SWATCH[preset]}`}
+      className={`flex-shrink-0 rounded-full border border-[#DEDEE8] ${
+        size === 'sm' ? 'h-3 w-3' : 'h-5 w-5'
+      } ${AMBIANCE_SWATCH[preset]}`}
     />
   );
 }
@@ -48,24 +54,19 @@ export function PresetSelect({
   placement?: 'up' | 'down';
 }) {
   const { locale, t } = useLocale();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function onDocClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
-  }, [open]);
+  const { open, ref, toggle, closeNow, hoverProps } = useHoverPopover({
+    disabled: Boolean(disabled),
+  });
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative" ref={ref} {...hoverProps}>
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={t('app.presetLabel')}
         className={CHIP_BASE}
       >
         <Swatch preset={preset} />
@@ -80,11 +81,8 @@ export function PresetSelect({
       </button>
 
       {open && (
-        <div
-          className={`absolute left-0 z-10 w-[230px] rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_20px_40px_-16px_#17161F30] ${
-            placement === 'up' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+10px)]'
-          }`}
-        >
+        <div className={`${popoverPanelClass({ placement })} w-[244px]`} role="menu">
+          <p className={POPOVER_HEADING}>{t('app.presetLabel')}</p>
           {PRESET_KEYS.map((key) => {
             const selected = key === preset;
             const isSketch = key === 'esquisse';
@@ -92,24 +90,24 @@ export function PresetSelect({
               <button
                 key={key}
                 type="button"
+                role="menuitemradio"
+                aria-checked={selected}
                 onClick={() => {
                   onChange(key);
-                  setOpen(false);
+                  closeNow();
                 }}
-                className={`flex w-full items-center gap-2.5 rounded-[10px] p-2.5 text-left hover:bg-[#F7F7FA] ${
-                  selected ? 'bg-[#716FFF12]' : ''
-                }`}
+                className="flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-left transition-colors duration-150 ease-out hover:bg-[#F7F7FA]"
               >
-                <Swatch preset={key} />
+                <Radio checked={selected} />
+                <Swatch preset={key} size="md" />
                 <span className="flex-1 text-[13px] font-medium text-[#17161F]">
                   {PRESETS[key].label[locale]}
                 </span>
                 {isSketch && (
-                  <span className="rounded-md bg-[#EFECFF] px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#716FFF]">
+                  <span className="rounded-md bg-[#EFECFF] px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#5A57D6]">
                     {t('app.presetNewBadge')}
                   </span>
                 )}
-                {selected && <TickSquare set="light" size={15} primaryColor="#716FFF" />}
               </button>
             );
           })}

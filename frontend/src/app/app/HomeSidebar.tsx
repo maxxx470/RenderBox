@@ -11,11 +11,23 @@ import { ChevronLeft, ChevronRight, User } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { isPlaceholderAccount } from '@/lib/account-label';
 import { NavPendingIcon } from './NavPending';
-import { RailIcon } from './RailIcon';
+import { RailIcon, type RailIconName } from './RailIcon';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import type { AppMode } from './CommandBar';
+
 import { useSidebarCollapsed } from './useSidebarCollapsed';
 import { RAIL_TOGGLE, ROW, ROW_ACTIVE, ROW_IDLE } from './nav-row';
+
+/**
+ * Which rail entry is the page you are on.
+ *
+ * This used to be inferred — "no onModeChange prop means we must be on the
+ * dashboard" — which worked for exactly the two screens that existed then and
+ * would silently mark the dashboard active on every screen added since. With
+ * Paramètres, Informations and Exemples now living inside the app, the rail
+ * has to be told.
+ */
+export type RailPage = 'dashboard' | 'generate' | 'examples' | 'settings' | 'info';
 
 const TIER_LABEL_KEY: Record<
   PricingTierId,
@@ -32,7 +44,49 @@ const NEXT_TIER: Record<PricingTierId, PricingTierId | null> = {
   pro: null,
 };
 
+/**
+ * One rail entry.
+ *
+ * Five call sites had the same eight lines copy-pasted with one word changed,
+ * which is how the collapsed `title`, the `aria-current` and the pending
+ * spinner ended up on some rows and not others.
+ */
+function RailLink({
+  href,
+  label,
+  icon,
+  active,
+  collapsed,
+  onNavigate,
+}: {
+  href: string;
+  label: string;
+  icon: RailIconName;
+  active: boolean;
+  collapsed: boolean;
+  onNavigate: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      {...(collapsed ? { title: label } : {})}
+      onClick={onNavigate}
+      aria-label={label}
+      {...(active ? { 'aria-current': 'page' as const } : {})}
+      className={`${ROW} ${active ? ROW_ACTIVE : ROW_IDLE} text-left ${
+        collapsed ? 'justify-center px-0' : ''
+      }`}
+    >
+      <NavPendingIcon>
+        <RailIcon name={icon} active={active} />
+      </NavPendingIcon>
+      <span className={collapsed ? 'hidden' : ''}>{label}</span>
+    </Link>
+  );
+}
+
 export function HomeSidebar({
+  current,
   onModeChange,
   tier,
   max,
@@ -41,8 +95,10 @@ export function HomeSidebar({
   mobileOpen = false,
   onMobileClose,
 }: {
-  /** Absent on the dashboard, which has no mode state — the Image entry
-      becomes a link back to the generation space instead of a button. */
+  /** The rail entry to mark as the current page. */
+  current: RailPage;
+  /** Absent on every screen but the generation space, which owns the mode
+      state — elsewhere the Image entry is a link back to it, not a button. */
   onModeChange?: (mode: AppMode) => void;
   tier: PricingTierId | null;
   max: number | null;
@@ -64,9 +120,6 @@ export function HomeSidebar({
   // The drawer only ever opens below 900px (its trigger is `min-[900px]:hidden`),
   // so an open drawer means "narrow screen" and the persisted desktop collapse
   // must not apply — a 68px drawer with no labels would be useless.
-  // Only the generation screen passes onModeChange, so its absence means the
-  // dashboard is the current page.
-  const onDashboard = !onModeChange;
   const collapsedUi = mobileOpen ? false : collapsed;
   // Always a function: `exactOptionalPropertyTypes` rejects a possibly-undefined
   // onClick, and every nav item wants to dismiss the drawer it was tapped in.
@@ -140,19 +193,14 @@ export function HomeSidebar({
             the raised-white-card treatment unconditionally, so on /app/generer
             BOTH this entry and "Image" looked selected at the same time — the
             rail said you were in two places at once. */}
-        <Link
+        <RailLink
           href="/app"
-          {...(collapsedUi ? { title: t('dashboard.title') } : {})}
-          onClick={closeDrawer}
-          aria-label={t('dashboard.title')}
-          {...(onDashboard ? { 'aria-current': 'page' as const } : {})}
-          className={`${ROW} ${onDashboard ? ROW_ACTIVE : ROW_IDLE} ${centerOnCollapse}`}
-        >
-          <NavPendingIcon>
-            <RailIcon name="dashboard" active={onDashboard} />
-          </NavPendingIcon>
-          <span className={hideOnCollapse}>{t('dashboard.title')}</span>
-        </Link>
+          label={t('dashboard.title')}
+          icon="dashboard"
+          active={current === 'dashboard'}
+          collapsed={collapsedUi}
+          onNavigate={closeDrawer}
+        />
 
         {/* Only the output kind. Generate / retouch / add are now chosen in the
             command bar, next to the action they run. On the dashboard there is
@@ -173,19 +221,28 @@ export function HomeSidebar({
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
           </button>
         ) : (
-          <Link
+          <RailLink
             href="/app/generer"
-            {...(collapsedUi ? { title: t('app.modeGenerate') } : {})}
-            onClick={closeDrawer}
-            aria-label={t('app.modeGenerate')}
-            className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
-          >
-            <NavPendingIcon>
-              <RailIcon name="image" />
-            </NavPendingIcon>
-            <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
-          </Link>
+            label={t('app.modeGenerate')}
+            icon="image"
+            active={current === 'generate'}
+            collapsed={collapsedUi}
+            onNavigate={closeDrawer}
+          />
         )}
+
+        {/* Reachable from the rail, not only from a card on the dashboard.
+            The gallery used to live outside the app entirely, so opening it
+            from here dropped you onto a marketing page carrying the landing's
+            header — the rail gone, and no way back but the browser. */}
+        <RailLink
+          href="/app/exemple"
+          label={t('app.railExamples')}
+          icon="examples"
+          active={current === 'examples'}
+          collapsed={collapsedUi}
+          onNavigate={closeDrawer}
+        />
       </nav>
 
       {/* Destinations above, account below. A hairline does the work the two
@@ -193,30 +250,25 @@ export function HomeSidebar({
       <div className="my-3.5 h-px flex-shrink-0 bg-[#ECECF2]" />
 
       <nav className="flex flex-col gap-0.5">
-        <Link
+        <RailLink
           href="/parametres"
-          {...(collapsedUi ? { title: t('parametres.title') } : {})}
-          onClick={closeDrawer}
-          aria-label={t('parametres.title')}
-          className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
-        >
-          <NavPendingIcon>
-            <RailIcon name="settings" />
-          </NavPendingIcon>
-          <span className={hideOnCollapse}>{t('parametres.title')}</span>
-        </Link>
-        <Link
-          href="/info"
-          {...(collapsedUi ? { title: t('info.title') } : {})}
-          onClick={closeDrawer}
-          aria-label={t('info.title')}
-          className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
-        >
-          <NavPendingIcon>
-            <RailIcon name="info" />
-          </NavPendingIcon>
-          <span className={hideOnCollapse}>{t('info.title')}</span>
-        </Link>
+          label={t('parametres.title')}
+          icon="settings"
+          active={current === 'settings'}
+          collapsed={collapsedUi}
+          onNavigate={closeDrawer}
+        />
+        {/* /app/info, not /info. The landing's own Informations page is the
+            public changelog, with the marketing header; following it from
+            inside the app threw the workspace away mid-session. */}
+        <RailLink
+          href="/app/info"
+          label={t('info.title')}
+          icon="info"
+          active={current === 'info'}
+          collapsed={collapsedUi}
+          onNavigate={closeDrawer}
+        />
       </nav>
 
       <div className="mt-auto flex flex-col gap-2.5 pt-4">

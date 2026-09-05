@@ -23,12 +23,15 @@ const fr = {
 
   'app.freeAccessAccount': 'Accès libre',
   'app.downloadButton': 'Télécharger cette image',
+  'app.railExamples': 'Exemples',
   'app.elementsChip': 'Éléments',
   'app.elementsHint': 'Réutilise une image de ce projet comme référence',
   'app.elementsError': 'Impossible de charger cet élément',
-  'app.contextChip': '{n} matériaux',
-  'app.outputChip': 'Sortie',
-  'app.outputAuto': 'Auto',
+  'app.contextChipLabel': 'Contexte',
+  'app.contextHint': 'Ce que le moteur retient déjà de ce projet, réinjecté à chaque génération.',
+  'app.contextEmpty':
+    "Rien pour l'instant. Les matériaux sont relevés sur ton premier rendu, puis réutilisés.",
+  'app.elementsEmpty': "Ce projet n'a encore aucune image à réutiliser.",
   'app.newProject': 'Nouveau projet',
   'app.treeTitle': 'Arbre du projet',
   'app.treeEmpty': 'Ton premier upload apparaîtra ici',
@@ -41,7 +44,8 @@ const fr = {
   'app.canvasDropTitle': 'Dépose pour ajouter une image',
   'app.canvasDropHint': 'Elle sera ajoutée au projet comme nouvelle image de base.',
   'app.uploadTypeError': 'Format non supporté — JPG, PNG ou WebP uniquement.',
-  'app.commandBarUpload': 'Ajouter une image au projet',
+  'app.commandBarUpload': 'Ajouter des images',
+  'app.commandBarUploading': 'Envoi…',
   'app.generatingOverlay': 'Génération en cours…',
   'app.generatingElapsed': '{s} s écoulées',
   'app.retryBannerText': 'La demande a échoué. Ta saisie a été conservée.',
@@ -86,9 +90,15 @@ const fr = {
   'app.modeGenerate': 'Image',
   'app.modeRetouch': 'Retoucher',
   'app.modeAdd': 'Ajouter',
-  'app.modeGenerateAction': 'Générer une image',
-  'app.ratioLabel': 'Format de sortie',
-  'app.ratioAuto': 'Format auto',
+  'app.modeGenerateAction': 'Générer',
+  'app.ratioLabel': 'Format',
+  'app.presetLabel': 'Ambiance',
+  'app.engineLabel': 'Moteur',
+  'app.resolutionLabel': 'Résolution',
+  'app.resolutionUnsupported': 'Ce moteur ne rend pas dans cette taille.',
+  'app.resolutionNote':
+    "Les deux moteurs rendent en 1K aujourd'hui. Le 2K et le 4K demandent un modèle qui les produit vraiment — ils restent affichés pour ne pas cacher ce qui manque.",
+  'app.ratioAuto': 'Auto',
   'app.ratioUnsupported': 'Ce moteur ne peut pas produire ce format.',
   'app.ratioUnsupportedBadge': 'indispo.',
   'app.submitGenerate': 'Générer',
@@ -96,7 +106,6 @@ const fr = {
   'app.hintNoPrompt': 'Décris ce que tu veux obtenir.',
   'app.hintNoTier': 'Choisis un palier pour générer.',
   'app.modeSelectNodeHint': "Sélectionne d'abord un rendu généré pour l'éditer.",
-  'app.engineLabel': 'Moteur',
   'app.pillZoneSelected': 'Zone sélectionnée',
   'app.pillZoneEmpty': 'Sélectionner une zone',
   'app.pillReferenceAdded': 'Référence ajoutée',
@@ -305,6 +314,10 @@ const fr = {
   // fiche matériaux. Elle annonçait « Villa Kalia — projet exemple » avec
   // « la fiche déjà remplie et les 4 ambiances générées », ce qui décrivait un
   // projet unique : le titre aurait démenti la galerie dès la première section.
+  'exemple.appGallerySubtitle':
+    'Des rendus produits avec RenderBox, toutes ambiances mélangées. Rien à trier : regarde ce que ça donne.',
+  'exemple.appGalleryCta':
+    'Charge une photo ou une esquisse de ton bâtiment, choisis une ambiance, et tu obtiens la même chose sur ton projet.',
   'exemple.title': 'Exemples de rendus',
   'exemple.subtitle':
     'Chaque preset donne une lumière différente. Voici à quoi ressemble chacun, sur plusieurs projets.',

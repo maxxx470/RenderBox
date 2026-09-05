@@ -123,9 +123,12 @@ export function ModeSidebar({
       </div>
 
       {/* Pinned to the bottom so it never competes with the tree for
-          attention, but reachable without leaving the workspace. */}
+          attention, but reachable without leaving the workspace — and it now
+          really is: /info is the public changelog with the landing's header,
+          which replaced the workspace with the marketing chrome. /app/info is
+          the same changelog inside the rail. */}
       <Link
-        href="/info"
+        href="/app/info"
         {...(collapsed ? { title: t('info.title') } : {})}
         aria-label={t('info.title')}
         className={`mt-2 flex-shrink-0 ${ROW} ${ROW_IDLE} ${

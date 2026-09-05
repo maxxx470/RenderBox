@@ -54,42 +54,73 @@ function ProjectCard({
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
+  const hasThumbnail = Boolean(project.thumbnailNodeId);
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-[#ECECF2] bg-white transition-colors hover:border-[#DEDEE8]">
-      <Link href={`/app/${project.id}`} className="block">
-        {/* Landscape, not the reference's portrait poster: film posters are
-            portrait by nature, architectural renders are not, and a 2:3 frame
-            would crop every one of them badly. */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-[#F7F7FA]">
-          {project.thumbnailNodeId ? (
-            <img
-              src={`/api/render-nodes/${project.thumbnailNodeId}/image`}
-              alt=""
-              className="h-full w-full object-cover transition-transform group-hover:scale-[1.03]"
-            />
-          ) : (
-            // A project with no render yet. Quiet on purpose: the brand
-            // gradient used to sit here, which made the strongest colour on
-            // the page mark what is MISSING — a grid of five saturated tiles
-            // pulling the eye away from the project names. The glyph stays
-            // (the charter forbids a bare coloured tile), it just recedes, so
-            // a real thumbnail will read as the exception it should be.
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#F7F7FA]">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#DEDEE8] bg-white">
-                <ImageIcon set="light" size={18} primaryColor="#8A8896" />
-              </span>
-              <span className="text-[11px] text-[#6B6880]">{t('projects.cardEmpty')}</span>
-            </div>
-          )}
-        </div>
-        {/* Compact meta line under the image, like the reference: the poster
-            carries the page, the text stays to one row of small facts. */}
-        <div className="px-3 pb-3 pt-2.5">
-          <div className="truncate text-[13px] font-semibold text-[#17161F]">{project.name}</div>
-          <div className="mt-1 flex items-center gap-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#8A8896]">
+    // The card IS the thumbnail. It used to be a poster with a two-line meta
+    // block bolted underneath, on a white ground: at the grid's size that
+    // caption strip was a third of the card's height, and the thing the card
+    // exists to show got two thirds. The latest render of a project is the
+    // best available answer to "which project is this", so it fills the card
+    // and the name sits on it.
+    <div className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#F7F7FA] transition-[transform,box-shadow,border-color] duration-[220ms] ease-out hover:border-[#DEDEE8] hover:shadow-[0_18px_34px_-18px_rgba(23,22,31,0.35)] motion-safe:hover:-translate-y-0.5">
+      <Link href={`/app/${project.id}`} className="absolute inset-0 block">
+        {project.thumbnailNodeId ? (
+          <img
+            src={`/api/render-nodes/${project.thumbnailNodeId}/image`}
+            alt=""
+            className="h-full w-full object-cover transition-transform duration-[400ms] ease-out motion-safe:group-hover:scale-[1.04]"
+          />
+        ) : (
+          // A project with no render yet. Quiet on purpose: the brand
+          // gradient used to sit here, which made the strongest colour on
+          // the page mark what is MISSING — a grid of saturated tiles pulling
+          // the eye away from the project names. The glyph stays (the charter
+          // forbids a bare coloured tile), it just recedes.
+          // pb-10 lifts it clear of the name that now sits at the bottom
+          // of the same card.
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#F7F7FA] pb-10">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#DEDEE8] bg-white">
+              <ImageIcon set="light" size={18} primaryColor="#8A8896" />
+            </span>
+            <span className="text-[11px] text-[#6B6880]">{t('projects.cardEmpty')}</span>
+          </div>
+        )}
+
+        {/* The scrim is the reason white text is readable on an image nobody
+            chose for its darkness — and it is painted ONLY over an image. A
+            first version painted it unconditionally "so both cards carry
+            their name at the same weight", which dropped a black gradient
+            over the pale empty state and turned a project with no render yet
+            into an unreadable grey slab. A card with nothing behind the text
+            does not need the text lifted off anything. */}
+        {hasThumbnail && (
+          <span
+            aria-hidden
+            className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/78 via-black/38 to-transparent"
+          />
+        )}
+
+        <div className="absolute inset-x-0 bottom-0 p-3">
+          <div
+            className={`truncate text-[13px] font-semibold ${
+              hasThumbnail
+                ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]'
+                : 'text-[#17161F]'
+            }`}
+          >
+            {project.name}
+          </div>
+          {/* white/75 over a photograph, the charter's muted grey over the
+              empty state: a grey chosen for a white ground turns muddy on an
+              image, and white on #F7F7FA is invisible. */}
+          <div
+            className={`mt-0.5 flex items-center gap-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] ${
+              hasThumbnail ? 'text-white/75' : 'text-[#8A8896]'
+            }`}
+          >
             <span>{t('projects.renderCount', { n: String(project.renderCount) })}</span>
-            <span className="text-[#DEDEE8]">·</span>
+            <span className={hasThumbnail ? 'text-white/40' : 'text-[#DEDEE8]'}>·</span>
             <span>
               {new Date(project.lastActivityAt).toLocaleDateString(
                 locale === 'fr' ? 'fr-FR' : 'en-US',
@@ -467,6 +498,7 @@ export function ProjectsGrid({
           itself below 900px, so this wrapper no longer does. */}
       <div>
         <HomeSidebar
+          current="dashboard"
           tier={dashboard.tier}
           max={dashboard.quotaMax}
           remaining={dashboard.quotaRemaining}

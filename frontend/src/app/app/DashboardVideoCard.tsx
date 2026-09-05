@@ -58,7 +58,7 @@ function HowItWorks() {
         </ol>
 
         <Link
-          href="/exemple"
+          href="/app/exemple"
           className="inline-flex w-fit items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
         >
           {t('dashboard.howCta')}
