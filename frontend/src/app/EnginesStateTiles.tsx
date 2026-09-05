@@ -12,6 +12,12 @@ import { useEffect, useState } from 'react';
 import { Category, TickSquare } from 'react-iconly';
 import { useInView } from './hooks/useInView';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
+import {
+  CARD_GRADIENT,
+  CARD_GRADIENT_BORDER,
+  CARD_GRADIENT_EDGE,
+  CARD_SHEEN,
+} from './card-gradient';
 
 const MONO = 'font-[family-name:var(--font-jetbrains-mono)]';
 const TILE_CYCLE_MS = 6000;
@@ -56,18 +62,24 @@ function EngineTile({
     };
   }, [offsetMs, reducedMotion]);
 
-  const borderClass =
+  // The running and finished states keep their own border — those two colours
+  // are the tile reporting something, and the shared card edge must not
+  // overwrite them. Only the idle border comes from CARD_GRADIENT_EDGE.
+  const stateBorder =
     state === 'run'
-      ? 'border-[#716FFF] rb-badge-pulse'
+      ? 'border border-[#716FFF] rb-badge-pulse'
       : state === 'ok'
-        ? 'border-[#1E7A3D]'
-        : 'border-[#ECECF2]';
+        ? 'border border-[#1E7A3D]'
+        : CARD_GRADIENT_BORDER;
 
   return (
     <div
-      className={`flex flex-1 flex-col items-center gap-2.5 rounded-2xl border bg-white px-4 py-5 text-center transition-colors duration-300 ${borderClass}`}
+      className={`group relative flex flex-1 flex-col items-center gap-2.5 overflow-hidden rounded-2xl px-4 py-5 text-center ${CARD_GRADIENT} ${CARD_GRADIENT_EDGE} ${stateBorder}`}
     >
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F7F7FA]">
+      <span aria-hidden className={CARD_SHEEN} />
+      {/* White ring, not the grey band: on the violet ground #F7F7FA is the
+          same value as the card and the ring disappears. */}
+      <div className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E6E1FA] bg-white">
         {state === 'ok' ? (
           <TickSquare set="light" size={18} primaryColor="#1E7A3D" />
         ) : (
@@ -82,7 +94,7 @@ function EngineTile({
           </span>
         )}
       </div>
-      <span className="text-[13px] font-semibold text-[#17161F]">{name}</span>
+      <span className="relative text-[13px] font-semibold text-[#17161F]">{name}</span>
       {/* The two tiles used to be identical down to the glyph: same icon, same
           ground, same everything, only the name differing. Side by side that
           said the two engines are interchangeable — while the heading above
@@ -95,7 +107,9 @@ function EngineTile({
           untranslated developer vocabulary shown to every visitor whatever
           their language. The spinner and the tick already carry that
           progression. */}
-      <span className="max-w-[22ch] text-[12px] leading-[1.45] text-[#6B6880]">{description}</span>
+      <span className="relative max-w-[22ch] text-[12px] leading-[1.45] text-[#6B6880]">
+        {description}
+      </span>
     </div>
   );
 }

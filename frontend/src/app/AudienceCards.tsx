@@ -13,6 +13,12 @@
 // rails. One less species of selected-state on the page.
 import type { ReactNode } from 'react';
 import { Reveal } from './Reveal';
+import {
+  CARD_GRADIENT,
+  CARD_GRADIENT_BORDER,
+  CARD_GRADIENT_EDGE,
+  CARD_SHEEN,
+} from './card-gradient';
 
 export interface AudienceCardData {
   icon: ReactNode;
@@ -29,17 +35,26 @@ export function AudienceCards({ cards }: { cards: AudienceCardData[] }) {
         // Same shell as the preset cards further down, so the page has one
         // card species rather than one per section.
         <Reveal key={card.label} delayMs={i * 90} className="h-full">
-          <div className="flex h-full flex-col rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-6.5 transition-colors hover:border-[#CFCADF]">
-            <div className="mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[#EFECFF]">
-              {card.icon}
+          <div
+            className={`group relative flex h-full flex-col overflow-hidden rounded-2xl p-6.5 ${CARD_GRADIENT} ${CARD_GRADIENT_BORDER} ${CARD_GRADIENT_EDGE}`}
+          >
+            <span aria-hidden className={CARD_SHEEN} />
+            {/* Everything above the gloss layer. Without the stacking context
+                the sheen paints over the text it is meant to sit behind. */}
+            <div className="relative flex h-full flex-col">
+              {/* White, not the violet tint it used to be: on a violet ground
+                  a violet chip stops being an object and becomes a smudge. */}
+              <div className="mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] border border-[#E6E1FA] bg-white">
+                {card.icon}
+              </div>
+              <span className="mb-2 font-[family-name:var(--font-jetbrains-mono)] text-[11px] uppercase tracking-wide text-[#716FFF]">
+                {card.label}
+              </span>
+              <h4 className="mb-2 text-[15px] font-semibold leading-[1.35] text-[#17161F]">
+                {card.title}
+              </h4>
+              <p className="text-[13px] leading-[1.55] text-[#6B6880]">{card.body}</p>
             </div>
-            <span className="mb-2 font-[family-name:var(--font-jetbrains-mono)] text-[11px] uppercase tracking-wide text-[#716FFF]">
-              {card.label}
-            </span>
-            <h4 className="mb-2 text-[15px] font-semibold leading-[1.35] text-[#17161F]">
-              {card.title}
-            </h4>
-            <p className="text-[13px] leading-[1.55] text-[#6B6880]">{card.body}</p>
           </div>
         </Reveal>
       ))}
