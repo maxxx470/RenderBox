@@ -600,9 +600,14 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
 
         {/* CHECKLIST */}
+        {/* scroll-mt clears the floating header. Without it, clicking the nav
+            link scrolls this section to y=0 — which is BEHIND the bar, so the
+            reader lands on a headline cut in half and has to scroll back up
+            to see what they clicked. The bar's bottom edge sits at ~84px;
+            110px leaves the section a little air above it. */}
         <section
           id="fonctionnalites"
-          className="rounded-[32px] bg-[#F7F7FA] px-6 py-12 min-[640px]:px-14 min-[860px]:py-16"
+          className="scroll-mt-[110px] rounded-[32px] bg-[#F7F7FA] px-6 py-12 min-[640px]:px-14 min-[860px]:py-16"
         >
           <div className="grid grid-cols-1 items-center gap-10 min-[860px]:grid-cols-2">
             <Reveal>
@@ -795,7 +800,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
 
         {/* PRICING */}
-        <section id="tarifs" className="py-10 min-[860px]:py-12">
+        <section id="tarifs" className="scroll-mt-[110px] py-10 min-[860px]:py-12">
           <Reveal className="mx-auto mb-3 max-w-[560px] text-center">
             <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
               {t('landing.pricingTitlePrefix')}

@@ -152,6 +152,15 @@ export function BeforeAfterSlider({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        // An <img> is draggable by default, so grabbing the handle started
+        // Chrome's own drag-and-drop on the render underneath it: a
+        // translucent copy of the whole image followed the cursor across the
+        // slider while you wiped. `select-none` does not cover this — it
+        // suppresses text selection, not the native image drag. Cancelling
+        // dragstart here rather than putting `draggable={false}` on each
+        // image covers every child at once, including the drawn SVG
+        // fallbacks, and puts the fix where the competing gesture is owned.
+        onDragStart={(e) => e.preventDefault()}
         className="relative hidden aspect-[16/10] w-full cursor-ew-resize touch-none select-none overflow-hidden rounded-2xl border border-[#E4E1EF] min-[640px]:block"
       >
         <div className="absolute inset-0">{before}</div>
