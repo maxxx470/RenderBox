@@ -84,7 +84,6 @@ export function HomeSidebar({
   const centerOnCollapse = collapsedUi ? 'justify-center px-0' : '';
   const showUpgradeBanner = !collapsedUi && (!tier || Boolean(nextTier));
   const hasQuota = tier !== null && max !== null && remaining !== null && max > 0;
-  const quotaPct = hasQuota ? Math.max(0, Math.min(100, (remaining / max) * 100)) : 0;
 
   return (
     <aside
@@ -252,8 +251,18 @@ export function HomeSidebar({
         {/* The account block was three lines of 10-12px, two of them mono grey
             on a grey band — the plan and the remaining quota, the two figures a
             paying user most wants to check, set smaller than anything else on
-            screen. It is now a card: the plan is a badge, the quota is a bar
-            you can read at a glance plus its exact figure. */}
+            screen. It is now a card: the plan is a badge, the quota is a
+            figure, and identity and allowance are separated by a hairline
+            rather than stacked as one four-part block.
+
+            The progress bar that used to sit here is gone. On /app it was the
+            SECOND gauge of the same number on screen — the dashboard's quota
+            tile carries one, with the renewal date beside it — so the rail
+            was re-drawing, 30cm away, a measurement the page had already
+            made. The rail keeps the figure, which is the part that is useful
+            on every screen including the ones with no tile; the tile keeps
+            the gauge, which is the part that only pays for its space where
+            there is room to read it. */}
         {collapsedUi ? (
           <div className="flex justify-center" title={accountLabel}>
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
@@ -274,36 +283,28 @@ export function HomeSidebar({
               </div>
             </div>
 
-            <div className="mt-2.5 flex items-center justify-between gap-2">
+            <div className="my-2.5 h-px bg-[#ECECF2]" />
+
+            <div className="flex items-center justify-between gap-2">
+              {/* #5A57D6, not the brand #716FFF: at 10.5px this is small text,
+                  and the brand violet on this tint measures 3.35:1 — under the
+                  4.5:1 floor. Same hue, one shade deeper, 4.81:1. */}
               <span
                 className={`rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${
-                  tier ? 'bg-[#EFECFF] text-[#716FFF]' : 'bg-[#F1F0F6] text-[#6B6880]'
+                  tier ? 'bg-[#EFECFF] text-[#5A57D6]' : 'bg-[#F1F0F6] text-[#6B6880]'
                 }`}
               >
                 {tier ? t(TIER_LABEL_KEY[tier]) : t('app.noTierLabel')}
               </span>
               {hasQuota && (
-                <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#17161F]">
+                <span
+                  className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#17161F]"
+                  title={t('app.quotaLabel', { remaining, max })}
+                >
                   {remaining}/{max}
                 </span>
               )}
             </div>
-
-            {hasQuota && (
-              <div
-                role="progressbar"
-                aria-valuenow={remaining}
-                aria-valuemin={0}
-                aria-valuemax={max}
-                aria-label={t('app.quotaLabel', { remaining, max })}
-                className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#ECECF2]"
-              >
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]"
-                  style={{ width: `${quotaPct}%` }}
-                />
-              </div>
-            )}
           </div>
         )}
       </div>
