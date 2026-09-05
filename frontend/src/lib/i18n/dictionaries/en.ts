@@ -23,8 +23,6 @@ const en: Record<keyof typeof fr, string> = {
   'verifier.expiredBody': 'This sign-in link has expired — request a new one.',
   'verifier.backToLogin': 'Back to sign in',
 
-  'app.authDisabledBanner': 'Free access — no account needed',
-  'app.authDisabledBannerCount': 'Free access — {remaining} of {max} generations',
   'app.freeAccessAccount': 'Free access',
   'app.downloadButton': 'Download this image',
   'app.newProject': 'New project',

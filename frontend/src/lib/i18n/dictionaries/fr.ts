@@ -21,8 +21,6 @@ const fr = {
   'verifier.expiredBody': 'Ce lien de connexion a expiré — demandes-en un nouveau.',
   'verifier.backToLogin': 'Retour à la connexion',
 
-  'app.authDisabledBanner': 'Accès libre — sans compte',
-  'app.authDisabledBannerCount': 'Accès libre — {remaining} générations sur {max}',
   'app.freeAccessAccount': 'Accès libre',
   'app.downloadButton': 'Télécharger cette image',
   'app.newProject': 'Nouveau projet',

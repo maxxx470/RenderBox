@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { checkTierQuota } from '@/lib/server/generation/tier-quota';
-import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { GenerationHome, type RecentRenderCardData } from '../GenerationHome';
 
 // /app/generer — the "Espace de génération": engine picker + a fan of the
@@ -52,7 +51,7 @@ export default async function AppHomePage() {
       tier={quota.tier}
       max={quota.max}
       remaining={quota.remaining}
-      authDisabled={isAuthDisabled()}
+      userEmail={auth.user.email ?? ''}
     />
   );
 }

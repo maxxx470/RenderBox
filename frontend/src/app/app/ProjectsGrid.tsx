@@ -142,14 +142,12 @@ export function ProjectsGrid({
   initialProjects,
   dashboard,
   userEmail = '',
-  authDisabled = false,
 }: {
   initialProjects: ProjectCardData[];
   /** Absent when the grid is rendered outside the dashboard. */
   dashboard?: DashboardData;
   /** Shown in the sidebar's account row; only used alongside `dashboard`. */
   userEmail?: string;
-  authDisabled?: boolean;
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
@@ -263,11 +261,6 @@ export function ProjectsGrid({
             <h1 className="font-[family-name:var(--font-general-sans)] text-lg font-semibold text-[#17161F]">
               {t(dashboard ? 'dashboard.title' : 'projects.title')}
             </h1>
-            {authDisabled && (
-              <span className="rounded-full border border-[#E2DEFF] bg-[#F4F2FF] px-2.5 py-1 text-[11px] font-medium text-[#5A57D6]">
-                {t('app.authDisabledBanner')}
-              </span>
-            )}
           </div>
           <div className="flex items-center gap-3.5">
             <LanguageInlineSwitch />

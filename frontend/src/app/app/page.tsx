@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { checkTierQuota } from '@/lib/server/generation/tier-quota';
 import { ProjectsGrid, type ProjectCardData } from './ProjectsGrid';
 import type { DashboardData } from './DashboardStats';
@@ -117,11 +116,6 @@ export default async function AppDashboardPage() {
   };
 
   return (
-    <ProjectsGrid
-      initialProjects={items}
-      dashboard={dashboard}
-      userEmail={auth.user.email ?? ''}
-      authDisabled={isAuthDisabled()}
-    />
+    <ProjectsGrid initialProjects={items} dashboard={dashboard} userEmail={auth.user.email ?? ''} />
   );
 }

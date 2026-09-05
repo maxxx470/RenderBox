@@ -75,7 +75,6 @@ export function AppShell({
   initialProjectId,
   initialProjectName,
   initialTree,
-  authDisabled = false,
   initialTier,
   initialMax,
   initialRemaining,
@@ -83,7 +82,6 @@ export function AppShell({
   initialProjectId: string;
   initialProjectName: string;
   initialTree: RenderTreeNode[];
-  authDisabled?: boolean;
   initialTier: PricingTierId | null;
   initialMax: number | null;
   initialRemaining: number | null;
@@ -534,20 +532,11 @@ export function AppShell({
         </div>
         <div className="flex items-center gap-2.5">
           <LanguageInlineSwitch />
-          {authDisabled && (
-            <span className="rounded-full border border-[#E2DEFF] bg-[#F4F2FF] px-2.5 py-1 text-[11px] font-medium text-[#5A57D6]">
-              {tier && max !== null && remaining !== null
-                ? t('app.authDisabledBannerCount', { remaining, max })
-                : t('app.authDisabledBanner')}
-            </span>
-          )}
-          {!authDisabled && (
-            <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
-              {tier && max !== null && remaining !== null
-                ? t('app.quotaLabel', { remaining, max })
-                : t('app.noTierLabel')}
-            </span>
-          )}
+          <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
+            {tier && max !== null && remaining !== null
+              ? t('app.quotaLabel', { remaining, max })
+              : t('app.noTierLabel')}
+          </span>
           <button
             type="button"
             onClick={() => setMobilePanelOpen(true)}

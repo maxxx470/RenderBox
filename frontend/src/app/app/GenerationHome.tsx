@@ -201,13 +201,17 @@ export function GenerationHome({
   tier,
   max,
   remaining,
-  authDisabled = false,
+  userEmail,
 }: {
   recentRenders: RecentRenderCardData[];
   tier: PricingTierId | null;
   max: number | null;
   remaining: number | null;
-  authDisabled?: boolean;
+  /** Passed from the server component, like /app does. It used to be read
+      from the client auth context here, which left the sidebar's account
+      row blank until that context resolved. The server already knows the
+      address; it should be the one to say it. */
+  userEmail: string;
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
@@ -314,7 +318,7 @@ export function GenerationHome({
         tier={tier}
         max={max}
         remaining={remaining}
-        userEmail={user?.email ?? ''}
+        userEmail={userEmail}
         mobileOpen={mobileNavOpen}
         onMobileClose={() => setMobileNavOpen(false)}
       />
@@ -332,13 +336,6 @@ export function GenerationHome({
             >
               <Category set="light" size={16} primaryColor="#8A8896" />
             </button>
-            {authDisabled && (
-              <span className="rounded-full border border-[#E2DEFF] bg-[#F4F2FF] px-2.5 py-1 text-[11px] font-medium text-[#5A57D6]">
-                {tier && max !== null && remaining !== null
-                  ? t('app.authDisabledBannerCount', { remaining, max })
-                  : t('app.authDisabledBanner')}
-              </span>
-            )}
           </div>
           <LanguageInlineSwitch />
         </div>
