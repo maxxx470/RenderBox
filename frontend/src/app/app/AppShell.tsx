@@ -117,6 +117,7 @@ export function AppShell({
     return r && (RATIO_KEYS as readonly string[]).includes(r) ? (r as RatioKey) : 'auto';
   });
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [pickingElement, setPickingElement] = useState(false);
   const [zone, setZone] = useState<Zone | null>(null);
   const [variantCount, setVariantCount] = useState(3);
   const [submittingEdit, setSubmittingEdit] = useState(false);
@@ -284,6 +285,30 @@ export function AppShell({
       return;
     }
     void handleFile(file);
+  }
+
+  // "Elements": reuse an image already in this project as the add-element
+  // reference, instead of hunting for the file on disk again.
+  //
+  // Deliberately no new API. The node's bytes come back through the same
+  // authenticated proxy that renders every thumbnail on this screen — which
+  // already refuses a node the caller does not own — and are handed to the
+  // existing flow as a File. Downstream, an element picked here and one
+  // dragged in from the desktop are indistinguishable, which is why the edit
+  // route needed no change at all.
+  async function handlePickElement(nodeId: string) {
+    setPickingElement(true);
+    try {
+      const res = await fetch(`/api/render-nodes/${nodeId}/image`);
+      if (!res.ok) throw new Error(String(res.status));
+      const blob = await res.blob();
+      const ext = blob.type === 'image/jpeg' ? 'jpg' : 'png';
+      setReferenceFile(new File([blob], `element-${nodeId}.${ext}`, { type: blob.type }));
+    } catch {
+      toast(t('app.elementsError'), 'error');
+    } finally {
+      setPickingElement(false);
+    }
   }
 
   async function handleDeleteNode(node: RenderTreeNode) {
@@ -858,6 +883,10 @@ export function AppShell({
         onUploadFile={handleFile}
         uploading={uploading}
         imageSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}
+        materialCount={materials.length}
+        elementNodes={flattenTree(tree)}
+        onPickElement={handlePickElement}
+        pickingElement={pickingElement}
       />
 
       {pendingDelete && (

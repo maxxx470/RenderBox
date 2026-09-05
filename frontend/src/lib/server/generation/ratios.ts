@@ -54,3 +54,22 @@ export function isRatioSupported(ratio: RatioKey, engine: EngineName): boolean {
 export function supportedRatios(engine: EngineName): RatioKey[] {
   return RATIO_KEYS.filter((r) => isRatioSupported(r, engine));
 }
+
+/**
+ * The pixel size the generation will actually be asked for, or null when the
+ * request carries no size at all.
+ *
+ * This is read off what the adapters really send, not off a table of what the
+ * models are believed to output: gpt-image.ts passes `RATIOS[r].openai` as
+ * `size`, and nanobanana.ts passes only an aspect ratio and never a size. So
+ * for Gemini the answer is genuinely "whatever the model returns" — printing
+ * a pixel figure there would be inventing one.
+ *
+ * Used by the command bar's output chip, which is why this lives beside the
+ * ratios rather than in the UI: the day an adapter starts sending a size,
+ * this is the file that changes and the chip follows.
+ */
+export function requestedSize(ratio: RatioKey, engine: EngineName): string | null {
+  if (engine !== 'gpt_image') return null;
+  return RATIOS[ratio].openai;
+}

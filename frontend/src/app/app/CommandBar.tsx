@@ -12,7 +12,9 @@ import { RatioChip } from './RatioChip';
 import { RatioSelect } from './RatioSelect';
 import { ModeSelect } from './ModeSelect';
 import { CHIP_ACTIVE, CHIP_STATIC } from './chip';
-import type { RatioKey } from '@/lib/server/generation/ratios';
+import { requestedSize, type RatioKey } from '@/lib/server/generation/ratios';
+import { ElementsPicker } from './ElementsPicker';
+import type { RenderTreeNode } from '@/lib/server/render-tree';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
 
@@ -51,6 +53,10 @@ export function CommandBar({
   onUploadFile,
   uploading,
   imageSrc,
+  materialCount,
+  elementNodes,
+  onPickElement,
+  pickingElement,
 }: {
   mode: AppMode;
   onModeChange: (mode: AppMode) => void;
@@ -78,6 +84,12 @@ export function CommandBar({
   uploading: boolean;
   /** Currently displayed render — the ratio chip reads its real dimensions. */
   imageSrc: string | null;
+  /** Materials this project has memorised — the engine already knows them. */
+  materialCount: number;
+  /** Every image in the project, offered as a reusable element reference. */
+  elementNodes: RenderTreeNode[];
+  onPickElement: (nodeId: string) => void;
+  pickingElement: boolean;
 }) {
   const { t } = useLocale();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -164,10 +176,39 @@ export function CommandBar({
           ) : (
             imageSrc && <RatioChip src={imageSrc} />
           )}
+          {/* Output size. Read-only on purpose: it reports the `size` the
+              adapter will actually send (see requestedSize in ratios.ts), and
+              Gemini is never sent one — so there is nothing here to choose,
+              only something worth knowing before you spend a generation on
+              it. A dropdown offering sizes no engine accepts would be the
+              dead control this bar is meant to avoid. */}
+          {mode === 'generate' && (
+            <span className={CHIP_STATIC}>
+              {t('app.outputChip')}{' '}
+              <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11.5px] text-[#3D3B49]">
+                {requestedSize(ratio, engine)?.replace('x', '×') ?? t('app.outputAuto')}
+              </span>
+            </span>
+          )}
+          {/* What the engine already knows about this project. The materials
+              sheet is re-injected into every generation, so how much of it
+              exists belongs next to the prompt, not only in a side panel the
+              phone layout hides entirely. */}
+          {materialCount > 0 && (
+            <span className={CHIP_STATIC}>{t('app.contextChip', { n: materialCount })}</span>
+          )}
           {mode === 'retouch' && (
             <StatusPill
               active={zoneSelected}
               label={t(zoneSelected ? 'app.pillZoneSelected' : 'app.pillZoneEmpty')}
+            />
+          )}
+          {mode === 'add' && (
+            <ElementsPicker
+              nodes={elementNodes}
+              onPick={onPickElement}
+              disabled={inputDisabled}
+              busy={pickingElement}
             />
           )}
           {mode === 'add' && (

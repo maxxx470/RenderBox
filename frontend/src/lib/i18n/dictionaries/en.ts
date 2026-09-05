@@ -25,6 +25,12 @@ const en: Record<keyof typeof fr, string> = {
 
   'app.freeAccessAccount': 'Free access',
   'app.downloadButton': 'Download this image',
+  'app.elementsChip': 'Elements',
+  'app.elementsHint': 'Reuse an image from this project as the reference',
+  'app.elementsError': 'Could not load that element',
+  'app.contextChip': '{n} materials',
+  'app.outputChip': 'Output',
+  'app.outputAuto': 'Auto',
   'app.newProject': 'New project',
   'app.treeTitle': 'Project tree',
   'app.treeEmpty': 'Your first upload will appear here',

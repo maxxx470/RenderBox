@@ -23,6 +23,12 @@ const fr = {
 
   'app.freeAccessAccount': 'Accès libre',
   'app.downloadButton': 'Télécharger cette image',
+  'app.elementsChip': 'Éléments',
+  'app.elementsHint': 'Réutilise une image de ce projet comme référence',
+  'app.elementsError': 'Impossible de charger cet élément',
+  'app.contextChip': '{n} matériaux',
+  'app.outputChip': 'Sortie',
+  'app.outputAuto': 'Auto',
   'app.newProject': 'Nouveau projet',
   'app.treeTitle': 'Arbre du projet',
   'app.treeEmpty': 'Ton premier upload apparaîtra ici',
