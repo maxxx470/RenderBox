@@ -535,7 +535,7 @@ export function AppShell({
         <div className="flex items-center gap-2.5">
           <LanguageInlineSwitch />
           {authDisabled && (
-            <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
+            <span className="rounded-full border border-[#E2DEFF] bg-[#F4F2FF] px-2.5 py-1 text-[11px] font-medium text-[#5A57D6]">
               {tier && max !== null && remaining !== null
                 ? t('app.authDisabledBannerCount', { remaining, max })
                 : t('app.authDisabledBanner')}

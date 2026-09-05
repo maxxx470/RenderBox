@@ -17,9 +17,9 @@ import {
   User,
 } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
+import { isPlaceholderAccount } from '@/lib/account-label';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import type { AppMode } from './CommandBar';
-import { VideoModeSoon } from './VideoModeSoon';
 import { useSidebarCollapsed } from './useSidebarCollapsed';
 import { RAIL_TOGGLE, ROW, ROW_ACTIVE, ROW_IDLE } from './nav-row';
 
@@ -61,6 +61,10 @@ export function HomeSidebar({
   onMobileClose?: () => void;
 }) {
   const t = useTranslations();
+
+  // No account: name the access mode instead of a seeded test address.
+  // See lib/account-label.ts.
+  const accountLabel = isPlaceholderAccount(userEmail) ? t('app.freeAccessAccount') : userEmail;
   const nextTier = tier ? NEXT_TIER[tier] : null;
   const [collapsed, toggleCollapsed] = useSidebarCollapsed();
   // The drawer only ever opens below 900px (its trigger is `min-[900px]:hidden`),
@@ -185,12 +189,6 @@ export function HomeSidebar({
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
           </Link>
         )}
-
-        <VideoModeSoon
-          collapsed={collapsedUi}
-          className={`text-[13.5px] ${centerOnCollapse}`}
-          labelClassName={hideOnCollapse}
-        />
       </nav>
 
       {/* Destinations above, account below. A hairline does the work the two
@@ -248,7 +246,7 @@ export function HomeSidebar({
             screen. It is now a card: the plan is a badge, the quota is a bar
             you can read at a glance plus its exact figure. */}
         {collapsedUi ? (
-          <div className="flex justify-center" title={userEmail}>
+          <div className="flex justify-center" title={accountLabel}>
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
               <User set="light" size={15} primaryColor="#ffffff" />
             </div>
@@ -261,9 +259,9 @@ export function HomeSidebar({
               </div>
               <div
                 className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-[#17161F]"
-                title={userEmail}
+                title={accountLabel}
               >
-                {userEmail}
+                {accountLabel}
               </div>
             </div>
 

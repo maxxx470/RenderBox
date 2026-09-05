@@ -174,8 +174,15 @@ function ExampleFanCard({ example, index }: { example: ExampleRender; index: num
       {example.preset && (
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
       )}
-      {/* The badge carries its own ground, so it stays legible either way. */}
-      <span className="absolute left-3 top-3 rounded-2xl bg-[#17161F] px-2 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[9.5px] text-white">
+      {/* The badge stays — these four slots otherwise hold the user's OWN
+          renders, and an unlabelled RenderBox showcase image there would read
+          as their work. What changed is how it reads: a black chip carrying
+          the lowercase word "example" at 9.5px was the smallest, darkest type
+          on the screen, and it looked like a debug annotation left in the
+          build. Frosted white at a readable size, naming the product, reads
+          as the caption it is. It carries its own ground either way, so it
+          stays legible over a pale image or a dark one. */}
+      <span className="absolute left-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-[#17161F] backdrop-blur-sm">
         {t('app.genHomeExampleTag')}
       </span>
       {/* Only when the set spans several ambiances — see generer-examples.ts.
@@ -326,7 +333,7 @@ export function GenerationHome({
               <Category set="light" size={16} primaryColor="#8A8896" />
             </button>
             {authDisabled && (
-              <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
+              <span className="rounded-full border border-[#E2DEFF] bg-[#F4F2FF] px-2.5 py-1 text-[11px] font-medium text-[#5A57D6]">
                 {tier && max !== null && remaining !== null
                   ? t('app.authDisabledBannerCount', { remaining, max })
                   : t('app.authDisabledBanner')}
@@ -391,7 +398,7 @@ export function GenerationHome({
               }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
-              className="flex flex-1 items-start justify-center gap-0 overflow-hidden pb-5"
+              className="flex flex-1 items-center justify-center gap-0 overflow-hidden pb-5"
             >
               {Array.from({ length: FAN_SLOTS }, (_, i) => {
                 const render = recentRenders[i];

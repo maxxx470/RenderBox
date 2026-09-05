@@ -264,7 +264,7 @@ export function ProjectsGrid({
               {t(dashboard ? 'dashboard.title' : 'projects.title')}
             </h1>
             {authDisabled && (
-              <span className="rounded-2xl bg-amber-100 px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] font-medium text-amber-800">
+              <span className="rounded-full border border-[#E2DEFF] bg-[#F4F2FF] px-2.5 py-1 text-[11px] font-medium text-[#5A57D6]">
                 {t('app.authDisabledBanner')}
               </span>
             )}

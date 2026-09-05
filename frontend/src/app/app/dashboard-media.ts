@@ -1,9 +1,7 @@
 // Content of the two banners at the top of the dashboard.
 //
 // Both are configuration, not data: they are the same for every user, and
-// they are filled by hand. Everything below is deliberately empty until real
-// files exist — the blocks render an explicit waiting state rather than
-// stock imagery or a play button that opens nothing.
+// they are filled by hand.
 
 // ---------------------------------------------------------------------------
 // Left banner — presentation / tutorial video
@@ -76,15 +74,56 @@ export interface ShowcaseSlide {
 /**
  * Showcase renders, identical for every user.
  *
- * Empty on purpose. The carousel shows a single waiting panel while this is
- * empty, and starts rotating as soon as there are at least two entries.
+ * One entry per ambiance, in the order the presets are offered, so the block
+ * doubles as a tour of what the four presets actually do rather than four
+ * pretty pictures in a row. Every file is real RenderBox output and already
+ * ships in /public/galerie for the /exemple page — no second copy.
  *
- * To fill it: drop the images in `frontend/public/showcase/` (landscape,
- * ~1200x700, JPG or WebP) and add one entry each. Only real RenderBox output
- * belongs here — this block sits on the page of someone who is paying for the
- * product, and stock imagery would be advertising renders it never made.
+ * The captions name the ambiance first and the subject second, because the
+ * ambiance is the part the reader can act on: it is a preset they can pick.
+ *
+ * Sources are portrait and the frame is 16/9, so they are centre-cropped.
+ * Each one below was chosen with that crop in mind — the subject sits in the
+ * middle band of all four.
+ *
+ * To swap one: drop a JPG/WebP in `frontend/public/galerie/` and point `src`
+ * at it. Only real RenderBox output belongs here — this block sits on the
+ * page of someone paying for the product, and stock imagery would be
+ * advertising renders it never made.
  */
-export const SHOWCASE_SLIDES: readonly ShowcaseSlide[] = [];
+export const SHOWCASE_SLIDES: readonly ShowcaseSlide[] = [
+  {
+    id: 'jour-ext',
+    src: '/galerie/jour-ext-2.jpg',
+    caption: {
+      fr: 'Extérieur jour — villa en pierre',
+      en: 'Exterior day — stone villa',
+    },
+  },
+  {
+    id: 'jour-int',
+    src: '/galerie/jour-int-2.jpg',
+    caption: {
+      fr: 'Intérieur jour — chambre sur la mer',
+      en: 'Interior day — bedroom facing the sea',
+    },
+  },
+  {
+    id: 'nuit-ext',
+    src: '/galerie/nuit-ext-1.jpg',
+    caption: {
+      fr: 'Extérieur nuit — façade éclairée',
+      en: 'Exterior night — lit facade',
+    },
+  },
+  {
+    id: 'nuit-int',
+    src: '/galerie/nuit-int-3.jpg',
+    caption: {
+      fr: 'Intérieur nuit — séjour en travertin',
+      en: 'Interior night — travertine living room',
+    },
+  },
+];
 
-/** How long each slide holds before the next one fades in. */
 export const SHOWCASE_INTERVAL_MS = 5000;

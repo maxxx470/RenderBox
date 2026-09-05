@@ -10,10 +10,21 @@
 // real ISO date. That is the whole procedure — the page renders whatever is
 // here, newest first, and groups by kind on its own.
 //
-// One rule: an entry must describe something that actually shipped, or, under
-// `kind: 'planned'`, something explicitly labelled as not yet available. A
-// dated entry for work that is not live turns this page into a page nobody
-// trusts.
+// Two rules, and the second one is the one that gets broken.
+//
+//  1. An entry must describe something that actually shipped, or, under
+//     `kind: 'planned'`, something explicitly labelled as not yet available.
+//     A dated entry for work that is not live turns this page into a page
+//     nobody trusts.
+//
+//  2. An entry must be about the PRODUCT, not about the build. This list held
+//     "every icon moved from the filled set to thin outlines" and "the app
+//     moved to the violet charter: new fonts, new colours, same features".
+//     Both were true and both were notes to the people writing the code. A
+//     customer reading them learns that the thing they are paying for was
+//     being restyled last week, and "same features" says out loud that the
+//     release contained nothing for them. If an entry would not interest
+//     someone who has never seen the repository, it does not belong here.
 
 export type AnnouncementKind = 'shipped' | 'planned';
 
@@ -28,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'dashboard-showcase',
+    date: '2026-09-05',
+    kind: 'shipped',
+    title: {
+      fr: 'Rendus en vitrine sur le tableau de bord',
+      en: 'Showcase renders on the dashboard',
+    },
+    body: {
+      fr: 'Le haut du tableau de bord présente une sélection de rendus RenderBox, une par ambiance, et rappelle les trois étapes d’un rendu — de la photo ou du croquis jusqu’à l’image finale.',
+      en: 'The top of the dashboard now shows a selection of RenderBox renders, one per ambiance, alongside the three steps of a render — from photo or sketch to the finished image.',
+    },
+  },
+  {
     id: 'dashboard',
     date: '2026-09-03',
     kind: 'shipped',
@@ -35,16 +59,6 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     body: {
       fr: '« Mes projets » devient un tableau de bord : palier actif, générations restantes sur le mois avec la date de renouvellement, nombre de projets, nombre de rendus générés et dernière activité — puis la liste des projets juste en dessous.',
       en: '"My projects" is now a dashboard: active plan, generations left this month with the renewal date, project count, renders generated and last activity — with the project list right below.',
-    },
-  },
-  {
-    id: 'icons-light',
-    date: '2026-09-03',
-    kind: 'shipped',
-    title: { fr: 'Icônes en traits fins', en: 'Thin-line icons' },
-    body: {
-      fr: "Toutes les icônes du site passent des pleins aux traits fins, sur l'ensemble des pages.",
-      en: 'Every icon across the site moved from the filled set to thin outlines.',
     },
   },
   {
@@ -58,23 +72,13 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     },
   },
   {
-    id: 'landing-v2',
+    id: 'galerie-exemples',
     date: '2026-09-02',
     kind: 'shipped',
-    title: { fr: 'Nouvelle page d’accueil', en: 'New home page' },
+    title: { fr: 'Galerie d’exemples', en: 'Examples gallery' },
     body: {
-      fr: 'Refonte complète de la page d’accueil et passage de toute l’application à la charte violette : nouvelles polices, nouvelles couleurs, mêmes fonctionnalités.',
-      en: 'The home page was rebuilt and the whole app moved to the violet charter: new fonts, new colours, same features.',
-    },
-  },
-  {
-    id: 'video-mode',
-    date: '2026-09-03',
-    kind: 'planned',
-    title: { fr: 'Génération vidéo', en: 'Video generation' },
-    body: {
-      fr: 'Un mode « Vidéo » apparaît désormais dans la barre latérale, désactivé. Il sera activé dans une prochaine mise à jour — aucune date n’est encore fixée.',
-      en: 'A "Video" mode now appears in the sidebar, disabled. It will be switched on in a future update — no date is set yet.',
+      fr: 'Une page d’exemples regroupe des rendus réels par ambiance — extérieur et intérieur, jour et nuit, plus une esquisse — pour voir ce que chaque préréglage produit avant de lancer son premier rendu.',
+      en: 'An examples page groups real renders by ambiance — exterior and interior, day and night, plus a sketch — so you can see what each preset produces before running your first render.',
     },
   },
 ];

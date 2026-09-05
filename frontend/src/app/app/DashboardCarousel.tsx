@@ -11,10 +11,9 @@
 //   3. The dots are real buttons with labels, so the later slides are
 //      reachable without waiting (or seeing) the rotation.
 //
-// With fewer than two slides configured there is nothing to rotate: the block
-// shows a single waiting panel instead of animating between placeholders.
+// With a single slide configured there is nothing to rotate: it renders as a
+// still, dots and all removed.
 import { useEffect, useState } from 'react';
-import { Image as ImageIcon } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { SHOWCASE_SLIDES, SHOWCASE_INTERVAL_MS } from './dashboard-media';
@@ -23,25 +22,6 @@ import { SHOWCASE_SLIDES, SHOWCASE_INTERVAL_MS } from './dashboard-media';
 // the same frame language as the cards below them.
 const FRAME =
   'relative aspect-[16/9] overflow-hidden rounded-2xl border border-[#DEDEE8] min-[900px]:aspect-auto min-[900px]:h-[210px]';
-
-function WaitingPanel() {
-  const t = useTranslations();
-  return (
-    <div className={`${FRAME} border-dashed bg-[#FBFBFD]`}>
-      <div className="flex h-full w-full flex-col items-center justify-center gap-2.5 px-6 text-center">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F1F0F6]">
-          <ImageIcon set="light" size={20} primaryColor="#8A8896" />
-        </span>
-        <span className="text-[13px] font-medium text-[#17161F]">
-          {t('dashboard.showcaseEmptyTitle')}
-        </span>
-        <span className="max-w-[280px] text-[12px] leading-[1.5] text-[#8A8896]">
-          {t('dashboard.showcaseEmptyBody')}
-        </span>
-      </div>
-    </div>
-  );
-}
 
 export function DashboardCarousel() {
   const { locale } = useLocale();
@@ -59,7 +39,9 @@ export function DashboardCarousel() {
     return () => clearInterval(id);
   }, [rotating, slides.length]);
 
-  if (slides.length === 0) return <WaitingPanel />;
+  // Nothing configured: render nothing at all rather than a panel that
+  // announces an absence. See dashboard-media.ts — it ships four entries.
+  if (slides.length === 0) return null;
 
   return (
     <div

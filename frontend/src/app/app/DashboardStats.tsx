@@ -31,53 +31,30 @@ const TIER_LABEL_KEY = {
   pro: 'app.tierPro',
 } as const;
 
-// One tinted ground per card, so the row reads as four distinct facts rather
-// than four copies of the same white box.
+// The three secondary cards share one neutral treatment.
 //
-// The hues are charter tokens already in use elsewhere (violet #716FFF and
-// the sky/amber pair from the landing's audience tabs) plus the neutral band
-// #F7F7FA. Two colours are deliberately NOT here:
-//   - error red #E5484D — it means "something is wrong", never "third card";
-//   - success green #1E7A3D — it already means "paid / active" across the
-//     admin, and spending it on decoration would weaken that everywhere.
+// They used to carry a tinted ground each — violet, sky blue, amber — on the
+// argument that four grounds read as four distinct facts. Two problems. The
+// sky and amber were borrowed from the landing's audience tabs, and those
+// tabs no longer exist: the hues had no second home on the site and read as
+// decoration invented for this row. And giving every card its own colour
+// flattens the hierarchy it was meant to create — when everything is
+// emphasised, the quota card, the only one that changes behaviour rather
+// than just its number, stops leading.
 //
-// "Last activity" is neutral on purpose: it is a date, not a quantity. It is
-// context for the three figures beside it, not a fourth measurement, and the
-// palette has no fourth hue that would not collide with a meaning.
-//
-// Every ground stays light enough for #17161F body text to keep well above
-// the 4.5:1 contrast floor.
-//
-// Full literal class strings: Tailwind's scanner cannot see a class built by
-// interpolating a colour value (see the JIT note in CLAUDE.md).
-const ACCENTS = {
-  sky: {
-    frame: 'rounded-2xl border border-[#C7E7F7] bg-[#F1F9FE] p-4 shadow-[0_1px_3px_#17161F0A]',
-    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#C7E7F7] bg-white',
-    color: '#0EA5E9',
-  },
-  amber: {
-    frame: 'rounded-2xl border border-[#F3E0BC] bg-[#FDF8EE] p-4 shadow-[0_1px_3px_#17161F0A]',
-    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#F3E0BC] bg-white',
-    color: '#B8710B',
-  },
-  neutral: {
-    frame: 'rounded-2xl border border-[#DEDEE8] bg-[#F7F7FA] p-4 shadow-[0_1px_3px_#17161F0A]',
-    chip: 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg border border-[#ECECF2] bg-white',
-    color: '#6B6880',
-  },
-} as const;
-
-type AccentName = keyof typeof ACCENTS;
+// So: quota keeps the violet ground and the widest column, and the three
+// figures beside it are one quiet object. Colour is spent once, where it
+// means something.
+const CARD = 'rounded-2xl border border-[#ECECF2] bg-white p-4 shadow-[0_1px_3px_#17161F0A]';
+const CHIP = 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[#F7F7FA]';
+const ICON_COLOR = '#6B6880';
 
 function StatCard({
-  accent,
   icon,
   value,
   label,
   empty = false,
 }: {
-  accent: AccentName;
   icon: (color: string) => React.ReactNode;
   value: string;
   label: string;
@@ -86,10 +63,9 @@ function StatCard({
       as a bug, not as "nothing has happened yet". */
   empty?: boolean;
 }) {
-  const a = ACCENTS[accent];
   return (
-    <div className={a.frame}>
-      <div className={a.chip}>{icon(a.color)}</div>
+    <div className={CARD}>
+      <div className={CHIP}>{icon(ICON_COLOR)}</div>
       <div
         className={
           empty
@@ -181,19 +157,16 @@ export function DashboardStats({ data }: { data: DashboardData }) {
       </div>
 
       <StatCard
-        accent="sky"
         icon={(c) => <Folder set="light" size={16} primaryColor={c} />}
         value={data.projectCount.toLocaleString(intl)}
         label={t('dashboard.statProjects')}
       />
       <StatCard
-        accent="amber"
         icon={(c) => <ImageIcon set="light" size={16} primaryColor={c} />}
         value={data.renderCount.toLocaleString(intl)}
         label={t('dashboard.statRenders')}
       />
       <StatCard
-        accent="neutral"
         icon={(c) =>
           data.lastActivityAt ? (
             <TimeCircle set="light" size={16} primaryColor={c} />

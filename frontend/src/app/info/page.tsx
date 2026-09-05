@@ -77,9 +77,14 @@ export default function InfoPage() {
         )}
 
         <section className="mt-9">
-          <h2 className="mb-3.5 font-[family-name:var(--font-general-sans)] text-[13px] font-semibold text-[#8A8896]">
-            {t('info.shippedHeading')}
-          </h2>
+          {/* The group caption only earns its line when there is a second
+              group to tell it apart from. With nothing planned it repeats the
+              page title word for word, one line below it. */}
+          {planned.length > 0 && (
+            <h2 className="mb-3.5 font-[family-name:var(--font-general-sans)] text-[13px] font-semibold text-[#8A8896]">
+              {t('info.shippedHeading')}
+            </h2>
+          )}
           {shipped.length === 0 ? (
             <p className="text-[13.5px] text-[#8A8896]">{t('info.empty')}</p>
           ) : (

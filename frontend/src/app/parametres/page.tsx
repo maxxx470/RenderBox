@@ -9,6 +9,7 @@ import { useUser, useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { SiteHeader } from '@/components/SiteHeader';
 import { api } from '@/lib/api';
+import { isPlaceholderAccount } from '@/lib/account-label';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { EngineSelect } from '@/app/app/EngineSelect';
 
@@ -81,43 +82,60 @@ export default function ParametresPage() {
           <h2 className="text-[15px] font-semibold text-[#17161F]">
             {t('parametres.accountTitle')}
           </h2>
+          {/* With AUTH_DISABLED on there is no account behind this section:
+              every visitor shares one seeded row. Naming its address here, and
+              offering to sign out of it, described a session nobody has. The
+              section states the access mode instead, and the sign-out button
+              — which would have logged the visitor out of nothing — is not
+              rendered. See lib/account-label.ts. */}
           <p className="text-[13px] text-[#8A8896]">
-            {t('parametres.connectedAs', { email: user.email })}
+            {isPlaceholderAccount(user.email)
+              ? t('parametres.freeAccessBody')
+              : t('parametres.connectedAs', { email: user.email })}
           </p>
-          <button
-            type="button"
-            onClick={() => void logout()}
-            className="self-start rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
-          >
-            {t('parametres.logoutButton')}
-          </button>
+          {!isPlaceholderAccount(user.email) && (
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="self-start rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+            >
+              {t('parametres.logoutButton')}
+            </button>
+          )}
         </section>
 
-        <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
-          <h2 className="text-[15px] font-semibold text-[#17161F]">
-            {t('parametres.linkedAccountsTitle')}
-          </h2>
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex flex-col">
-              <span className="text-[13px] font-medium text-[#17161F]">Google</span>
-              <span className="text-[12px] text-[#8A8896]">
-                {googleLinked ? t('parametres.googleLinked') : t('parametres.googleNotLinked')}
-              </span>
+        {/* Hidden under free access for the same reason the sign-out button
+            is: there is no account to link a Google identity TO. Every visitor
+            resolves to one shared row, so the link would attach a stranger's
+            Google identity to it — and then sign the next visitor in as them.
+            The section returns the day AUTH_DISABLED comes off. */}
+        {!isPlaceholderAccount(user.email) && (
+          <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+            <h2 className="text-[15px] font-semibold text-[#17161F]">
+              {t('parametres.linkedAccountsTitle')}
+            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col">
+                <span className="text-[13px] font-medium text-[#17161F]">Google</span>
+                <span className="text-[12px] text-[#8A8896]">
+                  {googleLinked ? t('parametres.googleLinked') : t('parametres.googleNotLinked')}
+                </span>
+              </div>
+              {googleLinked ? (
+                <span className="rounded-[20px] border border-[#1E7A3D33] bg-[#1E7A3D14] px-3 py-1 text-[12px] font-medium text-[#1E7A3D]">
+                  {t('parametres.linkedBadge')}
+                </span>
+              ) : (
+                <a
+                  href="/api/auth/oauth/google/start?next=/parametres"
+                  className="rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+                >
+                  {t('parametres.linkGoogleButton')}
+                </a>
+              )}
             </div>
-            {googleLinked ? (
-              <span className="rounded-[20px] border border-[#1E7A3D33] bg-[#1E7A3D14] px-3 py-1 text-[12px] font-medium text-[#1E7A3D]">
-                {t('parametres.linkedBadge')}
-              </span>
-            ) : (
-              <a
-                href="/api/auth/oauth/google/start?next=/parametres"
-                className="rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
-              >
-                {t('parametres.linkGoogleButton')}
-              </a>
-            )}
-          </div>
-        </section>
+          </section>
+        )}
 
         <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
           <h2 className="text-[15px] font-semibold text-[#17161F]">

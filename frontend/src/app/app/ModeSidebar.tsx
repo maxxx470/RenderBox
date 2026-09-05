@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { ProjectTree } from './ProjectTree';
-import { VideoModeSoon } from './VideoModeSoon';
 import { RAIL_TOGGLE, ROW, ROW_ACTIVE, ROW_IDLE } from './nav-row';
 import type { AppMode } from './CommandBar';
 
@@ -97,11 +96,6 @@ export function ModeSidebar({
           <ImageIcon set="light" size={18} primaryColor="#716FFF" />
           <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
         </button>
-        <VideoModeSoon
-          collapsed={collapsed}
-          className={`text-[13.5px] ${collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''}`}
-          labelClassName={hideOnCollapse}
-        />
       </div>
 
       <div className="mb-2 h-px bg-[#ECECF2]" />
