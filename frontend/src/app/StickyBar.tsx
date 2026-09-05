@@ -26,7 +26,10 @@ export function StickyBar({
       <Link
         href={href}
         tabIndex={visible ? 0 : -1}
-        className="rb-pulse inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#6E6BFF_0%,#8B5CF6_48%,#A855F7_100%)] px-6 py-2.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
+        // No rb-pulse. A permanent pulse on an element that is on screen for
+        // the whole page is not emphasis, it is a twitch in the corner of the
+        // eye that never stops. The bar sliding up already announces itself.
+        className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#6E6BFF_0%,#8B5CF6_48%,#A855F7_100%)] px-6 py-2.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
       >
         {label}
       </Link>

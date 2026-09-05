@@ -291,7 +291,14 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
     <div className="relative mt-10">
       {/* Bleeds off the bottom like the reference: the row is taller than the
           visible window and the overflow is cropped. */}
-      <div className="hidden items-end justify-center overflow-hidden pt-8 sm:flex">
+      {/* pb-6 buys back the overflow the captions were falling into. The two
+          outer cards are pushed down 24px and tilted 6 degrees, which drops
+          their lower corner another ~12px — well past the caption sitting 16px
+          above the card's edge, so "Jour extérieur" and "Esquisse" were being
+          sliced through the middle of the only text that names them. The cards
+          still bleed off the bottom, just by their corner instead of their
+          label. */}
+      <div className="hidden items-end justify-center overflow-hidden pb-6 pt-8 sm:flex">
         {HERO_CARDS.map((card, i) => (
           <div
             key={card.preset}

@@ -26,15 +26,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  Home,
-  Location,
-  Graph,
-  TickSquare,
-  Image as ImageIcon,
-  Category,
-  Edit,
-} from 'react-iconly';
+import { Edit, Graph, Home, Image as ImageIcon, Location, Scan, TickSquare } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -181,10 +173,15 @@ function PresetCard({
   return (
     <div className="h-full rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-6.5 transition-colors hover:border-[#CFCADF]">
       <div className={a.chip}>
+        {/* The glyph carries exterior-vs-interior, the gradient carries
+            day-vs-night — two dimensions, two channels. The interior half used
+            to borrow Category, a 2x2 grid that says nothing about being inside
+            a room; Scan's framing brackets read as a viewpoint, which is
+            exactly what the copy calls it. */}
         {a.glyph === 'home' ? (
           <Home set="light" size={18} primaryColor={ink} />
         ) : (
-          <Category set="light" size={18} primaryColor={ink} />
+          <Scan set="light" size={18} primaryColor={ink} />
         )}
       </div>
       <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
@@ -386,7 +383,9 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
   }));
 
   return (
-    <main className="bg-white text-[#17161F]">
+    // pb-14 clears the 56px sticky bar: without it the bar parks on top of
+    // the last rows of the footer for the whole bottom of the page.
+    <main className="bg-white pb-14 text-[#17161F]">
       {/* FLOATING PILL NAV */}
       <div className="sticky top-4 z-30 mx-auto max-w-[1180px] px-4">
         <nav className="flex items-center justify-between rounded-full border border-[#ECECF2] bg-white/90 px-5 py-3 shadow-[0_10px_30px_-14px_rgba(23,22,31,0.15)] backdrop-blur">
@@ -857,7 +856,13 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
       {/* Points at the example page, not at signup: the hero fan and the
           header already carry the "start" CTA, so the persistent bar is more
           useful offering the visitor proof than repeating the same button. */}
-      <StickyBar visible={pastHero} href="/exemple" label={t('landing.heroCtaSecondary')} />
+      {/* The primary action, not the secondary one. This bar is the most
+          persistent surface on the page — it is pinned to the bottom of every
+          screen from the end of the hero to the footer — and it was spending
+          that on "see an example", a link that sends the visitor to a gallery
+          and away from signing up. The gallery is already reachable from the
+          nav and from the hero. */}
+      <StickyBar visible={pastHero} href={ctaHref} label={t('landing.heroCtaPrimary')} />
     </main>
   );
 }

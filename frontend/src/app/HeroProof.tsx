@@ -14,31 +14,9 @@
 // about the product that nobody can back up.
 //
 // Still deliberately absent: a star rating. There are no reviews to average.
-import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
-import { PRESETS, PRESET_KEYS } from '@/lib/server/generation/presets';
-import { HERO_CARD_GRADIENT } from './hero-cards';
+import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { TOOL_LOGOS } from './tool-logos';
 import { CountUp } from './CountUp';
-
-// Stands in for the reference's avatar cluster, one disc per ambiance. Same
-// visual device — overlapping circles that give the line a left anchor —
-// without claiming a single user the product does not have.
-function PresetCluster() {
-  const { locale } = useLocale();
-  return (
-    <div className="flex items-center">
-      {PRESET_KEYS.map((key, i) => (
-        <span
-          key={key}
-          title={PRESETS[key].label[locale]}
-          className={`h-8 w-8 flex-shrink-0 rounded-full border-2 border-white shadow-[0_2px_8px_-2px_rgba(23,22,31,0.35)] ${
-            HERO_CARD_GRADIENT[key]
-          } ${i === 0 ? '' : '-ml-2.5'}`}
-        />
-      ))}
-    </div>
-  );
-}
 
 // TikTok's own mark (Simple Icons, CC0), inlined like the vendor marks in
 // tool-logos.ts. Kept here rather than in that file: that list means "tools
@@ -96,8 +74,13 @@ export function HeroProof() {
           and a proof line opening on a zero read as an empty counter before it
           read as a promise. What is left is the part that is only true here:
           the audience, and what the tool plugs into. */}
-      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-3.5">
-        <PresetCluster />
+      {/* The five overlapping gradient discs that used to sit to the left of
+          this badge are gone. Overlapping circles immediately beside a follower
+          count read as one thing and one thing only: an avatar stack, i.e. a
+          claim about users. They were meant to stand for the five ambiances,
+          but the caption that said so was removed with the counters, leaving
+          the shape to speak on its own — and what it said was not true. */}
+      <div className="flex flex-wrap items-center justify-center">
         <CommunityBadge />
       </div>
 
