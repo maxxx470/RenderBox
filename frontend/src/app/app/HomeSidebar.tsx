@@ -18,6 +18,7 @@ import {
 } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { isPlaceholderAccount } from '@/lib/account-label';
+import { NavPendingIcon } from './NavPending';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import type { AppMode } from './CommandBar';
 import { useSidebarCollapsed } from './useSidebarCollapsed';
@@ -155,7 +156,9 @@ export function HomeSidebar({
           {...(onDashboard ? { 'aria-current': 'page' as const } : {})}
           className={`${ROW} ${onDashboard ? ROW_ACTIVE : ROW_IDLE} ${centerOnCollapse}`}
         >
-          <Category set="light" size={18} primaryColor={onDashboard ? '#716FFF' : '#6B6880'} />
+          <NavPendingIcon>
+            <Category set="light" size={18} primaryColor={onDashboard ? '#716FFF' : '#6B6880'} />
+          </NavPendingIcon>
           <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
 
@@ -185,7 +188,9 @@ export function HomeSidebar({
             aria-label={t('app.modeGenerate')}
             className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
           >
-            <ImageIcon set="light" size={18} primaryColor="#6B6880" />
+            <NavPendingIcon>
+              <ImageIcon set="light" size={18} primaryColor="#6B6880" />
+            </NavPendingIcon>
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
           </Link>
         )}
@@ -203,7 +208,9 @@ export function HomeSidebar({
           aria-label={t('parametres.title')}
           className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
         >
-          <Setting set="light" size={18} primaryColor="#6B6880" />
+          <NavPendingIcon>
+            <Setting set="light" size={18} primaryColor="#6B6880" />
+          </NavPendingIcon>
           <span className={hideOnCollapse}>{t('parametres.title')}</span>
         </Link>
         <Link
@@ -213,7 +220,9 @@ export function HomeSidebar({
           aria-label={t('info.title')}
           className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
         >
-          <InfoSquare set="light" size={18} primaryColor="#6B6880" />
+          <NavPendingIcon>
+            <InfoSquare set="light" size={18} primaryColor="#6B6880" />
+          </NavPendingIcon>
           <span className={hideOnCollapse}>{t('info.title')}</span>
         </Link>
       </nav>

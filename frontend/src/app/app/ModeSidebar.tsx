@@ -14,6 +14,7 @@ import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { ProjectTree } from './ProjectTree';
 import { RAIL_TOGGLE, ROW, ROW_ACTIVE, ROW_IDLE } from './nav-row';
+import { NavPendingIcon } from './NavPending';
 import type { AppMode } from './CommandBar';
 
 export function ModeSidebar({
@@ -71,7 +72,9 @@ export function ModeSidebar({
             collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
           }`}
         >
-          <Category set="light" size={18} primaryColor="#6B6880" />
+          <NavPendingIcon>
+            <Category set="light" size={18} primaryColor="#6B6880" />
+          </NavPendingIcon>
           <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
       </div>
@@ -128,7 +131,9 @@ export function ModeSidebar({
           collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
         }`}
       >
-        <InfoSquare set="light" size={18} primaryColor="#6B6880" />
+        <NavPendingIcon>
+          <InfoSquare set="light" size={18} primaryColor="#6B6880" />
+        </NavPendingIcon>
         <span className={hideOnCollapse}>{t('info.title')}</span>
       </Link>
     </>
