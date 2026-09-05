@@ -33,7 +33,7 @@ export function VideoModeSoon({
       aria-label={`${label} — ${t('app.modeVideoSoon')}`}
       className={`flex cursor-not-allowed items-center gap-2.5 rounded-xl px-3 py-2.5 text-left font-medium text-[#8A8896] ${className}`}
     >
-      <Video set="light" size={16} primaryColor="#B4B2BE" />
+      <Video set="light" size={18} primaryColor="#B4B2BE" />
       <span className={`flex flex-1 items-center justify-between gap-2 ${labelClassName}`}>
         {label}
         {/* 9px uppercase mono was the smallest type in the rail, spent on the

@@ -151,7 +151,7 @@ export function HomeSidebar({
           {...(onDashboard ? { 'aria-current': 'page' as const } : {})}
           className={`${ROW} ${onDashboard ? ROW_ACTIVE : ROW_IDLE} ${centerOnCollapse}`}
         >
-          <Category set="light" size={16} primaryColor={onDashboard ? '#716FFF' : '#8A8896'} />
+          <Category set="light" size={18} primaryColor={onDashboard ? '#716FFF' : '#6B6880'} />
           <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
 
@@ -170,7 +170,7 @@ export function HomeSidebar({
             aria-current="page"
             className={`${ROW} ${ROW_ACTIVE} text-left ${centerOnCollapse}`}
           >
-            <ImageIcon set="light" size={16} primaryColor="#716FFF" />
+            <ImageIcon set="light" size={18} primaryColor="#716FFF" />
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
           </button>
         ) : (
@@ -181,7 +181,7 @@ export function HomeSidebar({
             aria-label={t('app.modeGenerate')}
             className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
           >
-            <ImageIcon set="light" size={16} primaryColor="#8A8896" />
+            <ImageIcon set="light" size={18} primaryColor="#6B6880" />
             <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
           </Link>
         )}
@@ -205,7 +205,7 @@ export function HomeSidebar({
           aria-label={t('parametres.title')}
           className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
         >
-          <Setting set="light" size={16} primaryColor="#8A8896" />
+          <Setting set="light" size={18} primaryColor="#6B6880" />
           <span className={hideOnCollapse}>{t('parametres.title')}</span>
         </Link>
         <Link
@@ -215,7 +215,7 @@ export function HomeSidebar({
           aria-label={t('info.title')}
           className={`${ROW} ${ROW_IDLE} text-left ${centerOnCollapse}`}
         >
-          <InfoSquare set="light" size={16} primaryColor="#8A8896" />
+          <InfoSquare set="light" size={18} primaryColor="#6B6880" />
           <span className={hideOnCollapse}>{t('info.title')}</span>
         </Link>
       </nav>

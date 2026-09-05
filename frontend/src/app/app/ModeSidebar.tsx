@@ -72,7 +72,7 @@ export function ModeSidebar({
             collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
           }`}
         >
-          <Category set="light" size={16} primaryColor="#8A8896" />
+          <Category set="light" size={18} primaryColor="#6B6880" />
           <span className={hideOnCollapse}>{t('dashboard.title')}</span>
         </Link>
       </div>
@@ -94,7 +94,7 @@ export function ModeSidebar({
             collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
           }`}
         >
-          <ImageIcon set="light" size={16} primaryColor="#716FFF" />
+          <ImageIcon set="light" size={18} primaryColor="#716FFF" />
           <span className={hideOnCollapse}>{t('app.modeGenerate')}</span>
         </button>
         <VideoModeSoon
@@ -134,7 +134,7 @@ export function ModeSidebar({
           collapsed ? 'min-[900px]:justify-center min-[900px]:px-0' : ''
         }`}
       >
-        <InfoSquare set="light" size={16} primaryColor="#8A8896" />
+        <InfoSquare set="light" size={18} primaryColor="#6B6880" />
         <span className={hideOnCollapse}>{t('info.title')}</span>
       </Link>
     </>
