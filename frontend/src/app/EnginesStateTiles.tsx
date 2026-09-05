@@ -113,9 +113,22 @@ export function EnginesStateTiles({ engines, events }: { engines: string[]; even
           />
         ))}
       </div>
-      <p className={`mt-3 text-center text-[11.5px] text-[#8A8896] ${MONO}`}>
-        {events[reducedMotion ? 0 : eventIndex]}
-      </p>
+      {/* A bare centred line of grey mono under the tiles read as a caption
+          that had come loose from something. As a pill with a live dot it
+          reads as what it is: the state the two tiles are reporting. */}
+      <div className="mt-3.5 flex justify-center">
+        <span className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white px-3 py-1.5">
+          <span
+            aria-hidden
+            className={`h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#716FFF] ${
+              reducedMotion ? '' : 'rb-pulse'
+            }`}
+          />
+          <span className={`text-[11.5px] text-[#6B6880] ${MONO}`}>
+            {events[reducedMotion ? 0 : eventIndex]}
+          </span>
+        </span>
+      </div>
     </div>
   );
 }

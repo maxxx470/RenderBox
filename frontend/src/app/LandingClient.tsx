@@ -40,7 +40,7 @@ import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { FaqAccordion } from './FaqAccordion';
 import { HeroProof } from './HeroProof';
 import { SiteFooter } from '@/components/SiteFooter';
-import { AudienceTabs, type AudienceTabData } from './AudienceTabs';
+import { AudienceCards, type AudienceCardData } from './AudienceCards';
 import { StaggeredChecklist } from './StaggeredChecklist';
 import { MaterialsFeedStudio } from './MaterialsFeedStudio';
 import { TreeGallery } from './TreeGallery';
@@ -566,42 +566,37 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </Reveal>
         </section>
 
-        {/* AUDIENCE — tabs */}
+        {/* AUDIENCE — three columns, not three tabs. See AudienceCards. */}
         <section className="py-10 min-[860px]:py-12">
           <Reveal className="mx-auto mb-10 max-w-[560px] text-center">
             <h2 className="mx-auto text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
               {t('landing.audienceTitle')}
             </h2>
           </Reveal>
-          <Reveal className="mx-auto max-w-[640px]">
-            <AudienceTabs
-              tabs={
-                [
-                  {
-                    icon: <Home set="light" size={20} primaryColor="#716FFF" />,
-                    color: '#716FFF',
-                    label: t('landing.audience1Tab'),
-                    title: t('landing.audience1Title'),
-                    body: t('landing.audience1Body'),
-                  },
-                  {
-                    icon: <Location set="light" size={20} primaryColor="#716FFF" />,
-                    color: '#716FFF',
-                    label: t('landing.audience2Tab'),
-                    title: t('landing.audience2Title'),
-                    body: t('landing.audience2Body'),
-                  },
-                  {
-                    icon: <Graph set="light" size={20} primaryColor="#716FFF" />,
-                    color: '#716FFF',
-                    label: t('landing.audience3Tab'),
-                    title: t('landing.audience3Title'),
-                    body: t('landing.audience3Body'),
-                  },
-                ] satisfies AudienceTabData[]
-              }
-            />
-          </Reveal>
+          <AudienceCards
+            cards={
+              [
+                {
+                  icon: <Home set="light" size={20} primaryColor="#716FFF" />,
+                  label: t('landing.audience1Tab'),
+                  title: t('landing.audience1Title'),
+                  body: t('landing.audience1Body'),
+                },
+                {
+                  icon: <Location set="light" size={20} primaryColor="#716FFF" />,
+                  label: t('landing.audience2Tab'),
+                  title: t('landing.audience2Title'),
+                  body: t('landing.audience2Body'),
+                },
+                {
+                  icon: <Graph set="light" size={20} primaryColor="#716FFF" />,
+                  label: t('landing.audience3Tab'),
+                  title: t('landing.audience3Title'),
+                  body: t('landing.audience3Body'),
+                },
+              ] satisfies AudienceCardData[]
+            }
+          />
         </section>
 
         {/* CHECKLIST */}
@@ -775,7 +770,11 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Reveal>
           </div>
 
-          <Reveal delayMs={240} className="mt-5.5">
+          {/* Centred and capped rather than stretched across the full grid
+              width. The copy stops at 62ch, so a 1130px box left roughly
+              two-thirds of itself empty and read as a layout accident instead
+              of the deliberate aside it is. */}
+          <Reveal delayMs={240} className="mx-auto mt-5.5 max-w-[760px]">
             <div className="flex flex-col gap-4.5 rounded-2xl border border-dashed border-[#DEDEE8] bg-white p-6.5 min-[640px]:flex-row min-[640px]:items-start">
               <div className="flex h-10.5 w-10.5 flex-shrink-0 items-center justify-center rounded-[10px] border border-[#DEDEE8] bg-[#F7F7FA]">
                 <Edit set="light" size={18} primaryColor="#6B6880" />
