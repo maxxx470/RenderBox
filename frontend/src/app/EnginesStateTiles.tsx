@@ -22,10 +22,13 @@ type TileState = 'idle' | 'run' | 'ok';
 
 function EngineTile({
   name,
+  description,
   offsetMs,
   reducedMotion,
 }: {
   name: string;
+  /** What this engine is actually better at — see engine-labels.ts. */
+  description: string;
   offsetMs: number;
   reducedMotion: boolean;
 }) {
@@ -80,15 +83,35 @@ function EngineTile({
         )}
       </div>
       <span className="text-[13px] font-semibold text-[#17161F]">{name}</span>
-      {/* The raw state name used to be printed here — "idle" / "run" / "ok",
+      {/* The two tiles used to be identical down to the glyph: same icon, same
+          ground, same everything, only the name differing. Side by side that
+          said the two engines are interchangeable — while the heading above
+          them asks the visitor to CHOOSE one, and the FAQ further down
+          promises to explain the difference. The difference was already
+          written, in engine-labels.ts, and shown inside the app's own engine
+          picker. It belongs here too.
+
+          The raw state name used to sit in this slot — "idle" / "run" / "ok",
           untranslated developer vocabulary shown to every visitor whatever
-          their language. The spinner and the tick already carry the same
-          progression, so the word was noise on top of jargon. */}
+          their language. The spinner and the tick already carry that
+          progression. */}
+      <span className="max-w-[22ch] text-[12px] leading-[1.45] text-[#6B6880]">{description}</span>
     </div>
   );
 }
 
-export function EnginesStateTiles({ engines, events }: { engines: string[]; events: string[] }) {
+export interface EngineTileData {
+  name: string;
+  description: string;
+}
+
+export function EnginesStateTiles({
+  engines,
+  events,
+}: {
+  engines: EngineTileData[];
+  events: string[];
+}) {
   const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.25 });
   const reducedMotion = usePrefersReducedMotion();
   const [eventIndex, setEventIndex] = useState(0);
@@ -104,10 +127,11 @@ export function EnginesStateTiles({ engines, events }: { engines: string[]; even
   return (
     <div ref={ref}>
       <div className="flex gap-3.5">
-        {engines.map((name, i) => (
+        {engines.map((engine, i) => (
           <EngineTile
-            key={name}
-            name={name}
+            key={engine.name}
+            name={engine.name}
+            description={engine.description}
             offsetMs={i * TILE_OFFSET_MS}
             reducedMotion={reducedMotion || !inView}
           />

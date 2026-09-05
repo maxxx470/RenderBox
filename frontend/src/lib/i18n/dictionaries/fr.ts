@@ -468,6 +468,15 @@ const fr = {
   'landing.presetsSketchTitle': 'Esquisse',
   'landing.presetsSketchBody':
     'Traits de crayon visibles, volumes posés, ombres minimales — le rendu de revue de projet, quand il est trop tôt pour montrer du photoréalisme.',
+  'landing.presetsCard1Alt':
+    'Rendu extérieur de jour : immeuble à balcons végétalisés sous un ciel dégagé',
+  'landing.presetsCard2Alt': 'Rendu extérieur de nuit : façade en pierre éclairée au bord de l’eau',
+  'landing.presetsCard3Alt':
+    'Rendu intérieur de jour : chambre traversée par la lumière, fenêtre sur la mer',
+  'landing.presetsCard4Alt':
+    'Rendu intérieur de nuit : séjour en travertin éclairé par des lampes chaudes',
+  'landing.presetsSketchAlt':
+    'Esquisse au crayon d’une maison : volumes posés, traits visibles, aucun matériau',
   'landing.integrationsTitlePrefix': 'Deux moteurs, ',
   'landing.integrationsTitleAccent': 'un seul projet',
   'landing.integrationsSubtitle':
@@ -510,6 +519,7 @@ const fr = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureQuota': '{count} générations / mois',
+  'landing.pricingIncludedLabel': 'Compris dans tous les paliers',
   'landing.pricingFeatureEngines': 'Accès aux deux moteurs de génération',
   'landing.pricingFeaturePresets': 'Accès aux 5 presets d’ambiance',
   'landing.pricingFeatureEditing': 'Mode édition avancée (ajout d’élément, retouche ciblée)',
@@ -526,7 +536,7 @@ const fr = {
   'landing.feedStudioQuery3': 'Analyse les menuiseries',
   'landing.feedStudioQuery4': 'Vérifie la toiture',
   'landing.feedStudioCount': '{count} matériaux détectés',
-  'landing.feedStudioBadge': '100% cohérent avec le projet précédent',
+  'landing.feedStudioBadge': 'Matériaux réinjectés dans le prochain rendu',
 
   'landing.enginesEvent1': 'Analyse des matériaux...',
   'landing.enginesEvent2': 'Génération du rendu...',

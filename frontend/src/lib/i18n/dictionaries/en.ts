@@ -452,6 +452,14 @@ const en: Record<keyof typeof fr, string> = {
   'landing.presetsSketchTitle': 'Sketch',
   'landing.presetsSketchBody':
     'Visible pencil strokes, loose massing, minimal shading — the design-review render, for when it is too early to show photorealism.',
+  'landing.presetsCard1Alt':
+    'Exterior day render: apartment building with planted balconies under a clear sky',
+  'landing.presetsCard2Alt': 'Exterior night render: lit stone facade at the water’s edge',
+  'landing.presetsCard3Alt':
+    'Interior day render: bedroom crossed by daylight, window onto the sea',
+  'landing.presetsCard4Alt': 'Interior night render: travertine living room lit by warm lamps',
+  'landing.presetsSketchAlt':
+    'Pencil sketch of a house: massing laid down, visible strokes, no materials',
 
   'landing.integrationsTitlePrefix': 'Two engines, ',
   'landing.integrationsTitleAccent': 'one project',
@@ -495,6 +503,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureQuota': '{count} generations / month',
+  'landing.pricingIncludedLabel': 'Included in every tier',
   'landing.pricingFeatureEngines': 'Access to both generation engines',
   'landing.pricingFeaturePresets': 'Access to all 5 mood presets',
   'landing.pricingFeatureEditing': 'Advanced editing mode (add element, targeted retouch)',
@@ -511,7 +520,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.feedStudioQuery3': 'Analyze the window frames',
   'landing.feedStudioQuery4': 'Check the roof',
   'landing.feedStudioCount': '{count} materials detected',
-  'landing.feedStudioBadge': '100% consistent with the previous project',
+  'landing.feedStudioBadge': 'Materials re-injected into the next render',
 
   'landing.enginesEvent1': 'Analyzing materials...',
   'landing.enginesEvent2': 'Generating render...',

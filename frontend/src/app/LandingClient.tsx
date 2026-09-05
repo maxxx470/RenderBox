@@ -26,7 +26,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Edit, Graph, Home, Image as ImageIcon, Location, Scan, TickSquare } from 'react-iconly';
+import { Edit, Graph, Home, Image as ImageIcon, Location, TickSquare } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -130,62 +130,58 @@ function CheckItem({ children }: { children: React.ReactNode }) {
 //
 // Iconly ships no sun or moon, so forcing five arbitrary glyphs would have said
 // less than this does. Full literal class strings for the Tailwind scanner.
-const AMBIANCES = {
-  jourExt: {
-    chip: 'mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#7FC4FF_0%,#A9D9FF_55%,#EAF6FF_100%)]',
-    glyph: 'home',
-  },
-  nuitExt: {
-    chip: 'mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#141B3D_0%,#2B2F6B_50%,#6E6BFF_100%)]',
-    glyph: 'home',
-  },
-  jourInt: {
-    chip: 'mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#FFD9A0_0%,#FFEBD1_55%,#FFF8EE_100%)]',
-    glyph: 'category',
-  },
-  nuitInt: {
-    chip: 'mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] bg-[linear-gradient(135deg,#2A1D12_0%,#7A4A1C_55%,#F5A94B_100%)]',
-    glyph: 'category',
-  },
+// One preset, shown rather than described.
+//
+// Each card used to lead with a 40px gradient square and a glyph — a colour
+// standing in for a light, on a page whose whole promise is what the light
+// looks like. The renders already existed: /public/galerie feeds the
+// /exemple page. A preset IS a look, so the look is the card.
+//
+// The files under /public/presets are centre-cropped to 3:2 and re-encoded at
+// 600x400 (203KB for all five, down from 472KB at full size) — the cards
+// display at roughly 280px wide, so the originals were paying for resolution
+// nobody sees. Served from /public because the site CSP is
+// `img-src 'self' data: blob:` and an external host is silently blocked.
+//
+// The crop of each was checked by eye: all five keep their subject in the
+// middle band, which is why a centre crop is safe here and would not be for
+// an arbitrary image.
+const AMBIANCE_IMAGE = {
+  jourExt: '/presets/jour-ext.jpg',
+  nuitExt: '/presets/nuit-ext.jpg',
+  jourInt: '/presets/jour-int.jpg',
+  nuitInt: '/presets/nuit-int.jpg',
 } as const;
 
-type AmbianceKey = keyof typeof AMBIANCES;
-
-/** Pale grounds need a dark glyph to stay above the contrast floor. */
-const LIGHT_CHIP: Record<AmbianceKey, boolean> = {
-  jourExt: true,
-  nuitExt: false,
-  jourInt: true,
-  nuitInt: false,
-};
+type AmbianceKey = keyof typeof AMBIANCE_IMAGE;
 
 function PresetCard({
   ambiance,
   title,
   body,
+  alt,
 }: {
   ambiance: AmbianceKey;
   title: string;
   body: string;
+  /** Describes the render, not the preset — the title already names it. */
+  alt: string;
 }) {
-  const a = AMBIANCES[ambiance];
-  const ink = LIGHT_CHIP[ambiance] ? '#17161F' : '#ffffff';
   return (
-    <div className="h-full rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-6.5 transition-colors hover:border-[#CFCADF]">
-      <div className={a.chip}>
-        {/* The glyph carries exterior-vs-interior, the gradient carries
-            day-vs-night — two dimensions, two channels. The interior half used
-            to borrow Category, a 2x2 grid that says nothing about being inside
-            a room; Scan's framing brackets read as a viewpoint, which is
-            exactly what the copy calls it. */}
-        {a.glyph === 'home' ? (
-          <Home set="light" size={18} primaryColor={ink} />
-        ) : (
-          <Scan set="light" size={18} primaryColor={ink} />
-        )}
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] transition-colors hover:border-[#CFCADF]">
+      <div className="aspect-[3/2] w-full overflow-hidden bg-[#F1F0F6]">
+        <img
+          src={AMBIANCE_IMAGE[ambiance]}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover transition-transform duration-[400ms] ease-out motion-safe:group-hover:scale-[1.04]"
+        />
       </div>
-      <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
-      <p className="text-[13px] leading-[1.55] text-[#6B6880]">{body}</p>
+      <div className="flex flex-1 flex-col p-5.5">
+        <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
+        <p className="text-[13px] leading-[1.55] text-[#6B6880]">{body}</p>
+      </div>
     </div>
   );
 }
@@ -234,15 +230,20 @@ function PricingCard({
         </div>
         <div className={`text-[12px] text-[#8A8896] ${MONO}`}>~{tier.priceUsdDisplay} $</div>
       </div>
+      {/* One line, not four.
+          The other three — both engines, the five presets, advanced editing —
+          are IDENTICAL on all three tiers, so printing them on each card
+          repeated six lines of text that carry no decision, and buried the one
+          line that does. The section's own subtitle already says "same
+          engines, same presets, only the monthly quota changes", and the card
+          then spent most of its height contradicting that by listing them
+          anyway. They are stated once, under the grid. */}
       <ul className="flex flex-col gap-2.5">
         <CheckItem>
           <span className={`font-semibold text-[#17161F] ${MONO}`}>
             {t('landing.pricingFeatureQuota', { count: tier.generationsPerMonth })}
           </span>
         </CheckItem>
-        <CheckItem>{t('landing.pricingFeatureEngines')}</CheckItem>
-        <CheckItem>{t('landing.pricingFeaturePresets')}</CheckItem>
-        <CheckItem>{t('landing.pricingFeatureEditing')}</CheckItem>
       </ul>
       <button
         type="button"
@@ -718,8 +719,14 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <Reveal className="min-[860px]:order-1">
               <EnginesStateTiles
                 engines={[
-                  ENGINE_LABELS.nanobanana.name[locale],
-                  ENGINE_LABELS.gpt_image.name[locale],
+                  {
+                    name: ENGINE_LABELS.nanobanana.name[locale],
+                    description: ENGINE_LABELS.nanobanana.description[locale],
+                  },
+                  {
+                    name: ENGINE_LABELS.gpt_image.name[locale],
+                    description: ENGINE_LABELS.gpt_image.description[locale],
+                  },
                 ]}
                 events={[
                   t('landing.enginesEvent1'),
@@ -750,6 +757,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 ambiance="jourExt"
                 title={t('landing.presetsCard1Title')}
                 body={t('landing.presetsCard1Body')}
+                alt={t('landing.presetsCard1Alt')}
               />
             </Reveal>
             <Reveal delayMs={60}>
@@ -757,6 +765,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 ambiance="nuitExt"
                 title={t('landing.presetsCard2Title')}
                 body={t('landing.presetsCard2Body')}
+                alt={t('landing.presetsCard2Alt')}
               />
             </Reveal>
             <Reveal delayMs={120}>
@@ -764,6 +773,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 ambiance="jourInt"
                 title={t('landing.presetsCard3Title')}
                 body={t('landing.presetsCard3Body')}
+                alt={t('landing.presetsCard3Alt')}
               />
             </Reveal>
             <Reveal delayMs={180}>
@@ -771,6 +781,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 ambiance="nuitInt"
                 title={t('landing.presetsCard4Title')}
                 body={t('landing.presetsCard4Body')}
+                alt={t('landing.presetsCard4Alt')}
               />
             </Reveal>
           </div>
@@ -780,11 +791,22 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               two-thirds of itself empty and read as a layout accident instead
               of the deliberate aside it is. */}
           <Reveal delayMs={240} className="mx-auto mt-5.5 max-w-[760px]">
-            <div className="flex flex-col gap-4.5 rounded-2xl border border-dashed border-[#DEDEE8] bg-white p-6.5 min-[640px]:flex-row min-[640px]:items-start">
-              <div className="flex h-10.5 w-10.5 flex-shrink-0 items-center justify-center rounded-[10px] border border-[#DEDEE8] bg-[#F7F7FA]">
-                <Edit set="light" size={18} primaryColor="#6B6880" />
+            {/* Kept dashed and apart from the grid — the split is the
+                product's own, this preset is the one that is deliberately NOT
+                photorealistic. But it now shows the drawing it describes:
+                "traits de crayon visibles, volumes poses" is a claim about an
+                image, and the image exists. */}
+            <div className="flex flex-col gap-5 rounded-2xl border border-dashed border-[#DEDEE8] bg-white p-5 min-[640px]:flex-row min-[640px]:items-center">
+              <div className="w-full flex-shrink-0 overflow-hidden rounded-xl bg-[#F1F0F6] min-[640px]:w-[240px]">
+                <img
+                  src="/presets/esquisse.jpg"
+                  alt={t('landing.presetsSketchAlt')}
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[3/2] h-full w-full object-cover"
+                />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 min-[640px]:py-1.5">
                 <p className={`mb-1.5 text-[11px] uppercase tracking-wide text-[#8A8896] ${MONO}`}>
                   {t('landing.presetsSketchLabel')}
                 </p>
@@ -820,6 +842,23 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               </Reveal>
             ))}
           </div>
+
+          {/* What every tier includes, said once. This is the half of the old
+              cards that never varied; as a single row under the grid it stays
+              readable and stops competing with the quota, which is the only
+              figure anyone is actually comparing. */}
+          <Reveal delayMs={450} className="mx-auto mt-6 max-w-[980px]">
+            <div className="flex flex-col gap-3 rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] px-6 py-5">
+              <p className={`text-[11px] uppercase tracking-wide text-[#8A8896] ${MONO}`}>
+                {t('landing.pricingIncludedLabel')}
+              </p>
+              <ul className="flex flex-col gap-2.5 min-[720px]:flex-row min-[720px]:flex-wrap min-[720px]:gap-x-8">
+                <CheckItem>{t('landing.pricingFeatureEngines')}</CheckItem>
+                <CheckItem>{t('landing.pricingFeaturePresets')}</CheckItem>
+                <CheckItem>{t('landing.pricingFeatureEditing')}</CheckItem>
+              </ul>
+            </div>
+          </Reveal>
         </section>
 
         {/* FAQ */}
