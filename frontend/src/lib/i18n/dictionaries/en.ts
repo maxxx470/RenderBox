@@ -25,7 +25,43 @@ const en: Record<keyof typeof fr, string> = {
 
   'app.freeAccessAccount': 'Free access',
   'app.downloadButton': 'Download this image',
-  'app.railExamples': 'Examples',
+  'tarifs.title': 'Subscription',
+  'tarifs.current': 'Your current plan:',
+  'tarifs.none': 'You have no active plan yet. Pick one below.',
+  'tarifs.demoNote': 'Free access: every feature is already open. Payment will come with accounts.',
+  'app.railHome': 'Home',
+  'app.railGroupLibrary': 'Library',
+  'app.railPlanPill': '{tier} · {remaining}/{max} renders',
+  'app.railNavigation': 'Navigation',
+  'app.railGroupMain': 'Main',
+  'app.railGroupAccount': 'Account',
+  'app.railPricing': 'Subscription',
+  'app.railEnhance': 'Enhance',
+  'enhance.title': 'Enhance',
+  'enhance.subtitle':
+    'Drop an existing render: RenderBox makes it sharper, better lit and more realistic, without touching the design.',
+  'enhance.dropTitle': 'Drop your render here',
+  'enhance.dropHint': 'JPG, PNG, WebP or HEIC, or click to choose',
+  'enhance.change': 'Change image',
+  'enhance.optionsHeading': 'Improve',
+  'enhance.strengthHeading': 'Strength',
+  'enhance.engineHeading': 'Engine',
+  'enhance.instructionLabel': 'Detail (optional)',
+  'enhance.instructionPlaceholder': 'E.g. more reflective glazing, warmer timber',
+  'enhance.submit': 'Enhance render',
+  'enhance.working': 'Enhancing…',
+  'enhance.workingHint': 'Allow 20 to 60 seconds. Framing and design stay the same.',
+  'enhance.before': 'Before',
+  'enhance.after': 'After',
+  'enhance.download': 'Download',
+  'enhance.openProject': 'Open in project',
+  'enhance.again': 'New image',
+  'enhance.retry': 'Run again',
+  'enhance.error': 'Enhancement failed. Try again.',
+  'enhance.pickOne': 'Pick at least one improvement.',
+  'enhance.projectName': 'Enhance {date}',
+  'enhance.tag': 'Enhance',
+  'enhance.costNote': '1 render taken from your quota',
   'app.elementsChip': 'Elements',
   'app.elementsHint': 'Reuse an image from this project as the reference',
   'app.elementsError': 'Could not load that element',
@@ -63,6 +99,31 @@ const en: Record<keyof typeof fr, string> = {
   'app.sidebarCollapse': 'Collapse the menu',
   'app.sidebarExpand': 'Expand the menu',
   'app.openMenu': 'Open the menu',
+  'app.mobileMore': 'More',
+  'app.mobileNew': 'New render',
+  'app.assistant': 'Assistant',
+  'assistant.title': 'RenderBox assistant',
+  'assistant.status': 'Online · help with the app',
+  'assistant.close': 'Close',
+  'assistant.modeSearch': 'Search',
+  'assistant.welcome':
+    'Hello! I am the RenderBox assistant. I know the whole app: generating a render, picking an engine, changing a render by commenting on it, Enhance, the project tree, your plan. What would you like to do?',
+  'assistant.welcomeSearch':
+    'Search mode: ask about architecture, materials or styles. I search the web and cite my sources.',
+  'assistant.suggest1': 'How do I edit part of a render?',
+  'assistant.suggest2': 'Which engine should I pick?',
+  'assistant.suggest3': 'What is Enhance for?',
+  'assistant.suggest4': 'How does the subscription work?',
+  'assistant.sources': 'Sources:',
+  'assistant.thinking': 'Thinking…',
+  'assistant.placeholder': 'Ask about RenderBox…',
+  'assistant.placeholderSearch': 'Search the web…',
+  'assistant.send': 'Send',
+  'assistant.foot': 'Based on the RenderBox documentation — AI can make mistakes',
+  'assistant.footSearch': 'Web search — sources are shown',
+  'assistant.limited':
+    'You have reached the question limit for this hour. Try again a little later.',
+  'assistant.error': 'I could not answer, please try again.',
   'app.closeMenu': 'Close the menu',
   'app.materialsTitle': 'Materials sheet',
   'app.materialsEmptyBody': 'Available after your first generated render',
@@ -85,11 +146,13 @@ const en: Record<keyof typeof fr, string> = {
   'app.uploading': 'Uploading…',
   'app.generating': 'Generating…',
   'app.uploadError': 'Upload failed. Try again.',
+  'app.serviceNotConfigured':
+    "This server has no image storage or AI engine configured yet. Retrying won't help.",
   'app.generateError': 'Generation failed. Try again.',
   // "Image" rather than "Generate": the mode is named after what it produces,
   // to pair with the "Video" mode announced right below it.
   'app.modeGenerate': 'Image',
-  'app.modeRetouch': 'Retouch',
+  'app.modeRetouch': 'Comment',
   'app.modeAdd': 'Add',
   'app.modeGenerateAction': 'Generate',
   'app.ratioLabel': 'Ratio',
@@ -107,15 +170,24 @@ const en: Record<keyof typeof fr, string> = {
   'app.hintNoPrompt': 'Describe what you want.',
   'app.hintNoTier': 'Choose a plan to generate.',
   'app.modeSelectNodeHint': 'Select a generated render first to edit it.',
-  'app.pillZoneSelected': 'Zone selected',
-  'app.pillZoneEmpty': 'Select a zone',
+  'app.pillZoneSelected': 'Comments placed',
+  'app.pillZoneEmpty': 'No comment yet',
   'app.pillReferenceAdded': 'Reference added',
   'app.pillReferenceEmpty': 'Add a reference',
 
   'app.modesLabel': 'Modes',
+  'app.cmdVariantsMore': 'One variant more',
+  'app.cmdVariantsLess': 'One variant fewer',
+  'app.cmdVariants': 'Variants',
+  'app.cmdReferenceTag': 'Reference',
+  'app.cmdPhotoTag': 'Photo',
+  'app.cmdSourceTag': 'Source',
+  'app.cmdRemoveAttachment': 'Remove the image',
+  'app.cmdAttachRetouch': 'In Comment mode you comment on the image itself: nothing to attach.',
+  'app.cmdAttach': 'Attach an image',
   'app.genHomeTitle': 'Generate a render',
   'app.genHomeInputPlaceholder': 'Describe the render to generate, or drop a reference image…',
-  'app.genHomeModeHint': 'Open an existing project to retouch or add an element.',
+  'app.genHomeModeHint': 'Open an existing project to comment on it or add an element.',
   'app.genHomeOpenProjects': 'View my projects',
   'app.genHomeQuickStartError': 'Quick start failed. Try again.',
   'app.genHomeNoTierTitle': 'No active plan',
@@ -135,6 +207,14 @@ const en: Record<keyof typeof fr, string> = {
   'app.tierStandard': 'Standard',
   'app.tierPro': 'Pro',
 
+  'annotate.placeholder': 'E.g. timber-clad facade',
+  'annotate.save': 'OK',
+  'annotate.remove': 'Remove',
+  'annotate.listTitle': 'Comments',
+  'annotate.max': 'At most {n} comments per pass.',
+  'annotate.engineNote': 'Comments are always handled by Engine 2.',
+  'annotate.engineLocked': 'Comment mode always uses Engine 2',
+  'annotate.pinLabel': 'Comment {n}',
   'edit.enterButton': 'Edit',
   'edit.closeButton': 'Close edit mode',
   'edit.canvasTitle': 'Render — {preset}',
@@ -143,17 +223,18 @@ const en: Record<keyof typeof fr, string> = {
   'edit.panelSubtitle':
     'Modify this render without starting over — the rest of the image stays intact.',
   'edit.tabAdd': 'Add',
-  'edit.tabRetouch': 'Retouch',
+  'edit.tabRetouch': 'Comment',
   'edit.referenceLabel': 'Reference image',
   'edit.referenceHint': 'Character, object, or moodboard to integrate',
   'edit.referenceRemove': 'Remove image',
   'edit.referenceRequired': 'Add a reference image.',
-  'edit.zoneHint': 'Draw a rectangle on the image to select the zone to retouch.',
-  'edit.zoneRequired': 'Select a zone on the image before generating.',
+  'edit.zoneHint':
+    'Click the image where it should change, then write the change. You can place several comments.',
+  'edit.zoneRequired': 'Click the image to place at least one comment.',
   'edit.instructionLabel': 'Where and how',
   'edit.instructionPlaceholderAdd':
     'E.g. add a person standing near the main entrance, holding a bag',
-  'edit.instructionPlaceholderRetouch': 'E.g. replace the door with a glass door',
+  'edit.instructionPlaceholderRetouch': 'Overall note (optional)',
   'edit.variantLabel': 'Number of variants',
   'edit.variantSub': 'Generate several versions in one action',
   'edit.generateButton': 'Generate {n} variants',
@@ -164,6 +245,9 @@ const en: Record<keyof typeof fr, string> = {
 
   'info.title': 'Updates',
   'info.subtitle': 'What changed in RenderBox, newest first.',
+  'info.guideTitle': 'Features in motion',
+  'info.filmEtapesBody':
+    'A photo or a sketch, an ambiance, a render — by day or by night, inside or out.',
   'info.plannedHeading': 'Coming up',
   'info.shippedHeading': 'Updates',
   'info.badgePlanned': 'planned',
@@ -180,10 +264,9 @@ const en: Record<keyof typeof fr, string> = {
   'dashboard.videoTitle': 'Discover RenderBox in 2 minutes',
   'dashboard.videoPlay': 'Play the video',
   'dashboard.howTitle': 'From photo to render, in 3 steps',
-  'dashboard.step1': 'Photo or sketch',
-  'dashboard.step2': 'Ambiance',
-  'dashboard.step3': 'Render',
-  'dashboard.howCta': 'See examples',
+  'dashboard.howCta': 'Generate a render',
+  'dashboard.filmAlt':
+    'Film: a photo or a sketch, an ambiance picked (day, night, interior, exterior), then the render.',
   'dashboard.showcaseLabel': 'Showcase renders',
   'dashboard.showcaseGoTo': 'Go to slide {n}',
   'dashboard.statProjects': 'Projects',
@@ -306,10 +389,6 @@ const en: Record<keyof typeof fr, string> = {
   'admin.journal.action.user_restore_deleted': 'restored deleted account {target}',
   'admin.journal.action.generic': '{action} on {targetType} {targetId}',
 
-  'exemple.appGallerySubtitle':
-    'Renders made with RenderBox, every ambiance mixed together. Nothing to sort through — just look at what it does.',
-  'exemple.appGalleryCta':
-    'Upload a photo or a sketch of your building, pick an ambiance, and you get the same thing on your own project.',
   'exemple.title': 'Render examples',
   'exemple.subtitle':
     'Each preset gives a different light. Here is what each one looks like, across several projects.',
@@ -403,11 +482,17 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterBody':
     "Drag to compare. Every material, every opening, every proportion kept — RenderBox doesn't reinvent your project, it reveals it.",
   'landing.beforeAfterAltBefore':
-    'Hand-drawn sketch of a contemporary house, corner view from the street.',
+    'Pencil sketch of a stone house: a tower with one large window, linked to a timber pavilion.',
   'landing.beforeAfterAltAfter':
-    'The same building as a photorealistic render, at dusk after rain.',
+    'The same house as a photorealistic render: exposed stone, timber cladding, late-afternoon sky.',
   'landing.beforeAfterLabelBefore': 'Sketch',
   'landing.beforeAfterLabelAfter': 'RenderBox render',
+  'landing.beforeAfterExterior': 'Exterior',
+  'landing.beforeAfterInterior': 'Interior',
+  'landing.beforeAfterAltBeforeInterior':
+    'Pencil sketch of a living room, a large picture window opening onto a garden.',
+  'landing.beforeAfterAltAfterInterior':
+    'The same living room as a photorealistic render: timber panelling, linen sofa, garden in daylight.',
 
   'landing.audienceTitle': 'Built for everyone who sells before they build',
   'landing.audience1Title': 'The same materials at every revision',
@@ -439,20 +524,11 @@ const en: Record<keyof typeof fr, string> = {
   'landing.split1RoofValue': 'Terracotta tile',
   'landing.split1AutoTag': 'auto',
 
+  'landing.treeTitle': 'One image. Every direction.',
+  'landing.treeSubtitle': 'Start again from any render to try a new direction. Nothing gets lost.',
+  'landing.treeAlt':
+    'Demo film: from a base render, three variants are generated (exterior night, interior day, an added character), each becoming a branch of the project tree.',
   'landing.split2Tag': 'Tree gallery',
-  'landing.split2Title': 'Every render can become a new reference',
-  'landing.split2Body':
-    'No fixed chain: from a single image, generate multiple variants and keep the full history visible to explore several directions.',
-  'landing.split2Check1': 'Full, browsable history',
-  'landing.split2Check2': 'Pick up any render as a new starting point',
-  'landing.split2Check3': 'No variant lost while exploring another',
-  'landing.split2TagEdit': 'added element',
-  'landing.split2NodeBase': 'Base render',
-  'landing.split2TagBase': 'exterior day',
-  'landing.split2NodeInterior': 'Interior day',
-  'landing.split2TagVariant': 'variant',
-  'landing.split2NodeNight': 'Exterior night',
-  'landing.split2NodeExtra': '+ character',
 
   'landing.presetsTitlePrefix': 'A preset for ',
   'landing.presetsTitleAccent': 'every mood',
@@ -479,15 +555,27 @@ const en: Record<keyof typeof fr, string> = {
   'landing.presetsSketchAlt':
     'Pencil sketch of a house: massing laid down, visible strokes, no materials',
 
-  'landing.integrationsTitlePrefix': 'Two engines, ',
-  'landing.integrationsTitleAccent': 'one project',
-  'landing.integrationsSubtitle':
-    'Pick the engine that fits each render — materials and history stay shared.',
-
   'landing.ctaBandTitle': 'Ready to generate your first renders?',
   'landing.ctaBandBody':
     'Upload a photo, pick a preset, and let RenderBox remember every material for you.',
   'landing.ctaBandButton': 'Start for free',
+  'landing.navHow': 'How it works',
+  'landing.navFaq': 'FAQ',
+  'landing.menuClose': 'Close the menu',
+  'landing.heroBadgeNew': 'New',
+  'landing.heroBadgeText': 'Two AI engines in one project',
+  'landing.heroSubtitle':
+    'Upload a photo or a sketch: RenderBox generates renders that stay consistent from one view to the next, materials included.',
+  'landing.eyebrowResult': 'The result',
+  'landing.eyebrowFeatures': 'Key features',
+  'landing.eyebrowHow': 'How it works',
+  'landing.howTitle': 'Simple, consistent and automated',
+  'landing.howSubtitle':
+    'Upload an image: RenderBox detects the materials, remembers them and reuses them in every new render of the project.',
+  'landing.eyebrowPresets': 'Ambiances',
+  'landing.eyebrowPricing': 'Pricing',
+  'landing.eyebrowFaq': 'FAQ',
+  'landing.faqSubtitle': 'Answers to the questions we hear most about RenderBox.',
 
   'landing.faqTitle': 'Everything you need to know before you start',
   'landing.faq1Q': 'What happens if I switch tiers mid-month?',
@@ -497,13 +585,20 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faq2A': 'Yes. Every render you generate is yours, with no commercial-use limit.',
   'landing.faq3Q': "What's the difference between the two AI engines?",
   'landing.faq3A':
-    'Engine 1 is fast and economical, Engine 2 follows precise instructions more closely — you pick whichever fits each render best, any time.',
+    'Engine 1 (red) is fast and economical, Engine 2 (yellow) follows precise instructions more closely — you pick whichever fits each render best, any time. Edits by comment always use Engine 2.',
   'landing.faq4Q': 'What happens when I hit my monthly quota?',
   'landing.faq4A':
     'Generations are blocked until renewal or until you switch tiers — never a surprise charge.',
   'landing.faq5Q': 'Can I cancel any time?',
   'landing.faq5A':
     'Yes, no commitment. Your access stays active until the already-paid period ends.',
+  'landing.faq7A':
+    'The Assistant button opens a chat that knows all of RenderBox and guides you step by step. It also answers your architecture and materials questions.',
+  'landing.faq7Q': 'What if I get lost in the app?',
+  'landing.faq6A':
+    'With the Comment mode: click the render where it should change, write the change (up to 8 comments), then Apply. The rest of the image is kept and the original stays in the project tree.',
+  'landing.faq6Q': 'How do I change part of a render?',
+  'landing.pricingFeatureAssistant': 'Built-in assistant to guide you',
 
   'landing.footerProductHeading': 'Product',
   'landing.footerTagline':
@@ -524,7 +619,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingIncludedLabel': 'Included in every tier',
   'landing.pricingFeatureEngines': 'Access to both generation engines',
   'landing.pricingFeaturePresets': 'Access to all 5 mood presets',
-  'landing.pricingFeatureEditing': 'Advanced editing mode (add element, targeted retouch)',
+  'landing.pricingFeatureEditing': 'Edit by comments, add elements and Enhance',
   'landing.pricingCta': 'Choose {tier}',
   'landing.pricingCtaLoading': 'Redirecting…',
   'landing.pricingError': 'Could not start checkout. Try again.',
@@ -540,10 +635,17 @@ const en: Record<keyof typeof fr, string> = {
   'landing.feedStudioCount': '{count} materials detected',
   'landing.feedStudioBadge': 'Materials re-injected into the next render',
 
-  'landing.enginesEvent1': 'Analyzing materials...',
-  'landing.enginesEvent2': 'Generating render...',
-  'landing.enginesEvent3': 'Checking consistency...',
-  'landing.enginesEvent4': 'Render ready.',
+  'landing.commentTitle': "Point. Comment. It's changed.",
+  'landing.commentSubtitle':
+    'Click the render, write what should change. Several comments, one click.',
+  'landing.commentAlt':
+    'Demo film: three comments placed on a render (yellow lacquered façade panels, greenery removed, matching yellow car), one click on Apply, then the new render beside the old one.',
+  'landing.enginesEyebrow': 'Render engines',
+  'landing.enginesTitle': 'Two engines, one project',
+  'landing.enginesSubtitle':
+    'Compare both engines on the same request and keep the one that fits: materials and history stay shared.',
+  'landing.enginesAlt':
+    'Demo film: the same request rendered by Engine 1 then Engine 2, for a dining room (left) and a mountain pavilion (right), then the four renders side by side.',
 };
 
 export default en;

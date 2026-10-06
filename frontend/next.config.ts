@@ -26,6 +26,17 @@ const securityHeaders = [
 
 const config: NextConfig = {
   reactStrictMode: true,
+  // Dev-only "N" badge defaults to bottom-left, where it covers the sidebar's
+  // tier badge. Never shown in production builds.
+  devIndicators: { position: 'bottom-right' },
+  experimental: {
+    // The repo lives in a OneDrive folder, which syncs .next/dev as well. Its
+    // rewrites corrupted Turbopack's on-disk dev cache, and dynamic API routes
+    // (/api/projects/[projectId], …/materials) intermittently answered with
+    // Next's HTML 404 until the cache was wiped — rename and delete broke.
+    // In-memory only: a slower first compile per `pnpm dev`, never a lost route.
+    turbopackFileSystemCacheForDev: false,
+  },
   // Standalone output bundles a self-contained server.js + minimal node_modules
   // into .next/standalone — required by the Docker runtime image (frontend/Dockerfile).
   // Has no impact on `next dev` / `next start` workflows.
@@ -54,5 +65,5 @@ export default withSentryConfig(config, {
   // user base has heavy ad-blocker usage.
   // tunnelRoute: '/monitoring',
   hideSourceMaps: true,
-  disableLogger: true,
+  webpack: { treeshake: { removeDebugLogging: true } },
 });

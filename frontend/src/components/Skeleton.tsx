@@ -9,7 +9,7 @@
 // reduced the blocks simply sit still in their base tone rather than pulsing.
 
 export function SkeletonBlock({ className = '' }: { className?: string }) {
-  return <div aria-hidden className={`rb-skeleton rounded-lg bg-[#F1F0F6] ${className}`} />;
+  return <div aria-hidden className={`rb-skeleton rounded-lg bg-[#EFF3F0] ${className}`} />;
 }
 
 /**

@@ -23,7 +23,44 @@ const fr = {
 
   'app.freeAccessAccount': 'Accès libre',
   'app.downloadButton': 'Télécharger cette image',
-  'app.railExamples': 'Exemples',
+  'tarifs.title': 'Abonnement',
+  'tarifs.current': 'Ta formule actuelle :',
+  'tarifs.none': "Tu n'as pas encore de formule active. Choisis-en une ci-dessous.",
+  'tarifs.demoNote':
+    'Accès libre : toutes les fonctions sont déjà ouvertes. Le paiement arrivera avec les comptes.',
+  'app.railHome': 'Accueil',
+  'app.railGroupLibrary': 'Bibliothèque',
+  'app.railPlanPill': '{tier} · {remaining}/{max} rendus',
+  'app.railNavigation': 'Navigation',
+  'app.railGroupMain': 'Principal',
+  'app.railGroupAccount': 'Compte',
+  'app.railPricing': 'Abonnement',
+  'app.railEnhance': 'Enhance',
+  'enhance.title': 'Enhance',
+  'enhance.subtitle':
+    'Dépose un rendu existant : RenderBox le rend plus net, mieux éclairé et plus réaliste, sans toucher au design.',
+  'enhance.dropTitle': 'Dépose ton rendu ici',
+  'enhance.dropHint': 'JPG, PNG, WebP ou HEIC, ou clique pour choisir',
+  'enhance.change': "Changer d'image",
+  'enhance.optionsHeading': 'À améliorer',
+  'enhance.strengthHeading': 'Intensité',
+  'enhance.engineHeading': 'Moteur',
+  'enhance.instructionLabel': 'Précision (facultatif)',
+  'enhance.instructionPlaceholder': 'Ex. : vitrages plus réfléchissants, bois plus chaud',
+  'enhance.submit': 'Améliorer le rendu',
+  'enhance.working': 'Amélioration en cours…',
+  'enhance.workingHint': 'Compte 20 à 60 secondes. Le cadrage et le design ne changent pas.',
+  'enhance.before': 'Avant',
+  'enhance.after': 'Après',
+  'enhance.download': 'Télécharger',
+  'enhance.openProject': 'Ouvrir dans le projet',
+  'enhance.again': 'Nouvelle image',
+  'enhance.retry': 'Relancer',
+  'enhance.error': "L'amélioration a échoué. Réessaie.",
+  'enhance.pickOne': 'Choisis au moins une amélioration.',
+  'enhance.projectName': 'Enhance du {date}',
+  'enhance.tag': 'Enhance',
+  'enhance.costNote': '1 rendu décompté de ton quota',
   'app.elementsChip': 'Éléments',
   'app.elementsHint': 'Réutilise une image de ce projet comme référence',
   'app.elementsError': 'Impossible de charger cet élément',
@@ -62,6 +99,31 @@ const fr = {
   'app.sidebarCollapse': 'Réduire le menu',
   'app.sidebarExpand': 'Déplier le menu',
   'app.openMenu': 'Ouvrir le menu',
+  'app.mobileMore': 'Plus',
+  'app.mobileNew': 'Nouveau rendu',
+  'app.assistant': 'Assistant',
+  'assistant.title': 'Assistant RenderBox',
+  'assistant.status': "En ligne · aide sur l'application",
+  'assistant.close': 'Fermer',
+  'assistant.modeSearch': 'Recherche',
+  'assistant.welcome':
+    "Bonjour ! Je suis l'assistant RenderBox. Je connais toute l'application : générer un rendu, choisir un moteur, modifier un rendu en le commentant, Enhance, l'arbre du projet, votre abonnement. Que voulez-vous faire ?",
+  'assistant.welcomeSearch':
+    "Mode Recherche : posez vos questions d'architecture, de matériaux ou de styles. Je cherche sur Internet et je cite mes sources.",
+  'assistant.suggest1': "Comment modifier une partie d'un rendu ?",
+  'assistant.suggest2': 'Quel moteur choisir ?',
+  'assistant.suggest3': 'À quoi sert Enhance ?',
+  'assistant.suggest4': "Comment fonctionne l'abonnement ?",
+  'assistant.sources': 'Sources :',
+  'assistant.thinking': 'Je réfléchis…',
+  'assistant.placeholder': 'Posez votre question sur RenderBox…',
+  'assistant.placeholderSearch': 'Rechercher sur Internet…',
+  'assistant.send': 'Envoyer',
+  'assistant.foot': "Basé sur la documentation RenderBox — l'IA peut se tromper",
+  'assistant.footSearch': 'Recherche web — les sources sont affichées',
+  'assistant.limited':
+    'Vous avez atteint la limite de questions pour cette heure. Réessayez un peu plus tard.',
+  'assistant.error': "Je n'ai pas pu répondre, réessayez.",
   'app.closeMenu': 'Fermer le menu',
   'app.materialsTitle': 'Fiche matériaux',
   'app.materialsEmptyBody': 'Disponible après ton premier rendu généré',
@@ -84,11 +146,13 @@ const fr = {
   'app.uploading': 'Envoi…',
   'app.generating': 'Génération…',
   'app.uploadError': "L'envoi a échoué. Réessaie.",
+  'app.serviceNotConfigured':
+    "Ce serveur n'a pas encore de stockage d'images ou de moteur IA configuré. Réessayer ne changera rien.",
   'app.generateError': 'La génération a échoué. Réessaie.',
   // « Image » et non « Générer » : le mode est nommé par ce qu'il produit,
   // pour faire pendant au mode « Vidéo » annoncé juste en dessous.
   'app.modeGenerate': 'Image',
-  'app.modeRetouch': 'Retoucher',
+  'app.modeRetouch': 'Commenter',
   'app.modeAdd': 'Ajouter',
   'app.modeGenerateAction': 'Générer',
   'app.ratioLabel': 'Format',
@@ -106,15 +170,24 @@ const fr = {
   'app.hintNoPrompt': 'Décris ce que tu veux obtenir.',
   'app.hintNoTier': 'Choisis un palier pour générer.',
   'app.modeSelectNodeHint': "Sélectionne d'abord un rendu généré pour l'éditer.",
-  'app.pillZoneSelected': 'Zone sélectionnée',
-  'app.pillZoneEmpty': 'Sélectionner une zone',
+  'app.pillZoneSelected': 'Commentaires posés',
+  'app.pillZoneEmpty': 'Aucun commentaire',
   'app.pillReferenceAdded': 'Référence ajoutée',
   'app.pillReferenceEmpty': 'Ajouter une référence',
 
   'app.modesLabel': 'Modes',
+  'app.cmdVariantsMore': 'Une variante de plus',
+  'app.cmdVariantsLess': 'Une variante de moins',
+  'app.cmdVariants': 'Variantes',
+  'app.cmdReferenceTag': 'Référence',
+  'app.cmdPhotoTag': 'Photo',
+  'app.cmdSourceTag': 'Source',
+  'app.cmdRemoveAttachment': "Retirer l'image",
+  'app.cmdAttachRetouch': "En mode Commenter, on commente l'image elle-même : rien à joindre.",
+  'app.cmdAttach': 'Joindre une image',
   'app.genHomeTitle': 'Générer un rendu',
   'app.genHomeInputPlaceholder': 'Décris le rendu à générer, ou glisse une image de référence…',
-  'app.genHomeModeHint': 'Ouvre un projet existant pour retoucher ou ajouter un élément.',
+  'app.genHomeModeHint': 'Ouvre un projet existant pour le commenter ou y ajouter un élément.',
   'app.genHomeOpenProjects': 'Voir mes projets',
   'app.genHomeQuickStartError': 'La création rapide a échoué. Réessaie.',
   'app.genHomeNoTierTitle': 'Aucun palier actif',
@@ -138,6 +211,14 @@ const fr = {
   'app.tierStandard': 'Standard',
   'app.tierPro': 'Pro',
 
+  'annotate.placeholder': 'Ex. : façade en bardage bois',
+  'annotate.save': 'OK',
+  'annotate.remove': 'Supprimer',
+  'annotate.listTitle': 'Commentaires',
+  'annotate.max': 'Maximum {n} commentaires par passage.',
+  'annotate.engineNote': 'Les commentaires sont toujours traités par le Moteur 2.',
+  'annotate.engineLocked': 'Le mode Commenter utilise toujours le Moteur 2',
+  'annotate.pinLabel': 'Commentaire {n}',
   'edit.enterButton': 'Éditer',
   'edit.closeButton': 'Fermer le mode édition',
   'edit.canvasTitle': 'Rendu — {preset}',
@@ -146,17 +227,18 @@ const fr = {
   'edit.panelSubtitle':
     "Modifie ce rendu sans repartir de zéro — le reste de l'image reste intact.",
   'edit.tabAdd': 'Ajouter',
-  'edit.tabRetouch': 'Retoucher',
+  'edit.tabRetouch': 'Commentaire',
   'edit.referenceLabel': 'Image de référence',
   'edit.referenceHint': 'Personnage, objet ou moodboard à intégrer',
   'edit.referenceRemove': "Retirer l'image",
   'edit.referenceRequired': 'Ajoute une image de référence.',
-  'edit.zoneHint': "Dessine un rectangle sur l'image pour sélectionner la zone à retoucher.",
-  'edit.zoneRequired': "Sélectionne une zone sur l'image avant de générer.",
+  'edit.zoneHint':
+    "Clique sur l'image à l'endroit à modifier, puis écris le changement. Tu peux poser plusieurs commentaires.",
+  'edit.zoneRequired': "Clique sur l'image pour poser au moins un commentaire.",
   'edit.instructionLabel': 'Où et comment',
   'edit.instructionPlaceholderAdd':
     "Ex: ajoute une personne debout près de l'entrée principale, tenant un sac",
-  'edit.instructionPlaceholderRetouch': 'Ex: remplace la porte par une porte vitrée',
+  'edit.instructionPlaceholderRetouch': 'Note générale (facultatif)',
   'edit.variantLabel': 'Nombre de variantes',
   'edit.variantSub': 'Génère plusieurs versions en une action',
   'edit.generateButton': 'Générer {n} variantes',
@@ -167,6 +249,9 @@ const fr = {
 
   'info.title': 'Informations',
   'info.subtitle': 'Ce qui a changé dans RenderBox, du plus récent au plus ancien.',
+  'info.guideTitle': 'Les fonctionnalités en vidéo',
+  'info.filmEtapesBody':
+    'Une photo ou un croquis, une ambiance, un rendu — de jour comme de nuit, dedans comme dehors.',
   'info.plannedHeading': 'À venir',
   'info.shippedHeading': 'Mises à jour',
   'info.badgePlanned': 'à venir',
@@ -183,10 +268,9 @@ const fr = {
   'dashboard.videoTitle': 'Découvre RenderBox en 2 minutes',
   'dashboard.videoPlay': 'Lancer la vidéo',
   'dashboard.howTitle': 'De la photo au rendu, en 3 étapes',
-  'dashboard.step1': 'Photo ou croquis',
-  'dashboard.step2': 'Ambiance',
-  'dashboard.step3': 'Rendu',
-  'dashboard.howCta': 'Voir des exemples',
+  'dashboard.howCta': 'Générer un rendu',
+  'dashboard.filmAlt':
+    'Film : une photo ou un croquis, le choix d’une ambiance (jour, nuit, intérieur, extérieur), puis le rendu.',
   'dashboard.showcaseLabel': 'Rendus en vitrine',
   'dashboard.showcaseGoTo': 'Aller au visuel {n}',
   'dashboard.statProjects': 'Projets',
@@ -314,10 +398,6 @@ const fr = {
   // fiche matériaux. Elle annonçait « Villa Kalia — projet exemple » avec
   // « la fiche déjà remplie et les 4 ambiances générées », ce qui décrivait un
   // projet unique : le titre aurait démenti la galerie dès la première section.
-  'exemple.appGallerySubtitle':
-    'Des rendus produits avec RenderBox, toutes ambiances mélangées. Rien à trier : regarde ce que ça donne.',
-  'exemple.appGalleryCta':
-    'Charge une photo ou une esquisse de ton bâtiment, choisis une ambiance, et tu obtiens la même chose sur ton projet.',
   'exemple.title': 'Exemples de rendus',
   'exemple.subtitle':
     'Chaque preset donne une lumière différente. Voici à quoi ressemble chacun, sur plusieurs projets.',
@@ -411,11 +491,17 @@ const fr = {
   'landing.beforeAfterBody':
     'Glissez pour comparer. Chaque matériau, chaque ouverture, chaque proportion conservée — RenderBox ne réinvente pas votre projet, il le révèle.',
   'landing.beforeAfterAltBefore':
-    "Croquis à main levée d'une maison contemporaine, vue d'angle depuis la rue.",
+    "Croquis au crayon d'une maison en pierre : une tour percée d'une grande fenêtre, reliée à un pavillon en bois.",
   'landing.beforeAfterAltAfter':
-    'Le même bâtiment en rendu photoréaliste, au crépuscule après la pluie.',
+    'La même maison en rendu photoréaliste : pierre apparente, bardage bois, ciel de fin de journée.',
   'landing.beforeAfterLabelBefore': 'Esquisse',
   'landing.beforeAfterLabelAfter': 'Rendu RenderBox',
+  'landing.beforeAfterExterior': 'Extérieur',
+  'landing.beforeAfterInterior': 'Intérieur',
+  'landing.beforeAfterAltBeforeInterior':
+    "Croquis au crayon d'un salon, grande baie vitrée ouverte sur un jardin.",
+  'landing.beforeAfterAltAfterInterior':
+    'Le même salon en rendu photoréaliste : boiseries, canapé en lin, jardin en lumière du jour.',
 
   'landing.audienceTitle': 'Conçu pour tous ceux qui vendent avant de construire',
   'landing.audience1Title': 'Les mêmes matériaux à chaque révision',
@@ -447,28 +533,20 @@ const fr = {
   'landing.split1RoofValue': 'Tuile terre cuite',
   'landing.split1AutoTag': 'auto',
 
+  'landing.treeTitle': 'Une image. Toutes les pistes.',
+  'landing.treeSubtitle':
+    "Repartez de n'importe quel rendu pour tenter une nouvelle direction. Rien ne se perd.",
+  'landing.treeAlt':
+    "Film de démonstration : depuis un rendu de base, trois variantes sont générées (nuit extérieur, jour intérieur, ajout d'un personnage), chacune devient une branche de l'arbre du projet.",
   'landing.split2Tag': 'Galerie en arbre',
-  'landing.split2Title': 'Chaque rendu peut devenir une nouvelle référence',
-  'landing.split2Body':
-    "Pas de chaîne figée : à partir d'une même image, génère plusieurs variantes et garde tout l'historique visible pour explorer plusieurs directions.",
-  'landing.split2Check1': 'Historique complet et navigable',
-  'landing.split2Check2': "Reprends n'importe quel rendu comme point de départ",
-  'landing.split2Check3': "Aucune perte d'une variante en explorant une autre",
   // Ce que la tuile EST dans l'arbre, pas quel moteur l'a produite. Les
   // sous-libellés portaient les noms des fournisseurs : des noms de moteurs
   // internes, sur la page qui doit vendre le résultat.
   // « Photo upload » reste tel quel — c'est le libellé de la tuile, pas son tag.
-  'landing.split2TagEdit': "ajout d'élément",
   // La section montre une filiation d'UN seul batiment : son texte dit « a
   // partir d'une meme image ». Faute de photo source, la racine est un rendu
   // de base et non un upload — le libelle « Photo upload / photo de depart »
   // aurait annonce une etape que l'image ne montre pas.
-  'landing.split2NodeBase': 'Rendu de base',
-  'landing.split2TagBase': 'jour extérieur',
-  'landing.split2NodeInterior': 'Jour intérieur',
-  'landing.split2TagVariant': 'variante',
-  'landing.split2NodeNight': 'Nuit extérieur',
-  'landing.split2NodeExtra': '+ personnage',
 
   'landing.presetsTitlePrefix': 'Un preset pour ',
   'landing.presetsTitleAccent': 'chaque ambiance',
@@ -496,15 +574,28 @@ const fr = {
     'Rendu intérieur de nuit : séjour en travertin éclairé par des lampes chaudes',
   'landing.presetsSketchAlt':
     'Esquisse au crayon d’une maison : volumes posés, traits visibles, aucun matériau',
-  'landing.integrationsTitlePrefix': 'Deux moteurs, ',
-  'landing.integrationsTitleAccent': 'un seul projet',
-  'landing.integrationsSubtitle':
-    'Choisis le moteur qui convient à chaque rendu, matériaux et historique restent partagés.',
 
   'landing.ctaBandTitle': 'Prêt à générer vos premiers rendus ?',
   'landing.ctaBandBody':
     'Upload une photo, choisis un preset, et laisse RenderBox garder la mémoire de chaque matériau pour toi.',
   'landing.ctaBandButton': 'Commencer gratuitement',
+  'landing.navHow': 'Comment ça marche',
+  'landing.navFaq': 'FAQ',
+  'landing.menuClose': 'Fermer le menu',
+  'landing.heroBadgeNew': 'Nouveau',
+  'landing.heroBadgeText': 'Deux moteurs IA dans un seul projet',
+  'landing.heroSubtitle':
+    "Importez une photo ou un croquis : RenderBox génère des rendus cohérents d'une vue à l'autre, matériaux compris.",
+  'landing.eyebrowResult': 'Le résultat',
+  'landing.eyebrowFeatures': 'Fonctionnalités clés',
+  'landing.eyebrowHow': 'Comment ça marche',
+  'landing.howTitle': 'Simple, cohérent et automatisé',
+  'landing.howSubtitle':
+    "Importez une image, RenderBox détecte les matériaux, les mémorise et s'en sert pour chaque nouveau rendu du projet.",
+  'landing.eyebrowPresets': 'Ambiances',
+  'landing.eyebrowPricing': 'Tarifs',
+  'landing.eyebrowFaq': 'FAQ',
+  'landing.faqSubtitle': 'Les réponses aux questions les plus fréquentes sur RenderBox.',
 
   'landing.faqTitle': "Tout ce qu'il faut savoir avant de commencer",
   'landing.faq1Q': 'Que se passe-t-il si je change de palier en cours de mois ?',
@@ -514,13 +605,20 @@ const fr = {
   'landing.faq2A': "Oui. Chaque rendu généré est votre propriété, sans limite d'usage commercial.",
   'landing.faq3Q': 'Quelle est la différence entre les deux moteurs IA ?',
   'landing.faq3A':
-    'Le Moteur 1 est rapide et économique, le Moteur 2 suit mieux les instructions précises — vous choisissez celui qui convient le mieux à chaque rendu, à tout moment.',
+    'Le Moteur 1 (rouge) est rapide et économique, le Moteur 2 (jaune) suit mieux les instructions précises — vous choisissez celui qui convient à chaque rendu, à tout moment. Les modifications par commentaires utilisent toujours le Moteur 2.',
   'landing.faq4Q': "Que se passe-t-il si j'atteins mon quota mensuel ?",
   'landing.faq4A':
     'Les générations sont bloquées jusqu’au renouvellement ou jusqu’à ce que vous changiez de palier — jamais de facturation surprise.',
   'landing.faq5Q': 'Puis-je annuler à tout moment ?',
   'landing.faq5A':
     'Oui, aucun engagement. Votre accès reste actif jusqu’à la fin de la période déjà payée.',
+  'landing.faq7A':
+    "Le bouton Assistant ouvre un chat qui connaît tout RenderBox et vous guide pas à pas. Il répond aussi à vos questions d'architecture et de matériaux.",
+  'landing.faq7Q': "Et si je suis perdu dans l'application ?",
+  'landing.faq6A':
+    "Avec le mode Commenter : cliquez sur le rendu à l'endroit à changer, écrivez la modification (jusqu'à 8 commentaires), puis Appliquer. Le reste de l'image est conservé et l'original reste dans l'arbre du projet.",
+  'landing.faq6Q': "Comment modifier une partie d'un rendu ?",
+  'landing.pricingFeatureAssistant': 'Assistant intégré pour vous guider',
 
   'landing.footerProductHeading': 'Produit',
   'landing.footerTagline':
@@ -541,7 +639,7 @@ const fr = {
   'landing.pricingIncludedLabel': 'Compris dans tous les paliers',
   'landing.pricingFeatureEngines': 'Accès aux deux moteurs de génération',
   'landing.pricingFeaturePresets': 'Accès aux 5 presets d’ambiance',
-  'landing.pricingFeatureEditing': 'Mode édition avancée (ajout d’élément, retouche ciblée)',
+  'landing.pricingFeatureEditing': "Modifier par commentaires, ajout d'élément et Enhance",
   'landing.pricingCta': 'Choisir {tier}',
   'landing.pricingCtaLoading': 'Redirection…',
   'landing.pricingError': 'Impossible de démarrer le paiement. Réessaie.',
@@ -557,10 +655,17 @@ const fr = {
   'landing.feedStudioCount': '{count} matériaux détectés',
   'landing.feedStudioBadge': 'Matériaux réinjectés dans le prochain rendu',
 
-  'landing.enginesEvent1': 'Analyse des matériaux...',
-  'landing.enginesEvent2': 'Génération du rendu...',
-  'landing.enginesEvent3': 'Vérification de cohérence...',
-  'landing.enginesEvent4': 'Rendu prêt.',
+  'landing.commentTitle': "Pointez. Commentez. C'est modifié.",
+  'landing.commentSubtitle':
+    'Cliquez sur le rendu, écrivez ce qui doit changer. Plusieurs commentaires, un seul clic.',
+  'landing.commentAlt':
+    "Film de démonstration : trois commentaires posés sur un rendu (façade en panneaux laqués jaunes, végétation retirée, voiture assortie en jaune), un clic sur Appliquer, puis le nouveau rendu à côté de l'ancien.",
+  'landing.enginesEyebrow': 'Moteurs de rendu',
+  'landing.enginesTitle': 'Deux moteurs, un seul projet',
+  'landing.enginesSubtitle':
+    'Comparez les deux moteurs sur la même demande et gardez celui qui convient : matériaux et historique restent partagés.',
+  'landing.enginesAlt':
+    'Film de démonstration : la même demande rendue par le Moteur 1 puis le Moteur 2, pour une salle à manger (à gauche) et un pavillon en montagne (à droite), puis les quatre rendus côte à côte.',
 } as const;
 
 export default fr;

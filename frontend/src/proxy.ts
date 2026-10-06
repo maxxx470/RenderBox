@@ -6,13 +6,13 @@ import { buildCsp } from '@/lib/csp';
 // The (15-min) access cookie can expire while a (7-day) refresh cookie is
 // still valid — typically when a tab sat unfocused or the laptop slept. The
 // (authed) layout calling /api/auth/me would 401 and the user would be kicked
-// to /login. This middleware catches that case BEFORE the page renders and
+// to /login. This proxy catches that case BEFORE the page renders and
 // bounces the request through /api/auth/refresh-and-return, which mints fresh
 // cookies and 302s back to the original URL — invisible to the user.
 //
 // Protected paths are configured via AUTH_PROTECTED_PREFIXES (comma-separated,
 // e.g. "/dashboard,/account"). Empty by default — the API surface is the only
-// thing shipped, so out-of-the-box this middleware is a no-op.
+// thing shipped, so out-of-the-box this proxy is a no-op.
 //
 // Edge runtime: no DB, no bcrypt, no Prisma. We only inspect cookies and
 // build redirects — the heavy lifting happens in /api/auth/refresh-and-return
@@ -54,7 +54,7 @@ function ensureCsrfCookieWhenAuthDisabled(req: NextRequest, res: NextResponse): 
   });
 }
 
-export function middleware(req: NextRequest): NextResponse {
+export function proxy(req: NextRequest): NextResponse {
   const csp = buildCsp({
     nonce: crypto.randomUUID(),
     isProduction: process.env.NODE_ENV === 'production',

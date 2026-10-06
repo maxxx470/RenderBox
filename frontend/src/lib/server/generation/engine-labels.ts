@@ -16,6 +16,33 @@ interface EngineLabel {
   description: { fr: string; en: string };
 }
 
+// Each engine's own colour (owner's choice, 2026-10-06: bright red and
+// yellow), used wherever an engine is marked — the model chip, the Enhance
+// toggle, the landing film. Red goes to Moteur 1 and yellow to Moteur 2 on
+// purpose: a yellow Moteur 1 would point straight at the banana it runs on.
+// The red is #DC2626, deliberately NOT the error red #E5484D (reserved for
+// errors and destructive actions by the charter). Every value is a complete
+// literal class name so Tailwind's scanner sees it.
+export const ENGINE_COLORS: Record<
+  EngineName,
+  { mark: string; glyph: string; dot: string; chip: string }
+> = {
+  nanobanana: {
+    // Gradient disc behind an icon, the colour of the glyph on it, a solid
+    // dot, and a filled chip with its readable text colour.
+    mark: 'bg-gradient-to-br from-[#EF4444] to-[#B91C1C]',
+    glyph: '#ffffff',
+    dot: 'bg-[#DC2626]',
+    chip: 'bg-[#DC2626] text-white',
+  },
+  gpt_image: {
+    mark: 'bg-gradient-to-br from-[#FDE047] to-[#EAB308]',
+    glyph: '#17161F',
+    dot: 'bg-[#EAB308]',
+    chip: 'bg-[#FACC15] text-[#17161F]',
+  },
+};
+
 export const ENGINE_LABELS: Record<EngineName, EngineLabel> = {
   nanobanana: {
     name: { fr: 'Moteur 1', en: 'Engine 1' },

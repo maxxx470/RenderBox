@@ -61,18 +61,23 @@ export async function main(_args: string[] = [], deps: SeedDeps = {}): Promise<v
     // this identity must never be able to reach /admin (requireAdmin never
     // consults AUTH_DISABLED at all, but keeping the row non-admin is
     // defense in depth). A tier is pre-assigned so generation isn't blocked
-    // by the monthly quota gate while auth is disabled.
+    // by the monthly quota gate while auth is disabled. The tier is re-granted
+    // on every run (not just on create): tier-quota.ts clears it once the
+    // 30-day period lapses, so re-running the seed restores a working demo.
+    const demoTier = {
+      currentTier: 'pro',
+      tierPeriodStart: new Date(),
+      generationsUsedInPeriod: 0,
+    };
     await prisma.user.upsert({
       where: { id: AUTH_DISABLED_USER_ID },
-      update: {},
+      update: demoTier,
       create: {
         id: AUTH_DISABLED_USER_ID,
         email: AUTH_DISABLED_USER_EMAIL,
         role: 'USER',
         emailVerifiedAt: new Date(),
-        currentTier: 'pro',
-        tierPeriodStart: new Date(),
-        generationsUsedInPeriod: 0,
+        ...demoTier,
       },
     });
     console.log(`✓ auth-disabled demo user ready (${AUTH_DISABLED_USER_ID})`);

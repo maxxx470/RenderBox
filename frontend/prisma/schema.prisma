@@ -336,7 +336,8 @@ model RenderNode {
   engine    String?
   // Phase 5 — set only when this node came from the edit route (not the
   // standard generate route). Null = a standard generation or an upload.
-  editType  String? // "add_element" | "targeted_retouch" | null
+  // "enhance" = the /app/enhance route (no preset, see generation/enhance.ts).
+  editType  String? // "add_element" | "targeted_retouch" | "enhance" | null
   // { x, y, width, height } in percent (0-100) of the source image,
   // present only when editType = "targeted_retouch".
   editZone  Json?

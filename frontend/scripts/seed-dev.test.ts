@@ -87,6 +87,9 @@ describe('scripts/seed-dev (SCRIPT-01)', () => {
       role: 'USER',
       currentTier: 'pro',
     });
+    // An existing demo row gets its tier re-granted (tier-quota clears it
+    // after 30 days), so re-running the seed revives generation.
+    expect(lastCall?.update).toMatchObject({ currentTier: 'pro', generationsUsedInPeriod: 0 });
   });
 
   it('marks the unverified seed user with emailVerifiedAt=null', async () => {

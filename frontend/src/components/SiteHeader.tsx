@@ -15,8 +15,8 @@
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
-
-const GRADIENT = 'bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]';
+import { BrandMark } from '@/components/BrandMark';
+import { PublicMobileMenu } from '@/components/PublicMobileMenu';
 
 export interface SiteHeaderCta {
   href: string;
@@ -26,7 +26,11 @@ export interface SiteHeaderCta {
 export function SiteHeader({
   links = false,
   cta,
+  homeHref = '/',
 }: {
+  /** Where the logo goes. '/app' on pages a signed-in user reaches from
+      inside the app, which must never drop them back on the landing. */
+  homeHref?: string;
   /** Marketing links (features / pricing / examples). Off on account pages,
       where they would pull the user out of what they came to do. */
   links?: boolean;
@@ -35,54 +39,76 @@ export function SiteHeader({
   const t = useTranslations();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#ECECF2] bg-white/85 backdrop-blur">
-      <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-6 py-3.5">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur">
+      <div className="relative mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-4 min-[640px]:px-6">
         <Link
-          href="/"
-          className="flex flex-shrink-0 items-center gap-2 font-[family-name:var(--font-general-sans)] text-[15px] font-bold text-[#17161F]"
+          href={homeHref}
+          className="flex flex-shrink-0 items-center gap-2 font-[family-name:var(--font-general-sans)] text-[17px] font-bold text-[#17161F]"
         >
-          <span className={`h-6.5 w-6.5 rounded-[7px] ${GRADIENT}`} />
+          <BrandMark size="md" />
           RenderBox
         </Link>
 
         {links && (
-          <nav className="hidden items-center gap-1 rounded-full bg-[#F7F7FA] p-1 text-sm font-medium text-[#6B6880] min-[860px]:flex">
+          <nav className="hidden items-center gap-1 text-[13.5px] font-medium text-[#3D3B49] min-[860px]:flex">
             <Link
               href="/#fonctionnalites"
-              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('landing.navFeatures')}
             </Link>
             <Link
+              href="/#comment"
+              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
+            >
+              {t('landing.navHow')}
+            </Link>
+            <Link
               href="/#tarifs"
-              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('landing.navPricing')}
             </Link>
             <Link
               href="/exemple"
-              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('landing.navExamples')}
             </Link>
             <Link
               href="/info"
-              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
+              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('info.navLabel')}
             </Link>
           </nav>
         )}
 
-        <div className="flex flex-shrink-0 items-center gap-3">
-          <LanguageInlineSwitch />
+        <div className="flex flex-shrink-0 items-center gap-2.5 min-[640px]:gap-3">
+          {/* With links, the language choice moves into the menu below 860px. */}
+          <span className={links ? 'hidden min-[860px]:block' : ''}>
+            <LanguageInlineSwitch />
+          </span>
           {cta && (
             <Link
               href={cta.href}
-              className="inline-flex items-center rounded-full bg-[linear-gradient(135deg,#6E6BFF_0%,#8B5CF6_48%,#A855F7_100%)] px-4.5 py-2 text-[13px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
+              className="inline-flex items-center rounded-full bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)] px-5 py-2.5 text-[13.5px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
             >
               {cta.label}
             </Link>
+          )}
+          {links && (
+            <PublicMobileMenu
+              className="min-[860px]:hidden"
+              links={[
+                { href: '/#fonctionnalites', label: t('landing.navFeatures') },
+                { href: '/#comment', label: t('landing.navHow') },
+                { href: '/#tarifs', label: t('landing.navPricing') },
+                { href: '/exemple', label: t('landing.navExamples') },
+                { href: '/info', label: t('info.navLabel') },
+              ]}
+              cta={cta}
+            />
           )}
         </div>
       </div>
