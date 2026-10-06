@@ -84,7 +84,7 @@ export default function AdminOverviewPage() {
       <div className="mt-8">
         <Link
           href="/admin/journal"
-          className="text-[13px] font-medium text-[#716FFF] hover:underline"
+          className="text-[13px] font-medium text-[#15803D] hover:underline"
         >
           {t('admin.overview.viewAllJournal')}
         </Link>

@@ -4,6 +4,7 @@ import { COOKIE_PREFIX } from '@/lib/constants';
 import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { ConnexionForm } from './ConnexionForm';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { BrandMark } from '@/components/BrandMark';
 
 export default async function ConnexionPage({
   searchParams,
@@ -33,7 +34,7 @@ export default async function ConnexionPage({
       <LanguageToggle />
       <div className="w-[380px] rounded-[18px] border border-[#ECECF2] px-8 py-9">
         <div className="mb-7 flex items-center justify-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
+          <BrandMark size="md" />
           <span className="font-[family-name:var(--font-general-sans)] text-[17px] font-bold text-[#17161F]">
             RenderBox
           </span>

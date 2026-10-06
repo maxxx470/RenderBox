@@ -1,27 +1,21 @@
 'use client';
 
-// "Pour qui" section.
+// "Fonctionnalités clés" — three columns, one per audience.
 //
-// This was a tab switcher: three tabs, one short panel visible at a time. It
-// spent a full screen of a landing page on a single sentence, and hid two
-// thirds of the value proposition behind a click most visitors never make.
-// Three columns say all three at once, which is what the section was designed
-// as in the first place.
+// Reference layout (2026-10-05 green charter): centred cards on the grey band,
+// a round icon on top, and the MIDDLE card lifted out in the brand gradient.
+// One highlighted card is the reference's way of giving the row a focal point
+// without a fourth "selected" treatment; it carries no state.
 //
-// The tabs took a fourth "active" treatment with them — a solid ink pill,
-// alongside the violet gradient of the CTAs and the raised white card of the
-// rails. One less species of selected-state on the page.
+// The icon is passed in as a render function so the highlighted card can draw
+// the same glyph white-on-white-ring instead of green-on-green.
 import type { ReactNode } from 'react';
 import { Reveal } from './Reveal';
-import {
-  CARD_GRADIENT,
-  CARD_GRADIENT_BORDER,
-  CARD_GRADIENT_EDGE,
-  CARD_SHEEN,
-} from './card-gradient';
+
+const GRADIENT = 'bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)]';
 
 export interface AudienceCardData {
-  icon: ReactNode;
+  icon: (color: string) => ReactNode;
   /** Who this column is for — the eyebrow above the claim. */
   label: string;
   title: string;
@@ -30,34 +24,50 @@ export interface AudienceCardData {
 
 export function AudienceCards({ cards }: { cards: AudienceCardData[] }) {
   return (
-    <div className="grid grid-cols-1 gap-4 min-[860px]:grid-cols-3">
-      {cards.map((card, i) => (
-        // Same shell as the preset cards further down, so the page has one
-        // card species rather than one per section.
-        <Reveal key={card.label} delayMs={i * 90} className="h-full">
-          <div
-            className={`group relative flex h-full flex-col overflow-hidden rounded-2xl p-6.5 ${CARD_GRADIENT} ${CARD_GRADIENT_BORDER} ${CARD_GRADIENT_EDGE}`}
-          >
-            <span aria-hidden className={CARD_SHEEN} />
-            {/* Everything above the gloss layer. Without the stacking context
-                the sheen paints over the text it is meant to sit behind. */}
-            <div className="relative flex h-full flex-col">
-              {/* White, not the violet tint it used to be: on a violet ground
-                  a violet chip stops being an object and becomes a smudge. */}
-              <div className="mb-4 flex h-10.5 w-10.5 items-center justify-center rounded-[10px] border border-[#E6E1FA] bg-white">
-                {card.icon}
+    <div className="grid grid-cols-1 gap-5 min-[860px]:grid-cols-3">
+      {cards.map((card, i) => {
+        const lead = i === 1;
+        return (
+          <Reveal key={card.label} delayMs={i * 90} className="h-full">
+            <div
+              className={`flex h-full flex-col items-center rounded-[24px] px-7 py-9 text-center transition-transform duration-[250ms] ease-out motion-safe:hover:-translate-y-1 ${
+                lead
+                  ? `${GRADIENT} text-white shadow-[0_24px_48px_-24px_rgba(22,101,52,0.6)]`
+                  : 'border border-[#ECECF2] bg-[#F7F7FA]'
+              }`}
+            >
+              <div
+                className={`mb-5 flex h-12 w-12 items-center justify-center rounded-full ${
+                  lead ? 'bg-white' : GRADIENT
+                }`}
+              >
+                {card.icon(lead ? '#15803D' : '#ffffff')}
               </div>
-              <span className="mb-2 font-[family-name:var(--font-jetbrains-mono)] text-[11px] uppercase tracking-wide text-[#716FFF]">
+              <span
+                className={`mb-2 font-[family-name:var(--font-jetbrains-mono)] text-[11px] uppercase tracking-wide ${
+                  lead ? 'text-white/85' : 'text-[#15803D]'
+                }`}
+              >
                 {card.label}
               </span>
-              <h4 className="mb-2 text-[15px] font-semibold leading-[1.35] text-[#17161F]">
+              <h3
+                className={`mb-2.5 text-[17px] font-semibold leading-[1.35] ${
+                  lead ? 'text-white' : 'text-[#17161F]'
+                }`}
+              >
                 {card.title}
-              </h4>
-              <p className="text-[13px] leading-[1.55] text-[#6B6880]">{card.body}</p>
+              </h3>
+              <p
+                className={`max-w-[34ch] text-[13.5px] leading-[1.6] ${
+                  lead ? 'text-white/90' : 'text-[#5F6B64]'
+                }`}
+              >
+                {card.body}
+              </p>
             </div>
-          </div>
-        </Reveal>
-      ))}
+          </Reveal>
+        );
+      })}
     </div>
   );
 }

@@ -37,7 +37,7 @@ function EntryCard({ entry }: { entry: Announcement }) {
           })}
         </time>
         {planned && (
-          <span className="rounded-full bg-[#F1F0F6] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] uppercase tracking-wide text-[#8A8896]">
+          <span className="rounded-full bg-[#EFF3F0] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] uppercase tracking-wide text-[#8A8896]">
             {t('info.badgePlanned')}
           </span>
         )}

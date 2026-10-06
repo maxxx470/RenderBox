@@ -154,7 +154,7 @@ export default function AdminPaymentsPage() {
             <button
               type="button"
               onClick={() => void load({ cursor: nextCursor, append: true })}
-              className="mt-4 rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+              className="mt-4 rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
             >
               {t('admin.users.loadMore')}
             </button>

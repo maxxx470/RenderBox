@@ -74,7 +74,7 @@ function HeroCardFace({
         // sweep, the usual "image slot" motif, so the empty card reads as
         // awaiting content rather than as a solid block someone forgot to fill.
         <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
-          <span className="flex h-[86px] w-[86px] items-center justify-center rounded-2xl border-2 border-dashed border-white/40 bg-white/10 backdrop-blur-sm">
+          <span className="flex h-[86px] w-[86px] items-center justify-center rounded-full border-2 border-dashed border-white/40 bg-white/10 backdrop-blur-sm">
             <ImageIcon set="light" size={26} primaryColor="#17161F" />
           </span>
           <span
@@ -252,7 +252,7 @@ function HeroSlider({ tag }: { tag: string }) {
           >
             <span
               className={`h-1.5 rounded-full transition-all duration-300 ease-out ${
-                i === index ? 'w-5 bg-[#716FFF]' : 'w-1.5 bg-[#DEDEE8]'
+                i === index ? 'w-5 bg-[#16A34A]' : 'w-1.5 bg-[#DEDEE8]'
               }`}
             />
           </button>
@@ -272,7 +272,7 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
 
   // The yellow carried a 10px hard offset block of the SAME yellow plus a 5px
   // white ring — a sticker/brutalist device on a page whose every other
-  // surface is soft-shadowed and violet, so it read as pasted on. What the
+  // surface is soft-shadowed and green, so it read as pasted on. What the
   // button actually needs, floating over photographs, is separation from busy
   // imagery: a thin white ring does that, and one soft shadow gives it the
   // same depth as the cards it sits on.
@@ -280,10 +280,10 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
     <Link
       href={ctaHref}
       style={{ animationDelay: `${middle * 90 + 220}ms` }}
-      className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[#FFC53D] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_0_0_3px_#FFFFFF,0_10px_22px_-8px_rgba(23,22,31,0.38)] transition-[transform,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:bg-[#FFB92B] active:scale-[0.97]"
+      className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_0_0_3px_#FFFFFF,0_10px_22px_-8px_rgba(23,22,31,0.38)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
     >
       {ctaLabel}
-      <ArrowRight set="light" size={15} primaryColor="#17161F" />
+      <ArrowRight set="light" size={15} primaryColor="#ffffff" />
     </Link>
   );
 

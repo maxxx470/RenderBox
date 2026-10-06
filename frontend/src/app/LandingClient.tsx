@@ -12,8 +12,9 @@
 // Tokens (extracted from the reference site's shipped CSS, kept exact):
 //   ink #17161F · ink-2 #3D3B49 · muted #8A8896
 //   line #ECECF2 · line-strong #DEDEE8 · band #F7F7FA · surface-2 #FBFBFD
-//   violet #716FFF · violet-2 #A264FF · violet-3 #6470FF
-//   signature gradient: linear-gradient(135deg,#6E6BFF 0%,#8B5CF6 48%,#A855F7 100%)
+//   green #16A34A (icons, large surfaces) · green-deep #15803D (text on white,
+//   5.0:1) · green-ink #166534 (text on the #E8F5EC tint, 6.35:1)
+//   signature gradient: linear-gradient(135deg,#16A34A 0%,#15803D 48%,#166534 100%)
 //   error/danger (semantic, NOT brand): #E5484D — used only for error text
 //   and destructive actions, never for accents
 // Fonts: General Sans + JetBrains Mono (tags/technical values), loaded once
@@ -26,40 +27,44 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Edit, Graph, Home, Image as ImageIcon, Location, TickSquare } from 'react-iconly';
+import {
+  Category,
+  ChevronRight,
+  Document,
+  Graph,
+  Home,
+  Image as ImageIcon,
+  Location,
+  Swap,
+} from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
-import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
-import { BEFORE_AFTER } from './before-after';
+import { BEFORE_AFTER_PAIRS } from './before-after';
+import { PricingCard } from './PricingCard';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
+import { PublicMobileMenu } from '@/components/PublicMobileMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
-import { PRICING_TIERS, type PricingTier, type PricingTierId } from '@/lib/pricing-tiers';
+import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import { Reveal } from './Reveal';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { FaqAccordion } from './FaqAccordion';
 import { HeroProof } from './HeroProof';
 import { SiteFooter } from '@/components/SiteFooter';
 import { AudienceCards, type AudienceCardData } from './AudienceCards';
-import { StaggeredChecklist } from './StaggeredChecklist';
-import { MaterialsFeedStudio } from './MaterialsFeedStudio';
-import { TreeGallery } from './TreeGallery';
-import { EnginesStateTiles } from './EnginesStateTiles';
+import { MotionFilm } from './MotionFilm';
 import { StickyBar } from './StickyBar';
 import { HeroFan } from './HeroFan';
 import { HERO_CARDS } from './hero-cards';
+import { BrandMark } from '@/components/BrandMark';
 
 // Tailwind's JIT scanner only detects complete, literal class-name tokens in
 // the source text — it can't see a class assembled at runtime from a plain
 // CSS-value constant interpolated into `bg-[${x}]`. Defining the full class
 // name itself here (not just the CSS value) keeps every usage below a
 // single, complete token the scanner can find, exactly like MONO already is.
-const GRADIENT = 'bg-[linear-gradient(135deg,#6E6BFF_0%,#8B5CF6_48%,#A855F7_100%)]';
+const GRADIENT = 'bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)]';
 const MONO = 'font-[family-name:var(--font-jetbrains-mono)]';
-
-function GradientText({ children }: { children: React.ReactNode }) {
-  return <span className={`${GRADIENT} bg-clip-text text-transparent`}>{children}</span>;
-}
 
 // Hero headline, revealed word by word.
 //
@@ -88,9 +93,7 @@ function AnimatedHeadline({
   const words = (s: string) => s.trim().split(/\s+/).filter(Boolean);
   const segments: React.ReactNode[] = [
     ...words(prefix),
-    <span key="accent" className="rb-gradient-pan">
-      {accent}
-    </span>,
+    <span key="accent">{accent}</span>,
     ...words(suffix),
   ];
 
@@ -108,14 +111,45 @@ function AnimatedHeadline({
   );
 }
 
-function CheckItem({ children }: { children: React.ReactNode }) {
+// The reference's section header: a small eyebrow, a large title, a muted
+// subtitle — centred by default, left-aligned for the two-column FAQ.
+function SectionHeader({
+  eyebrow,
+  title,
+  subtitle,
+  light = false,
+  align = 'center',
+}: {
+  eyebrow: string;
+  title: React.ReactNode;
+  subtitle?: string;
+  light?: boolean;
+  align?: 'center' | 'left';
+}) {
   return (
-    <li className="flex items-start gap-2.5 text-[13.5px] text-[#3D3B49]">
-      <span className="mt-0.5 flex-shrink-0 text-[#716FFF]">
-        <TickSquare set="light" size={15} primaryColor="#716FFF" />
-      </span>
-      {children}
-    </li>
+    <Reveal
+      className={`mb-11 max-w-[640px] ${align === 'center' ? 'mx-auto text-center' : 'text-left'}`}
+    >
+      <p className={`mb-3 text-[13px] font-medium ${light ? 'text-white/85' : 'text-[#17161F]'}`}>
+        {eyebrow}
+      </p>
+      <h2
+        className={`text-[30px] font-bold leading-[1.2] tracking-[-0.6px] min-[640px]:text-[36px] ${
+          light ? 'text-white' : 'text-[#17161F]'
+        }`}
+      >
+        {title}
+      </h2>
+      {subtitle ? (
+        <p
+          className={`mt-3.5 text-[14.5px] leading-[1.6] ${
+            light ? 'text-white/85' : 'text-[#5F6B64]'
+          } ${align === 'center' ? 'mx-auto max-w-[520px]' : ''}`}
+        >
+          {subtitle}
+        </p>
+      ) : null}
+    </Reveal>
   );
 }
 
@@ -168,8 +202,8 @@ function PresetCard({
   alt: string;
 }) {
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] transition-colors hover:border-[#CFCADF]">
-      <div className="aspect-[3/2] w-full overflow-hidden bg-[#F1F0F6]">
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] transition-colors hover:border-[#C9D6CD]">
+      <div className="aspect-[3/2] w-full overflow-hidden bg-[#EFF3F0]">
         <img
           src={AMBIANCE_IMAGE[ambiance]}
           alt={alt}
@@ -180,84 +214,8 @@ function PresetCard({
       </div>
       <div className="flex flex-1 flex-col p-5.5">
         <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
-        <p className="text-[13px] leading-[1.55] text-[#6B6880]">{body}</p>
+        <p className="text-[13px] leading-[1.55] text-[#5F6B64]">{body}</p>
       </div>
-    </div>
-  );
-}
-
-function PricingCard({
-  tier,
-  onSelect,
-  loading,
-  error,
-}: {
-  tier: PricingTier;
-  onSelect: () => void;
-  loading: boolean;
-  error: string | null;
-}) {
-  const t = useTranslations();
-  const name =
-    tier.id === 'decouverte'
-      ? t('landing.pricingTierDecouverteName')
-      : tier.id === 'standard'
-        ? t('landing.pricingTierStandardName')
-        : t('landing.pricingTierProName');
-
-  return (
-    <div
-      className={`relative flex flex-col gap-5 rounded-2xl border p-6.5 transition-[transform,box-shadow] duration-[250ms] ease-out hover:-translate-y-[3px] ${
-        tier.featured
-          ? 'border-[#716FFF] bg-white shadow-[0_20px_40px_-24px_rgba(113,111,255,0.45)] hover:shadow-[0_28px_48px_-20px_rgba(113,111,255,0.55)]'
-          : 'border-[#ECECF2] bg-[#FBFBFD] hover:shadow-[0_16px_32px_-18px_rgba(23,22,31,0.2)]'
-      }`}
-    >
-      {tier.featured ? (
-        <span
-          className={`rb-badge-pulse absolute -top-3 left-6.5 rounded-full ${GRADIENT} px-3 py-1 text-[11px] font-semibold text-white`}
-        >
-          {t('landing.pricingBadgeFeatured')}
-        </span>
-      ) : null}
-      <div>
-        <h3 className="text-lg font-semibold text-[#17161F]">{name}</h3>
-        <div className="mt-3 flex items-baseline gap-1.5">
-          <span className="text-[16px] font-bold text-[#17161F]">
-            {tier.priceXof.toLocaleString('fr-FR')} FCFA
-          </span>
-          <span className="text-[12px] text-[#8A8896]">{t('landing.pricingPeriod')}</span>
-        </div>
-        <div className={`text-[12px] text-[#8A8896] ${MONO}`}>~{tier.priceUsdDisplay} $</div>
-      </div>
-      {/* One line, not four.
-          The other three — both engines, the five presets, advanced editing —
-          are IDENTICAL on all three tiers, so printing them on each card
-          repeated six lines of text that carry no decision, and buried the one
-          line that does. The section's own subtitle already says "same
-          engines, same presets, only the monthly quota changes", and the card
-          then spent most of its height contradicting that by listing them
-          anyway. They are stated once, under the grid. */}
-      <ul className="flex flex-col gap-2.5">
-        <CheckItem>
-          <span className={`font-semibold text-[#17161F] ${MONO}`}>
-            {t('landing.pricingFeatureQuota', { count: tier.generationsPerMonth })}
-          </span>
-        </CheckItem>
-      </ul>
-      <button
-        type="button"
-        disabled={loading}
-        onClick={onSelect}
-        className={`mt-auto inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-transform duration-150 ease-out active:scale-[0.97] disabled:opacity-60 ${
-          tier.featured
-            ? `${GRADIENT} text-white shadow-[0_10px_26px_-6px_rgba(113,111,255,0.6)]`
-            : 'border border-[#ECECF2] text-[#17161F] hover:border-[#CFCADF]'
-        }`}
-      >
-        {loading ? t('landing.pricingCtaLoading') : t('landing.pricingCta', { tier: name })}
-      </button>
-      {error ? <p className="text-[12px] text-[#E5484D]">{error}</p> : null}
     </div>
   );
 }
@@ -265,7 +223,7 @@ function PricingCard({
 function SketchVisual() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-[#F7F7FA]">
-      <svg viewBox="0 0 200 140" className="h-3/4 w-3/4 text-[#CFCADF]" fill="none">
+      <svg viewBox="0 0 200 140" className="h-3/4 w-3/4 text-[#C9D6CD]" fill="none">
         <rect x="20" y="60" width="160" height="60" stroke="currentColor" strokeWidth="1.5" />
         <path d="M20 60 L100 20 L180 60" stroke="currentColor" strokeWidth="1.5" />
         <rect x="45" y="80" width="24" height="40" stroke="currentColor" strokeWidth="1.2" />
@@ -304,7 +262,7 @@ function HeroPresetTags() {
               ? `${GRADIENT} text-white`
               : style === 'ink'
                 ? 'bg-[#17161F] text-white'
-                : 'bg-[#EFECFF] text-[#716FFF]'
+                : 'bg-[#E8F5EC] text-[#15803D]'
           }`}
         >
           {PRESETS[preset].label[locale]}
@@ -344,7 +302,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
     const el = heroSentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setPastHero(entry ? !entry.isIntersecting : false),
+      // Past the hero = the sentinel has gone ABOVE the viewport. "Not
+      // intersecting" alone also holds while it is still below the fold, and
+      // the hero band is now taller than a laptop screen — the bar was showing
+      // on arrival, doubling the hero's own CTA.
+      ([entry]) =>
+        setPastHero(entry ? !entry.isIntersecting && entry.boundingClientRect.top < 0 : false),
       { rootMargin: '-72px 0px 0px 0px' },
     );
     observer.observe(el);
@@ -378,73 +341,97 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
     }
   }
 
-  const faqItems = [1, 2, 3, 4, 5].map((n) => ({
+  const faqItems = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
     q: t(`landing.faq${n}Q` as 'landing.faq1Q'),
     a: t(`landing.faq${n}A` as 'landing.faq1A'),
   }));
+
+  const NAV_LINK = 'rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]';
 
   return (
     // pb-14 clears the 56px sticky bar: without it the bar parks on top of
     // the last rows of the footer for the whole bottom of the page.
     <main className="bg-white pb-14 text-[#17161F]">
-      {/* FLOATING PILL NAV */}
-      <div className="sticky top-4 z-30 mx-auto max-w-[1180px] px-4">
-        <nav className="flex items-center justify-between rounded-full border border-[#ECECF2] bg-white/90 px-5 py-3 shadow-[0_10px_30px_-14px_rgba(23,22,31,0.15)] backdrop-blur">
-          <Link href="/" className="flex items-center gap-2 text-[16px] font-bold text-[#17161F]">
-            <div className={`h-6.5 w-6.5 rounded-[7px] ${GRADIENT}`} />
+      {/* HERO BAND — nav and hero share the reference's dotted ground, which
+          ends in a large rounded bottom edge. The dots fade in from the top so
+          the nav sits on clean white. */}
+      <div className="relative overflow-hidden rounded-b-[40px] bg-[linear-gradient(180deg,#FFFFFF_0%,#F1F7F2_100%)] min-[860px]:rounded-b-[56px]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,#C9D9CE_1px,transparent_1.3px)] bg-[length:18px_18px] [mask-image:linear-gradient(180deg,transparent_0%,#000_28%,#000_100%)]"
+        />
+
+        <nav className="relative mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-4 min-[640px]:px-6 min-[640px]:py-5">
+          <Link href="/" className="flex items-center gap-2 text-[17px] font-bold text-[#17161F]">
+            <BrandMark size="md" />
             RenderBox
           </Link>
-          {/* Links grouped in their own pill, as in the reference — a segmented
-              control rather than three loose links floating in the bar. */}
-          <div className="hidden items-center gap-1 rounded-full bg-[#F7F7FA] p-1 text-sm font-medium text-[#6B6880] min-[860px]:flex">
-            <a
-              href="#fonctionnalites"
-              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
-            >
+          <div className="hidden items-center gap-1 text-[13.5px] font-medium text-[#3D3B49] min-[920px]:flex">
+            <a href="#fonctionnalites" className={NAV_LINK}>
               {t('landing.navFeatures')}
             </a>
-            <a
-              href="#tarifs"
-              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
-            >
+            <a href="#comment" className={NAV_LINK}>
+              {t('landing.navHow')}
+            </a>
+            <a href="#tarifs" className={NAV_LINK}>
               {t('landing.navPricing')}
             </a>
-            <Link
-              href="/exemple"
-              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
-            >
+            <Link href="/exemple" className={NAV_LINK}>
               {t('landing.navExamples')}
             </Link>
-            <Link
-              href="/info"
-              className="rounded-full px-4 py-1.5 transition-colors hover:bg-white hover:text-[#17161F]"
-            >
-              {t('info.navLabel')}
-            </Link>
+            <a href="#faq" className={NAV_LINK}>
+              {t('landing.navFaq')}
+            </a>
           </div>
-          <div className="flex items-center gap-3.5">
-            <LanguageInlineSwitch />
+          <div className="flex items-center gap-2.5 min-[500px]:gap-3.5">
+            {/* Below 920px the language choice moves into the menu. */}
+            <span className="hidden min-[920px]:block">
+              <LanguageInlineSwitch />
+            </span>
             <Link
               href={ctaHref}
-              className="hidden text-sm text-[#6B6880] hover:text-[#17161F] min-[500px]:block"
+              className="hidden text-[13.5px] font-medium text-[#3D3B49] hover:text-[#17161F] min-[500px]:block"
             >
               {t('landing.navLogin')}
             </Link>
             <Link
               href={ctaHref}
-              className={`inline-flex items-center gap-2 rounded-full ${GRADIENT} px-5 py-2.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
+              className={`inline-flex items-center rounded-full ${GRADIENT} px-5 py-2.5 text-[13.5px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
             >
               {t('landing.navStart')}
             </Link>
+            <PublicMobileMenu
+              className="min-[920px]:hidden"
+              links={[
+                { href: '#fonctionnalites', label: t('landing.navFeatures') },
+                { href: '#comment', label: t('landing.navHow') },
+                { href: '#tarifs', label: t('landing.navPricing') },
+                { href: '/exemple', label: t('landing.navExamples') },
+                { href: '#faq', label: t('landing.navFaq') },
+              ]}
+              cta={{ href: ctaHref, label: t('landing.navLogin') }}
+            />
           </div>
         </nav>
-      </div>
 
-      <div className="mx-auto max-w-[1180px] px-6 pb-14">
-        {/* HERO */}
-        <section className="pb-6 pt-14 text-center">
+        <section className="relative mx-auto max-w-[1180px] px-6 pb-14 pt-10 text-center min-[860px]:pt-14">
           <div className="relative mx-auto flex flex-col items-center">
             <HeroPresetTags />
+            {/* The reference's "New" pill above the headline. It points at
+                the gallery: a claim about two engines is best answered by
+                showing what they make. */}
+            <Link
+              href="/exemple"
+              className="rb-card-in mb-6 inline-flex items-center gap-2 rounded-full border border-[#E1E9E3] bg-white py-1 pl-1 pr-3 text-[12.5px] font-medium text-[#17161F] shadow-[0_8px_20px_-14px_rgba(23,22,31,0.35)] transition-colors hover:border-[#C9D6CD]"
+            >
+              <span
+                className={`rounded-full ${GRADIENT} px-2.5 py-0.5 text-[11px] font-semibold text-white`}
+              >
+                {t('landing.heroBadgeNew')}
+              </span>
+              {t('landing.heroBadgeText')}
+              <ChevronRight set="light" size={13} primaryColor="#5F6B64" />
+            </Link>
             {/* No Reveal wrapper here: rb-word-in is the entrance, and
                 stacking Reveal's own opacity/translate on top would fight it
                 for the same properties. */}
@@ -452,20 +439,29 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               prefix={t('landing.heroTitlePrefix')}
               accent={t('landing.heroTitleAccent')}
               suffix={t('landing.heroTitleSuffix')}
-              className="mx-auto max-w-[760px] text-[40px] font-bold leading-[1.12] tracking-[-1px] min-[640px]:text-[52px]"
+              className="mx-auto max-w-[860px] text-[40px] font-bold leading-[1.1] tracking-[-1.2px] min-[640px]:text-[58px]"
             />
+            <p className="mx-auto mt-5 max-w-[560px] text-[15px] leading-[1.6] text-[#5F6B64]">
+              {t('landing.heroSubtitle')}
+            </p>
           </div>
 
           {/* The fan takes over as soon as real renders are configured in
-              hero-cards.ts; until then the existing preview block stands in,
-              rather than a row of empty frames on a marketing page. */}
+              hero-cards.ts; until then the preview block stands in, rather
+              than a row of empty frames on a marketing page. */}
           {HERO_CARDS.length > 0 && (
             <HeroFan ctaHref={ctaHref} ctaLabel={t('landing.heroCtaPrimary')} />
           )}
 
           {HERO_CARDS.length === 0 && (
-            <Reveal delayMs={120} className="relative mx-auto mt-14 max-w-[760px]">
-              <div className="relative rounded-[28px] border border-[#ECECF2] bg-[#FBFBFD] p-4 shadow-[0_30px_60px_-24px_rgba(113,111,255,0.45)] min-[640px]:p-6">
+            <Reveal delayMs={120} className="relative mx-auto mt-12 max-w-[760px]">
+              <Link
+                href={ctaHref}
+                className={`mb-10 inline-flex items-center rounded-full ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
+              >
+                {t('landing.heroCtaPrimary')}
+              </Link>
+              <div className="relative rounded-[28px] border border-[#E1E9E3] bg-white p-4 shadow-[0_30px_60px_-28px_rgba(22,101,52,0.45)] min-[640px]:p-6">
                 <div className="mb-3.5 flex items-center justify-between">
                   <span className={`text-[11px] text-[#8A8896] ${MONO}`}>
                     {t('landing.heroPreviewProject')}
@@ -483,114 +479,114 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                   </span>
                 </div>
               </div>
-
-              {/* Floating badges around the mockup */}
-              <div className="absolute -left-4 top-8 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
-                <ImageIcon set="light" size={18} primaryColor="#716FFF" />
-              </div>
-              <div className="absolute -right-4 top-20 hidden h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-[0_14px_30px_-12px_rgba(23,22,31,0.25)] min-[640px]:flex">
-                <div className={`flex h-6 w-6 items-center justify-center rounded-md ${GRADIENT}`}>
-                  <Edit set="light" size={12} primaryColor="#ffffff" />
-                </div>
-              </div>
               <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
-                <ImageIcon set="light" size={14} primaryColor="#716FFF" />
+                <ImageIcon set="light" size={14} primaryColor="#16A34A" />
                 {t('landing.heroChipFacade')}
               </div>
               <div
                 className={`absolute -bottom-5 right-6 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)] ${MONO}`}
               >
-                {t('landing.heroChipMaterials')
-                  .split(':')
-                  .map((part, i) =>
-                    i === 0 ? (
-                      <span key={i}>{part}:</span>
-                    ) : (
-                      <b key={i} className="text-[#716FFF]">
-                        {part}
-                      </b>
-                    ),
-                  )}
+                {t('landing.heroChipMaterials')}
               </div>
             </Reveal>
           )}
         </section>
-        <div ref={heroSentinelRef} aria-hidden />
+      </div>
+      <div ref={heroSentinelRef} aria-hidden />
 
+      <div className="mx-auto max-w-[1180px] px-6">
         {/* PROOF STRIP */}
-        <Reveal>
+        <Reveal className="pt-12">
           <HeroProof />
         </Reveal>
 
         {/* BEFORE / AFTER */}
-        <section className="py-10 min-[860px]:py-12">
-          <Reveal className="mx-auto mb-9 max-w-[560px] text-center">
-            <h2 className="mx-auto text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
-              {t('landing.beforeAfterTitlePrefix')}
-              <GradientText>{t('landing.beforeAfterTitleAccent')}</GradientText>
-            </h2>
-            <p className="mt-2.5 text-sm text-[#6B6880]">{t('landing.beforeAfterBody')}</p>
-          </Reveal>
-          <Reveal delayMs={100} className="mx-auto max-w-[820px]">
-            <BeforeAfterSlider
-              // Real images when they exist, the drawn placeholders otherwise.
-              // Lazy: this sits below the fold, and the pair is ~510KB.
-              before={
-                BEFORE_AFTER.before ? (
-                  <img
-                    src={BEFORE_AFTER.before}
-                    alt={t('landing.beforeAfterAltBefore')}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover"
+        <section className="py-14 min-[860px]:py-20">
+          <SectionHeader
+            eyebrow={t('landing.eyebrowResult')}
+            title={`${t('landing.beforeAfterTitlePrefix')}${t('landing.beforeAfterTitleAccent')}`}
+            subtitle={t('landing.beforeAfterBody')}
+          />
+          {/* Two pairs: exterior left, interior right; stacked on phones. */}
+          <div className="grid gap-6 min-[860px]:grid-cols-2">
+            {BEFORE_AFTER_PAIRS.map((pair, i) => {
+              const exterior = pair.kind === 'exterior';
+              return (
+                <Reveal key={pair.kind} delayMs={100 + i * 120}>
+                  <p className="mb-3 flex items-center gap-2 text-[15px] font-semibold text-[#17161F]">
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-[#16A34A]" />
+                    {t(exterior ? 'landing.beforeAfterExterior' : 'landing.beforeAfterInterior')}
+                  </p>
+                  <BeforeAfterSlider
+                    // Real images when they exist, the drawn placeholders
+                    // otherwise. Lazy: below the fold.
+                    before={
+                      pair.before ? (
+                        <img
+                          src={pair.before}
+                          alt={t(
+                            exterior
+                              ? 'landing.beforeAfterAltBefore'
+                              : 'landing.beforeAfterAltBeforeInterior',
+                          )}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <SketchVisual />
+                      )
+                    }
+                    after={
+                      pair.after ? (
+                        <img
+                          src={pair.after}
+                          alt={t(
+                            exterior
+                              ? 'landing.beforeAfterAltAfter'
+                              : 'landing.beforeAfterAltAfterInterior',
+                          )}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <RenderVisual />
+                      )
+                    }
+                    beforeLabel={t('landing.beforeAfterLabelBefore')}
+                    afterLabel={t('landing.beforeAfterLabelAfter')}
                   />
-                ) : (
-                  <SketchVisual />
-                )
-              }
-              after={
-                BEFORE_AFTER.after ? (
-                  <img
-                    src={BEFORE_AFTER.after}
-                    alt={t('landing.beforeAfterAltAfter')}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <RenderVisual />
-                )
-              }
-              beforeLabel={t('landing.beforeAfterLabelBefore')}
-              afterLabel={t('landing.beforeAfterLabelAfter')}
-            />
-          </Reveal>
+                </Reveal>
+              );
+            })}
+          </div>
         </section>
 
-        {/* AUDIENCE — three columns, not three tabs. See AudienceCards. */}
-        <section className="py-10 min-[860px]:py-12">
-          <Reveal className="mx-auto mb-10 max-w-[560px] text-center">
-            <h2 className="mx-auto text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
-              {t('landing.audienceTitle')}
-            </h2>
-          </Reveal>
+        {/* KEY FEATURES — one card per audience, the middle one in the
+            gradient, then a single CTA under the row, as in the reference. */}
+        <section id="fonctionnalites" className="scroll-mt-6 py-14 min-[860px]:py-20">
+          <SectionHeader
+            eyebrow={t('landing.eyebrowFeatures')}
+            title={t('landing.audienceTitle')}
+          />
           <AudienceCards
             cards={
               [
                 {
-                  icon: <Home set="light" size={20} primaryColor="#716FFF" />,
+                  icon: (c) => <Home set="light" size={22} primaryColor={c} />,
                   label: t('landing.audience1Tab'),
                   title: t('landing.audience1Title'),
                   body: t('landing.audience1Body'),
                 },
                 {
-                  icon: <Location set="light" size={20} primaryColor="#716FFF" />,
+                  icon: (c) => <Location set="light" size={22} primaryColor={c} />,
                   label: t('landing.audience2Tab'),
                   title: t('landing.audience2Title'),
                   body: t('landing.audience2Body'),
                 },
                 {
-                  icon: <Graph set="light" size={20} primaryColor="#716FFF" />,
+                  icon: (c) => <Graph set="light" size={22} primaryColor={c} />,
                   label: t('landing.audience3Tab'),
                   title: t('landing.audience3Title'),
                   body: t('landing.audience3Body'),
@@ -598,160 +594,140 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               ] satisfies AudienceCardData[]
             }
           />
-        </section>
-
-        {/* CHECKLIST */}
-        {/* scroll-mt clears the floating header. Without it, clicking the nav
-            link scrolls this section to y=0 — which is BEHIND the bar, so the
-            reader lands on a headline cut in half and has to scroll back up
-            to see what they clicked. The bar's bottom edge sits at ~84px;
-            110px leaves the section a little air above it. */}
-        <section
-          id="fonctionnalites"
-          className="scroll-mt-[110px] rounded-[32px] bg-[#F7F7FA] px-6 py-12 min-[640px]:px-14 min-[860px]:py-16"
-        >
-          <div className="grid grid-cols-1 items-center gap-10 min-[860px]:grid-cols-2">
-            <Reveal>
-              <h2 className="text-[28px] font-bold leading-[1.3] tracking-[-0.5px]">
-                {t('landing.checklistTitle')}
-              </h2>
-              <StaggeredChecklist
-                items={[
-                  t('landing.checklistItem1'),
-                  t('landing.checklistItem2'),
-                  t('landing.checklistItem3'),
-                  t('landing.checklistItem4'),
-                  t('landing.checklistItem5'),
-                ]}
-              />
-              <Link
-                href={ctaHref}
-                className={`mt-7 inline-flex items-center gap-2 rounded-full ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
-              >
-                {t('landing.checklistCta')}
-              </Link>
-            </Reveal>
-            <Reveal delayMs={100}>
-              <MaterialsFeedStudio
-                queries={[
-                  t('landing.feedStudioQuery1'),
-                  t('landing.feedStudioQuery2'),
-                  t('landing.feedStudioQuery3'),
-                  t('landing.feedStudioQuery4'),
-                ]}
-                materials={[
-                  { face: t('landing.split1FaceMain'), value: t('landing.split1FaceMainValue') },
-                  { face: t('landing.split1FaceBack'), value: t('landing.split1FaceBackValue') },
-                  { face: t('landing.split1Joinery'), value: t('landing.split1JoineryValue') },
-                  { face: t('landing.split1Roof'), value: t('landing.split1RoofValue') },
-                ]}
-                autoTag={t('landing.split1AutoTag')}
-                countLabel={(count) => t('landing.feedStudioCount', { count })}
-                badgeLabel={t('landing.feedStudioBadge')}
-              />
-            </Reveal>
-          </div>
-        </section>
-
-        {/* FEATURE BLOCKS */}
-        <section className="py-10 min-[860px]:py-12">
-          <div className="grid grid-cols-1 items-center gap-14 py-12.5 min-[860px]:grid-cols-2">
-            <Reveal>
-              <span className={`mb-2.5 block text-[11px] text-[#716FFF] ${MONO}`}>
-                {t('landing.split2Tag')}
-              </span>
-              <h3 className="mb-3 text-[26px] font-bold tracking-[-0.4px]">
-                {t('landing.split2Title')}
-              </h3>
-              <p className="mb-4.5 max-w-[400px] text-[14.5px] leading-[1.65] text-[#6B6880]">
-                {t('landing.split2Body')}
-              </p>
-              <ul className="flex flex-col gap-2.5">
-                <CheckItem>{t('landing.split2Check1')}</CheckItem>
-                <CheckItem>{t('landing.split2Check2')}</CheckItem>
-                <CheckItem>{t('landing.split2Check3')}</CheckItem>
-              </ul>
-            </Reveal>
-            <Reveal
-              delayMs={100}
-              className="rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] p-5.5"
+          <Reveal delayMs={200} className="mt-10 flex justify-center">
+            <Link
+              href={ctaHref}
+              className={`inline-flex items-center rounded-full ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
             >
-              {/* One building, four views of it — the section's own sentence is
-                  "à partir d'une même image". Four different buildings here
-                  would contradict the line directly above them. */}
-              <TreeGallery
-                root={{
-                  label: t('landing.split2NodeBase'),
-                  tag: t('landing.split2TagBase'),
-                  src: '/arbre/base.jpg',
-                }}
-                branches={[
-                  {
-                    label: t('landing.split2NodeNight'),
-                    tag: t('landing.split2TagVariant'),
-                    src: '/arbre/nuit.jpg',
-                  },
-                  {
-                    label: t('landing.split2NodeInterior'),
-                    tag: t('landing.split2TagVariant'),
-                    src: '/arbre/interieur.jpg',
-                  },
-                  {
-                    label: t('landing.split2NodeExtra'),
-                    tag: t('landing.split2TagEdit'),
-                    src: '/arbre/personnage.jpg',
-                  },
-                ]}
-              />
+              {t('landing.checklistCta')}
+            </Link>
+          </Reveal>
+        </section>
+
+        {/* HOW IT WORKS — two full-width cards, one above the other (owner's
+            brief, 2026-10-06): the gradient one carries the "Commenter" film
+            wide enough to read, the grey one the render-tree film.
+            The engines sit under them as a third card. */}
+        <section id="comment" className="scroll-mt-6 py-14 min-[860px]:py-20">
+          <SectionHeader
+            eyebrow={t('landing.eyebrowHow')}
+            title={t('landing.howTitle')}
+            subtitle={t('landing.howSubtitle')}
+          />
+          <div className="flex flex-col gap-5">
+            <Reveal>
+              <div className={`rounded-[24px] ${GRADIENT} p-4 text-white min-[640px]:p-10`}>
+                {/* A punchy title and the film — visitors look at the picture,
+                    not at a checklist (owner's brief, 2026-10-06). */}
+                <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
+                  <div className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white min-[640px]:flex">
+                    <Document set="light" size={22} primaryColor="#15803D" />
+                  </div>
+                  <div>
+                    <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
+                      {t('landing.commentTitle')}
+                    </h3>
+                    <p className="max-w-[680px] text-[14px] leading-[1.55] text-white/85 min-[640px]:text-[15px]">
+                      {t('landing.commentSubtitle')}
+                    </p>
+                  </div>
+                </div>
+                <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(10,40,20,0.6)] min-[640px]:p-2">
+                  <MotionFilm
+                    src={`/motion/commenter-${locale}.mp4`}
+                    poster={`/motion/commenter-${locale}.jpg`}
+                    label={t('landing.commentAlt')}
+                    className="rounded-[14px]"
+                  />
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal delayMs={100}>
+              <div className="rounded-[24px] border border-[#ECECF2] bg-[#F7F7FA] p-4 min-[640px]:p-10">
+                {/* Same shape as the card above: a title and the film of the
+                    render tree branching (owner's brief, 2026-10-06). */}
+                <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
+                  <div
+                    className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${GRADIENT} min-[640px]:flex`}
+                  >
+                    <Category set="light" size={22} primaryColor="#ffffff" />
+                  </div>
+                  <div>
+                    <span
+                      className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#15803D] ${MONO}`}
+                    >
+                      {t('landing.split2Tag')}
+                    </span>
+                    <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
+                      {t('landing.treeTitle')}
+                    </h3>
+                    <p className="max-w-[680px] text-[14px] leading-[1.55] text-[#5F6B64] min-[640px]:text-[15px]">
+                      {t('landing.treeSubtitle')}
+                    </p>
+                  </div>
+                </div>
+                <div className="overflow-hidden rounded-[20px] border border-[#ECECF2] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
+                  <MotionFilm
+                    src={`/motion/arbre-${locale}.mp4`}
+                    poster={`/motion/arbre-${locale}.jpg`}
+                    label={t('landing.treeAlt')}
+                    className="rounded-[14px]"
+                  />
+                </div>
+              </div>
             </Reveal>
           </div>
 
-          <div className="grid grid-cols-1 items-center gap-14 py-12.5 min-[860px]:grid-cols-2">
-            <Reveal delayMs={100} className="min-[860px]:order-2">
-              <span className={`mb-2.5 block text-[11px] text-[#716FFF] ${MONO}`}>
-                {t('landing.integrationsTitlePrefix')}
-                {t('landing.integrationsTitleAccent')}
-              </span>
-              <h3 className="mb-3 text-[26px] font-bold tracking-[-0.4px]">
-                {t('landing.integrationsSubtitle')}
-              </h3>
-            </Reveal>
-            <Reveal className="min-[860px]:order-1">
-              <EnginesStateTiles
-                engines={[
-                  {
-                    name: ENGINE_LABELS.nanobanana.name[locale],
-                    description: ENGINE_LABELS.nanobanana.description[locale],
-                  },
-                  {
-                    name: ENGINE_LABELS.gpt_image.name[locale],
-                    description: ENGINE_LABELS.gpt_image.description[locale],
-                  },
-                ]}
-                events={[
-                  t('landing.enginesEvent1'),
-                  t('landing.enginesEvent2'),
-                  t('landing.enginesEvent3'),
-                  t('landing.enginesEvent4'),
-                ]}
-              />
-            </Reveal>
-          </div>
+          <Reveal delayMs={150} className="mt-5">
+            <div className="rounded-[24px] border border-[#ECECF2] bg-[#F7F7FA] p-4 min-[640px]:p-10">
+              {/* Same shape as the two cards above: the same prompt rendered
+                  by each engine, interior on the left, exterior on the right
+                  (owner's brief, 2026-10-06). Engines are only ever named
+                  "Moteur 1 / Moteur 2" here, never by provider. */}
+              <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
+                <div
+                  className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${GRADIENT} min-[640px]:flex`}
+                >
+                  <Swap set="light" size={22} primaryColor="#ffffff" />
+                </div>
+                <div>
+                  <span
+                    className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#15803D] ${MONO}`}
+                  >
+                    {t('landing.enginesEyebrow')}
+                  </span>
+                  <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
+                    {t('landing.enginesTitle')}
+                  </h3>
+                  <p className="max-w-[680px] text-[14px] leading-[1.55] text-[#5F6B64] min-[640px]:text-[15px]">
+                    {t('landing.enginesSubtitle')}
+                  </p>
+                </div>
+              </div>
+              <div className="overflow-hidden rounded-[20px] border border-[#ECECF2] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
+                <MotionFilm
+                  src={`/motion/moteurs-${locale}.mp4`}
+                  poster={`/motion/moteurs-${locale}.jpg`}
+                  label={t('landing.enginesAlt')}
+                  className="rounded-[14px]"
+                />
+              </div>
+            </div>
+          </Reveal>
         </section>
 
         {/* PRESETS */}
-        <section className="py-10 min-[860px]:py-12">
-          <Reveal className="mx-auto mb-11.5 max-w-[560px] text-center">
-            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
-              {t('landing.presetsTitlePrefix')}
-              <GradientText>{t('landing.presetsTitleAccent')}</GradientText>
-            </h2>
-          </Reveal>
-          {/* Four photoreal ambiances in a row that fills, then Esquisse on its
-              own. That split is the product's own: the sketch preset is the one
-              that is deliberately NOT photorealistic, so grouping it with the
-              other four would misdescribe it. */}
-          <div className="grid grid-cols-1 gap-5.5 min-[640px]:grid-cols-2 min-[1000px]:grid-cols-4">
+        <section className="py-14 min-[860px]:py-20">
+          <SectionHeader
+            eyebrow={t('landing.eyebrowPresets')}
+            title={`${t('landing.presetsTitlePrefix')}${t('landing.presetsTitleAccent')}`}
+          />
+          {/* Four photoreal ambiances in a row, then Esquisse on its own —
+              the sketch preset is the one that is deliberately NOT
+              photorealistic, so grouping it with the other four would
+              misdescribe it. */}
+          <div className="grid grid-cols-1 gap-5 min-[640px]:grid-cols-2 min-[1000px]:grid-cols-4">
             <Reveal>
               <PresetCard
                 ambiance="jourExt"
@@ -786,18 +762,9 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Reveal>
           </div>
 
-          {/* Centred and capped rather than stretched across the full grid
-              width. The copy stops at 62ch, so a 1130px box left roughly
-              two-thirds of itself empty and read as a layout accident instead
-              of the deliberate aside it is. */}
-          <Reveal delayMs={240} className="mx-auto mt-5.5 max-w-[760px]">
-            {/* Kept dashed and apart from the grid — the split is the
-                product's own, this preset is the one that is deliberately NOT
-                photorealistic. But it now shows the drawing it describes:
-                "traits de crayon visibles, volumes poses" is a claim about an
-                image, and the image exists. */}
-            <div className="flex flex-col gap-5 rounded-2xl border border-dashed border-[#DEDEE8] bg-white p-5 min-[640px]:flex-row min-[640px]:items-center">
-              <div className="w-full flex-shrink-0 overflow-hidden rounded-xl bg-[#F1F0F6] min-[640px]:w-[240px]">
+          <Reveal delayMs={240} className="mx-auto mt-5 max-w-[760px]">
+            <div className="flex flex-col gap-5 rounded-[24px] border border-dashed border-[#DEDEE8] bg-white p-5 min-[640px]:flex-row min-[640px]:items-center">
+              <div className="w-full flex-shrink-0 overflow-hidden rounded-2xl bg-[#EFF3F0] min-[640px]:w-[240px]">
                 <img
                   src="/presets/esquisse.jpg"
                   alt={t('landing.presetsSketchAlt')}
@@ -813,26 +780,32 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">
                   {t('landing.presetsSketchTitle')}
                 </h4>
-                <p className="max-w-[62ch] text-[13px] leading-[1.55] text-[#6B6880]">
+                <p className="max-w-[62ch] text-[13px] leading-[1.55] text-[#5F6B64]">
                   {t('landing.presetsSketchBody')}
                 </p>
               </div>
             </div>
           </Reveal>
         </section>
+      </div>
 
-        {/* PRICING */}
-        <section id="tarifs" className="scroll-mt-[110px] py-10 min-[860px]:py-12">
-          <Reveal className="mx-auto mb-3 max-w-[560px] text-center">
-            <h2 className="text-[30px] font-bold tracking-[-0.6px] leading-[1.25]">
-              {t('landing.pricingTitlePrefix')}
-              <GradientText>{t('landing.pricingTitleAccent')}</GradientText>
-            </h2>
-            <p className="mt-2.5 text-sm text-[#6B6880]">{t('landing.pricingSubtitle')}</p>
-          </Reveal>
-          <div className="mx-auto mt-11.5 grid max-w-[980px] grid-cols-1 items-stretch gap-5.5 min-[860px]:grid-cols-3">
+      {/* PRICING — full-bleed green band, as in the reference. The deep end
+          of the gradient carries the white text (#15803D = 5.0:1); the bright
+          #16A34A would fail 4.5:1 for the 14px copy. */}
+      <section
+        id="tarifs"
+        className="scroll-mt-0 bg-[linear-gradient(135deg,#15803D_0%,#166534_55%,#14532D_100%)] py-16 min-[860px]:py-24"
+      >
+        <div className="mx-auto max-w-[1180px] px-6">
+          <SectionHeader
+            light
+            eyebrow={t('landing.eyebrowPricing')}
+            title={`${t('landing.pricingTitlePrefix')}${t('landing.pricingTitleAccent')}`}
+            subtitle={t('landing.pricingSubtitle')}
+          />
+          <div className="mx-auto grid max-w-[1040px] grid-cols-1 items-stretch gap-5 min-[860px]:grid-cols-3">
             {PRICING_TIERS.map((tier, i) => (
-              <Reveal key={tier.id} delayMs={i * 150}>
+              <Reveal key={tier.id} delayMs={i * 120} className="h-full">
                 <PricingCard
                   tier={tier}
                   onSelect={() => void handleSelectTier(tier.id)}
@@ -842,69 +815,30 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* What every tier includes, said once. This is the half of the old
-              cards that never varied; as a single row under the grid it stays
-              readable and stops competing with the quota, which is the only
-              figure anyone is actually comparing. */}
-          <Reveal delayMs={450} className="mx-auto mt-6 max-w-[980px]">
-            <div className="flex flex-col gap-3 rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] px-6 py-5">
-              <p className={`text-[11px] uppercase tracking-wide text-[#8A8896] ${MONO}`}>
-                {t('landing.pricingIncludedLabel')}
-              </p>
-              <ul className="flex flex-col gap-2.5 min-[720px]:flex-row min-[720px]:flex-wrap min-[720px]:gap-x-8">
-                <CheckItem>{t('landing.pricingFeatureEngines')}</CheckItem>
-                <CheckItem>{t('landing.pricingFeaturePresets')}</CheckItem>
-                <CheckItem>{t('landing.pricingFeatureEditing')}</CheckItem>
-              </ul>
-            </div>
-          </Reveal>
-        </section>
-
-        {/* FAQ */}
-        <section className="py-10 min-[860px]:py-12">
-          <Reveal className="mx-auto mb-11.5 max-w-[560px] text-center">
-            <h2 className="text-[28px] font-bold tracking-[-0.5px] leading-[1.3]">
-              {t('landing.faqTitle')}
-            </h2>
-          </Reveal>
+      {/* FAQ — two columns: the header on the left, the questions on the
+          right, as in the reference. */}
+      <section id="faq" className="mx-auto max-w-[1180px] scroll-mt-6 px-6 py-16 min-[860px]:py-24">
+        <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] min-[960px]:gap-14">
+          <SectionHeader
+            align="left"
+            eyebrow={t('landing.eyebrowFaq')}
+            title={t('landing.faqTitle')}
+            subtitle={t('landing.faqSubtitle')}
+          />
           <Reveal delayMs={80}>
-            <FaqAccordion items={faqItems} />
+            <FaqAccordion items={faqItems} className="" />
           </Reveal>
-        </section>
+        </div>
+      </section>
 
-        {/* FINAL CTA */}
-        <section className="py-10 min-[860px]:py-12">
-          <Reveal
-            className={`rounded-[32px] ${GRADIENT} px-8 py-16 text-center text-white min-[640px]:px-16`}
-          >
-            <h2 className="mx-auto max-w-[480px] text-[28px] font-bold leading-[1.25]">
-              {t('landing.ctaBandTitle')}
-            </h2>
-            <p className="mx-auto mt-3.5 max-w-[380px] text-sm text-white/80">
-              {t('landing.ctaBandBody')}
-            </p>
-            <Link
-              href={ctaHref}
-              className="rb-pulse mt-7 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-[#17161F] transition-transform duration-150 ease-out active:scale-[0.97]"
-            >
-              {t('landing.ctaBandButton')}
-            </Link>
-          </Reveal>
-        </section>
-      </div>
+      <SiteFooter ctaHref={ctaHref} />
 
-      <SiteFooter />
-
-      {/* Points at the example page, not at signup: the hero fan and the
-          header already carry the "start" CTA, so the persistent bar is more
-          useful offering the visitor proof than repeating the same button. */}
-      {/* The primary action, not the secondary one. This bar is the most
-          persistent surface on the page — it is pinned to the bottom of every
-          screen from the end of the hero to the footer — and it was spending
-          that on "see an example", a link that sends the visitor to a gallery
-          and away from signing up. The gallery is already reachable from the
-          nav and from the hero. */}
+      {/* The primary action: this bar is pinned to the bottom of every screen
+          from the end of the hero to the footer, so it repeats the one action
+          the page exists for rather than a secondary link. */}
       <StickyBar visible={pastHero} href={ctaHref} label={t('landing.heroCtaPrimary')} />
     </main>
   );

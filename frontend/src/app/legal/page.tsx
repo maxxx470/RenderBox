@@ -27,7 +27,7 @@ export default function LegalPage() {
               onClick={() => setTab(key)}
               className={`px-4 py-2.5 text-[13px] font-medium ${
                 tab === key
-                  ? 'border-b-2 border-[#716FFF] text-[#716FFF]'
+                  ? 'border-b-2 border-[#16A34A] text-[#15803D]'
                   : 'text-[#8A8896] hover:text-[#17161F]'
               }`}
             >

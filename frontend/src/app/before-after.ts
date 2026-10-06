@@ -26,13 +26,36 @@
 // point the entry at it. Set an entry to null and the slider falls back to the
 // drawn SketchVisual / RenderVisual placeholders — no other change needed.
 
+//
+// 2026-10-05 — the section shows TWO pairs side by side, exterior on the left,
+// interior on the right (owner's request). The interior pair is a stand-in:
+// its "croquis" was derived from the render by image processing (pencil-sketch
+// filter over the same 16:10 crop of galerie/jour-int-1.jpg), so the two
+// frames share every pixel of camera — but it runs render → sketch, the
+// reverse of the product. Replace it with a real sketch → RenderBox render
+// pair as soon as one exists; same two files, same 16:10 ratio.
+
+export type BeforeAfterKind = 'exterior' | 'interior';
+
 export interface BeforeAfterPair {
+  kind: BeforeAfterKind;
   /** Path under /public, or null to fall back to the drawn placeholder. */
   before: string | null;
   after: string | null;
 }
 
-export const BEFORE_AFTER: BeforeAfterPair = {
-  before: '/avant-apres/croquis.jpg',
-  after: '/avant-apres/rendu.jpg',
-};
+/** Left to right, as laid out on the landing. */
+export const BEFORE_AFTER_PAIRS: BeforeAfterPair[] = [
+  // Provisional stand-in built like the interior one (from exemples/maison-pierre.jpg).
+  // The authentic sketch → render pair is still on disk: croquis.jpg / rendu.jpg.
+  {
+    kind: 'exterior',
+    before: '/avant-apres/exterieur-croquis.jpg',
+    after: '/avant-apres/exterieur-rendu.jpg',
+  },
+  {
+    kind: 'interior',
+    before: '/avant-apres/interieur-croquis.jpg',
+    after: '/avant-apres/interieur-rendu.jpg',
+  },
+];

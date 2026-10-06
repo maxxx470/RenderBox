@@ -98,7 +98,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
             <button
               type="button"
               onClick={() => void logout()}
-              className="self-start rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+              className="self-start rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
             >
               {t('parametres.logoutButton')}
             </button>
@@ -129,7 +129,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
               ) : (
                 <a
                   href="/api/auth/oauth/google/start?next=/parametres"
-                  className="rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+                  className="rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
                 >
                   {t('parametres.linkGoogleButton')}
                 </a>
@@ -185,8 +185,8 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
             <p className="text-[13px] text-[#8A8896]">{t('parametres.billingEmpty')}</p>
           )}
           <Link
-            href="/#tarifs"
-            className="mt-2 inline-block self-start rounded-[10px] bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-4 py-2 text-[13px] font-medium text-white"
+            href="/app/tarifs"
+            className="mt-2 inline-block self-start rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2 text-[13px] font-medium text-white"
           >
             {t('parametres.buyButton')}
           </Link>

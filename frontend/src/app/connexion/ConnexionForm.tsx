@@ -56,7 +56,7 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
 
       <a
         href="/api/auth/oauth/google/start?next=/app"
-        className="mb-5 flex w-full items-center justify-center gap-2.5 rounded-xl border border-[#ECECF2] px-3 py-3 text-sm font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+        className="mb-5 flex w-full items-center justify-center gap-2.5 rounded-full border border-[#ECECF2] px-3 py-3 text-sm font-medium text-[#17161F] hover:bg-[#F7F7FA]"
       >
         <GoogleMark />
         {t('connexion.googleButton')}
@@ -74,7 +74,7 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
         <label className="mb-1.5 block text-xs text-[#8A8896]" htmlFor="connexion-email">
           {t('connexion.emailLabel')}
         </label>
-        <div className="mb-3.5 flex items-center gap-2 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-3 focus-within:border-[#716FFF]">
+        <div className="mb-3.5 flex items-center gap-2 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-3 focus-within:border-[#16A34A]">
           <Message set="light" size={18} primaryColor="#8A8896" />
           <input
             id="connexion-email"
@@ -96,7 +96,7 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
         <button
           type="submit"
           disabled={status === 'submitting'}
-          className="w-full rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="w-full rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
         >
           {status === 'submitting' ? t('connexion.submitting') : t('connexion.submitButton')}
         </button>

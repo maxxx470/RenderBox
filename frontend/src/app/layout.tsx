@@ -36,7 +36,13 @@ export default async function RootLayout({
   const locale: Locale = cookieLocale === 'en' ? 'en' : 'fr';
 
   return (
-    <html lang={locale} className={`${generalSans.variable} ${jetbrainsMono.variable}`}>
+    // suppressHydrationWarning: browser extensions inject attributes on <html>
+    // (e.g. webcrx) before React hydrates. Only silences this one element's attributes.
+    <html
+      lang={locale}
+      className={`${generalSans.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <body className={`${generalSans.className} bg-white text-[#17161F] antialiased`}>
         <LocaleProvider initialLocale={locale}>
           <ToastProvider>

@@ -21,6 +21,7 @@ const {
   mockModerateImage,
   mockCheckTierQuota,
   mockRecordTierUsage,
+  mockDetectMaterials,
 } = vi.hoisted(() => ({
   mockEnforceGenerationRateLimit: vi.fn(),
   mockGenerate: vi.fn(),
@@ -28,6 +29,11 @@ const {
   mockModerateImage: vi.fn(),
   mockCheckTierQuota: vi.fn(),
   mockRecordTierUsage: vi.fn(),
+  mockDetectMaterials: vi.fn(),
+}));
+
+vi.mock('@/lib/server/materials/detect-and-merge', () => ({
+  detectAndMergeMaterials: mockDetectMaterials,
 }));
 
 vi.mock('@/lib/server/middleware/rate-limit-generation', () => ({
@@ -118,6 +124,7 @@ beforeEach(() => {
     .mockResolvedValue({ allowed: true, tier: 'standard', max: 100, remaining: 99 });
   mockRecordTierUsage.mockReset().mockResolvedValue(undefined);
   mockModerateImage.mockReset().mockResolvedValue({ flagged: false, categories: [] });
+  mockDetectMaterials.mockReset().mockResolvedValue(undefined);
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
 
   vi.mocked(verifyToken).mockResolvedValue({
@@ -328,5 +335,90 @@ describe('POST /api/projects/[projectId]/edit — add_element + moderation', () 
     );
     expect(res.status).toBe(415);
     expect(mockGenerate).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/projects/[projectId]/edit — annotate (point-and-comment)', () => {
+  const annotations = JSON.stringify([
+    { x: 20, y: 40, comment: 'Façade en bardage bois' },
+    { x: 70, y: 85, comment: 'Sol en pierre claire' },
+  ]);
+
+  function annotateReq(fields: Record<string, string>, marked?: File): NextRequest {
+    const form = new FormData();
+    for (const [k, v] of Object.entries(fields)) form.append(k, v);
+    if (marked) form.append('markedImage', marked);
+    return new NextRequest(`https://test/api/projects/${PROJECT_ID}/edit`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer valid-access-token',
+        'x-csrf-token': 'csrf-tok',
+        cookie: 'app-csrf=csrf-tok',
+      },
+      body: form,
+    });
+  }
+
+  const fields: Record<string, string> = {
+    sourceNodeId: SOURCE_NODE_ID,
+    editType: 'annotate',
+    variantCount: '1',
+    engine: 'nanobanana',
+    annotations,
+  };
+
+  it('runs on gpt_image even when the client asks for nanobanana, with no instruction needed', async () => {
+    const res = await POST(annotateReq(fields), ctx());
+    expect(res.status).toBe(201);
+    expect(mockGenerate.mock.calls[0]?.[0]).toBe('gpt_image');
+    expect(mockIsEngineConfigured).toHaveBeenCalledWith('gpt_image');
+    const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
+    expect(input.prompt).toContain('1. At 20% from the left, 40% from the top');
+    expect(input.prompt).toContain('Sol en pierre claire');
+    expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({
+      engine: 'gpt_image',
+      editType: 'annotate',
+    });
+  });
+
+  it('400s without annotations, and on invalid annotations JSON', async () => {
+    const withoutAnnotations = { ...fields };
+    delete withoutAnnotations.annotations;
+    expect((await POST(annotateReq(withoutAnnotations), ctx())).status).toBe(400);
+    expect((await POST(annotateReq({ ...fields, annotations: '{oops' }), ctx())).status).toBe(400);
+    expect(mockGenerate).not.toHaveBeenCalled();
+  });
+
+  it('passes the marked copy as a reference image after moderating it', async () => {
+    const res = await POST(annotateReq(fields, pngFile('marked.png')), ctx());
+    expect(res.status).toBe(201);
+    expect(mockModerateImage).toHaveBeenCalledTimes(1);
+    const input = mockGenerate.mock.calls[0]?.[1] as {
+      referenceImages?: unknown[];
+      prompt: string;
+    };
+    expect(input.referenceImages).toHaveLength(1);
+    expect(input.prompt).toContain('numbered markers');
+  });
+
+  it('refuses a marked copy whose bytes are not an image', async () => {
+    const bad = new File([Buffer.from('not a png')], 'marked.png', { type: 'image/png' });
+    const res = await POST(annotateReq(fields, bad), ctx());
+    expect(res.status).toBe(415);
+    expect(mockGenerate).not.toHaveBeenCalled();
+  });
+
+  it('re-reads the materials from the result, and a detection failure does not fail the edit', async () => {
+    mockDetectMaterials.mockRejectedValue(new Error('vision down'));
+    const res = await POST(annotateReq(fields), ctx());
+    expect(res.status).toBe(201);
+    expect(mockDetectMaterials).toHaveBeenCalledTimes(1);
+    const body = (await res.json()) as { materialsDetected: boolean };
+    expect(body.materialsDetected).toBe(false);
+  });
+
+  it('never re-reads materials for the other edit types', async () => {
+    await POST(makeReq(baseFields()), ctx());
+    expect(mockDetectMaterials).not.toHaveBeenCalled();
   });
 });

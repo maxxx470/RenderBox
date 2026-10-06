@@ -94,7 +94,7 @@ export default function AdminJournalPage() {
         <div>
           {items.map((row) => (
             <div key={row.id} className="flex gap-3 border-b border-[#ECECF2] py-3">
-              <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#716FFF]" />
+              <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#16A34A]" />
               <div>
                 <div className="text-[13px] text-[#17161F]">
                   <b className="font-semibold">{row.actorId}</b> {describe(row, t)}
@@ -112,7 +112,7 @@ export default function AdminJournalPage() {
             <button
               type="button"
               onClick={() => void load({ cursor: nextCursor, append: true })}
-              className="mt-4 rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+              className="mt-4 rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
             >
               {t('admin.users.loadMore')}
             </button>

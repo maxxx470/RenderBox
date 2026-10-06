@@ -9,7 +9,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
-import { AdminNav } from './AdminNav';
+import { AdminMobileNav, AdminNav } from './AdminNav';
 
 interface AdminMe {
   admin: { id: string; email: string; role: 'ADMIN' | 'SUPERADMIN' };
@@ -51,7 +51,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-white">
       <AdminNav role={admin.role} />
-      <main className="flex-1 overflow-y-auto px-8 py-6.5">{children}</main>
+      <main className="min-w-0 flex-1 overflow-y-auto px-4 pb-[calc(104px+env(safe-area-inset-bottom))] pt-5 min-[640px]:px-8 min-[640px]:pt-6.5 min-[900px]:pb-6.5">
+        {children}
+      </main>
+      <AdminMobileNav />
     </div>
   );
 }

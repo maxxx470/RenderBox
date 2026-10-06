@@ -64,7 +64,7 @@ export const GALLERY: readonly GalleryBatch[] = [
 /**
  * Every gallery image, flat, in the order the batches declare them.
  *
- * The in-app gallery at /app/exemple shows this list: someone already inside
+ * The in-app gallery at /app/exemple (removed 2026-10-06) used to show this list: someone already inside
  * the product is browsing for what the thing can look like, not studying a
  * taxonomy, and five headings over four images each turned a wall of renders
  * into five short rows. The public /exemple page keeps the batches, because a

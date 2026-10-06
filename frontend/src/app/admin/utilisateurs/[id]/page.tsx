@@ -87,7 +87,7 @@ export default function AdminUserDetailPage() {
       </Link>
 
       <div className="mt-3 mb-6 flex items-center gap-3.5">
-        <div className="h-11 w-11 rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] opacity-85" />
+        <div className="h-11 w-11 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] opacity-85" />
         <div>
           <h1 className="font-[family-name:var(--font-general-sans)] text-[18px] font-semibold text-[#17161F]">
             {user.name || user.email}
@@ -198,7 +198,7 @@ export default function AdminUserDetailPage() {
                   }),
                 )
               }
-              className="rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
+              className="rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
             >
               {t('admin.userDetail.restoreButton')}
             </button>
@@ -215,7 +215,7 @@ export default function AdminUserDetailPage() {
                   }),
                 );
               }}
-              className="rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
+              className="rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
             >
               {t('admin.userDetail.suspendButton')}
             </button>
@@ -228,7 +228,7 @@ export default function AdminUserDetailPage() {
               onClick={() =>
                 void runAction(() => api(`/api/admin/users/${user.id}/restore`, { method: 'POST' }))
               }
-              className="rounded-[10px] bg-[#1E7A3D14] px-4 py-2 text-[13px] font-medium text-[#1E7A3D] hover:bg-[#1E7A3D22] disabled:opacity-50"
+              className="rounded-full bg-[#1E7A3D14] px-4 py-2 text-[13px] font-medium text-[#1E7A3D] hover:bg-[#1E7A3D22] disabled:opacity-50"
             >
               {t('admin.userDetail.restoreDeletedButton')}
             </button>
@@ -240,7 +240,7 @@ export default function AdminUserDetailPage() {
                 if (!confirm(t('admin.userDetail.confirmDelete'))) return;
                 void runAction(() => api(`/api/admin/users/${user.id}`, { method: 'DELETE' }));
               }}
-              className="rounded-[10px] bg-[#E5484D12] px-4 py-2 text-[13px] font-medium text-[#E5484D] hover:bg-[#E5484D22] disabled:opacity-50"
+              className="rounded-full bg-[#E5484D12] px-4 py-2 text-[13px] font-medium text-[#E5484D] hover:bg-[#E5484D22] disabled:opacity-50"
             >
               {t('admin.userDetail.deleteButton')}
             </button>

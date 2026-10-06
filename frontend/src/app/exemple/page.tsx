@@ -36,7 +36,7 @@ export default function ExemplePage() {
         <h1 className="font-[family-name:var(--font-general-sans)] text-[30px] font-bold tracking-[-0.5px] text-[#17161F]">
           {t('exemple.title')}
         </h1>
-        <p className="mt-2.5 max-w-[62ch] text-[15px] leading-[1.55] text-[#6B6880]">
+        <p className="mt-2.5 max-w-[62ch] text-[15px] leading-[1.55] text-[#5F6B64]">
           {t('exemple.subtitle')}
         </p>
 
@@ -86,7 +86,7 @@ export default function ExemplePage() {
                   </div>
                 ))}
                 {lone && (
-                  <p className="max-w-[46ch] text-[14px] leading-[1.6] text-[#6B6880]">
+                  <p className="max-w-[46ch] text-[14px] leading-[1.6] text-[#5F6B64]">
                     {t('exemple.esquisseNote')}
                   </p>
                 )}
@@ -101,7 +101,7 @@ export default function ExemplePage() {
           <h2 className="font-[family-name:var(--font-general-sans)] text-[19px] font-bold text-[#17161F]">
             {t('exemple.materialsTitle')}
           </h2>
-          <p className="mt-2 max-w-[62ch] text-[14px] leading-[1.55] text-[#6B6880]">
+          <p className="mt-2 max-w-[62ch] text-[14px] leading-[1.55] text-[#5F6B64]">
             {t('exemple.materialsIntro')}
           </p>
           <div className="mt-4 rounded-[16px] border border-[#ECECF2] bg-[#F7F7FA] p-5">
@@ -118,7 +118,7 @@ export default function ExemplePage() {
           </div>
         </section>
 
-        <section className="mt-14 rounded-[20px] bg-[linear-gradient(135deg,#6E6BFF_0%,#8B5CF6_48%,#A855F7_100%)] px-6 py-10 text-center">
+        <section className="mt-14 rounded-[20px] bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)] px-6 py-10 text-center">
           <h2 className="mb-5 font-[family-name:var(--font-general-sans)] text-[20px] font-semibold text-white">
             {t('exemple.ctaTitle')}
           </h2>

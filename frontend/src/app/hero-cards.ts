@@ -33,7 +33,7 @@ export interface HeroCard {
 }
 
 /**
- * Fallback treatment per ambiance, in the violet-to-dark family of the
+ * Fallback treatment per ambiance, in the green-to-dark family of the
  * charter — daylight presets sit light, night and sketch go dark. Differences
  * carry meaning here rather than introducing new brand hues.
  *
@@ -41,10 +41,10 @@ export interface HeroCard {
  * assembled from a bare colour value (see the JIT note in CLAUDE.md).
  */
 export const HERO_CARD_GRADIENT: Record<PresetKey, string> = {
-  jour_ext: 'bg-gradient-to-br from-[#8B8AFF] via-[#8B5CF6] to-[#A855F7]',
-  jour_int: 'bg-gradient-to-br from-[#A855F7] via-[#8B5CF6] to-[#6E6BFF]',
-  nuit_ext: 'bg-gradient-to-br from-[#4B49B8] via-[#332F7A] to-[#1B1940]',
-  nuit_int: 'bg-gradient-to-br from-[#332F7A] via-[#231F52] to-[#141230]',
+  jour_ext: 'bg-gradient-to-br from-[#4ADE80] via-[#15803D] to-[#166534]',
+  jour_int: 'bg-gradient-to-br from-[#166534] via-[#15803D] to-[#16A34A]',
+  nuit_ext: 'bg-gradient-to-br from-[#166534] via-[#14532D] to-[#0B2E19]',
+  nuit_int: 'bg-gradient-to-br from-[#14532D] via-[#0F3D21] to-[#082313]',
   esquisse: 'bg-gradient-to-br from-[#3D3D3D] to-[#0A0A0A]',
 };
 

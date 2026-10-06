@@ -141,12 +141,12 @@ export default function AdminUsersPage() {
                   <tr key={u.id} className="hover:bg-[#F7F7FA]">
                     <td className="border-b border-[#ECECF2] px-3.5 py-3 text-[13px]">
                       <div className="flex items-center gap-2.5">
-                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] opacity-85" />
+                        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] opacity-85" />
                         <span className="text-[#17161F]">{u.name || u.email}</span>
                       </div>
                     </td>
                     <td className="border-b border-[#ECECF2] px-3.5 py-3">
-                      <span className="rounded-lg bg-[#716FFF12] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#716FFF]">
+                      <span className="rounded-lg bg-[#16A34A12] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#15803D]">
                         {u.role}
                       </span>
                     </td>
@@ -166,7 +166,7 @@ export default function AdminUsersPage() {
                     <td className="border-b border-[#ECECF2] px-3.5 py-3">
                       <Link
                         href={`/admin/utilisateurs/${u.id}`}
-                        className="text-[12px] font-medium text-[#716FFF] hover:underline"
+                        className="text-[12px] font-medium text-[#15803D] hover:underline"
                       >
                         {t('admin.users.viewAction')}
                       </Link>
@@ -184,7 +184,7 @@ export default function AdminUsersPage() {
               type="button"
               onClick={() => void load({ cursor: nextCursor, append: true })}
               disabled={loading}
-              className="mt-4 rounded-[10px] border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
+              className="mt-4 rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
             >
               {t('admin.users.loadMore')}
             </button>
