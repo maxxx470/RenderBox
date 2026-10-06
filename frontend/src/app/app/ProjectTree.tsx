@@ -68,7 +68,7 @@ function TreeLevel({
                 nested in it — a button inside a button is invalid HTML. */}
             <div
               className={`group/row flex items-center rounded-lg transition-colors ${
-                selected ? 'bg-[#F1F0F6]' : 'hover:bg-[#F1F0F6]/60'
+                selected ? 'bg-[#EFF3F0]' : 'hover:bg-[#EFF3F0]/60'
               }`}
             >
               <button
@@ -84,10 +84,10 @@ function TreeLevel({
                     <ImageIcon
                       set="light"
                       size={13}
-                      primaryColor={selected ? '#716FFF' : '#8A8896'}
+                      primaryColor={selected ? '#16A34A' : '#8A8896'}
                     />
                   ) : (
-                    <Upload set="light" size={13} primaryColor={selected ? '#716FFF' : '#8A8896'} />
+                    <Upload set="light" size={13} primaryColor={selected ? '#16A34A' : '#8A8896'} />
                   )}
                 </span>
                 <span className="truncate">{label}</span>
@@ -97,7 +97,7 @@ function TreeLevel({
                 onClick={() => onDelete(node)}
                 aria-label={t('app.treeDeleteNode')}
                 title={t('app.treeDeleteNode')}
-                className="mr-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md transition-opacity hover:bg-[#E5484D14] min-[900px]:opacity-0 min-[900px]:group-hover/row:opacity-100 min-[900px]:group-focus-within/row:opacity-100"
+                className="mr-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:bg-[#E5484D14] min-[900px]:opacity-0 min-[900px]:group-hover/row:opacity-100 min-[900px]:group-focus-within/row:opacity-100"
               >
                 <Delete set="light" size={13} primaryColor="#E5484D" />
               </button>
@@ -138,7 +138,7 @@ export function ProjectTree({
   if (tree.length === 0) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-[#8A8896]">
-        <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[10px] border-[1.5px] border-dashed border-[#ECECF2]">
+        <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full border-[1.5px] border-dashed border-[#ECECF2]">
           <ImageIcon set="light" size={16} primaryColor="#8A8896" />
         </div>
         <p className="max-w-[150px] text-xs leading-relaxed">{t('app.treeEmpty')}</p>

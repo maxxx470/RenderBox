@@ -8,13 +8,14 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Folder, Upload, Image as ImageIcon, Category } from 'react-iconly';
+import { Folder, Upload, Image as ImageIcon } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
+import { RequestError, readErrorCode, isServiceNotConfigured } from './request-error';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
@@ -28,6 +29,7 @@ import {
   type ResolutionKey,
 } from '@/lib/server/generation/resolutions';
 import { HomeSidebar } from './HomeSidebar';
+import { MOBILE_NAV_PAD, MobileNav } from './MobileNav';
 import { CommandBar, type AppMode } from './CommandBar';
 
 export interface RecentRenderCardData {
@@ -79,22 +81,22 @@ function EmptyFanCard({
       onClick={onClick}
       style={{ animationDelay: `${index * 90}ms` }}
       aria-label={lead ? undefined : t('app.genHomeCardPlaceholder')}
-      className={`rb-card-in ${CARD_SHAPE} flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[#ECECF2] bg-[#FBFBFD] hover:border-[#716FFF] ${
+      className={`rb-card-in ${CARD_SHAPE} flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[#ECECF2] bg-[#FBFBFD] hover:border-[#16A34A] ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
       {lead ? (
         <>
-          <span className="flex h-[46px] w-[46px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+          <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
             <Upload set="light" size={20} primaryColor="#ffffff" />
           </span>
-          <span className="max-w-[150px] text-center text-[12.5px] font-medium text-[#6B6880]">
+          <span className="max-w-[150px] text-center text-[12.5px] font-medium text-[#5F6B64]">
             {t('app.genHomeCardPlaceholder')}
           </span>
         </>
       ) : (
-        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-2xl border border-[#DEDEE8] bg-white">
-          <Upload set="light" size={20} primaryColor="#B4B2C0" />
+        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-[#DEDEE8] bg-white">
+          <Upload set="light" size={20} primaryColor="#AEBBB2" />
         </span>
       )}
     </button>
@@ -108,11 +110,13 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
   const tag =
     render.editType === 'add_element'
       ? t('edit.tabAdd')
-      : render.editType === 'targeted_retouch'
+      : render.editType === 'targeted_retouch' || render.editType === 'annotate'
         ? t('edit.tabRetouch')
-        : render.preset
-          ? PRESETS[render.preset as PresetKey].label[locale]
-          : ENGINE_LABELS[(render.engine as EngineName) || 'nanobanana'].name[locale];
+        : render.editType === 'enhance'
+          ? t('enhance.tag')
+          : render.preset
+            ? PRESETS[render.preset as PresetKey].label[locale]
+            : ENGINE_LABELS[(render.engine as EngineName) || 'nanobanana'].name[locale];
 
   return (
     <Link
@@ -120,7 +124,7 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
       // 90ms apart: enough to read as a deal of cards, short enough that the
       // last one lands well before anyone reaches for it.
       style={{ animationDelay: `${index * 90}ms` }}
-      className={`rb-card-in ${CARD_SHAPE} border border-[#ECECF2] bg-gradient-to-br from-[#EFECFF] to-[#F1F0F6] ${
+      className={`rb-card-in ${CARD_SHAPE} border border-[#ECECF2] bg-gradient-to-br from-[#E8F5EC] to-[#EFF3F0] ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
@@ -144,17 +148,14 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
 //
 // Same geometry as RenderFanCard so the fan never shifts, but two things are
 // deliberately different: the tag reads "exemple" rather than the preset, and
-// the link goes to /exemple instead of a project. A card that looked like the
-// user's own work and led nowhere would be worse than an empty slot.
+// the card is not a link. The in-app gallery it used to open was removed on
+// 2026-10-06 (Enhance took its place), so it is a picture, not a destination.
 function ExampleFanCard({ example, index }: { example: ExampleRender; index: number }) {
   const { locale } = useLocale();
   const t = useTranslations();
 
   return (
-    <Link
-      // The in-app gallery, not the public one: this card is inside the
-      // workspace, and /exemple would swap the rail for the landing header.
-      href="/app/exemple"
+    <div
       style={{ animationDelay: `${index * 90}ms` }}
       className={`rb-card-in ${CARD_SHAPE} border border-[#ECECF2] bg-[#F7F7FA] ${
         index === 0 ? '' : '-ml-6'
@@ -187,7 +188,7 @@ function ExampleFanCard({ example, index }: { example: ExampleRender; index: num
           {PRESETS[example.preset].label[locale]}
         </span>
       )}
-    </Link>
+    </div>
   );
 }
 
@@ -232,7 +233,6 @@ export function GenerationHome({
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -273,7 +273,14 @@ export function GenerationHome({
         credentials: 'include',
         headers: csrf ? { 'x-csrf-token': csrf } : {},
       });
-      if (!res.ok) throw new Error('upload failed');
+      if (!res.ok) {
+        const code = await readErrorCode(res);
+        // The project was created only to hold this photo. Without it, it is
+        // an empty "Projet du …" left on the dashboard after every failed try.
+        // Not awaited: the error toast must not wait on the cleanup.
+        void api(`/api/projects/${project.id}`, { method: 'DELETE' }).catch(() => undefined);
+        throw new RequestError(code);
+      }
 
       const params = new URLSearchParams();
       if (prompt.trim()) params.set('prompt', prompt.trim());
@@ -282,8 +289,11 @@ export function GenerationHome({
       // 'auto' is the default on the other side — no need to spell it out.
       if (ratio !== 'auto') params.set('ratio', ratio);
       router.push(`/app/${project.id}?${params.toString()}`);
-    } catch {
-      toast(t('app.genHomeQuickStartError'), 'error');
+    } catch (err) {
+      toast(
+        t(isServiceNotConfigured(err) ? 'app.serviceNotConfigured' : 'app.genHomeQuickStartError'),
+        'error',
+      );
       setCreating(false);
     }
   }
@@ -303,14 +313,6 @@ export function GenerationHome({
 
   return (
     <div className="flex h-screen bg-white">
-      {/* Backdrop for the mobile drawer, matching the workspace. */}
-      {mobileNavOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/30 min-[900px]:hidden"
-          onClick={() => setMobileNavOpen(false)}
-          aria-hidden
-        />
-      )}
       <HomeSidebar
         current="generate"
         onModeChange={handleModeChange}
@@ -318,24 +320,14 @@ export function GenerationHome({
         max={max}
         remaining={remaining}
         userEmail={userEmail}
-        mobileOpen={mobileNavOpen}
-        onMobileClose={() => setMobileNavOpen(false)}
       />
 
       {/* min-w-0 so this flex child can shrink below its content's intrinsic
           width instead of pushing the workspace off a narrow screen. */}
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden px-5 pt-5.5 min-[900px]:px-7.5">
-        <div className="mb-7.5 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(true)}
-              className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
-              aria-label={t('app.openMenu')}
-            >
-              <Category set="light" size={16} primaryColor="#8A8896" />
-            </button>
-          </div>
+      <main
+        className={`flex min-w-0 flex-1 flex-col overflow-hidden px-4 pt-5 min-[900px]:px-7.5 min-[900px]:pt-5.5 ${MOBILE_NAV_PAD}`}
+      >
+        <div className="mb-5 flex items-center justify-end min-[900px]:mb-7.5">
           <LanguageInlineSwitch />
         </div>
 
@@ -344,7 +336,7 @@ export function GenerationHome({
           // tier there's nothing to do in any mode, so this pre-empts even
           // the mode hint below.
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
               <Folder set="light" size={24} primaryColor="#ffffff" />
             </div>
             <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
@@ -352,8 +344,8 @@ export function GenerationHome({
             </h2>
             <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeNoTierBody')}</p>
             <Link
-              href="/#tarifs"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-2.5 text-[13px] font-semibold text-white"
+              href="/app/tarifs"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-5 py-2.5 text-[13px] font-semibold text-white"
             >
               {t('app.genHomeChooseTier')}
             </Link>
@@ -361,7 +353,7 @@ export function GenerationHome({
         ) : (
           <>
             <div className="mb-6.5 flex items-center justify-center gap-3.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
                 <ImageIcon set="light" size={22} primaryColor="#ffffff" />
               </div>
               <h1 className="font-[family-name:var(--font-general-sans)] text-[32px] font-bold text-[#17161F]">
@@ -415,7 +407,7 @@ export function GenerationHome({
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               className={`rounded-[22px] transition-colors ${
-                dragOver ? 'bg-[#EFECFF]' : 'bg-transparent'
+                dragOver ? 'bg-[#E8F5EC]' : 'bg-transparent'
               }`}
             >
               <input
@@ -433,6 +425,7 @@ export function GenerationHome({
                 // explanation they carry in the workspace. That is truer than
                 // hiding them: the two modes exist, they just need a render.
                 editEnabled={false}
+                enhanceHref="/app/enhance"
                 engine={engine}
                 onEngineChange={handleEngineChange}
                 ratio={ratio}
@@ -444,10 +437,11 @@ export function GenerationHome({
                 prompt={prompt}
                 onPromptChange={setPrompt}
                 // The photo is held here rather than uploaded: the project it
-                // will belong to is created by the send button.
+                // will belong to is created by the send button. The bar shows
+                // it as a thumbnail.
                 onUploadFile={(file) => setReferenceFile(file)}
                 uploading={false}
-                attachmentName={referenceFile?.name ?? null}
+                attachment={referenceFile}
                 onRemoveAttachment={() => setReferenceFile(null)}
                 zoneSelected={false}
                 referenceAdded={Boolean(referenceFile)}
@@ -467,6 +461,13 @@ export function GenerationHome({
           </>
         )}
       </main>
+      {/* Below 900px the rail gives way to the bottom bar; here its "+" opens
+          the photo picker directly instead of linking to this very page. */}
+      <MobileNav
+        current="generate"
+        userEmail={userEmail}
+        onNew={() => fileInputRef.current?.click()}
+      />
     </div>
   );
 }

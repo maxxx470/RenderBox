@@ -31,14 +31,14 @@ function MaterialCard({
 
   if (editing) {
     return (
-      <div className="mb-2.5 rounded-xl border border-[#716FFF] bg-white p-3.5">
+      <div className="mb-2.5 rounded-xl border border-[#16A34A] bg-white p-3.5">
         <div className="mb-1 flex items-center justify-between font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
           <span>{faceLabel(material.face)}</span>
         </div>
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          className="mb-2 w-full rounded-lg border border-[#716FFF] px-2.5 py-2 text-[13px] outline-none"
+          className="mb-2 w-full rounded-lg border border-[#16A34A] px-2.5 py-2 text-[13px] outline-none"
         />
         {error && <p className="mb-2 text-xs text-[#E5484D]">{error}</p>}
         <div className="flex gap-2">
@@ -57,7 +57,7 @@ function MaterialCard({
                 setSaving(false);
               }
             }}
-            className="rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60"
+            className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-3 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60"
           >
             {t('app.materialsSaveButton')}
           </button>
@@ -68,7 +68,7 @@ function MaterialCard({
               setEditing(false);
               setError(null);
             }}
-            className="rounded-lg bg-[#F1F0F6] px-3 py-1.5 text-[11px] font-semibold text-[#8A8896]"
+            className="rounded-full bg-[#EFF3F0] px-3 py-1.5 text-[11px] font-semibold text-[#8A8896]"
           >
             {t('app.materialsCancelButton')}
           </button>
@@ -90,7 +90,7 @@ function MaterialCard({
       <div className="mb-1.5 text-[13.5px] font-semibold text-[#17161F]">{material.valeur}</div>
       <span
         onClick={() => setEditing(true)}
-        className="cursor-pointer text-[11px] font-medium text-[#716FFF]"
+        className="cursor-pointer text-[11px] font-medium text-[#15803D]"
       >
         {t('app.materialsEditButton')}
       </span>
@@ -130,7 +130,7 @@ export function MaterialsPanel({
               built, and simply has nothing to show until a render exists. The
               sentence above states that condition exactly; the badge said the
               opposite. */}
-          <p className="max-w-[180px] text-xs leading-relaxed text-[#6B6880]">
+          <p className="max-w-[180px] text-xs leading-relaxed text-[#5F6B64]">
             {t('app.materialsEmptyBody')}
           </p>
         </div>

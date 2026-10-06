@@ -1,13 +1,8 @@
-// /app/exemple — the in-app gallery.
-//
-// Its public twin is /exemple, which groups the same renders by ambiance and
-// explains the materials sheet: a visitor there is being taught what the five
-// ambiances are. Someone already inside the product is not — they are looking
-// for what the thing can produce, so this is one flat wall of images.
-import { loadAppSurface } from '../surface-data';
-import { ExempleClient } from './ExempleClient';
+import { redirect } from 'next/navigation';
 
-export default async function AppExemplePage() {
-  const surface = await loadAppSurface('examples');
-  return <ExempleClient surface={surface} />;
+// The in-app gallery was removed on 2026-10-06 at the owner's request —
+// Enhance took its place in the rail. The address stays as a redirect so old
+// bookmarks land on the tool that replaced it instead of a 404.
+export default function AppExempleRedirect() {
+  redirect('/app/enhance');
 }

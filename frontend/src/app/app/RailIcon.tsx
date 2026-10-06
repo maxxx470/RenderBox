@@ -25,7 +25,16 @@
 // then it is the brand gradient.
 import type { ReactNode } from 'react';
 
-export type RailIconName = 'dashboard' | 'image' | 'examples' | 'settings' | 'info';
+export type RailIconName =
+  | 'dashboard'
+  | 'image'
+  | 'enhance'
+  | 'pricing'
+  | 'settings'
+  | 'info'
+  | 'comment'
+  | 'add'
+  | 'clip';
 
 const GLYPH: Record<RailIconName, ReactNode> = {
   // Four panels — the product's own "everything at once" view.
@@ -48,16 +57,21 @@ const GLYPH: Record<RailIconName, ReactNode> = {
       <path d="M14.4 16.2 L16.2 14.5c.9-.85 2.2-.85 3.1 0l1.1 1" />
     </>
   ),
-  // Two frames, one behind the other — a set of pictures rather than one.
-  // It has to be distinguishable from `image` at 15px in the same column, so
-  // the difference is structural (a second frame, offset) rather than a
-  // detail added inside the same silhouette.
-  examples: (
+  // One large four-point spark and a small one — "make it better", the
+  // convention for enhancement. Strokes only, like the rest of the set; the
+  // concave sides keep the large spark from reading as a diamond at 15px.
+  enhance: (
     <>
-      <path d="M7.4 6.6V5.4A2.2 2.2 0 0 1 9.6 3.2h9A2.2 2.2 0 0 1 20.8 5.4v9a2.2 2.2 0 0 1-2.2 2.2h-1.2" />
-      <rect x="3.2" y="7.4" width="13.4" height="13.4" rx="3.2" />
-      <circle cx="7.6" cy="11.8" r="1.4" />
-      <path d="M3.9 18.9 8 14.9c.85-.8 2.05-.8 2.9 0l3.4 3.2" />
+      <path d="M10 4.2c.5 3.3 2.5 5.3 5.8 5.8-3.3.5-5.3 2.5-5.8 5.8-.5-3.3-2.5-5.3-5.8-5.8 3.3-.5 5.3-2.5 5.8-5.8Z" />
+      <path d="M17.4 14.6c.25 1.6 1.2 2.55 2.8 2.8-1.6.25-2.55 1.2-2.8 2.8-.25-1.6-1.2-2.55-2.8-2.8 1.6-.25 2.55-1.2 2.8-2.8Z" />
+    </>
+  ),
+  // A card with its magnetic stripe — the subscription.
+  pricing: (
+    <>
+      <rect x="3" y="5.5" width="18" height="13" rx="3.2" />
+      <path d="M3 10h18" />
+      <path d="M7 14.6h3.4" />
     </>
   ),
   // Two sliders, not a cog.
@@ -88,26 +102,71 @@ const GLYPH: Record<RailIconName, ReactNode> = {
       <path d="M12 7.9v.1" />
     </>
   ),
+  // The command bar's glyphs, same rules. A speech bubble with a tail for
+  // "Commenter" — the pins on the image are comments, not edits.
+  comment: (
+    <>
+      <path d="M5.4 4h13.2A2.4 2.4 0 0 1 21 6.4v8.2a2.4 2.4 0 0 1-2.4 2.4H11l-4.6 3.4V17H5.4A2.4 2.4 0 0 1 3 14.6V6.4A2.4 2.4 0 0 1 5.4 4Z" />
+      <path d="M7.8 9.4h8.4" />
+      <path d="M7.8 12.6h5" />
+    </>
+  ),
+  // "Ajouter": a frame with a plus — an element placed into the picture.
+  add: (
+    <>
+      <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5" />
+      <path d="M12 8v8M8 12h8" />
+    </>
+  ),
+  // The paperclip, the convention for "attach a file" in a composer.
+  clip: (
+    <path d="m19.6 11.4-7.3 7.3a4.6 4.6 0 0 1-6.5-6.5l7.6-7.6a3.1 3.1 0 0 1 4.4 4.4l-7.5 7.5a1.55 1.55 0 0 1-2.2-2.2l6.8-6.8" />
+  ),
 };
 
-/** Tile + glyph. `active` swaps the neutral tile for the brand gradient. */
+/** A glyph from the set at any size and colour, outside the rail. */
+export function Glyph({
+  name,
+  color = 'currentColor',
+  size = 16,
+}: {
+  name: RailIconName;
+  color?: string;
+  size?: number;
+}) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke={color}
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="flex-shrink-0"
+    >
+      {GLYPH[name]}
+    </svg>
+  );
+}
+
+/**
+ * Bare glyph (2026-10-05, after the Metrio reference): no tile, drawn in the
+ * brand green (#15803D, 5.0:1 on white) — the active row is itself a filled
+ * green pill, so there the glyph turns white.
+ */
 export function RailIcon({ name, active = false }: { name: RailIconName; active?: boolean }) {
   return (
-    <span
-      aria-hidden
-      className={`flex h-6.5 w-6.5 flex-shrink-0 items-center justify-center rounded-[8px] ${
-        active
-          ? 'bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]'
-          : 'border border-[#ECECF2] bg-white'
-      }`}
-    >
+    <span aria-hidden className="flex h-5 w-5 flex-shrink-0 items-center justify-center">
       <svg
         viewBox="0 0 24 24"
-        width="15"
-        height="15"
+        width="19"
+        height="19"
         fill="none"
-        stroke={active ? '#ffffff' : '#6B6880'}
-        strokeWidth="1.6"
+        stroke={active ? '#ffffff' : '#15803D'}
+        strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"
       >

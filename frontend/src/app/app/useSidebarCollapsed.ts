@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-// Shared by both rails (HomeSidebar on /app, ModeSidebar inside a project) so
-// the preference carries across the two screens.
+// Read by HomeSidebar, the single rail used on every /app screen including an
+// open project, so the preference carries across all of them.
 const STORAGE_KEY = 'renderbox:sidebar-collapsed';
 
 /**

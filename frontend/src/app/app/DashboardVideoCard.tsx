@@ -10,8 +10,8 @@
 //     cookies into every dashboard visit for a video most people never start.
 //
 //   • No video is configured — the card teaches the same thing the video was
-//     going to teach, in the space it was going to occupy: the three steps of
-//     a render, and a live link to real output. It used to render a dead
+//     going to teach, in the space it was going to occupy: a short film of the
+//     three steps of a render, and a link straight to the generation space. It used to render a dead
 //     "video coming soon" pill instead, which spent the best block on the
 //     first screen after sign-in on a promise. A card that says nothing and
 //     does nothing is worse than no card; a card that explains the product is
@@ -22,49 +22,43 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Play, ArrowRight } from 'react-iconly';
-import { useTranslations } from '@/lib/i18n/LocaleContext';
+import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
+import { MotionFilm } from '@/app/MotionFilm';
 import { DASHBOARD_VIDEO, toEmbedUrl } from './dashboard-media';
 
 const FRAME =
   'relative aspect-[16/9] overflow-hidden rounded-2xl border border-[#DEDEE8] min-[900px]:aspect-auto min-[900px]:h-[210px]';
 
-/** The three steps, as short as they can be while still naming a real action. */
-const STEP_KEYS = ['dashboard.step1', 'dashboard.step2', 'dashboard.step3'] as const;
-
 function HowItWorks() {
   const t = useTranslations();
+  const { locale } = useLocale();
   return (
-    <div className={`${FRAME} bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]`}>
-      <div className="flex h-full flex-col justify-between p-5">
-        <h3 className="max-w-[280px] font-[family-name:var(--font-general-sans)] text-[19px] font-bold leading-[1.15] text-white">
+    // White, not the green gradient it used to sit on: the film is the
+    // content now (owner, 2026-10-06), and it carries its own light ground.
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-[#DEDEE8] bg-white">
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <h3 className="min-w-0 font-[family-name:var(--font-general-sans)] text-[15px] font-semibold leading-tight text-[#17161F]">
           {t('dashboard.howTitle')}
         </h3>
-
-        {/* Numbered because the steps are an order, not a list of features —
-            you cannot pick an ambiance before there is a drawing to apply it
-            to. Wraps rather than scrolls: three short labels always fit. */}
-        <ol className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-          {STEP_KEYS.map((key, i) => (
-            <li key={key} className="flex items-center gap-2">
-              <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white/25 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] font-semibold text-white">
-                {i + 1}
-              </span>
-              <span className="text-[12.5px] font-medium text-white">{t(key)}</span>
-              {i < STEP_KEYS.length - 1 && (
-                <span aria-hidden className="ml-0.5 h-px w-3 bg-white/35" />
-              )}
-            </li>
-          ))}
-        </ol>
-
+        {/* Straight to the generation space: the in-app gallery this used to
+            open was removed on 2026-10-06. */}
         <Link
-          href="/app/exemple"
-          className="inline-flex w-fit items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+          href="/app/generer"
+          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-3.5 py-2 text-[12.5px] font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
         >
           {t('dashboard.howCta')}
-          <ArrowRight set="light" size={14} primaryColor="#716FFF" />
+          <ArrowRight set="light" size={14} primaryColor="#ffffff" />
         </Link>
       </div>
+      {/* The three steps, shown rather than listed: a photo or a sketch, an
+          ambiance (day, night, interior, exterior), the render. Rendered
+          with HyperFrames like the landing films. */}
+      <MotionFilm
+        src={`/motion/etapes-${locale}.mp4`}
+        poster={`/motion/etapes-${locale}.jpg`}
+        label={t('dashboard.filmAlt')}
+        className="border-t border-[#ECECF2]"
+      />
     </div>
   );
 }
@@ -98,7 +92,7 @@ export function DashboardVideoCard() {
   }
 
   return (
-    <div className={`${FRAME} bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]`}>
+    <div className={`${FRAME} bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]`}>
       {DASHBOARD_VIDEO.poster && (
         <img src={DASHBOARD_VIDEO.poster} alt="" className="h-full w-full object-cover" />
       )}
@@ -115,7 +109,7 @@ export function DashboardVideoCard() {
             onClick={() => setPlaying(true)}
             className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
           >
-            <Play set="light" size={14} primaryColor="#716FFF" />
+            <Play set="light" size={14} primaryColor="#16A34A" />
             {t('dashboard.videoPlay')}
           </button>
         </div>

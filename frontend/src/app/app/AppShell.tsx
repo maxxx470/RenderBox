@@ -20,13 +20,16 @@ import {
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Filter2, Download, Upload, Swap } from 'react-iconly';
-import { ModeSidebar } from './ModeSidebar';
+import { HomeSidebar } from './HomeSidebar';
+import { MOBILE_NAV_PAD, MobileNav } from './MobileNav';
 import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
-import { useSidebarCollapsed } from './useSidebarCollapsed';
-import { nodeTitle } from './ProjectTree';
+import { nodeTitle, ProjectTree } from './ProjectTree';
 import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
 import { EditPanel } from './EditPanel';
+import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
+import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
 import { CommandBar, type AppMode } from './CommandBar';
+import { RequestError, readErrorCode, isServiceNotConfigured } from './request-error';
 
 interface UploadResponse {
   id: string;
@@ -47,28 +50,15 @@ interface EditResponse {
   nodeIds: string[];
   requestedCount: number;
   createdCount: number;
+  materialsDetected?: boolean;
   quotaRemaining: number | null;
 }
 
-// handleEditSubmit posts via raw fetch (FormData), not the api() wrapper, so
-// it needs its own tiny error type to carry the backend's stable `error`
-// code through to the catch block below (mirrors what ApiError.code does
-// for every other call site — see lib/api.ts).
-class EditRequestError extends Error {
-  constructor(public readonly code: string) {
-    super(code);
-  }
-}
-
-interface Zone {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-const EDIT_TYPE: Record<Extract<AppMode, 'retouch' | 'add'>, 'targeted_retouch' | 'add_element'> = {
-  retouch: 'targeted_retouch',
+// "retouch" in the UI is the point-and-comment mode since 2026-10-06 (it used
+// to drag a rectangle — the route still accepts that shape as
+// `targeted_retouch`, but nothing sends it any more).
+const EDIT_TYPE: Record<Extract<AppMode, 'retouch' | 'add'>, 'annotate' | 'add_element'> = {
+  retouch: 'annotate',
   add: 'add_element',
 };
 
@@ -80,6 +70,7 @@ export function AppShell({
   initialProjectId,
   initialProjectName,
   initialTree,
+  initialMaterials,
   initialTier,
   initialMax,
   initialRemaining,
@@ -87,6 +78,7 @@ export function AppShell({
   initialProjectId: string;
   initialProjectName: string;
   initialTree: RenderTreeNode[];
+  initialMaterials: MaterialRow[];
   initialTier: PricingTierId | null;
   initialMax: number | null;
   initialRemaining: number | null;
@@ -102,7 +94,9 @@ export function AppShell({
 
   const [tree, setTree] = useState<RenderTreeNode[]>(initialTree);
   const [selectedId, setSelectedId] = useState<string | null>(initialTree[0]?.id ?? null);
-  const [materials, setMaterials] = useState<MaterialRow[]>([]);
+  // Rendered with the page (see [projet]/page.tsx) — fetching them after
+  // hydration added a whole extra round trip before the panel filled in.
+  const [materials, setMaterials] = useState<MaterialRow[]>(initialMaterials);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   // Prefilled once from the /app home quick-start redirect (?prompt=&preset=&engine=),
@@ -127,7 +121,7 @@ export function AppShell({
   const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [pickingElement, setPickingElement] = useState(false);
-  const [zone, setZone] = useState<Zone | null>(null);
+  const [pins, setPins] = useState<Pin[]>([]);
   const [variantCount, setVariantCount] = useState(3);
   const [submittingEdit, setSubmittingEdit] = useState(false);
   // Set only for failures that a plain retry could fix — a missing tier or an
@@ -139,7 +133,6 @@ export function AppShell({
   const [comparing, setComparing] = useState(false);
   const [comparePos, setComparePos] = useState(50);
   const compareDragging = useRef(false);
-  const [sidebarCollapsed, toggleSidebar] = useSidebarCollapsed();
   const [mobileTreeOpen, setMobileTreeOpen] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   // Updated in place after each successful generate/edit (via the route's
@@ -149,7 +142,7 @@ export function AppShell({
   const [remaining, setRemaining] = useState(initialRemaining);
 
   const canvasRef = useRef<HTMLDivElement>(null);
-  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const [fileDragOver, setFileDragOver] = useState(false);
   // dragenter/dragleave also fire when the pointer crosses into a child (the
   // badges, the download button), so a plain boolean flickers. Counting
@@ -190,7 +183,7 @@ export function AppShell({
     // Each mode has its own submission shape — drop the previous mode's
     // draft input so switching never silently carries state across.
     setPrompt('');
-    setZone(null);
+    setPins([]);
     setReferenceFile(null);
     setComparing(false);
   }
@@ -204,15 +197,11 @@ export function AppShell({
     }
   }, []);
 
-  useEffect(() => {
-    void refreshMaterials(projectId);
-  }, [projectId, refreshMaterials]);
-
-  // A new selection means a new image context — a zone or reference drawn
-  // against the previous render no longer applies, and neither does an offer
+  // A new selection means a new image context — comments or a reference placed
+  // against the previous render no longer apply, and neither does an offer
   // to retry a request that targeted the previous node.
   useEffect(() => {
-    setZone(null);
+    setPins([]);
     setReferenceFile(null);
     setRetryable(false);
     // A different node means a different pair to compare — reopen it
@@ -247,13 +236,16 @@ export function AppShell({
         credentials: 'include',
         headers: csrf ? { 'x-csrf-token': csrf } : {},
       });
-      if (!res.ok) throw new Error('upload failed');
+      if (!res.ok) throw new RequestError(await readErrorCode(res));
       const node = (await res.json()) as UploadResponse;
       const asTreeNode: RenderTreeNode = { ...node, children: [] };
       setTree((prev) => [...prev, asTreeNode]);
       setSelectedId(node.id);
-    } catch {
-      toast(t('app.uploadError'), 'error');
+    } catch (err) {
+      toast(
+        t(isServiceNotConfigured(err) ? 'app.serviceNotConfigured' : 'app.uploadError'),
+        'error',
+      );
     } finally {
       setUploading(false);
     }
@@ -370,6 +362,8 @@ export function AppShell({
         toast(t('app.noActiveTierError'), 'error');
       } else if (err instanceof ApiError && err.code === 'QUOTA_EXCEEDED') {
         toast(t('app.quotaExceededError'), 'error');
+      } else if (isServiceNotConfigured(err)) {
+        toast(t('app.serviceNotConfigured'), 'error');
       } else {
         toast(t('app.generateError'), 'error');
         setRetryable(true);
@@ -381,9 +375,11 @@ export function AppShell({
 
   async function handleEditSubmit() {
     if (mode === 'generate' || !selectedNode || selectedNode.kind !== 'GENERATED') return;
-    if (!prompt.trim()) return;
-    if (mode === 'add' && !referenceFile) return;
-    if (mode === 'retouch' && (!zone || zone.width < 1 || zone.height < 1)) return;
+    // In "Commenter" the comments carry the instructions; the bar's text is
+    // an optional overall note.
+    const notes = pins.filter((p) => p.comment.trim());
+    if (mode === 'add' && (!prompt.trim() || !referenceFile)) return;
+    if (mode === 'retouch' && notes.length === 0) return;
 
     setSubmittingEdit(true);
     setRetryable(false);
@@ -393,8 +389,18 @@ export function AppShell({
       form.append('editType', EDIT_TYPE[mode]);
       form.append('instruction', prompt.trim());
       form.append('variantCount', String(variantCount));
-      form.append('engine', engine);
-      if (mode === 'retouch' && zone) form.append('zone', JSON.stringify(zone));
+      form.append('engine', mode === 'retouch' ? ANNOTATE_ENGINE : engine);
+      if (mode === 'retouch') {
+        form.append(
+          'annotations',
+          JSON.stringify(notes.map((p) => ({ x: p.x, y: p.y, comment: p.comment.trim() }))),
+        );
+        // Best effort: without the marked copy the server still places each
+        // comment by its coordinates.
+        const marked = await drawMarkedImage(`/api/render-nodes/${selectedNode.id}/image`, notes);
+        if (marked)
+          form.append('markedImage', new File([marked], 'marked.jpg', { type: 'image/jpeg' }));
+      }
       if (mode === 'add' && referenceFile) form.append('referenceImage', referenceFile);
 
       const csrf = getCsrfTokenForUpload();
@@ -404,10 +410,7 @@ export function AppShell({
         credentials: 'include',
         headers: csrf ? { 'x-csrf-token': csrf } : {},
       });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new EditRequestError(body.error ?? '');
-      }
+      if (!res.ok) throw new RequestError(await readErrorCode(res));
       const data = (await res.json()) as EditResponse;
       if (data.createdCount < data.requestedCount) {
         toast(
@@ -418,14 +421,18 @@ export function AppShell({
       setTree(data.tree);
       if (data.nodeIds[0]) setSelectedId(data.nodeIds[0]);
       setPrompt('');
-      setZone(null);
+      setPins([]);
       setReferenceFile(null);
       setRemaining(data.quotaRemaining);
+      // A comment usually changed a material — the server re-read them.
+      if (data.materialsDetected) void refreshMaterials(projectId);
     } catch (err) {
-      if (err instanceof EditRequestError && err.code === 'NO_ACTIVE_TIER') {
+      if (err instanceof RequestError && err.code === 'NO_ACTIVE_TIER') {
         toast(t('app.noActiveTierError'), 'error');
-      } else if (err instanceof EditRequestError && err.code === 'QUOTA_EXCEEDED') {
+      } else if (err instanceof RequestError && err.code === 'QUOTA_EXCEEDED') {
         toast(t('app.quotaExceededError'), 'error');
+      } else if (isServiceNotConfigured(err)) {
+        toast(t('app.serviceNotConfigured'), 'error');
       } else {
         toast(t('edit.submitError'), 'error');
         setRetryable(true);
@@ -446,14 +453,6 @@ export function AppShell({
       { method: 'PATCH', body: { valeur } },
     );
     setMaterials((prev) => prev.map((m) => (m.id === materialId ? material.material : m)));
-  }
-
-  function pctFromEvent(e: React.MouseEvent): { x: number; y: number } {
-    const rect = canvasRef.current!.getBoundingClientRect();
-    return {
-      x: Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100)),
-      y: Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100)),
-    };
   }
 
   function comparePctFromClientX(clientX: number): number {
@@ -477,29 +476,6 @@ export function AppShell({
     compareDragging.current = false;
   }
 
-  function handleMouseDown(e: React.MouseEvent) {
-    if (mode !== 'retouch') return;
-    const p = pctFromEvent(e);
-    dragStart.current = p;
-    setZone({ x: p.x, y: p.y, width: 0, height: 0 });
-  }
-
-  function handleMouseMove(e: React.MouseEvent) {
-    if (!dragStart.current) return;
-    const p = pctFromEvent(e);
-    const start = dragStart.current;
-    setZone({
-      x: Math.min(start.x, p.x),
-      y: Math.min(start.y, p.y),
-      width: Math.abs(p.x - start.x),
-      height: Math.abs(p.y - start.y),
-    });
-  }
-
-  function handleMouseUp() {
-    dragStart.current = null;
-  }
-
   const hasNodes = tree.length > 0;
   const flat = flattenTree(tree);
   const selectedNode = flat.find((n) => n.id === selectedId) ?? null;
@@ -507,7 +483,7 @@ export function AppShell({
     ? (flat.find((n) => n.id === selectedNode.parentId) ?? null)
     : null;
   const canEdit = mode !== 'generate' && selectedNode?.kind === 'GENERATED';
-  const zoneSelected = Boolean(zone && zone.width > 0 && zone.height > 0);
+  const hasComments = pins.some((p) => p.comment.trim());
 
   // Same wording as the rail rows — the breadcrumb names the very nodes the
   // tree lists, so the two must not use two vocabularies for one thing.
@@ -523,8 +499,7 @@ export function AppShell({
       : !canEdit ||
         submittingEdit ||
         !tier ||
-        !prompt.trim() ||
-        (mode === 'add' ? !referenceFile : !zoneSelected);
+        (mode === 'add' ? !prompt.trim() || !referenceFile : !hasComments);
 
   // Names the FIRST missing thing, in the order the user would fix them.
   // The bar used to just dim its button and say nothing, so a blocked user had
@@ -541,368 +516,379 @@ export function AppShell({
           ? t('app.modeSelectNodeHint')
           : mode === 'add' && !referenceFile
             ? t('edit.referenceRequired')
-            : mode === 'retouch' && !zoneSelected
+            : mode === 'retouch' && !hasComments
               ? t('edit.zoneRequired')
               : !prompt.trim()
                 ? t('app.hintNoPrompt')
                 : undefined;
 
   return (
-    <div className="flex h-screen flex-col bg-white">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#ECECF2] px-5.5 py-3.5">
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => setMobileTreeOpen(true)}
-            className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
-            aria-label={t('app.treeTitle')}
-          >
-            <Category set="light" size={16} primaryColor="#8A8896" />
-          </button>
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
-          <span className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
-            RenderBox
-          </span>
-          <span className="rounded-2xl border border-[#ECECF2] bg-[#F7F7FA] px-3 py-1.5 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
-            {projectName}
-          </span>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <LanguageInlineSwitch />
-          <span className="font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
-            {tier && max !== null && remaining !== null
-              ? t('app.quotaLabel', { remaining, max })
-              : t('app.noTierLabel')}
-          </span>
-          <button
-            type="button"
-            onClick={() => setMobilePanelOpen(true)}
-            className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
-            aria-label={mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')}
-          >
-            <Filter2 set="light" size={16} primaryColor="#8A8896" />
-          </button>
-        </div>
-      </header>
+    // Same frame as /app/generer: the shared rail runs the full height on the
+    // left (logo, links, account card), and everything else — project bar,
+    // canvas, command bar — lives in the column beside it.
+    <div className="flex h-screen bg-white">
+      {mobileTreeOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/30 min-[900px]:hidden"
+          onClick={() => setMobileTreeOpen(false)}
+          aria-hidden
+        />
+      )}
+      <HomeSidebar
+        current="generate"
+        onModeChange={handleModeChange}
+        tier={tier}
+        max={max}
+        remaining={remaining}
+        userEmail={user?.email ?? ''}
+        mobileOpen={mobileTreeOpen}
+        onMobileClose={() => setMobileTreeOpen(false)}
+      >
+        <h3 className="mb-3.5 mt-1 font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
+          {t('app.treeTitle')}
+        </h3>
+        <ProjectTree
+          tree={tree}
+          selectedId={selectedId}
+          onSelect={(id) => {
+            setSelectedId(id);
+            setMobileTreeOpen(false);
+          }}
+          onDelete={(node) => {
+            setPendingDelete(node);
+            setMobileTreeOpen(false);
+          }}
+        />
+      </HomeSidebar>
 
-      <div className="relative flex flex-1 overflow-hidden">
-        {(mobileTreeOpen || mobilePanelOpen) && (
-          <div
-            className="fixed inset-0 z-10 bg-black/30 min-[900px]:hidden"
-            onClick={() => {
-              setMobileTreeOpen(false);
-              setMobilePanelOpen(false);
-            }}
-          />
-        )}
+      <div className={`flex min-w-0 flex-1 flex-col overflow-hidden ${MOBILE_NAV_PAD}`}>
+        <header className="flex flex-wrap items-center justify-between gap-2 px-5.5 pt-5.5">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setMobileTreeOpen(true)}
+              className="rounded-full border border-[#ECECF2] p-1.5 min-[900px]:hidden"
+              // Below 900px the app's navigation is the bottom bar; this
+              // drawer is only kept for what the bar cannot hold: the tree.
+              aria-label={t('app.treeTitle')}
+              title={t('app.treeTitle')}
+            >
+              <Category set="light" size={16} primaryColor="#8A8896" />
+            </button>
+            <span className="truncate rounded-2xl border border-[#ECECF2] bg-[#F7F7FA] px-3 py-1.5 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
+              {projectName}
+            </span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <LanguageInlineSwitch />
+            <button
+              type="button"
+              onClick={() => setMobilePanelOpen(true)}
+              className="rounded-full border border-[#ECECF2] p-1.5 min-[900px]:hidden"
+              aria-label={mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')}
+            >
+              <Filter2 set="light" size={16} primaryColor="#8A8896" />
+            </button>
+          </div>
+        </header>
 
-        <aside
-          className={`${
-            mobileTreeOpen ? 'flex' : 'hidden'
-          } fixed inset-y-0 left-0 z-20 w-[230px] flex-col overflow-hidden border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-4.5 transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:m-2.5 min-[900px]:flex min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8] ${
-            sidebarCollapsed ? 'min-[900px]:w-[68px] min-[900px]:px-2.5' : ''
-          }`}
-        >
-          <ModeSidebar
-            onModeChange={handleModeChange}
-            tree={tree}
-            selectedId={selectedId}
-            onSelectNode={(id) => {
-              setSelectedId(id);
-              setMobileTreeOpen(false);
-            }}
-            onDeleteNode={(node) => {
-              setPendingDelete(node);
-              setMobileTreeOpen(false);
-            }}
-            collapsed={sidebarCollapsed}
-            onToggleCollapse={toggleSidebar}
-          />
-        </aside>
+        <div className="relative flex flex-1 overflow-hidden">
+          {mobilePanelOpen && (
+            <div
+              className="fixed inset-0 z-10 bg-black/30 min-[900px]:hidden"
+              onClick={() => setMobilePanelOpen(false)}
+            />
+          )}
 
-        <section className="flex flex-1 flex-col overflow-hidden px-6.5 py-5.5">
-          {!hasNodes ? (
-            <>
-              <div className="mb-4">
-                <h2 className="mb-1 font-[family-name:var(--font-general-sans)] text-base font-semibold text-[#17161F]">
-                  {t('app.viewerTitle')}
-                </h2>
-                <p className="text-[13px] text-[#8A8896]">{t('app.viewerSubtitle')}</p>
-              </div>
-              <Dropzone uploading={uploading} onFile={handleFile} />
-            </>
-          ) : (
-            <>
-              {selectedNode && (
-                <div className="mb-4 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
-                  {parentNode && <>{nodeLabel(parentNode)} → </>}
-                  <b className="font-medium text-[#17161F]">{nodeLabel(selectedNode)}</b>
+          <section className="flex flex-1 flex-col overflow-hidden px-6.5 py-5.5">
+            {!hasNodes ? (
+              <>
+                <div className="mb-4">
+                  <h2 className="mb-1 font-[family-name:var(--font-general-sans)] text-base font-semibold text-[#17161F]">
+                    {t('app.viewerTitle')}
+                  </h2>
+                  <p className="text-[13px] text-[#8A8896]">{t('app.viewerSubtitle')}</p>
                 </div>
-              )}
-              <div
-                ref={canvasRef}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onDragEnter={handleCanvasDragEnter}
-                onDragOver={handleCanvasDragOver}
-                onDragLeave={handleCanvasDragLeave}
-                onDrop={handleCanvasDrop}
-                className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-[#EFECFF] to-[#F7F7FA] transition-colors duration-150 ease-out ${
-                  // Same outline tone as the rails and the command bar, so the
-                  // three panels read as one family.
-                  fileDragOver ? 'border-[#716FFF]' : 'border-[#DEDEE8]'
-                } ${mode === 'retouch' ? 'cursor-crosshair select-none' : ''}`}
-              >
-                {selectedId && (
-                  <>
-                    <span className="absolute left-3.5 top-3.5 rounded-2xl border border-[#ECECF2] bg-white px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
-                      {selectedNode?.preset
-                        ? t('app.canvasPresetBadge', {
-                            preset: PRESETS[selectedNode.preset as PresetKey].label[locale],
-                            engine:
-                              ENGINE_LABELS[(selectedNode.engine as EngineName) || 'nanobanana']
-                                .name[locale],
-                          })
-                        : t('app.engineTag')}
-                    </span>
-                    {selectedNode?.kind === 'GENERATED' && materials.length > 0 && (
-                      <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#1E7A3D14] px-3 py-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#1E7A3D]">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#1E7A3D]" />
-                        {t('app.scanBadge', { n: materials.length })}
+                <Dropzone uploading={uploading} onFile={handleFile} />
+              </>
+            ) : (
+              <>
+                {selectedNode && (
+                  <div className="mb-4 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
+                    {parentNode && <>{nodeLabel(parentNode)} → </>}
+                    <b className="font-medium text-[#17161F]">{nodeLabel(selectedNode)}</b>
+                  </div>
+                )}
+                <div
+                  ref={canvasRef}
+                  onDragEnter={handleCanvasDragEnter}
+                  onDragOver={handleCanvasDragOver}
+                  onDragLeave={handleCanvasDragLeave}
+                  onDrop={handleCanvasDrop}
+                  className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-[#E8F5EC] to-[#F7F7FA] transition-colors duration-150 ease-out ${
+                    // Same outline tone as the rails and the command bar, so the
+                    // three panels read as one family.
+                    fileDragOver ? 'border-[#16A34A]' : 'border-[#DEDEE8]'
+                  } ${mode === 'retouch' ? 'select-none' : ''}`}
+                >
+                  {selectedId && (
+                    <>
+                      <span className="absolute left-3.5 top-3.5 rounded-2xl border border-[#ECECF2] bg-white px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                        {selectedNode?.preset
+                          ? t('app.canvasPresetBadge', {
+                              preset: PRESETS[selectedNode.preset as PresetKey].label[locale],
+                              engine:
+                                ENGINE_LABELS[(selectedNode.engine as EngineName) || 'nanobanana']
+                                  .name[locale],
+                            })
+                          : t('app.engineTag')}
                       </span>
-                    )}
-                    {/* Served by our own authenticated proxy route, not a static asset. */}
-                    <img
-                      src={`/api/render-nodes/${selectedId}/image`}
-                      alt=""
-                      draggable={false}
-                      className="pointer-events-none max-h-full max-w-full object-contain"
-                    />
+                      {selectedNode?.kind === 'GENERATED' && materials.length > 0 && (
+                        <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#1E7A3D14] px-3 py-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#1E7A3D]">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#1E7A3D]" />
+                          {t('app.scanBadge', { n: materials.length })}
+                        </span>
+                      )}
+                      {/* Served by our own authenticated proxy route, not a static asset. */}
+                      <img
+                        ref={imgRef}
+                        src={`/api/render-nodes/${selectedId}/image`}
+                        alt=""
+                        draggable={false}
+                        className="pointer-events-none max-h-full max-w-full object-contain"
+                      />
 
-                    {/* Comparison layer: the parent image underneath, the
+                      {/* "Commenter": numbered pins laid over the image itself. */}
+                      {mode === 'retouch' && selectedNode?.kind === 'GENERATED' && (
+                        <AnnotationLayer
+                          imgRef={imgRef}
+                          pins={pins}
+                          onChange={setPins}
+                          disabled={submittingEdit || !tier}
+                        />
+                      )}
+
+                      {/* Comparison layer: the parent image underneath, the
                         selected one clipped on top. Both are laid out in the
                         same box with object-contain, so the divider cuts
                         through matching geometry. */}
-                    {comparing && parentNode && selectedNode && (
-                      <>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <img
-                            src={`/api/render-nodes/${parentNode.id}/image`}
-                            alt=""
-                            draggable={false}
-                            className="pointer-events-none max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                        <div
-                          className="absolute inset-0 flex items-center justify-center"
-                          style={{ clipPath: `inset(0 0 0 ${comparePos}%)` }}
-                        >
-                          <img
-                            src={`/api/render-nodes/${selectedId}/image`}
-                            alt=""
-                            draggable={false}
-                            className="pointer-events-none max-h-full max-w-full object-contain"
-                          />
-                        </div>
-                        <span className="pointer-events-none absolute bottom-3.5 left-3.5 rounded-2xl bg-[#17161F] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
-                          {nodeLabel(parentNode)}
-                        </span>
-                        <span className="pointer-events-none absolute bottom-3.5 right-3.5 rounded-2xl bg-[#716FFF] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
-                          {nodeLabel(selectedNode)}
-                        </span>
-                        <div
-                          onPointerDown={handleComparePointerDown}
-                          onPointerMove={handleComparePointerMove}
-                          onPointerUp={handleComparePointerUp}
-                          onPointerCancel={handleComparePointerUp}
-                          className="absolute inset-0 cursor-ew-resize touch-none select-none"
-                        />
-                        <div
-                          className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]"
-                          style={{ left: `${comparePos}%` }}
-                        >
-                          <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_10px_26px_-6px_rgba(113,111,255,0.6)]">
-                            <Swap set="light" size={15} primaryColor="#716FFF" />
+                      {comparing && parentNode && selectedNode && (
+                        <>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <img
+                              src={`/api/render-nodes/${parentNode.id}/image`}
+                              alt=""
+                              draggable={false}
+                              className="pointer-events-none max-h-full max-w-full object-contain"
+                            />
                           </div>
-                        </div>
-                      </>
-                    )}
+                          <div
+                            className="absolute inset-0 flex items-center justify-center"
+                            style={{ clipPath: `inset(0 0 0 ${comparePos}%)` }}
+                          >
+                            <img
+                              src={`/api/render-nodes/${selectedId}/image`}
+                              alt=""
+                              draggable={false}
+                              className="pointer-events-none max-h-full max-w-full object-contain"
+                            />
+                          </div>
+                          <span className="pointer-events-none absolute bottom-3.5 left-3.5 rounded-2xl bg-[#17161F] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
+                            {nodeLabel(parentNode)}
+                          </span>
+                          <span className="pointer-events-none absolute bottom-3.5 right-3.5 rounded-2xl bg-[#16A34A] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
+                            {nodeLabel(selectedNode)}
+                          </span>
+                          <div
+                            onPointerDown={handleComparePointerDown}
+                            onPointerMove={handleComparePointerMove}
+                            onPointerUp={handleComparePointerUp}
+                            onPointerCancel={handleComparePointerUp}
+                            className="absolute inset-0 cursor-ew-resize touch-none select-none"
+                          />
+                          <div
+                            className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]"
+                            style={{ left: `${comparePos}%` }}
+                          >
+                            <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_10px_26px_-6px_rgba(22,163,74,0.6)]">
+                              <Swap set="light" size={15} primaryColor="#16A34A" />
+                            </div>
+                          </div>
+                        </>
+                      )}
 
-                    <div className="absolute right-3.5 top-3.5 flex items-center gap-2">
-                      {/* Only in "generate": in the edit modes the canvas is a
+                      <div className="absolute right-3.5 top-3.5 flex items-center gap-2">
+                        {/* Only in "generate": in the edit modes the canvas is a
                           working surface for the zone or the reference, and a
                           comparison overlay would fight that interaction. */}
-                      {mode === 'generate' && parentNode && (
-                        <button
-                          type="button"
-                          onClick={() => setComparing((v) => !v)}
-                          aria-pressed={comparing}
-                          aria-label={t('app.compareToggle')}
-                          title={t('app.compareToggle')}
-                          className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95] ${
-                            comparing
-                              ? 'border-transparent bg-[#716FFF]'
-                              : 'border-[#ECECF2] bg-white'
-                          }`}
+                        {mode === 'generate' && parentNode && (
+                          <button
+                            type="button"
+                            onClick={() => setComparing((v) => !v)}
+                            aria-pressed={comparing}
+                            aria-label={t('app.compareToggle')}
+                            title={t('app.compareToggle')}
+                            className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95] ${
+                              comparing
+                                ? 'border-transparent bg-[#16A34A]'
+                                : 'border-[#ECECF2] bg-white'
+                            }`}
+                          >
+                            <Swap
+                              set="light"
+                              size={15}
+                              primaryColor={comparing ? '#ffffff' : '#17161F'}
+                            />
+                          </button>
+                        )}
+                        <a
+                          href={`/api/render-nodes/${selectedId}/image`}
+                          download
+                          onMouseDown={(e) => e.stopPropagation()}
+                          aria-label={t('app.downloadButton')}
+                          title={t('app.downloadButton')}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
                         >
-                          <Swap
-                            set="light"
-                            size={15}
-                            primaryColor={comparing ? '#ffffff' : '#17161F'}
-                          />
-                        </button>
-                      )}
-                      <a
-                        href={`/api/render-nodes/${selectedId}/image`}
-                        download
-                        onMouseDown={(e) => e.stopPropagation()}
-                        aria-label={t('app.downloadButton')}
-                        title={t('app.downloadButton')}
-                        className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
-                      >
-                        <Download set="light" size={15} primaryColor="#17161F" />
-                      </a>
-                    </div>
-                    {mode === 'retouch' && zone && (zone.width > 0 || zone.height > 0) && (
-                      <div
-                        className="absolute rounded-md border-2 border-dashed border-[#716FFF] bg-[#716FFF12]"
-                        style={{
-                          left: `${zone.x}%`,
-                          top: `${zone.y}%`,
-                          width: `${zone.width}%`,
-                          height: `${zone.height}%`,
-                        }}
-                      >
-                        <span className="absolute -top-6 left-0 whitespace-nowrap rounded-md bg-[#716FFF] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
-                          {t('edit.zoneLabel')}
-                        </span>
+                          <Download set="light" size={15} primaryColor="#17161F" />
+                        </a>
                       </div>
-                    )}
-                  </>
-                )}
-                {/* pointer-events-none so the overlay never becomes the drag
+                    </>
+                  )}
+                  {/* pointer-events-none so the overlay never becomes the drag
                     target itself, which would unbalance the enter/leave count. */}
-                {fileDragOver && (
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#716FFF] bg-[#EFECFFF2] px-6">
-                    <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
-                      <Upload set="light" size={24} primaryColor="#ffffff" />
+                  {fileDragOver && (
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#16A34A] bg-[#E8F5ECF2] px-6">
+                      <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
+                        <Upload set="light" size={24} primaryColor="#ffffff" />
+                      </div>
+                      <h3 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+                        {t('app.canvasDropTitle')}
+                      </h3>
+                      <p className="max-w-[280px] text-center text-[13px] text-[#8A8896]">
+                        {t('app.canvasDropHint')}
+                      </p>
                     </div>
-                    <h3 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
-                      {t('app.canvasDropTitle')}
-                    </h3>
-                    <p className="max-w-[280px] text-center text-[13px] text-[#8A8896]">
-                      {t('app.canvasDropHint')}
-                    </p>
-                  </div>
-                )}
-                {uploading && (
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#FFFFFFD9]">
-                    <span className="rounded-2xl border border-[#ECECF2] bg-white px-4 py-2 font-[family-name:var(--font-jetbrains-mono)] text-[12px] text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)]">
-                      {t('app.uploading')}
-                    </span>
-                  </div>
-                )}
-                {busy && (
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#FFFFFFD9]">
-                    <span className="rb-spin h-8 w-8 rounded-full border-2 border-[#ECECF2] border-t-[#716FFF]" />
-                    <span className="font-[family-name:var(--font-general-sans)] text-[13.5px] font-semibold text-[#17161F]">
-                      {t('app.generatingOverlay')}
-                    </span>
-                    <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
-                      {t('app.generatingElapsed', { s: elapsed })}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </section>
+                  )}
+                  {uploading && (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#FFFFFFD9]">
+                      <span className="rounded-2xl border border-[#ECECF2] bg-white px-4 py-2 font-[family-name:var(--font-jetbrains-mono)] text-[12px] text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)]">
+                        {t('app.uploading')}
+                      </span>
+                    </div>
+                  )}
+                  {busy && (
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#FFFFFFD9]">
+                      <span className="rb-spin h-8 w-8 rounded-full border-2 border-[#ECECF2] border-t-[#16A34A]" />
+                      <span className="font-[family-name:var(--font-general-sans)] text-[13.5px] font-semibold text-[#17161F]">
+                        {t('app.generatingOverlay')}
+                      </span>
+                      <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                        {t('app.generatingElapsed', { s: elapsed })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </section>
 
-        <div
-          className={`${
-            mobilePanelOpen ? 'block' : 'hidden'
-          } fixed inset-y-0 right-0 z-20 min-[900px]:static min-[900px]:z-auto min-[900px]:block`}
-        >
-          {mode === 'generate' ? (
-            <MaterialsPanel materials={materials} onSave={handleSaveMaterial} />
-          ) : (
-            <EditPanel
-              mode={mode}
-              canEdit={canEdit}
-              referenceFile={referenceFile}
-              onReferenceChange={setReferenceFile}
-              variantCount={variantCount}
-              onVariantCountChange={setVariantCount}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Semantic error colour, never the violet brand accent. The inputs are
-          already preserved on failure — this just says so, and offers the
-          second attempt the toast could not. */}
-      {retryable && !busy && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#E5484D33] bg-[#E5484D0F] px-5.5 py-2.5">
-          <span className="text-[12.5px] text-[#E5484D]">{t('app.retryBannerText')}</span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setRetryable(false)}
-              className="rounded-lg px-2.5 py-1.5 text-[12.5px] text-[#8A8896] hover:text-[#17161F]"
-            >
-              {t('app.retryDismiss')}
-            </button>
-            <button
-              type="button"
-              disabled={sendDisabled}
-              onClick={handleSubmit}
-              className="rounded-lg bg-[#E5484D] px-3 py-1.5 text-[12.5px] font-semibold text-white disabled:opacity-50"
-            >
-              {t('app.retryButton')}
-            </button>
+          <div
+            className={`${
+              mobilePanelOpen ? 'block' : 'hidden'
+            } fixed inset-y-0 right-0 z-20 min-[900px]:static min-[900px]:z-auto min-[900px]:block`}
+          >
+            {mode === 'generate' ? (
+              <MaterialsPanel materials={materials} onSave={handleSaveMaterial} />
+            ) : (
+              <EditPanel
+                mode={mode}
+                canEdit={canEdit}
+                referenceFile={referenceFile}
+                onReferenceChange={setReferenceFile}
+                pins={pins}
+                onPinsChange={setPins}
+              />
+            )}
           </div>
         </div>
-      )}
 
-      <CommandBar
-        mode={mode}
-        onModeChange={handleModeChange}
-        editEnabled={selectedNode?.kind === 'GENERATED'}
-        ratio={ratio}
-        onRatioChange={setRatio}
-        resolution={resolution}
-        onResolutionChange={setResolution}
-        prompt={prompt}
-        onPromptChange={setPrompt}
-        preset={preset}
-        onPresetChange={setPreset}
-        zoneSelected={zoneSelected}
-        referenceAdded={Boolean(referenceFile)}
-        onSubmit={handleSubmit}
-        inputDisabled={inputDisabled}
-        sendDisabled={sendDisabled}
-        sendHint={sendHint}
-        submitLabel={
-          mode === 'generate'
-            ? t('app.submitGenerate')
-            : mode === 'retouch'
-              ? t('app.modeRetouch')
-              : t('app.modeAdd')
-        }
-        generating={generating || submittingEdit}
-        engine={engine}
-        onEngineChange={handleEngineChange}
-        onUploadFile={handleFile}
-        onAttachReference={setReferenceFile}
-        uploading={uploading}
-        imageSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}
-        materials={materials}
-        elementNodes={flattenTree(tree)}
-        onPickElement={handlePickElement}
-        pickingElement={pickingElement}
-      />
+        {/* Semantic error colour, never the green brand accent. The inputs are
+          already preserved on failure — this just says so, and offers the
+          second attempt the toast could not. */}
+        {retryable && !busy && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#E5484D33] bg-[#E5484D0F] px-5.5 py-2.5">
+            <span className="text-[12.5px] text-[#E5484D]">{t('app.retryBannerText')}</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setRetryable(false)}
+                className="rounded-full px-2.5 py-1.5 text-[12.5px] text-[#8A8896] hover:text-[#17161F]"
+              >
+                {t('app.retryDismiss')}
+              </button>
+              <button
+                type="button"
+                disabled={sendDisabled}
+                onClick={handleSubmit}
+                className="rounded-full bg-[#E5484D] px-3 py-1.5 text-[12.5px] font-semibold text-white disabled:opacity-50"
+              >
+                {t('app.retryButton')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <CommandBar
+          mode={mode}
+          onModeChange={handleModeChange}
+          editEnabled={selectedNode?.kind === 'GENERATED'}
+          // Enhance is its own page; it opens on the image selected here and
+          // files the result into this same project.
+          enhanceHref={
+            selectedId ? `/app/enhance?projet=${projectId}&image=${selectedId}` : '/app/enhance'
+          }
+          ratio={ratio}
+          onRatioChange={setRatio}
+          resolution={resolution}
+          onResolutionChange={setResolution}
+          prompt={prompt}
+          onPromptChange={setPrompt}
+          preset={preset}
+          onPresetChange={setPreset}
+          zoneSelected={hasComments}
+          referenceAdded={Boolean(referenceFile)}
+          onSubmit={handleSubmit}
+          inputDisabled={inputDisabled}
+          sendDisabled={sendDisabled}
+          sendHint={sendHint}
+          submitLabel={
+            mode === 'generate'
+              ? t('app.submitGenerate')
+              : mode === 'retouch'
+                ? t('app.modeRetouch')
+                : t('app.modeAdd')
+          }
+          generating={generating || submittingEdit}
+          // "Commenter" always runs on Moteur 2 — the chip says so and is locked.
+          engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
+          onEngineChange={handleEngineChange}
+          engineLocked={mode === 'retouch'}
+          onUploadFile={handleFile}
+          onAttachReference={setReferenceFile}
+          uploading={uploading}
+          // The image the action starts from, then the element to add.
+          sourceSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}
+          attachment={mode === 'add' ? referenceFile : null}
+          onRemoveAttachment={() => setReferenceFile(null)}
+          variantCount={variantCount}
+          onVariantCountChange={setVariantCount}
+          imageSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}
+          materials={materials}
+          elementNodes={flattenTree(tree)}
+          onPickElement={handlePickElement}
+          pickingElement={pickingElement}
+        />
+      </div>
 
       {pendingDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -923,7 +909,7 @@ export function AppShell({
               <button
                 type="button"
                 onClick={() => setPendingDelete(null)}
-                className="rounded-xl px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+                className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
               >
                 {t('projects.dialogCancel')}
               </button>
@@ -931,7 +917,7 @@ export function AppShell({
                 type="button"
                 disabled={deleting}
                 onClick={() => void handleDeleteNode(pendingDelete)}
-                className="rounded-xl bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="rounded-full bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
               >
                 {t('projects.deleteConfirm')}
               </button>
@@ -939,6 +925,8 @@ export function AppShell({
           </div>
         </div>
       )}
+
+      <MobileNav current="generate" userEmail={user?.email ?? ''} />
     </div>
   );
 }

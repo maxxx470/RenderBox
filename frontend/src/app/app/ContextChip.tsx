@@ -62,7 +62,7 @@ export function ContextChip({ materials }: { materials: MaterialRow[] }) {
         <ContextGlyph />
         {t('app.contextChipLabel')}
         {materials.length > 0 && (
-          <span className="rounded-full bg-[#EFECFF] px-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#5A57D6]">
+          <span className="rounded-full bg-[#E8F5EC] px-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#166534]">
             {materials.length}
           </span>
         )}

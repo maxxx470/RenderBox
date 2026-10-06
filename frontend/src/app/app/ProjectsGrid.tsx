@@ -17,14 +17,15 @@ import { DashboardStats, type DashboardData } from './DashboardStats';
 import { DashboardVideoCard } from './DashboardVideoCard';
 import { DashboardCarousel } from './DashboardCarousel';
 import { HomeSidebar } from './HomeSidebar';
+import { MOBILE_NAV_PAD, MobileNav } from './MobileNav';
 import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 
 // Full literal class strings — Tailwind's scanner cannot see a class built
 // from an interpolated value (see the JIT note in CLAUDE.md).
 const FILTER_PILL =
-  'rounded-full border border-[#ECECF2] bg-white px-3 py-1.5 text-[12px] font-medium text-[#6B6880] transition-colors hover:border-[#DEDEE8] hover:text-[#17161F]';
+  'rounded-full border border-[#ECECF2] bg-white px-3 py-1.5 text-[12px] font-medium text-[#5F6B64] transition-colors hover:border-[#DEDEE8] hover:text-[#17161F]';
 const FILTER_PILL_ACTIVE =
-  'rounded-full border border-[#716FFF] bg-[#EFECFF] px-3 py-1.5 text-[12px] font-semibold text-[#716FFF]';
+  'rounded-full border border-[#16A34A] bg-[#E8F5EC] px-3 py-1.5 text-[12px] font-semibold text-[#15803D]';
 
 export interface ProjectCardData {
   id: string;
@@ -80,10 +81,10 @@ function ProjectCard({
           // pb-10 lifts it clear of the name that now sits at the bottom
           // of the same card.
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#F7F7FA] pb-10">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#DEDEE8] bg-white">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#DEDEE8] bg-white">
               <ImageIcon set="light" size={18} primaryColor="#8A8896" />
             </span>
-            <span className="text-[11px] text-[#6B6880]">{t('projects.cardEmpty')}</span>
+            <span className="text-[11px] text-[#5F6B64]">{t('projects.cardEmpty')}</span>
           </div>
         )}
 
@@ -140,7 +141,7 @@ function ProjectCard({
           onClick={onRename}
           aria-label={t('projects.renameAction')}
           title={t('projects.renameAction')}
-          className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#DEDEE8]"
+          className="flex h-7 w-7 items-center justify-center rounded-full border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#DEDEE8]"
         >
           <Edit set="light" size={14} primaryColor="#17161F" />
         </button>
@@ -149,7 +150,7 @@ function ProjectCard({
           onClick={onDelete}
           aria-label={t('projects.deleteAction')}
           title={t('projects.deleteAction')}
-          className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#E5484D]"
+          className="flex h-7 w-7 items-center justify-center rounded-full border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#E5484D]"
         >
           <Delete set="light" size={14} primaryColor="#E5484D" />
         </button>
@@ -191,7 +192,6 @@ export function ProjectsGrid({
   const [dialog, setDialog] = useState<Dialog>(null);
   const [draftName, setDraftName] = useState('');
   const [busy, setBusy] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Only the ambiances the user actually has: an empty filter pill would be a
   // control that can only ever return nothing.
@@ -275,20 +275,9 @@ export function ProjectsGrid({
       <div className="mx-auto max-w-[1100px]">
         <div className="mb-7 flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5">
-            {/* Below 900px the rail is off-canvas, so this is the only way to
-                reach Image / Paramètres / Informations. Without it the
-                dashboard is a dead end on a phone. */}
-            {dashboard && (
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(true)}
-                className="rounded-lg border border-[#ECECF2] p-1.5 min-[900px]:hidden"
-                aria-label={t('app.openMenu')}
-              >
-                <Category set="light" size={16} primaryColor="#8A8896" />
-              </button>
-            )}
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]" />
+            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
+              <Category set="light" size={16} primaryColor="#ffffff" />
+            </span>
             <h1 className="font-[family-name:var(--font-general-sans)] text-lg font-semibold text-[#17161F]">
               {t(dashboard ? 'dashboard.title' : 'projects.title')}
             </h1>
@@ -299,7 +288,7 @@ export function ProjectsGrid({
               <button
                 type="button"
                 onClick={openCreate}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-4.5 py-2.5 text-[13px] font-semibold text-white"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4.5 py-2.5 text-[13px] font-semibold text-white"
               >
                 <Plus set="light" size={16} primaryColor="#ffffff" />
                 {t('projects.newButton')}
@@ -310,9 +299,10 @@ export function ProjectsGrid({
 
         {dashboard && (
           <>
-            {/* Two banners on top, as in the reference — the video narrower
-                than the carousel beside it. */}
-            <div className="mb-5 grid grid-cols-1 gap-4 min-[900px]:grid-cols-[42fr_58fr]">
+            {/* Two banners on top, as in the reference: the "3 steps" film
+                and the showcase carousel, given equal room since the film
+                carries text that has to stay readable. */}
+            <div className="mb-5 grid grid-cols-1 gap-4 min-[900px]:grid-cols-2">
               <DashboardVideoCard />
               <DashboardCarousel />
             </div>
@@ -355,7 +345,7 @@ export function ProjectsGrid({
 
         {/* Only worth the row once there is enough to sift through. */}
         {projects.length > 5 && (
-          <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 focus-within:border-[#716FFF]">
+          <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 focus-within:border-[#16A34A]">
             <Search set="light" size={15} primaryColor="#8A8896" />
             <input
               type="search"
@@ -370,7 +360,7 @@ export function ProjectsGrid({
 
         {projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-[#ECECF2] bg-[#F7F7FA] py-20 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7]">
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
               <Folder set="light" size={24} primaryColor="#ffffff" />
             </div>
             <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
@@ -380,7 +370,7 @@ export function ProjectsGrid({
             <button
               type="button"
               onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-5 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_20px_-6px_#716FFF50]"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-5 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_20px_-6px_#16A34A50]"
             >
               <Plus set="light" size={16} primaryColor="#ffffff" />
               {t('projects.newButton')}
@@ -420,13 +410,13 @@ export function ProjectsGrid({
               if (dialog.kind === 'create') void handleCreate();
               else void handleRename(dialog.project);
             }}
-            className="mb-4 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none focus:border-[#716FFF]"
+            className="mb-4 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none focus:border-[#16A34A]"
           />
           <div className="flex justify-end gap-2">
             <button
               type="button"
               onClick={() => setDialog(null)}
-              className="rounded-xl px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+              className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
             >
               {t('projects.dialogCancel')}
             </button>
@@ -436,7 +426,7 @@ export function ProjectsGrid({
               onClick={() =>
                 dialog.kind === 'create' ? void handleCreate() : void handleRename(dialog.project)
               }
-              className="rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
             >
               {t(dialog.kind === 'create' ? 'projects.createConfirm' : 'projects.renameConfirm')}
             </button>
@@ -456,7 +446,7 @@ export function ProjectsGrid({
             <button
               type="button"
               onClick={() => setDialog(null)}
-              className="rounded-xl px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+              className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
             >
               {t('projects.dialogCancel')}
             </button>
@@ -464,7 +454,7 @@ export function ProjectsGrid({
               type="button"
               disabled={busy}
               onClick={() => void handleDelete(dialog.project)}
-              className="rounded-xl bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              className="rounded-full bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
             >
               {t('projects.deleteConfirm')}
             </button>
@@ -484,15 +474,6 @@ export function ProjectsGrid({
 
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Backdrop for the mobile drawer. Tapping anywhere outside closes it —
-          the same dismissal the workspace drawer already uses. */}
-      {mobileNavOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/30 min-[900px]:hidden"
-          onClick={() => setMobileNavOpen(false)}
-          aria-hidden
-        />
-      )}
       {/* block, not flex: the rail inside is `sticky`, and it needs a plain
           block container as tall as the page to stick within. The rail hides
           itself below 900px, so this wrapper no longer does. */}
@@ -503,14 +484,18 @@ export function ProjectsGrid({
           max={dashboard.quotaMax}
           remaining={dashboard.quotaRemaining}
           userEmail={userEmail}
-          mobileOpen={mobileNavOpen}
-          onMobileClose={() => setMobileNavOpen(false)}
         />
       </div>
       {/* min-w-0: without it this flex child refuses to shrink below its
           content's intrinsic width, and a single long unwrapped string would
           stretch the page past the viewport. */}
-      <main className="min-w-0 flex-1 overflow-x-hidden px-6 py-8">{content}</main>
+      <main
+        className={`min-w-0 flex-1 overflow-x-hidden px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
+      >
+        {content}
+      </main>
+      {/* Below 900px the rail gives way to the bottom bar. */}
+      <MobileNav current="dashboard" userEmail={userEmail} />
     </div>
   );
 }

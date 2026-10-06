@@ -33,7 +33,7 @@ const TIER_LABEL_KEY = {
 
 // The three secondary cards share one neutral treatment.
 //
-// They used to carry a tinted ground each — violet, sky blue, amber — on the
+// They used to carry a tinted ground each — green, sky blue, amber — on the
 // argument that four grounds read as four distinct facts. Two problems. The
 // sky and amber were borrowed from the landing's audience tabs, and those
 // tabs no longer exist: the hues had no second home on the site and read as
@@ -42,12 +42,12 @@ const TIER_LABEL_KEY = {
 // emphasised, the quota card, the only one that changes behaviour rather
 // than just its number, stops leading.
 //
-// So: quota keeps the violet ground and the widest column, and the three
+// So: quota keeps the green ground and the widest column, and the three
 // figures beside it are one quiet object. Colour is spent once, where it
 // means something.
 const CARD = 'rounded-2xl border border-[#ECECF2] bg-white p-4 shadow-[0_1px_3px_#17161F0A]';
-const CHIP = 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-[#F7F7FA]';
-const ICON_COLOR = '#6B6880';
+const CHIP = 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#F7F7FA]';
+const ICON_COLOR = '#5F6B64';
 
 function StatCard({
   icon,
@@ -69,13 +69,13 @@ function StatCard({
       <div
         className={
           empty
-            ? 'text-[13.5px] font-medium leading-[1.35] text-[#6B6880]'
+            ? 'text-[13.5px] font-medium leading-[1.35] text-[#5F6B64]'
             : 'font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]'
         }
       >
         {value}
       </div>
-      <div className="mt-1.5 text-[12px] text-[#6B6880]">{label}</div>
+      <div className="mt-1.5 text-[12px] text-[#5F6B64]">{label}</div>
     </div>
   );
 }
@@ -99,27 +99,27 @@ export function DashboardStats({ data }: { data: DashboardData }) {
     <div className="mb-8 grid grid-cols-1 gap-4 min-[860px]:grid-cols-[1.4fr_1fr_1fr_1fr]">
       {/* Quota — the one card that changes behaviour rather than just its
           number, so it leads and takes the widest column. */}
-      <div className="rounded-2xl border border-[#DCD8FF] bg-[#F5F3FF] p-4 shadow-[0_1px_3px_#17161F0A]">
+      <div className="rounded-2xl border border-[#C6E9D1] bg-[#F0FAF3] p-4 shadow-[0_1px_3px_#17161F0A]">
         {data.tier && data.quotaMax !== null && data.quotaRemaining !== null ? (
           <>
             <div className="mb-2.5 flex items-center justify-between gap-2">
-              <span className="text-[12px] text-[#6B6880]">{t('dashboard.quotaLabel')}</span>
-              <span className="rounded-full bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-2.5 py-1 text-[10.5px] font-semibold text-white">
+              <span className="text-[12px] text-[#5F6B64]">{t('dashboard.quotaLabel')}</span>
+              <span className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-2.5 py-1 text-[10.5px] font-semibold text-white">
                 {t(TIER_LABEL_KEY[data.tier])}
               </span>
             </div>
             <div className="font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]">
               {data.quotaRemaining.toLocaleString(intl)}
-              <span className="ml-1.5 text-[13px] font-medium text-[#6B6880]">
+              <span className="ml-1.5 text-[13px] font-medium text-[#5F6B64]">
                 {t('dashboard.quotaOf', { max: data.quotaMax.toLocaleString(intl) })}
               </span>
             </div>
             {/* Violet-tinted track, not the page's neutral line colour: at 0%
                 used the bar has no fill at all, and a bare grey hairline on
-                this violet ground read as a stray rule rather than as an
+                this green ground read as a stray rule rather than as an
                 empty gauge. */}
             <div
-              className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#E1DCFF]"
+              className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#CFEEDB]"
               role="progressbar"
               aria-valuenow={pct}
               aria-valuemin={0}
@@ -127,28 +127,28 @@ export function DashboardStats({ data }: { data: DashboardData }) {
               aria-label={t('dashboard.quotaLabel')}
             >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[#6E6BFF] to-[#A855F7]"
+                className="h-full rounded-full bg-gradient-to-r from-[#16A34A] to-[#166534]"
                 style={{ width: `${pct}%` }}
               />
             </div>
             {data.periodEndsAt && (
-              <div className="mt-2.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#6B6880]">
+              <div className="mt-2.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#5F6B64]">
                 {t('dashboard.renewsOn', { date: shortDate(data.periodEndsAt) })}
               </div>
             )}
           </>
         ) : (
           <>
-            <div className="mb-1.5 text-[12px] text-[#6B6880]">{t('dashboard.quotaLabel')}</div>
+            <div className="mb-1.5 text-[12px] text-[#5F6B64]">{t('dashboard.quotaLabel')}</div>
             <div className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
               {t('dashboard.noTierTitle')}
             </div>
-            <p className="mt-1.5 text-[12px] leading-[1.5] text-[#6B6880]">
+            <p className="mt-1.5 text-[12px] leading-[1.5] text-[#5F6B64]">
               {t('dashboard.noTierBody')}
             </p>
             <Link
-              href="/#tarifs"
-              className="mt-3 inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#6E6BFF] via-[#8B5CF6] to-[#A855F7] px-3.5 py-2 text-[12.5px] font-semibold text-white"
+              href="/app/tarifs"
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-3.5 py-2 text-[12.5px] font-semibold text-white"
             >
               {t('dashboard.noTierCta')}
             </Link>

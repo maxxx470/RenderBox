@@ -10,17 +10,12 @@
 import { ChevronUp, ChevronDown, Image } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
-import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { Radio } from './Radio';
 import { POPOVER_HEADING, popoverPanelClass, useHoverPopover } from './useHoverPopover';
 
-// Two marks that tell the engines apart without naming their vendors. The
-// previous pair gave the game away on their own: a yellow-to-orange banana and
-// an OpenAI blue. Both now sit inside the RenderBox violet range.
-const ENGINE_ICON_CLASS: Record<EngineName, string> = {
-  nanobanana: 'bg-gradient-to-br from-[#6E6BFF] to-[#A855F7]',
-  gpt_image: 'bg-gradient-to-br from-[#3D3B49] to-[#17161F]',
-};
+// Each engine wears its own colour (red, yellow) from ENGINE_COLORS — never a
+// vendor's name or logo.
 
 export function EngineSelect({
   engine,
@@ -56,9 +51,9 @@ export function EngineSelect({
         className="flex flex-shrink-0 items-center gap-2 rounded-full border border-[#ECECF2] bg-white py-1.5 pl-1.5 pr-3 transition-colors hover:border-[#DEDEE8] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span
-          className={`flex h-[22px] w-[22px] items-center justify-center rounded-md ${ENGINE_ICON_CLASS[engine]}`}
+          className={`flex h-[22px] w-[22px] items-center justify-center rounded-full ${ENGINE_COLORS[engine].mark}`}
         >
-          <Image set="light" size={12} primaryColor="#ffffff" />
+          <Image set="light" size={12} primaryColor={ENGINE_COLORS[engine].glyph} />
         </span>
         <span className="text-[12.5px] font-medium text-[#17161F]">
           {ENGINE_LABELS[engine].name[locale]}
@@ -91,9 +86,9 @@ export function EngineSelect({
               >
                 <Radio checked={selected} />
                 <span
-                  className={`flex h-[28px] w-[28px] flex-shrink-0 items-center justify-center rounded-lg ${ENGINE_ICON_CLASS[key]}`}
+                  className={`flex h-[28px] w-[28px] flex-shrink-0 items-center justify-center rounded-full ${ENGINE_COLORS[key].mark}`}
                 >
-                  <Image set="light" size={14} primaryColor="#ffffff" />
+                  <Image set="light" size={14} primaryColor={ENGINE_COLORS[key].glyph} />
                 </span>
                 <span className="flex-1">
                   <span className="block text-[13px] font-semibold text-[#17161F]">

@@ -26,7 +26,7 @@ import { POPOVER_HEADING, popoverPanelClass, useHoverPopover } from './useHoverP
 const AMBIANCE_SWATCH: Record<PresetKey, string> = {
   jour_ext: 'bg-[linear-gradient(135deg,#7FC4FF_0%,#EAF6FF_100%)]',
   jour_int: 'bg-[linear-gradient(135deg,#FFD9A0_0%,#FFF8EE_100%)]',
-  nuit_ext: 'bg-[linear-gradient(135deg,#141B3D_0%,#6E6BFF_100%)]',
+  nuit_ext: 'bg-[linear-gradient(135deg,#141B3D_0%,#4C63D2_100%)]',
   nuit_int: 'bg-[linear-gradient(135deg,#2A1D12_0%,#F5A94B_100%)]',
   esquisse: 'bg-[linear-gradient(135deg,#D9D9E2_0%,#F7F7FA_100%)]',
 };
@@ -104,7 +104,7 @@ export function PresetSelect({
                   {PRESETS[key].label[locale]}
                 </span>
                 {isSketch && (
-                  <span className="rounded-md bg-[#EFECFF] px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#5A57D6]">
+                  <span className="rounded-md bg-[#E8F5EC] px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#166534]">
                     {t('app.presetNewBadge')}
                   </span>
                 )}

@@ -58,7 +58,7 @@ function RatioGlyph({ ratio }: { ratio: RatioKey }) {
       <span
         aria-hidden
         style={{ width, height }}
-        className={`rounded-[2px] border border-[#716FFF] ${
+        className={`rounded-[2px] border border-[#16A34A] ${
           ratio === 'auto' ? 'border-dashed' : ''
         }`}
       />
@@ -138,9 +138,9 @@ export function RatioSelect({
                     }}
                     className={`flex h-[52px] flex-col items-center justify-center gap-1 rounded-[10px] border transition-colors duration-150 ease-out ${
                       !available
-                        ? 'cursor-not-allowed border-[#F1F0F6] opacity-40'
+                        ? 'cursor-not-allowed border-[#EFF3F0] opacity-40'
                         : selected
-                          ? 'border-[#716FFF] bg-[#F5F3FF]'
+                          ? 'border-[#16A34A] bg-[#F0FAF3]'
                           : 'border-[#ECECF2] hover:border-[#DEDEE8] hover:bg-[#FBFBFD]'
                     }`}
                   >
@@ -148,12 +148,12 @@ export function RatioSelect({
                       aria-hidden
                       style={{ width: shape.width, height: shape.height }}
                       className={`rounded-[3px] border ${
-                        selected ? 'border-[#716FFF]' : 'border-[#B4B2C0]'
+                        selected ? 'border-[#16A34A]' : 'border-[#AEBBB2]'
                       } ${key === 'auto' ? 'border-dashed' : ''}`}
                     />
                     <span
                       className={`font-[family-name:var(--font-jetbrains-mono)] text-[9.5px] ${
-                        selected ? 'text-[#5A57D6]' : 'text-[#6B6880]'
+                        selected ? 'text-[#166534]' : 'text-[#5F6B64]'
                       }`}
                     >
                       {key === 'auto' ? t('app.ratioAuto') : RATIOS[key].label}
