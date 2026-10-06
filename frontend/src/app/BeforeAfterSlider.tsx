@@ -19,7 +19,7 @@ import {
 import { useInView } from './hooks/useInView';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
-const MONO = 'font-[family-name:var(--font-jetbrains-mono)]';
+const MONO = 'font-[family-name:var(--font-mono)]';
 const MOBILE_AUTOPLAY_MS = 1700;
 
 export function BeforeAfterSlider({

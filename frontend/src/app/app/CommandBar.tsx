@@ -461,7 +461,7 @@ export function CommandBar({
               >
                 −
               </button>
-              <span className="w-3 text-center font-[family-name:var(--font-jetbrains-mono)] text-[12px] text-[#17161F]">
+              <span className="w-3 text-center font-[family-name:var(--font-mono)] text-[12px] text-[#17161F]">
                 {variantCount}
               </span>
               <button
@@ -505,7 +505,7 @@ export function CommandBar({
               onClick={openAssistant}
               aria-label={t('app.assistant')}
               title={t('app.assistant')}
-              className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-full border border-[#ECECF2] bg-white font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#15803D] transition-colors hover:border-[#16A34A] hover:bg-[#E8F5EC]"
+              className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-full border border-[#ECECF2] bg-white font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#15803D] transition-colors hover:border-[#16A34A] hover:bg-[#E8F5EC]"
             >
               ?
             </button>

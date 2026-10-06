@@ -47,7 +47,7 @@ export function EditPanel({
     // Mirrors MaterialsPanel: outlined panel on desktop, opaque drawer on
     // mobile where it sits over a dimmed backdrop.
     <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8]">
-      <h3 className="mb-1 font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
+      <h3 className="mb-1 font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]">
         {t('edit.panelTitle')}
       </h3>
       <p className="mb-4 text-xs leading-relaxed text-[#8A8896]">{t('edit.panelSubtitle')}</p>
@@ -120,7 +120,7 @@ export function EditPanel({
                       key={p.id}
                       className="flex items-start gap-2 rounded-xl bg-[#F7F7FA] px-2.5 py-2"
                     >
-                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#15803D] font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] font-semibold text-white">
+                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#15803D] font-[family-name:var(--font-mono)] text-[10.5px] font-semibold text-white">
                         {i + 1}
                       </span>
                       <span className="min-w-0 flex-1 text-[12.5px] leading-snug text-[#17161F]">

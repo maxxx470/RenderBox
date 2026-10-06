@@ -15,7 +15,7 @@ export default function LegalPage() {
     <main className="min-h-screen">
       <SiteHeader links cta={{ href: '/app', label: t('landing.navStart') }} />
       <div className="mx-auto max-w-2xl px-6 py-12">
-        <h1 className="mb-6 font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
+        <h1 className="mb-6 font-[family-name:var(--font-display)] text-2xl font-bold text-[#17161F]">
           {t('legal.title')}
         </h1>
 

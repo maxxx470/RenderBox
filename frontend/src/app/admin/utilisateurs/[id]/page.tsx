@@ -89,7 +89,7 @@ export default function AdminUserDetailPage() {
       <div className="mt-3 mb-6 flex items-center gap-3.5">
         <div className="h-11 w-11 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] opacity-85" />
         <div>
-          <h1 className="font-[family-name:var(--font-general-sans)] text-[18px] font-semibold text-[#17161F]">
+          <h1 className="font-[family-name:var(--font-display)] text-[18px] font-semibold text-[#17161F]">
             {user.name || user.email}
           </h1>
           <p className="text-[12.5px] text-[#8A8896]">
@@ -123,7 +123,7 @@ export default function AdminUserDetailPage() {
               {projects.map((p) => (
                 <li key={p.id} className="flex items-center justify-between text-[13px]">
                   <span className="text-[#17161F]">{p.name}</span>
-                  <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                  <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                     {p.generationsCount}
                   </span>
                 </li>
@@ -142,7 +142,7 @@ export default function AdminUserDetailPage() {
             <ul className="flex flex-col gap-2">
               {orders.map((o) => (
                 <li key={o.id} className="flex items-center justify-between text-[13px]">
-                  <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                  <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                     {o.status}
                   </span>
                   <span className="text-[#17161F]">

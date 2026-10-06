@@ -17,7 +17,8 @@
 //   signature gradient: linear-gradient(135deg,#16A34A 0%,#15803D 48%,#166534 100%)
 //   error/danger (semantic, NOT brand): #E5484D — used only for error text
 //   and destructive actions, never for accents
-// Fonts: General Sans + JetBrains Mono (tags/technical values), loaded once
+// Fonts: Inter (text), Poppins (titles), IBM Plex Mono (tags/technical
+// values) — Metrio's pairing, loaded once
 // site-wide in the root layout (frontend/src/app/layout.tsx).
 //
 // No fabricated testimonials/ratings/"trusted by N" claims — RenderBox has
@@ -64,7 +65,7 @@ import { BrandMark } from '@/components/BrandMark';
 // name itself here (not just the CSS value) keeps every usage below a
 // single, complete token the scanner can find, exactly like MONO already is.
 const GRADIENT = 'bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)]';
-const MONO = 'font-[family-name:var(--font-jetbrains-mono)]';
+const MONO = 'font-[family-name:var(--font-mono)]';
 
 // Hero headline, revealed word by word.
 //

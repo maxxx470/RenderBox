@@ -75,7 +75,7 @@ export default function AdminJournalPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-[family-name:var(--font-general-sans)] text-[19px] font-semibold text-[#17161F]">
+        <h1 className="font-[family-name:var(--font-display)] text-[19px] font-semibold text-[#17161F]">
           {t('admin.journal.title')}
         </h1>
         <p className="mt-1 text-[12.5px] text-[#8A8896]">{t('admin.journal.subtitle')}</p>
@@ -99,7 +99,7 @@ export default function AdminJournalPage() {
                 <div className="text-[13px] text-[#17161F]">
                   <b className="font-semibold">{row.actorId}</b> {describe(row, t)}
                 </div>
-                <div className="mt-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#8A8896]">
+                <div className="mt-0.5 font-[family-name:var(--font-mono)] text-[10.5px] text-[#8A8896]">
                   {new Date(row.createdAt).toLocaleString('fr-FR')}
                 </div>
               </div>

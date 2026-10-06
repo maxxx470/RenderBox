@@ -10,7 +10,7 @@ export function LanguageInlineSwitch({ className = '' }: { className?: string })
 
   return (
     <div
-      className={`inline-flex items-center gap-1 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896] ${className}`}
+      className={`inline-flex items-center gap-1 font-[family-name:var(--font-mono)] text-xs text-[#8A8896] ${className}`}
     >
       <button
         type="button"

@@ -10,19 +10,17 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Chat, Logout } from 'react-iconly';
+import { ArrowLeft, ArrowRight, Chat, Login, Logout } from 'react-iconly';
 import { openAssistant } from './AssistantWidget';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { isPlaceholderAccount } from '@/lib/account-label';
 import { NavPendingIcon } from './NavPending';
 import { RailIcon, type RailIconName } from './RailIcon';
-import type { PricingTierId } from '@/lib/pricing-tiers';
 import type { AppMode } from './CommandBar';
 
 import { useSidebarCollapsed } from './useSidebarCollapsed';
 import { RAIL_CAPTION, RAIL_TOGGLE, ROW, ROW_ACTIVE, ROW_IDLE } from './nav-row';
-import { BrandMark } from '@/components/BrandMark';
 
 /**
  * Which rail entry is the page you are on.
@@ -33,16 +31,14 @@ import { BrandMark } from '@/components/BrandMark';
  * Paramètres, Informations and Exemples now living inside the app, the rail
  * has to be told.
  */
-export type RailPage = 'dashboard' | 'generate' | 'enhance' | 'pricing' | 'settings' | 'info';
-
-const TIER_LABEL_KEY: Record<
-  PricingTierId,
-  'app.tierDecouverte' | 'app.tierStandard' | 'app.tierPro'
-> = {
-  decouverte: 'app.tierDecouverte',
-  standard: 'app.tierStandard',
-  pro: 'app.tierPro',
-};
+export type RailPage =
+  | 'dashboard'
+  | 'projects'
+  | 'generate'
+  | 'enhance'
+  | 'pricing'
+  | 'settings'
+  | 'info';
 
 /**
  * One rail entry.
@@ -88,9 +84,6 @@ function RailLink({
 export function HomeSidebar({
   current,
   onModeChange,
-  tier,
-  max,
-  remaining,
   userEmail,
   mobileOpen = false,
   onMobileClose,
@@ -101,9 +94,7 @@ export function HomeSidebar({
   /** Absent on every screen but the generation space, which owns the mode
       state — elsewhere the Image entry is a link back to it, not a button. */
   onModeChange?: (mode: AppMode) => void;
-  tier: PricingTierId | null;
-  max: number | null;
-  remaining: number | null;
+  /** Decides the foot button: sign in (free access, no session) or sign out. */
   userEmail: string;
   /** Below 900px the rail is a drawer. Defaults to closed, so a caller that
       does not wire the trigger simply keeps the old "hidden on mobile"
@@ -118,11 +109,9 @@ export function HomeSidebar({
   const router = useRouter();
   const { logout, loggingOut } = useAuth();
 
-  // No account (free-access mode): name the access mode instead of a seeded
-  // test address, and offer no sign-out — there is no session to end.
-  // See lib/account-label.ts.
+  // No account (free-access mode): there is no session to end, so the foot
+  // offers to sign in instead of out. See lib/account-label.ts.
   const placeholder = isPlaceholderAccount(userEmail);
-  const accountLabel = placeholder ? t('app.freeAccessAccount') : userEmail;
   const [collapsed, toggleCollapsed] = useSidebarCollapsed();
   // The drawer only ever opens below 900px (its trigger is `min-[900px]:hidden`),
   // so an open drawer means "narrow screen" and the persisted desktop collapse
@@ -134,12 +123,6 @@ export function HomeSidebar({
     onMobileClose?.();
   };
   const hideOnCollapse = collapsedUi ? 'hidden' : '';
-  const hasQuota = tier !== null && max !== null && remaining !== null && max > 0;
-  const planLabel = tier
-    ? hasQuota
-      ? t('app.railPlanPill', { tier: t(TIER_LABEL_KEY[tier]), remaining, max })
-      : t(TIER_LABEL_KEY[tier])
-    : t('app.genHomeChooseTier');
 
   function link(href: string, label: string, icon: RailIconName, page: RailPage) {
     return (
@@ -175,23 +158,12 @@ export function HomeSidebar({
       // tinted pills at the foot.
       //
       // Below 900px it is an overlay drawer (`fixed`, off-canvas until opened).
-      // From 900px it is pinned: `sticky top-0 h-screen`, so it never scrolls
-      // with the page; only the project tree inside it scrolls.
-      className={`${mobileOpen ? 'flex' : 'hidden'} fixed inset-y-0 left-0 z-40 flex-col overflow-y-auto border-r border-[#E1E9E3] bg-white py-5 transition-[width] duration-200 ease-out min-[900px]:sticky min-[900px]:top-0 min-[900px]:z-auto min-[900px]:flex min-[900px]:h-screen min-[900px]:flex-shrink-0 ${
+      // From 900px it sits under the header (AppTopbar) and fills the frame
+      // height; the page scrolls beside it, only the project tree inside it.
+      className={`${mobileOpen ? 'flex' : 'hidden'} fixed bottom-0 left-0 top-16 z-40 flex-col overflow-y-auto border-r border-[#E1E9E3] bg-white py-5 transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:flex min-[900px]:flex-shrink-0 ${
         collapsedUi ? 'w-[76px] px-3' : 'w-[264px] px-4'
       }`}
     >
-      {/* Brand. Metrio carries its logo in a header bar above the rail;
-          RenderBox has no such bar, so the logo heads the rail itself. */}
-      <div className={`mb-6 flex items-center gap-2.5 ${collapsedUi ? 'justify-center' : 'px-1'}`}>
-        <BrandMark size="md" />
-        <span
-          className={`truncate font-[family-name:var(--font-general-sans)] text-[19px] font-bold text-[#17161F] ${hideOnCollapse}`}
-        >
-          RenderBox
-        </span>
-      </div>
-
       {/* "NAVIGATION" + the round back-arrow that folds the rail. Collapsing
           is a desktop affordance: the drawer is dismissed by its backdrop. */}
       <div
@@ -220,6 +192,7 @@ export function HomeSidebar({
       {caption(t('app.railGroupMain'))}
       <nav className="flex flex-col gap-1">
         {link('/app', t('app.railHome'), 'dashboard', 'dashboard')}
+        {link('/app/projets', t('app.railProjects'), 'projects', 'projects')}
         {/* On the generation space the Image entry is the mode switch it
             owns; everywhere else it is a link back to that space. */}
         {onModeChange ? (
@@ -265,12 +238,10 @@ export function HomeSidebar({
         </>
       )}
 
-      {/* The foot: the reference's two tinted pills. The green one is the
-          plan and the quota left (Metrio's "Assistant" slot, and its "pages
-          restantes" figure in one); the red one signs out, shown only when
-          there is a real session to end. */}
+      {/* The foot, as in Metrio: the help chat, then the account button —
+          sign in while the app runs in free access (no session), sign out
+          once there is one. The plan and renders left moved to the header. */}
       <div className="mt-auto flex flex-col gap-2.5 border-t border-[#ECECF2] pt-4">
-        {/* The help chat (Metrio's "Assistant" pill). */}
         <button
           type="button"
           onClick={() => {
@@ -279,30 +250,32 @@ export function HomeSidebar({
           }}
           {...(collapsedUi ? { title: t('app.assistant') } : {})}
           aria-label={t('app.assistant')}
-          className={`flex items-center gap-3 rounded-full border border-[#ECECF2] bg-white py-2.5 text-[14px] font-semibold text-[#17161F] transition-colors hover:border-[#16A34A] ${
+          className={`flex items-center gap-3 rounded-full border border-[#CDEBD6] bg-[#E8F5EC] py-2.5 text-[14px] font-semibold text-[#166534] transition-colors hover:border-[#16A34A] ${
             collapsedUi ? 'justify-center px-0' : 'px-4'
           }`}
         >
           <Chat set="light" size={18} primaryColor="#15803D" />
           <span className={hideOnCollapse}>{t('app.assistant')}</span>
         </button>
-        <Link
-          href="/app/tarifs"
-          onClick={closeDrawer}
-          title={`${accountLabel} — ${planLabel}`}
-          aria-label={planLabel}
-          className={`flex items-center gap-3 rounded-full border border-[#CDEBD6] bg-[#E8F5EC] py-2.5 text-[14px] font-semibold text-[#166534] transition-colors hover:border-[#16A34A] ${
-            collapsedUi ? 'justify-center px-0' : 'px-4'
-          }`}
-        >
-          <RailIcon name="pricing" />
-          <span className={`truncate ${hideOnCollapse}`}>{planLabel}</span>
-        </Link>
-        {!placeholder && (
+        {placeholder ? (
+          <Link
+            href="/connexion"
+            onClick={closeDrawer}
+            {...(collapsedUi ? { title: t('landing.navLogin') } : {})}
+            aria-label={t('landing.navLogin')}
+            className={`flex items-center gap-3 rounded-full border border-[#ECECF2] bg-white py-2.5 text-[14px] font-semibold text-[#17161F] transition-colors hover:border-[#16A34A] ${
+              collapsedUi ? 'justify-center px-0' : 'px-4'
+            }`}
+          >
+            <Login set="light" size={18} primaryColor="#15803D" />
+            <span className={hideOnCollapse}>{t('landing.navLogin')}</span>
+          </Link>
+        ) : (
           <button
             type="button"
             disabled={loggingOut}
             onClick={() => void handleLogout()}
+            {...(collapsedUi ? { title: t('parametres.logoutButton') } : {})}
             aria-label={t('parametres.logoutButton')}
             className={`flex items-center gap-3 rounded-full border border-[#F6CFD0] bg-[#FDEEEE] py-2.5 text-[14px] font-semibold text-[#B4232A] transition-colors hover:border-[#E5484D] disabled:opacity-60 ${
               collapsedUi ? 'justify-center px-0' : 'px-4'

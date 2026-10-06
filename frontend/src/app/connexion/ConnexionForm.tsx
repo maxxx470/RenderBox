@@ -39,7 +39,7 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
   if (status === 'sent') {
     return (
       <div className="text-center">
-        <h1 className="mb-1.5 font-[family-name:var(--font-general-sans)] text-xl font-semibold text-[#17161F]">
+        <h1 className="mb-1.5 font-[family-name:var(--font-display)] text-xl font-semibold text-[#17161F]">
           {t('connexion.sentTitle')}
         </h1>
         <p className="text-sm text-[#8A8896]">{t('connexion.sentBody')}</p>
@@ -49,7 +49,7 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
 
   return (
     <>
-      <h1 className="mb-1.5 text-center font-[family-name:var(--font-general-sans)] text-xl font-semibold text-[#17161F]">
+      <h1 className="mb-1.5 text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[#17161F]">
         {t('connexion.heading')}
       </h1>
       <p className="mb-7 text-center text-[13px] text-[#8A8896]">{t('connexion.subheading')}</p>
@@ -64,7 +64,7 @@ export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'ex
 
       <div className="mb-5 flex items-center gap-2.5">
         <div className="h-px flex-1 bg-[#ECECF2]" />
-        <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+        <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
           {t('connexion.or')}
         </span>
         <div className="h-px flex-1 bg-[#ECECF2]" />

@@ -55,7 +55,7 @@ function ToolPill({ logo }: { logo: (typeof TOOL_LOGOS)[number] }) {
       </svg>
       <span
         style={{ color: logo.hex }}
-        className="font-[family-name:var(--font-general-sans)] text-[13px] font-semibold"
+        className="font-[family-name:var(--font-display)] text-[13px] font-semibold"
       >
         {logo.label}
       </span>

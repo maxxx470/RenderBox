@@ -41,7 +41,7 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
           reliably. */}
       <div className="max-w-[760px]">
         <section className="mb-10">
-          <h2 className="mb-4 font-[family-name:var(--font-general-sans)] text-[17px] font-semibold text-[#17161F]">
+          <h2 className="mb-4 font-[family-name:var(--font-display)] text-[17px] font-semibold text-[#17161F]">
             {t('info.guideTitle')}
           </h2>
           <div className="flex flex-col gap-5">
@@ -51,7 +51,7 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
                 className="rounded-[20px] border border-[#ECECF2] bg-[#F7F7FA] p-3 min-[640px]:p-4"
               >
                 <div className="mb-3 px-1">
-                  <h3 className="font-[family-name:var(--font-general-sans)] text-[16px] font-semibold text-[#17161F]">
+                  <h3 className="font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
                     {t(f.title)}
                   </h3>
                   <p className="mt-0.5 text-[13px] leading-[1.5] text-[#5F6B64]">{t(f.body)}</p>

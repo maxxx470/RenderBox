@@ -71,7 +71,7 @@ export default function AdminPaymentsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-[family-name:var(--font-general-sans)] text-[19px] font-semibold text-[#17161F]">
+        <h1 className="font-[family-name:var(--font-display)] text-[19px] font-semibold text-[#17161F]">
           {t('admin.payments.title')}
         </h1>
         <p className="mt-1 text-[12.5px] text-[#8A8896]">{t('admin.payments.subtitle')}</p>
@@ -124,7 +124,7 @@ export default function AdminPaymentsPage() {
             <tbody>
               {items.map((o) => (
                 <tr key={o.id} className="hover:bg-[#F7F7FA]">
-                  <td className="border-b border-[#ECECF2] px-3.5 py-3 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                  <td className="border-b border-[#ECECF2] px-3.5 py-3 font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                     {o.id.slice(0, 10)}
                   </td>
                   <td className="border-b border-[#ECECF2] px-3.5 py-3 text-[13px] text-[#17161F]">
@@ -135,7 +135,7 @@ export default function AdminPaymentsPage() {
                   </td>
                   <td className="border-b border-[#ECECF2] px-3.5 py-3">
                     <span
-                      className={`rounded-lg px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] ${STATUS_CLS[o.status] ?? ''}`}
+                      className={`rounded-lg px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] ${STATUS_CLS[o.status] ?? ''}`}
                     >
                       {t(STATUS_KEY[o.status] ?? 'admin.payments.statusPending')}
                     </span>

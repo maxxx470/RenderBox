@@ -7,7 +7,6 @@ import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
-import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { collectBranch, type RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
@@ -20,8 +19,8 @@ import {
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Filter2, Download, Upload, Swap } from 'react-iconly';
-import { HomeSidebar } from './HomeSidebar';
-import { MOBILE_NAV_PAD, MobileNav } from './MobileNav';
+import { AppFrame } from './AppFrame';
+import { MOBILE_NAV_PAD } from './MobileNav';
 import { ACCEPTED_UPLOAD_TYPES, Dropzone } from './Dropzone';
 import { nodeTitle, ProjectTree } from './ProjectTree';
 import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
@@ -526,7 +525,38 @@ export function AppShell({
     // Same frame as /app/generer: the shared rail runs the full height on the
     // left (logo, links, account card), and everything else — project bar,
     // canvas, command bar — lives in the column beside it.
-    <div className="flex h-screen bg-white">
+    <AppFrame
+      current="projects"
+      topbar={{
+        title: projectName,
+        tier,
+        quotaMax: max,
+        quotaRemaining: remaining,
+        userEmail: user?.email ?? '',
+      }}
+      onModeChange={handleModeChange}
+      sidebarOpen={mobileTreeOpen}
+      onSidebarClose={() => setMobileTreeOpen(false)}
+      sidebarChildren={
+        <>
+          <h3 className="mb-3.5 mt-1 font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]">
+            {t('app.treeTitle')}
+          </h3>
+          <ProjectTree
+            tree={tree}
+            selectedId={selectedId}
+            onSelect={(id) => {
+              setSelectedId(id);
+              setMobileTreeOpen(false);
+            }}
+            onDelete={(node) => {
+              setPendingDelete(node);
+              setMobileTreeOpen(false);
+            }}
+          />
+        </>
+      }
+    >
       {mobileTreeOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/30 min-[900px]:hidden"
@@ -534,35 +564,9 @@ export function AppShell({
           aria-hidden
         />
       )}
-      <HomeSidebar
-        current="generate"
-        onModeChange={handleModeChange}
-        tier={tier}
-        max={max}
-        remaining={remaining}
-        userEmail={user?.email ?? ''}
-        mobileOpen={mobileTreeOpen}
-        onMobileClose={() => setMobileTreeOpen(false)}
-      >
-        <h3 className="mb-3.5 mt-1 font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
-          {t('app.treeTitle')}
-        </h3>
-        <ProjectTree
-          tree={tree}
-          selectedId={selectedId}
-          onSelect={(id) => {
-            setSelectedId(id);
-            setMobileTreeOpen(false);
-          }}
-          onDelete={(node) => {
-            setPendingDelete(node);
-            setMobileTreeOpen(false);
-          }}
-        />
-      </HomeSidebar>
 
       <div className={`flex min-w-0 flex-1 flex-col overflow-hidden ${MOBILE_NAV_PAD}`}>
-        <header className="flex flex-wrap items-center justify-between gap-2 px-5.5 pt-5.5">
+        <div className="flex items-center justify-between gap-2 px-5.5 pt-4 min-[900px]:hidden">
           <div className="flex min-w-0 items-center gap-2.5">
             <button
               type="button"
@@ -575,12 +579,8 @@ export function AppShell({
             >
               <Category set="light" size={16} primaryColor="#8A8896" />
             </button>
-            <span className="truncate rounded-2xl border border-[#ECECF2] bg-[#F7F7FA] px-3 py-1.5 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
-              {projectName}
-            </span>
           </div>
           <div className="flex items-center gap-2.5">
-            <LanguageInlineSwitch />
             <button
               type="button"
               onClick={() => setMobilePanelOpen(true)}
@@ -590,7 +590,7 @@ export function AppShell({
               <Filter2 set="light" size={16} primaryColor="#8A8896" />
             </button>
           </div>
-        </header>
+        </div>
 
         <div className="relative flex flex-1 overflow-hidden">
           {mobilePanelOpen && (
@@ -604,7 +604,7 @@ export function AppShell({
             {!hasNodes ? (
               <>
                 <div className="mb-4">
-                  <h2 className="mb-1 font-[family-name:var(--font-general-sans)] text-base font-semibold text-[#17161F]">
+                  <h2 className="mb-1 font-[family-name:var(--font-display)] text-base font-semibold text-[#17161F]">
                     {t('app.viewerTitle')}
                   </h2>
                   <p className="text-[13px] text-[#8A8896]">{t('app.viewerSubtitle')}</p>
@@ -614,7 +614,7 @@ export function AppShell({
             ) : (
               <>
                 {selectedNode && (
-                  <div className="mb-4 font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
+                  <div className="mb-4 font-[family-name:var(--font-mono)] text-xs text-[#8A8896]">
                     {parentNode && <>{nodeLabel(parentNode)} → </>}
                     <b className="font-medium text-[#17161F]">{nodeLabel(selectedNode)}</b>
                   </div>
@@ -633,7 +633,7 @@ export function AppShell({
                 >
                   {selectedId && (
                     <>
-                      <span className="absolute left-3.5 top-3.5 rounded-2xl border border-[#ECECF2] bg-white px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                      <span className="absolute left-3.5 top-3.5 rounded-2xl border border-[#ECECF2] bg-white px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                         {selectedNode?.preset
                           ? t('app.canvasPresetBadge', {
                               preset: PRESETS[selectedNode.preset as PresetKey].label[locale],
@@ -644,7 +644,7 @@ export function AppShell({
                           : t('app.engineTag')}
                       </span>
                       {selectedNode?.kind === 'GENERATED' && materials.length > 0 && (
-                        <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#1E7A3D14] px-3 py-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#1E7A3D]">
+                        <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#1E7A3D14] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] text-[#1E7A3D]">
                           <span className="h-1.5 w-1.5 rounded-full bg-[#1E7A3D]" />
                           {t('app.scanBadge', { n: materials.length })}
                         </span>
@@ -693,10 +693,10 @@ export function AppShell({
                               className="pointer-events-none max-h-full max-w-full object-contain"
                             />
                           </div>
-                          <span className="pointer-events-none absolute bottom-3.5 left-3.5 rounded-2xl bg-[#17161F] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
+                          <span className="pointer-events-none absolute bottom-3.5 left-3.5 rounded-2xl bg-[#17161F] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] text-white">
                             {nodeLabel(parentNode)}
                           </span>
-                          <span className="pointer-events-none absolute bottom-3.5 right-3.5 rounded-2xl bg-[#16A34A] px-2.5 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-white">
+                          <span className="pointer-events-none absolute bottom-3.5 right-3.5 rounded-2xl bg-[#16A34A] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] text-white">
                             {nodeLabel(selectedNode)}
                           </span>
                           <div
@@ -761,7 +761,7 @@ export function AppShell({
                       <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
                         <Upload set="light" size={24} primaryColor="#ffffff" />
                       </div>
-                      <h3 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+                      <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
                         {t('app.canvasDropTitle')}
                       </h3>
                       <p className="max-w-[280px] text-center text-[13px] text-[#8A8896]">
@@ -771,7 +771,7 @@ export function AppShell({
                   )}
                   {uploading && (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#FFFFFFD9]">
-                      <span className="rounded-2xl border border-[#ECECF2] bg-white px-4 py-2 font-[family-name:var(--font-jetbrains-mono)] text-[12px] text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)]">
+                      <span className="rounded-2xl border border-[#ECECF2] bg-white px-4 py-2 font-[family-name:var(--font-mono)] text-[12px] text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)]">
                         {t('app.uploading')}
                       </span>
                     </div>
@@ -779,10 +779,10 @@ export function AppShell({
                   {busy && (
                     <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#FFFFFFD9]">
                       <span className="rb-spin h-8 w-8 rounded-full border-2 border-[#ECECF2] border-t-[#16A34A]" />
-                      <span className="font-[family-name:var(--font-general-sans)] text-[13.5px] font-semibold text-[#17161F]">
+                      <span className="font-[family-name:var(--font-display)] text-[13.5px] font-semibold text-[#17161F]">
                         {t('app.generatingOverlay')}
                       </span>
-                      <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                      <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                         {t('app.generatingElapsed', { s: elapsed })}
                       </span>
                     </div>
@@ -795,7 +795,7 @@ export function AppShell({
           <div
             className={`${
               mobilePanelOpen ? 'block' : 'hidden'
-            } fixed inset-y-0 right-0 z-20 min-[900px]:static min-[900px]:z-auto min-[900px]:block`}
+            } fixed bottom-0 right-0 top-16 z-20 min-[900px]:static min-[900px]:z-auto min-[900px]:block`}
           >
             {mode === 'generate' ? (
               <MaterialsPanel materials={materials} onSave={handleSaveMaterial} />
@@ -894,7 +894,7 @@ export function AppShell({
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/30" onClick={() => setPendingDelete(null)} />
           <div className="relative w-full max-w-[380px] rounded-2xl border border-[#ECECF2] bg-white p-5 shadow-[0_24px_48px_-20px_rgba(23,22,31,0.35)]">
-            <h2 className="mb-2 font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+            <h2 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
               {t('app.treeDeleteTitle', { name: nodeLabel(pendingDelete) })}
             </h2>
             <p className="mb-4 text-[13px] leading-relaxed text-[#8A8896]">
@@ -925,8 +925,6 @@ export function AppShell({
           </div>
         </div>
       )}
-
-      <MobileNav current="generate" userEmail={user?.email ?? ''} />
-    </div>
+    </AppFrame>
   );
 }

@@ -38,14 +38,12 @@ function AuthErrorBody() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-4">
-      <h1 className="font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
+      <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[#17161F]">
         Échec de connexion
       </h1>
       <p className="text-sm text-[#3D3B49]">{message}</p>
       {code && (
-        <p className="font-[family-name:var(--font-jetbrains-mono)] text-xs text-[#8A8896]">
-          code: {code}
-        </p>
+        <p className="font-[family-name:var(--font-mono)] text-xs text-[#8A8896]">code: {code}</p>
       )}
       <div className="flex flex-col gap-2">
         <Link

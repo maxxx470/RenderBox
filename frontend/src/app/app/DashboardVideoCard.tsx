@@ -37,7 +37,7 @@ function HowItWorks() {
     // content now (owner, 2026-10-06), and it carries its own light ground.
     <div className="flex flex-col overflow-hidden rounded-2xl border border-[#DEDEE8] bg-white">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <h3 className="min-w-0 font-[family-name:var(--font-general-sans)] text-[15px] font-semibold leading-tight text-[#17161F]">
+        <h3 className="min-w-0 font-[family-name:var(--font-display)] text-[15px] font-semibold leading-tight text-[#17161F]">
           {t('dashboard.howTitle')}
         </h3>
         {/* Straight to the generation space: the in-app gallery this used to
@@ -100,7 +100,7 @@ export function DashboardVideoCard() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
 
       <div className="absolute inset-0 flex flex-col justify-end p-5">
-        <h3 className="max-w-[260px] font-[family-name:var(--font-general-sans)] text-[21px] font-bold leading-[1.15] text-white">
+        <h3 className="max-w-[260px] font-[family-name:var(--font-display)] text-[21px] font-bold leading-[1.15] text-white">
           {t('dashboard.videoTitle')}
         </h3>
         <div className="mt-3.5">

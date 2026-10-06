@@ -93,10 +93,10 @@ function HeroCardFace({
           image, including whichever ones replace these later. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
       <div className="pointer-events-none absolute inset-x-4 bottom-4">
-        <div className="font-[family-name:var(--font-general-sans)] text-[17px] font-bold text-white">
+        <div className="font-[family-name:var(--font-display)] text-[17px] font-bold text-white">
           {label}
         </div>
-        <div className="mt-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-white/85">
+        <div className="mt-0.5 font-[family-name:var(--font-mono)] text-[11px] text-white/85">
           {tag}
         </div>
       </div>

@@ -43,7 +43,7 @@ export function SiteHeader({
       <div className="relative mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-4 min-[640px]:px-6">
         <Link
           href={homeHref}
-          className="flex flex-shrink-0 items-center gap-2 font-[family-name:var(--font-general-sans)] text-[17px] font-bold text-[#17161F]"
+          className="flex flex-shrink-0 items-center gap-2 font-[family-name:var(--font-display)] text-[17px] font-bold text-[#17161F]"
         >
           <BrandMark size="md" />
           RenderBox

@@ -16,10 +16,10 @@ function StatCard({ label, value, suffix }: { label: string; value: string; suff
   return (
     <div className="rounded-[14px] border border-[#ECECF2] px-4.5 py-4">
       <div className="mb-2 text-[11px] text-[#8A8896]">{label}</div>
-      <div className="font-[family-name:var(--font-general-sans)] text-[22px] font-bold text-[#17161F]">
+      <div className="font-[family-name:var(--font-display)] text-[22px] font-bold text-[#17161F]">
         {value}
         {suffix ? (
-          <small className="ml-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] font-medium text-[#8A8896]">
+          <small className="ml-1.5 font-[family-name:var(--font-mono)] text-[11px] font-medium text-[#8A8896]">
             {suffix}
           </small>
         ) : null}
@@ -51,7 +51,7 @@ export default function AdminOverviewPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-[family-name:var(--font-general-sans)] text-[19px] font-semibold text-[#17161F]">
+        <h1 className="font-[family-name:var(--font-display)] text-[19px] font-semibold text-[#17161F]">
           {t('admin.overview.title')}
         </h1>
         <p className="mt-1 text-[12.5px] text-[#8A8896]">{t('admin.overview.subtitle')}</p>

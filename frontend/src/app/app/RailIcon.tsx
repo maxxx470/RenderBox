@@ -27,6 +27,7 @@ import type { ReactNode } from 'react';
 
 export type RailIconName =
   | 'dashboard'
+  | 'projects'
   | 'image'
   | 'enhance'
   | 'pricing'
@@ -44,6 +45,13 @@ const GLYPH: Record<RailIconName, ReactNode> = {
       <rect x="13.2" y="3.2" width="7.6" height="7.6" rx="2.2" />
       <rect x="3.2" y="13.2" width="7.6" height="7.6" rx="2.2" />
       <rect x="13.2" y="13.2" width="7.6" height="7.6" rx="2.2" />
+    </>
+  ),
+  // A folder with its tab — every project the account holds.
+  projects: (
+    <>
+      <path d="M3 7.4A2.4 2.4 0 0 1 5.4 5h3.7l2 2.2h7.5A2.4 2.4 0 0 1 21 9.6v7.6a2.4 2.4 0 0 1-2.4 2.4H5.4A2.4 2.4 0 0 1 3 17.2Z" />
+      <path d="M3 10.4h18" />
     </>
   ),
   // A frame, a sun, a horizon. The horizon runs to the frame's right edge so

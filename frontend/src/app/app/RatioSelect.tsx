@@ -99,7 +99,7 @@ export function RatioSelect({
         className={CHIP_BASE}
       >
         <RatioGlyph ratio={ratio} />
-        <span className="font-[family-name:var(--font-jetbrains-mono)] text-[12px]">
+        <span className="font-[family-name:var(--font-mono)] text-[12px]">
           {ratio === 'auto' ? t('app.ratioAuto') : RATIOS[ratio].label}
         </span>
         <span className="flex-shrink-0">
@@ -152,7 +152,7 @@ export function RatioSelect({
                       } ${key === 'auto' ? 'border-dashed' : ''}`}
                     />
                     <span
-                      className={`font-[family-name:var(--font-jetbrains-mono)] text-[9.5px] ${
+                      className={`font-[family-name:var(--font-mono)] text-[9.5px] ${
                         selected ? 'text-[#166534]' : 'text-[#5F6B64]'
                       }`}
                     >

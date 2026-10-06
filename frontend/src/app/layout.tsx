@@ -1,23 +1,34 @@
 import type { Metadata } from 'next';
-import { JetBrains_Mono } from 'next/font/google';
+import { IBM_Plex_Mono, Inter, Poppins } from 'next/font/google';
 import { cookies } from 'next/headers';
 import './globals.css';
-import { generalSans } from '@/fonts/general-sans';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocaleProvider } from '@/lib/i18n/LocaleContext';
 import type { Locale } from '@/lib/i18n/dictionaries';
 import { COOKIE_PREFIX } from '@/lib/constants';
 
-// Site-wide charter (2026-09-02): General Sans for body/headings, JetBrains
-// Mono for technical/tag text — the pairing introduced on the landing page
-// redesign, now the single source of truth for every route via CSS
-// variables on <html>. Previously Inter/Poppins/IBM Plex Mono; those are
-// fully retired, not just superseded, so no route should reference them.
-const jetbrainsMono = JetBrains_Mono({
+// Site-wide type (2026-10-06, owner: "la même police que sur Metrio"):
+// Metrio's pairing — Inter for body text, Poppins for titles, IBM Plex Mono
+// for technical/tag text. One source of truth for every route, as CSS
+// variables on <html>: --font-sans, --font-display, --font-mono. (General
+// Sans and JetBrains Mono, the 2026-09-02 charter, are retired.)
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['500', '600'],
-  variable: '--font-jetbrains-mono',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['500', '600', '700', '800'],
+  variable: '--font-display',
+  display: 'swap',
+});
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
   display: 'swap',
 });
 
@@ -40,10 +51,10 @@ export default async function RootLayout({
     // (e.g. webcrx) before React hydrates. Only silences this one element's attributes.
     <html
       lang={locale}
-      className={`${generalSans.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${poppins.variable} ${plexMono.variable}`}
       suppressHydrationWarning
     >
-      <body className={`${generalSans.className} bg-white text-[#17161F] antialiased`}>
+      <body className={`${inter.className} bg-white text-[#17161F] antialiased`}>
         <LocaleProvider initialLocale={locale}>
           <ToastProvider>
             <AuthProvider>{children}</AuthProvider>

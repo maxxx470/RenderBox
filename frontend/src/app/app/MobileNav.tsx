@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Chat, Logout, MoreCircle, Plus } from 'react-iconly';
+import { Chat, Login, Logout, MoreCircle, Plus } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { isPlaceholderAccount } from '@/lib/account-label';
@@ -23,7 +23,7 @@ import { AssistantWidget, openAssistant } from './AssistantWidget';
  *  margins and the phone's safe area. Nothing from 900px up. */
 export const MOBILE_NAV_PAD = 'pb-[calc(104px+env(safe-area-inset-bottom))] min-[900px]:pb-0';
 
-const MORE_PAGES: RailPage[] = ['info', 'settings', 'pricing'];
+const MORE_PAGES: RailPage[] = ['projects', 'info', 'settings', 'pricing'];
 
 export function MobileNav({
   current,
@@ -65,6 +65,7 @@ export function MobileNav({
     { page: 'enhance', href: '/app/enhance', label: t('app.railEnhance'), icon: 'enhance' },
   ];
   const more: { page: RailPage; href: string; label: string; icon: RailIconName }[] = [
+    { page: 'projects', href: '/app/projets', label: t('app.railProjects'), icon: 'projects' },
     { page: 'info', href: '/app/info', label: t('info.title'), icon: 'info' },
     { page: 'settings', href: '/parametres', label: t('parametres.title'), icon: 'settings' },
     { page: 'pricing', href: '/app/tarifs', label: t('app.railPricing'), icon: 'pricing' },
@@ -153,7 +154,20 @@ export function MobileNav({
                     <Chat set="light" size={18} primaryColor="#15803D" />
                     {t('app.assistant')}
                   </button>
-                  {!placeholder && (
+                  {placeholder ? (
+                    <>
+                      <div className="my-1 h-px bg-[#ECECF2]" />
+                      <Link
+                        href="/connexion"
+                        role="menuitem"
+                        onClick={() => setMoreOpen(false)}
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#17161F] transition-colors hover:bg-[#F7F7FA]"
+                      >
+                        <Login set="light" size={18} primaryColor="#15803D" />
+                        {t('landing.navLogin')}
+                      </Link>
+                    </>
+                  ) : (
                     <>
                       <div className="my-1 h-px bg-[#ECECF2]" />
                       <button

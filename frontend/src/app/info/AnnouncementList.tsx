@@ -28,7 +28,7 @@ function EntryCard({ entry }: { entry: Announcement }) {
       <div className="mb-2 flex flex-wrap items-center gap-2.5">
         <time
           dateTime={entry.date}
-          className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]"
+          className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]"
         >
           {new Date(entry.date).toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US', {
             day: 'numeric',
@@ -37,12 +37,12 @@ function EntryCard({ entry }: { entry: Announcement }) {
           })}
         </time>
         {planned && (
-          <span className="rounded-full bg-[#EFF3F0] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] uppercase tracking-wide text-[#8A8896]">
+          <span className="rounded-full bg-[#EFF3F0] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wide text-[#8A8896]">
             {t('info.badgePlanned')}
           </span>
         )}
       </div>
-      <h3 className="font-[family-name:var(--font-general-sans)] text-[15.5px] font-semibold text-[#17161F]">
+      <h3 className="font-[family-name:var(--font-display)] text-[15.5px] font-semibold text-[#17161F]">
         {entry.title[locale]}
       </h3>
       <p className="mt-1.5 text-[13.5px] leading-[1.6] text-[#3D3B49]">{entry.body[locale]}</p>
@@ -61,7 +61,7 @@ export function AnnouncementList() {
     <>
       {planned.length > 0 && (
         <section className="mb-9">
-          <h2 className="mb-3.5 font-[family-name:var(--font-general-sans)] text-[13px] font-semibold text-[#8A8896]">
+          <h2 className="mb-3.5 font-[family-name:var(--font-display)] text-[13px] font-semibold text-[#8A8896]">
             {t('info.plannedHeading')}
           </h2>
           <ul className="flex flex-col gap-3">
@@ -77,7 +77,7 @@ export function AnnouncementList() {
             to tell it apart from. With nothing planned it repeats the page
             title word for word, one line below it. */}
         {planned.length > 0 && (
-          <h2 className="mb-3.5 font-[family-name:var(--font-general-sans)] text-[13px] font-semibold text-[#8A8896]">
+          <h2 className="mb-3.5 font-[family-name:var(--font-display)] text-[13px] font-semibold text-[#8A8896]">
             {t('info.shippedHeading')}
           </h2>
         )}

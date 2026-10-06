@@ -9,7 +9,7 @@ export default function ErrorBoundary({
 }) {
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-6 px-4">
-      <h1 className="font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
+      <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[#17161F]">
         Something went wrong
       </h1>
       <p className="text-center text-[#8A8896]">{error.message}</p>

@@ -62,7 +62,7 @@ export function ContextChip({ materials }: { materials: MaterialRow[] }) {
         <ContextGlyph />
         {t('app.contextChipLabel')}
         {materials.length > 0 && (
-          <span className="rounded-full bg-[#E8F5EC] px-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] text-[#166534]">
+          <span className="rounded-full bg-[#E8F5EC] px-1.5 font-[family-name:var(--font-mono)] text-[10.5px] text-[#166534]">
             {materials.length}
           </span>
         )}
@@ -83,7 +83,7 @@ export function ContextChip({ materials }: { materials: MaterialRow[] }) {
               <dl className="flex max-h-[212px] flex-col gap-px overflow-y-auto">
                 {materials.map((m) => (
                   <div key={m.id} className="rounded-[10px] px-2.5 py-1.5 hover:bg-[#F7F7FA]">
-                    <dt className="font-[family-name:var(--font-jetbrains-mono)] text-[9.5px] uppercase tracking-wide text-[#8A8896]">
+                    <dt className="font-[family-name:var(--font-mono)] text-[9.5px] uppercase tracking-wide text-[#8A8896]">
                       {m.face.replace(/_/g, ' ')}
                     </dt>
                     <dd className="text-[12.5px] leading-[1.4] text-[#17161F]">{m.valeur}</dd>

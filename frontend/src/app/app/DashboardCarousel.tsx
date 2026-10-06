@@ -66,7 +66,7 @@ export function DashboardCarousel() {
         >
           <img src={slide.src} alt="" className="h-full w-full object-cover" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
-          <p className="absolute inset-x-5 bottom-11 max-w-[300px] font-[family-name:var(--font-general-sans)] text-[19px] font-bold leading-[1.2] text-white">
+          <p className="absolute inset-x-5 bottom-11 max-w-[300px] font-[family-name:var(--font-display)] text-[19px] font-bold leading-[1.2] text-white">
             {slide.caption[locale]}
           </p>
         </div>

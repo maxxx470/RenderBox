@@ -70,7 +70,7 @@ function StatCard({
         className={
           empty
             ? 'text-[13.5px] font-medium leading-[1.35] text-[#5F6B64]'
-            : 'font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]'
+            : 'font-[family-name:var(--font-display)] text-[22px] font-bold leading-none text-[#17161F]'
         }
       >
         {value}
@@ -108,7 +108,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
                 {t(TIER_LABEL_KEY[data.tier])}
               </span>
             </div>
-            <div className="font-[family-name:var(--font-general-sans)] text-[22px] font-bold leading-none text-[#17161F]">
+            <div className="font-[family-name:var(--font-display)] text-[22px] font-bold leading-none text-[#17161F]">
               {data.quotaRemaining.toLocaleString(intl)}
               <span className="ml-1.5 text-[13px] font-medium text-[#5F6B64]">
                 {t('dashboard.quotaOf', { max: data.quotaMax.toLocaleString(intl) })}
@@ -132,7 +132,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
               />
             </div>
             {data.periodEndsAt && (
-              <div className="mt-2.5 font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#5F6B64]">
+              <div className="mt-2.5 font-[family-name:var(--font-mono)] text-[11px] text-[#5F6B64]">
                 {t('dashboard.renewsOn', { date: shortDate(data.periodEndsAt) })}
               </div>
             )}
@@ -140,7 +140,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
         ) : (
           <>
             <div className="mb-1.5 text-[12px] text-[#5F6B64]">{t('dashboard.quotaLabel')}</div>
-            <div className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+            <div className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
               {t('dashboard.noTierTitle')}
             </div>
             <p className="mt-1.5 text-[12px] leading-[1.5] text-[#5F6B64]">

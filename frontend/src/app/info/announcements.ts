@@ -39,6 +39,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'projects-page',
+    date: '2026-10-06',
+    kind: 'shipped',
+    title: { fr: 'Une page Projets, et un en-tête', en: 'A Projects page, and a header' },
+    body: {
+      fr: 'Tous vos projets sont réunis dans « Projets », avec recherche, tri et filtres par catégorie : extérieur, intérieur, jour, nuit, esquisse, Enhance, modifiés. En haut de chaque page, un en-tête regroupe les notifications, la langue, votre compte et les rendus qu’il vous reste.',
+      en: 'All your projects are gathered under "Projects", with search, sorting and category filters: exterior, interior, day, night, sketch, Enhance, edited. At the top of every page, a header holds your notifications, the language, your account and the renders you have left.',
+    },
+  },
+  {
     id: 'command-bar',
     date: '2026-10-06',
     kind: 'shipped',

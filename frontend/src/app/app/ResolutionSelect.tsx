@@ -74,7 +74,7 @@ export function ResolutionSelect({
         className={CHIP_BASE}
       >
         <GemGlyph />
-        <span className="font-[family-name:var(--font-jetbrains-mono)] text-[12px]">
+        <span className="font-[family-name:var(--font-mono)] text-[12px]">
           {RESOLUTIONS[resolution].label}
         </span>
         <span className="flex-shrink-0">
@@ -109,18 +109,18 @@ export function ResolutionSelect({
                 }`}
               >
                 <Radio checked={selected && available} />
-                <span className="flex-1 font-[family-name:var(--font-jetbrains-mono)] text-[13px] font-medium text-[#17161F]">
+                <span className="flex-1 font-[family-name:var(--font-mono)] text-[13px] font-medium text-[#17161F]">
                   {RESOLUTIONS[key].label}
                 </span>
                 {available ? (
                   // The reference prints the estimate in the same muted grey,
                   // right-aligned: it is the cost of the row, not a second
                   // label competing with the size.
-                  <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                  <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                     ~{RESOLUTIONS[key].etaSeconds}s
                   </span>
                 ) : (
-                  <span className="font-[family-name:var(--font-jetbrains-mono)] text-[9px] uppercase tracking-wide text-[#8A8896]">
+                  <span className="font-[family-name:var(--font-mono)] text-[9px] uppercase tracking-wide text-[#8A8896]">
                     {t('app.ratioUnsupportedBadge')}
                   </span>
                 )}

@@ -51,13 +51,17 @@ export function buildRenderBoxDoc(): string {
   return `RenderBox transforme une photo ou un croquis de bâtiment en rendu architectural photoréaliste, avec l'IA.
 
 NAVIGATION
-- Sur ordinateur, une barre latérale à gauche : PRINCIPAL (Accueil, Image, Enhance), BIBLIOTHÈQUE (Informations), COMPTE (Paramètres, Abonnement). En bas : la pastille verte de l'abonnement (générations restantes) et Déconnexion. La flèche ronde en haut replie la barre.
-- Sur téléphone, une barre flottante en bas : Accueil, Image, Enhance et « Plus » (Informations, Paramètres, Abonnement, Assistant, Déconnexion), et un bouton rond vert « + » pour lancer un nouveau rendu.
+- En haut de chaque page, la barre d'en-tête : le logo et le titre de la page à gauche ; à droite la cloche des notifications (un point vert signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN, le compte (ouvre Paramètres) et le nombre de rendus restants du mois (ouvre Abonnement).
+- Sur ordinateur, une barre latérale à gauche : PRINCIPAL (Accueil, Projets, Image, Enhance), BIBLIOTHÈQUE (Informations), COMPTE (Paramètres, Abonnement). En bas : « Assistant » puis « Se connecter » (ou « Se déconnecter » avec un compte). La flèche ronde en haut replie la barre.
+- Sur téléphone, une barre flottante en bas : Accueil, Image, Enhance et « Plus » (Projets, Informations, Paramètres, Abonnement, Assistant, Se connecter ou Se déconnecter), et un bouton rond vert « + » pour lancer un nouveau rendu.
 - Le bouton « Assistant » ouvre ce chat. Le sélecteur FR / EN change la langue de l'interface.
 
 ACCUEIL (tableau de bord)
 - En haut, un court film montre les 3 étapes (photo ou croquis, ambiance, rendu) avec le bouton « Générer un rendu ».
-- Abonnement actif, générations restantes du mois et date de renouvellement, nombre de projets et de rendus, dernière activité, puis la liste des projets (recherche par nom, filtre par ambiance, renommer, supprimer, créer un projet).
+- Abonnement actif, générations restantes du mois et date de renouvellement, nombre de projets et de rendus, dernière activité, puis les projets récents (8 au plus) et le lien « Voir tous les projets ».
+
+PROJETS (page Projets)
+- Tous les projets du compte : recherche par nom, tri (Récents ou Nom) et filtres par catégorie avec leur nombre : Extérieur, Intérieur, Jour, Nuit, Esquisse, Enhance, Modifiés (Commenter ou Ajouter), Sans rendu. Un projet est rangé dans toutes les catégories de ses rendus. Renommer, supprimer, créer un projet.
 
 IMAGE (générer un rendu)
 1. Joignez une photo ou un croquis (trombone de la barre de commande, glisser-déposer, ou un emplacement vide de l'éventail) : elle apparaît en miniature dans la barre, avec une croix pour la retirer. Un projet est créé à l'envoi.

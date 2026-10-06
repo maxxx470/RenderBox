@@ -58,7 +58,7 @@ function useImageBox(imgRef: RefObject<HTMLImageElement | null>): Box | null {
 }
 
 const PIN =
-  'flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white font-[family-name:var(--font-jetbrains-mono)] text-[12px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(21,128,61,0.75)]';
+  'flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white font-[family-name:var(--font-mono)] text-[12px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(21,128,61,0.75)]';
 
 export function AnnotationLayer({
   imgRef,

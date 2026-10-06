@@ -32,7 +32,7 @@ function MaterialCard({
   if (editing) {
     return (
       <div className="mb-2.5 rounded-xl border border-[#16A34A] bg-white p-3.5">
-        <div className="mb-1 flex items-center justify-between font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+        <div className="mb-1 flex items-center justify-between font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
           <span>{faceLabel(material.face)}</span>
         </div>
         <input
@@ -79,7 +79,7 @@ function MaterialCard({
 
   return (
     <div className="mb-2.5 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] p-3.5">
-      <div className="mb-1 flex items-center justify-between font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+      <div className="mb-1 flex items-center justify-between font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
         <span>{faceLabel(material.face)}</span>
         {material.source === 'auto' && material.confidence !== null && (
           <span className="text-[9px]">
@@ -113,11 +113,11 @@ export function MaterialsPanel({
     // mobile, where this is a fixed drawer over a dimmed backdrop.
     <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8]">
       <div className="mb-1 flex items-center justify-between">
-        <h3 className="font-[family-name:var(--font-general-sans)] text-[11px] uppercase tracking-wide text-[#8A8896]">
+        <h3 className="font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]">
           {t('app.materialsTitle')}
         </h3>
         {materials.length > 0 && (
-          <span className="rounded-[10px] bg-[#1E7A3D14] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#1E7A3D]">
+          <span className="rounded-[10px] bg-[#1E7A3D14] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] text-[#1E7A3D]">
             {materials.length}/{materials.length}
           </span>
         )}

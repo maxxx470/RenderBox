@@ -15,7 +15,7 @@ import { PRESETS } from '@/lib/server/generation/presets';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { GALLERY } from './gallery';
 
-const MONO = 'font-[family-name:var(--font-jetbrains-mono)]';
+const MONO = 'font-[family-name:var(--font-mono)]';
 
 export default function ExemplePage() {
   const t = useTranslations();
@@ -33,7 +33,7 @@ export default function ExemplePage() {
       <SiteHeader links cta={{ href: '/app', label: t('landing.navStart') }} />
 
       <div className="mx-auto max-w-[1100px] px-6 py-12">
-        <h1 className="font-[family-name:var(--font-general-sans)] text-[30px] font-bold tracking-[-0.5px] text-[#17161F]">
+        <h1 className="font-[family-name:var(--font-display)] text-[30px] font-bold tracking-[-0.5px] text-[#17161F]">
           {t('exemple.title')}
         </h1>
         <p className="mt-2.5 max-w-[62ch] text-[15px] leading-[1.55] text-[#5F6B64]">
@@ -52,7 +52,7 @@ export default function ExemplePage() {
           return (
             <section key={batch.preset} className="mt-12">
               <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-[#ECECF2] pb-2.5">
-                <h2 className="font-[family-name:var(--font-general-sans)] text-[19px] font-bold text-[#17161F]">
+                <h2 className="font-[family-name:var(--font-display)] text-[19px] font-bold text-[#17161F]">
                   {PRESETS[batch.preset].label[locale]}
                 </h2>
                 <span className={`text-[11px] uppercase tracking-wide text-[#8A8896] ${MONO}`}>
@@ -98,7 +98,7 @@ export default function ExemplePage() {
         {/* After the galleries, not before: the sheet explains how they hold
             together, which only means something once you have seen them. */}
         <section className="mt-14">
-          <h2 className="font-[family-name:var(--font-general-sans)] text-[19px] font-bold text-[#17161F]">
+          <h2 className="font-[family-name:var(--font-display)] text-[19px] font-bold text-[#17161F]">
             {t('exemple.materialsTitle')}
           </h2>
           <p className="mt-2 max-w-[62ch] text-[14px] leading-[1.55] text-[#5F6B64]">
@@ -119,7 +119,7 @@ export default function ExemplePage() {
         </section>
 
         <section className="mt-14 rounded-[20px] bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)] px-6 py-10 text-center">
-          <h2 className="mb-5 font-[family-name:var(--font-general-sans)] text-[20px] font-semibold text-white">
+          <h2 className="mb-5 font-[family-name:var(--font-display)] text-[20px] font-semibold text-white">
             {t('exemple.ctaTitle')}
           </h2>
           <Link

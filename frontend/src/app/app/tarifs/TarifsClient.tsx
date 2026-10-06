@@ -63,7 +63,7 @@ export function TarifsClient({ surface, demo }: { surface: AppSurfaceProps; demo
               {t(TIER_NAME_KEY[surface.tier])}
             </span>
             {surface.quotaRemaining !== null && surface.quotaMax !== null && (
-              <span className="ml-2 font-[family-name:var(--font-jetbrains-mono)] text-[12px] text-[#5F6B64]">
+              <span className="ml-2 font-[family-name:var(--font-mono)] text-[12px] text-[#5F6B64]">
                 {surface.quotaRemaining}/{surface.quotaMax}
               </span>
             )}

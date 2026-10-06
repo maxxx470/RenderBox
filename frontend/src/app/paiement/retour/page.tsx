@@ -112,12 +112,12 @@ export default function PaiementRetourPage() {
             {watching && (
               <span className="rb-spin h-7 w-7 rounded-full border-2 border-[#ECECF2] border-t-[#16A34A]" />
             )}
-            <h1 className="font-[family-name:var(--font-general-sans)] text-2xl font-bold text-[#17161F]">
+            <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[#17161F]">
               {copy[outcome].title}
             </h1>
             <p className="text-[14px] text-[#8A8896]">{copy[outcome].body}</p>
             {watching && (
-              <p className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+              <p className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                 {t('paiementRetour.pendingElapsed', { s: elapsed })}
               </p>
             )}

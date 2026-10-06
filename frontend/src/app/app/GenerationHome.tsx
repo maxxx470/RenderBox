@@ -8,11 +8,10 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Folder, Upload, Image as ImageIcon } from 'react-iconly';
+import { Folder, Upload } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
-import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import { RequestError, readErrorCode, isServiceNotConfigured } from './request-error';
@@ -28,8 +27,8 @@ import {
   isResolutionSupported,
   type ResolutionKey,
 } from '@/lib/server/generation/resolutions';
-import { HomeSidebar } from './HomeSidebar';
-import { MOBILE_NAV_PAD, MobileNav } from './MobileNav';
+import { AppFrame } from './AppFrame';
+import { MOBILE_NAV_PAD } from './MobileNav';
 import { CommandBar, type AppMode } from './CommandBar';
 
 export interface RecentRenderCardData {
@@ -134,10 +133,10 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-      <span className="absolute left-3 top-3 rounded-2xl border border-[#ECECF2] bg-white px-2 py-1 font-[family-name:var(--font-jetbrains-mono)] text-[9.5px] text-[#8A8896]">
+      <span className="absolute left-3 top-3 rounded-2xl border border-[#ECECF2] bg-white px-2 py-1 font-[family-name:var(--font-mono)] text-[9.5px] text-[#8A8896]">
         {tag}
       </span>
-      <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-general-sans)] text-sm font-semibold text-white">
+      <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-display)] text-sm font-semibold text-white">
         {render.projectName}
       </span>
     </Link>
@@ -184,7 +183,7 @@ function ExampleFanCard({ example, index }: { example: ExampleRender; index: num
       {/* Only when the set spans several ambiances — see generer-examples.ts.
           Four cards captioned with the same word would say nothing. */}
       {example.preset && (
-        <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-general-sans)] text-sm font-semibold text-white">
+        <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-display)] text-sm font-semibold text-white">
           {PRESETS[example.preset].label[locale]}
         </span>
       )}
@@ -312,25 +311,25 @@ export function GenerationHome({
   const sendDisabled = creating || !referenceFile;
 
   return (
-    <div className="flex h-screen bg-white">
-      <HomeSidebar
-        current="generate"
-        onModeChange={handleModeChange}
-        tier={tier}
-        max={max}
-        remaining={remaining}
-        userEmail={userEmail}
-      />
-
+    // Below 900px the rail gives way to the bottom bar; here its "+" opens
+    // the photo picker directly instead of linking to this very page.
+    <AppFrame
+      current="generate"
+      topbar={{
+        title: t('app.genHomeTitle'),
+        tier,
+        quotaMax: max,
+        quotaRemaining: remaining,
+        userEmail,
+      }}
+      onModeChange={handleModeChange}
+      onNew={() => fileInputRef.current?.click()}
+    >
       {/* min-w-0 so this flex child can shrink below its content's intrinsic
           width instead of pushing the workspace off a narrow screen. */}
       <main
         className={`flex min-w-0 flex-1 flex-col overflow-hidden px-4 pt-5 min-[900px]:px-7.5 min-[900px]:pt-5.5 ${MOBILE_NAV_PAD}`}
       >
-        <div className="mb-5 flex items-center justify-end min-[900px]:mb-7.5">
-          <LanguageInlineSwitch />
-        </div>
-
         {!tier ? (
           // Blocking, not a late error at generate-time: without an active
           // tier there's nothing to do in any mode, so this pre-empts even
@@ -339,7 +338,7 @@ export function GenerationHome({
             <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
               <Folder set="light" size={24} primaryColor="#ffffff" />
             </div>
-            <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+            <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
               {t('app.genHomeNoTierTitle')}
             </h2>
             <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeNoTierBody')}</p>
@@ -352,15 +351,6 @@ export function GenerationHome({
           </div>
         ) : (
           <>
-            <div className="mb-6.5 flex items-center justify-center gap-3.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
-                <ImageIcon set="light" size={22} primaryColor="#ffffff" />
-              </div>
-              <h1 className="font-[family-name:var(--font-general-sans)] text-[32px] font-bold text-[#17161F]">
-                {t('app.genHomeTitle')}
-              </h1>
-            </div>
-
             {/* The fan is always laid out with FAN_SLOTS positions: real
                 renders fill it from the left, and the rest stay as empty
                 slots that get replaced one by one as renders come in. The
@@ -461,13 +451,6 @@ export function GenerationHome({
           </>
         )}
       </main>
-      {/* Below 900px the rail gives way to the bottom bar; here its "+" opens
-          the photo picker directly instead of linking to this very page. */}
-      <MobileNav
-        current="generate"
-        userEmail={userEmail}
-        onNew={() => fileInputRef.current?.click()}
-      />
-    </div>
+    </AppFrame>
   );
 }

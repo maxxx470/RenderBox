@@ -104,7 +104,7 @@ export function PresetSelect({
                   {PRESETS[key].label[locale]}
                 </span>
                 {isSketch && (
-                  <span className="rounded-md bg-[#E8F5EC] px-1.5 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[9px] text-[#166534]">
+                  <span className="rounded-md bg-[#E8F5EC] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[9px] text-[#166534]">
                     {t('app.presetNewBadge')}
                   </span>
                 )}

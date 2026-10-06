@@ -18,7 +18,7 @@ export default function InfoPage() {
     <main className="min-h-screen">
       <SiteHeader links cta={{ href: '/app', label: t('landing.navStart') }} />
       <div className="mx-auto max-w-[720px] px-6 py-12">
-        <h1 className="font-[family-name:var(--font-general-sans)] text-[28px] font-bold tracking-[-0.5px] text-[#17161F]">
+        <h1 className="font-[family-name:var(--font-display)] text-[28px] font-bold tracking-[-0.5px] text-[#17161F]">
           {t('info.title')}
         </h1>
         <p className="mb-9 mt-2.5 text-[14px] leading-[1.6] text-[#5F6B64]">{t('info.subtitle')}</p>

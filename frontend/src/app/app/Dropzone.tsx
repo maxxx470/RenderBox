@@ -54,7 +54,7 @@ export function Dropzone({
       <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
         <Upload set="light" size={24} primaryColor="#ffffff" />
       </div>
-      <h3 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+      <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
         {t('app.dropzoneTitle')}
       </h3>
       <p className="max-w-[280px] text-center text-[13px] text-[#8A8896]">

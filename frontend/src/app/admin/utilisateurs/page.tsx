@@ -80,7 +80,7 @@ export default function AdminUsersPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-[family-name:var(--font-general-sans)] text-[19px] font-semibold text-[#17161F]">
+          <h1 className="font-[family-name:var(--font-display)] text-[19px] font-semibold text-[#17161F]">
             {t('admin.users.title')}
           </h1>
           <p className="mt-1 text-[12.5px] text-[#8A8896]">
@@ -146,13 +146,13 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                     <td className="border-b border-[#ECECF2] px-3.5 py-3">
-                      <span className="rounded-lg bg-[#16A34A12] px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#15803D]">
+                      <span className="rounded-lg bg-[#16A34A12] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] text-[#15803D]">
                         {u.role}
                       </span>
                     </td>
                     <td className="border-b border-[#ECECF2] px-3.5 py-3">
                       <span
-                        className={`rounded-lg px-2 py-0.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] ${badge.cls}`}
+                        className={`rounded-lg px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] ${badge.cls}`}
                       >
                         {badge.label}
                       </span>

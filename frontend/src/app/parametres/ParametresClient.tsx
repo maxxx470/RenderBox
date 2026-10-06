@@ -172,7 +172,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
             <ul className="flex flex-col gap-2">
               {orders.map((o) => (
                 <li key={o.id} className="flex items-center justify-between text-[13px]">
-                  <span className="font-[family-name:var(--font-jetbrains-mono)] text-[11px] text-[#8A8896]">
+                  <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                     {new Date(o.createdAt).toLocaleDateString('fr-FR')} · {o.status}
                   </span>
                   <span className="text-[#17161F]">

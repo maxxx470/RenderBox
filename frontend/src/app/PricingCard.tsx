@@ -9,7 +9,7 @@ import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { PricingTier } from '@/lib/pricing-tiers';
 
 const GRADIENT = 'bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)]';
-const MONO = 'font-[family-name:var(--font-jetbrains-mono)]';
+const MONO = 'font-[family-name:var(--font-mono)]';
 
 export function CheckItem({ children, light = false }: { children: ReactNode; light?: boolean }) {
   return (

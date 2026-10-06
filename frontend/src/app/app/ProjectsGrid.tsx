@@ -1,31 +1,35 @@
 'use client';
 
-// The dashboard at /app: banners, account figures, then the project grid.
-// Also rendered on its own (without `dashboard`) as a plain grid.
+// The dashboard at /app (banners, account figures, the latest projects) and
+// the Projets page at /app/projets (every project, searched, sorted and
+// filtered by category). One component, so a card behaves the same on both.
 //
 // Opening a project is a deliberate click, and creating one is a single
 // visible action rather than a side-effect of the first upload.
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Folder, Edit, Delete, Search, Image as ImageIcon, Category } from 'react-iconly';
+import { Plus, Folder, Edit, Delete, Search, Image as ImageIcon, ArrowRight } from 'react-iconly';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
-import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { DashboardStats, type DashboardData } from './DashboardStats';
 import { DashboardVideoCard } from './DashboardVideoCard';
 import { DashboardCarousel } from './DashboardCarousel';
-import { HomeSidebar } from './HomeSidebar';
-import { MOBILE_NAV_PAD, MobileNav } from './MobileNav';
-import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+import { AppFrame } from './AppFrame';
+import { MOBILE_NAV_PAD } from './MobileNav';
+import { CATEGORY_LABELS, PROJECT_CATEGORIES, type ProjectCategory } from './project-categories';
 
 // Full literal class strings — Tailwind's scanner cannot see a class built
 // from an interpolated value (see the JIT note in CLAUDE.md).
 const FILTER_PILL =
-  'rounded-full border border-[#ECECF2] bg-white px-3 py-1.5 text-[12px] font-medium text-[#5F6B64] transition-colors hover:border-[#DEDEE8] hover:text-[#17161F]';
+  'inline-flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-[#3D3B49] transition-colors hover:border-[#DEDEE8] hover:text-[#17161F]';
 const FILTER_PILL_ACTIVE =
-  'rounded-full border border-[#16A34A] bg-[#E8F5EC] px-3 py-1.5 text-[12px] font-semibold text-[#15803D]';
+  'inline-flex items-center gap-1.5 rounded-full border border-[#16A34A] bg-[#E8F5EC] px-3.5 py-1.5 text-[12.5px] font-semibold text-[#166534]';
+const COUNT = 'font-[family-name:var(--font-mono)] text-[11px] opacity-70';
+
+/** How many projects the dashboard shows before "Voir tous les projets". */
+const DASHBOARD_RECENT = 8;
 
 export interface ProjectCardData {
   id: string;
@@ -33,9 +37,9 @@ export interface ProjectCardData {
   /** Newest GENERATED node, falling back to the starting photo. */
   thumbnailNodeId: string | null;
   lastActivityAt: string;
-  /** Ambiances this project contains — drives the filter row. */
-  presets: string[];
   renderCount: number;
+  /** What the Projets page filters by — see project-categories.ts. */
+  categories: ProjectCategory[];
 }
 
 type Dialog =
@@ -116,7 +120,7 @@ function ProjectCard({
               empty state: a grey chosen for a white ground turns muddy on an
               image, and white on #F7F7FA is invisible. */}
           <div
-            className={`mt-0.5 flex items-center gap-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10.5px] ${
+            className={`mt-0.5 flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[10.5px] ${
               hasThumbnail ? 'text-white/75' : 'text-[#8A8896]'
             }`}
           >
@@ -171,15 +175,18 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
 }
 
 export function ProjectsGrid({
+  variant,
   initialProjects,
   dashboard,
-  userEmail = '',
+  userEmail,
 }: {
+  /** The dashboard shows the latest projects; the Projets page all of them,
+      with search, sort and category filters. */
+  variant: 'dashboard' | 'projects';
   initialProjects: ProjectCardData[];
-  /** Absent when the grid is rendered outside the dashboard. */
-  dashboard?: DashboardData;
-  /** Shown in the sidebar's account row; only used alongside `dashboard`. */
-  userEmail?: string;
+  /** Account figures: the stat row on the dashboard, the header bar on both. */
+  dashboard: DashboardData;
+  userEmail: string;
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
@@ -188,26 +195,38 @@ export function ProjectsGrid({
 
   const [projects, setProjects] = useState(initialProjects);
   const [query, setQuery] = useState('');
-  const [presetFilter, setPresetFilter] = useState<PresetKey | null>(null);
+  const [category, setCategory] = useState<ProjectCategory | null>(null);
+  const [sort, setSort] = useState<'recent' | 'name'>('recent');
   const [dialog, setDialog] = useState<Dialog>(null);
   const [draftName, setDraftName] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // Only the ambiances the user actually has: an empty filter pill would be a
-  // control that can only ever return nothing.
-  const availablePresets = useMemo(
-    () => PRESET_KEYS.filter((k) => projects.some((p) => p.presets.includes(k))),
+  const isDashboard = variant === 'dashboard';
+
+  // Only the categories the user actually has, each with its count: an empty
+  // filter would be a control that can only ever return nothing.
+  const categoryCounts = useMemo(
+    () =>
+      PROJECT_CATEGORIES.map((c) => ({
+        key: c,
+        count: projects.filter((p) => p.categories.includes(c)).length,
+      })).filter((c) => c.count > 0),
     [projects],
   );
 
   const visible = useMemo(() => {
+    const byRecent = (a: ProjectCardData, b: ProjectCardData) =>
+      b.lastActivityAt.localeCompare(a.lastActivityAt);
+    if (isDashboard) return [...projects].sort(byRecent).slice(0, DASHBOARD_RECENT);
     const q = query.trim().toLowerCase();
-    return projects.filter(
-      (p) =>
-        (!q || p.name.toLowerCase().includes(q)) &&
-        (!presetFilter || p.presets.includes(presetFilter)),
-    );
-  }, [projects, query, presetFilter]);
+    return projects
+      .filter(
+        (p) =>
+          (!q || p.name.toLowerCase().includes(q)) &&
+          (!category || p.categories.includes(category)),
+      )
+      .sort(sort === 'name' ? (a, b) => a.name.localeCompare(b.name, locale) : byRecent);
+  }, [projects, query, category, sort, isDashboard, locale]);
 
   function openCreate() {
     setDraftName(
@@ -270,232 +289,240 @@ export function ProjectsGrid({
     }
   }
 
-  const content = (
-    <>
-      <div className="mx-auto max-w-[1100px]">
-        <div className="mb-7 flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2.5">
-            <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
-              <Category set="light" size={16} primaryColor="#ffffff" />
-            </span>
-            <h1 className="font-[family-name:var(--font-general-sans)] text-lg font-semibold text-[#17161F]">
-              {t(dashboard ? 'dashboard.title' : 'projects.title')}
-            </h1>
-          </div>
-          <div className="flex items-center gap-3.5">
-            <LanguageInlineSwitch />
-            {projects.length > 0 && (
-              <button
-                type="button"
-                onClick={openCreate}
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4.5 py-2.5 text-[13px] font-semibold text-white"
-              >
-                <Plus set="light" size={16} primaryColor="#ffffff" />
-                {t('projects.newButton')}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {dashboard && (
-          <>
-            {/* Two banners on top, as in the reference: the "3 steps" film
-                and the showcase carousel, given equal room since the film
-                carries text that has to stay readable. */}
-            <div className="mb-5 grid grid-cols-1 gap-4 min-[900px]:grid-cols-2">
-              <DashboardVideoCard />
-              <DashboardCarousel />
-            </div>
-            <DashboardStats data={dashboard} />
-          </>
-        )}
-
-        {/* The grid keeps its own heading under the dashboard: without it the
-            cards would read as a continuation of the stat row. The ambiance
-            filter sits on the same row, where the reference puts its own
-            filter controls. */}
-        {dashboard && projects.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
-              {t('projects.title')}
-            </h2>
-            {availablePresets.length > 1 && (
-              <div className="flex flex-wrap items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setPresetFilter(null)}
-                  className={presetFilter === null ? FILTER_PILL_ACTIVE : FILTER_PILL}
-                >
-                  {t('projects.filterAll')}
-                </button>
-                {availablePresets.map((key) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setPresetFilter(key)}
-                    className={presetFilter === key ? FILTER_PILL_ACTIVE : FILTER_PILL}
-                  >
-                    {PRESETS[key].label[locale]}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Only worth the row once there is enough to sift through. */}
-        {projects.length > 5 && (
-          <div className="mb-5 flex items-center gap-2.5 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 focus-within:border-[#16A34A]">
-            <Search set="light" size={15} primaryColor="#8A8896" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('projects.searchPlaceholder')}
-              aria-label={t('projects.searchPlaceholder')}
-              className="w-full bg-transparent text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896]"
-            />
-          </div>
-        )}
-
-        {projects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-[#ECECF2] bg-[#F7F7FA] py-20 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
-              <Folder set="light" size={24} primaryColor="#ffffff" />
-            </div>
-            <h2 className="font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
-              {t('projects.emptyTitle')}
-            </h2>
-            <p className="max-w-[280px] text-[13px] text-[#8A8896]">{t('projects.emptyBody')}</p>
-            <button
-              type="button"
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-5 py-3 text-[13.5px] font-semibold text-white shadow-[0_8px_20px_-6px_#16A34A50]"
-            >
-              <Plus set="light" size={16} primaryColor="#ffffff" />
-              {t('projects.newButton')}
-            </button>
-          </div>
-        ) : visible.length === 0 ? (
-          <p className="py-16 text-center text-[13px] text-[#8A8896]">
-            {t('projects.searchEmpty', { query: query.trim() })}
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-3.5 min-[640px]:grid-cols-3 min-[1000px]:grid-cols-4 min-[1280px]:grid-cols-5">
-            {visible.map((p) => (
-              <ProjectCard
-                key={p.id}
-                project={p}
-                onRename={() => openRename(p)}
-                onDelete={() => setDialog({ kind: 'delete', project: p })}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {dialog && dialog.kind !== 'delete' && (
-        <Modal onClose={() => setDialog(null)}>
-          <h2 className="mb-3 font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
-            {t(dialog.kind === 'create' ? 'projects.createTitle' : 'projects.renameTitle')}
-          </h2>
-          <input
-            type="text"
-            autoFocus
-            value={draftName}
-            maxLength={200}
-            onChange={(e) => setDraftName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key !== 'Enter' || busy || !draftName.trim()) return;
-              if (dialog.kind === 'create') void handleCreate();
-              else void handleRename(dialog.project);
-            }}
-            className="mb-4 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none focus:border-[#16A34A]"
-          />
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setDialog(null)}
-              className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
-            >
-              {t('projects.dialogCancel')}
-            </button>
-            <button
-              type="button"
-              disabled={busy || !draftName.trim()}
-              onClick={() =>
-                dialog.kind === 'create' ? void handleCreate() : void handleRename(dialog.project)
-              }
-              className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
-            >
-              {t(dialog.kind === 'create' ? 'projects.createConfirm' : 'projects.renameConfirm')}
-            </button>
-          </div>
-        </Modal>
-      )}
-
-      {dialog?.kind === 'delete' && (
-        <Modal onClose={() => setDialog(null)}>
-          <h2 className="mb-2 font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
-            {t('projects.deleteTitle', { name: dialog.project.name })}
-          </h2>
-          <p className="mb-4 text-[13px] leading-relaxed text-[#8A8896]">
-            {t('projects.deleteBody')}
-          </p>
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setDialog(null)}
-              className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
-            >
-              {t('projects.dialogCancel')}
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void handleDelete(dialog.project)}
-              className="rounded-full bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
-            >
-              {t('projects.deleteConfirm')}
-            </button>
-          </div>
-        </Modal>
-      )}
-    </>
+  const newButton = (
+    <button
+      type="button"
+      onClick={openCreate}
+      className="inline-flex flex-shrink-0 items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_-10px_#16A34A]"
+    >
+      <Plus set="light" size={16} primaryColor="#ffffff" />
+      {t('projects.newButton')}
+    </button>
   );
 
-  // The rail only appears on the dashboard: it needs the plan figures the
-  // dashboard already loaded, and this grid is also rendered on its own
-  // elsewhere, where a second nav rail would just be noise. Hidden below
-  // 900px like every other rail in the workspace.
-  if (!dashboard) {
-    return <main className="min-h-screen bg-white px-6 py-8">{content}</main>;
-  }
-
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* block, not flex: the rail inside is `sticky`, and it needs a plain
-          block container as tall as the page to stick within. The rail hides
-          itself below 900px, so this wrapper no longer does. */}
-      <div>
-        <HomeSidebar
-          current="dashboard"
-          tier={dashboard.tier}
-          max={dashboard.quotaMax}
-          remaining={dashboard.quotaRemaining}
-          userEmail={userEmail}
-        />
-      </div>
+    <AppFrame
+      current={isDashboard ? 'dashboard' : 'projects'}
+      topbar={{
+        title: t(isDashboard ? 'dashboard.title' : 'app.railProjects'),
+        tier: dashboard.tier,
+        quotaMax: dashboard.quotaMax,
+        quotaRemaining: dashboard.quotaRemaining,
+        userEmail,
+      }}
+    >
       {/* min-w-0: without it this flex child refuses to shrink below its
           content's intrinsic width, and a single long unwrapped string would
           stretch the page past the viewport. */}
       <main
-        className={`min-w-0 flex-1 overflow-x-hidden px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
+        className={`min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#FBFBFD] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
       >
-        {content}
+        <div className="mx-auto max-w-[1100px]">
+          {isDashboard && (
+            <>
+              {/* Two banners on top, as in the reference: the "3 steps" film
+                  and the showcase carousel, given equal room since the film
+                  carries text that has to stay readable. */}
+              <div className="mb-5 grid grid-cols-1 gap-4 min-[900px]:grid-cols-2">
+                <DashboardVideoCard />
+                <DashboardCarousel />
+              </div>
+              <DashboardStats data={dashboard} />
+            </>
+          )}
+
+          {/* Section heading. On the dashboard: the latest projects and the way
+              to all of them; on the Projets page: how many there are. */}
+          {projects.length > 0 && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
+                {isDashboard
+                  ? t('projects.recentTitle')
+                  : t('projects.allTitle', { n: String(projects.length) })}
+              </h2>
+              <div className="flex items-center gap-2.5">
+                {isDashboard && (
+                  <Link
+                    href="/app/projets"
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-semibold text-[#15803D] hover:bg-[#E8F5EC]"
+                  >
+                    {t('projects.seeAll')}
+                    <ArrowRight set="light" size={15} primaryColor="#15803D" />
+                  </Link>
+                )}
+                {newButton}
+              </div>
+            </div>
+          )}
+
+          {!isDashboard && projects.length > 0 && (
+            <>
+              <div className="mb-3 flex flex-col gap-2.5 min-[640px]:flex-row">
+                <div className="flex flex-1 items-center gap-2.5 rounded-full border border-[#ECECF2] bg-white px-4 py-2.5 focus-within:border-[#16A34A]">
+                  <Search set="light" size={15} primaryColor="#8A8896" />
+                  <input
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={t('projects.searchPlaceholder')}
+                    aria-label={t('projects.searchPlaceholder')}
+                    className="w-full bg-transparent text-[13.5px] text-[#17161F] outline-none placeholder:text-[#8A8896]"
+                  />
+                </div>
+                <div
+                  role="radiogroup"
+                  aria-label={t('projects.sortLabel')}
+                  className="flex flex-shrink-0 items-center gap-0.5 self-start rounded-full border border-[#ECECF2] bg-white p-1"
+                >
+                  {(['recent', 'name'] as const).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      role="radio"
+                      aria-checked={sort === k}
+                      onClick={() => setSort(k)}
+                      className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors ${
+                        sort === k ? 'bg-[#15803D] text-white' : 'text-[#3D3B49] hover:bg-[#F7F7FA]'
+                      }`}
+                    >
+                      {t(k === 'recent' ? 'projects.sortRecent' : 'projects.sortName')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* The categories, each with how many projects it holds. */}
+              <div
+                role="radiogroup"
+                aria-label={t('projects.categoryLabel')}
+                className="mb-5 flex flex-wrap items-center gap-1.5"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={category === null}
+                  onClick={() => setCategory(null)}
+                  className={category === null ? FILTER_PILL_ACTIVE : FILTER_PILL}
+                >
+                  {t('projects.filterAll')}
+                  <span className={COUNT}>{projects.length}</span>
+                </button>
+                {categoryCounts.map(({ key, count }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="radio"
+                    aria-checked={category === key}
+                    onClick={() => setCategory(key)}
+                    className={category === key ? FILTER_PILL_ACTIVE : FILTER_PILL}
+                  >
+                    {CATEGORY_LABELS[key][locale]}
+                    <span className={COUNT}>{count}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {projects.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-[#ECECF2] bg-white py-20 text-center">
+              <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
+                <Folder set="light" size={24} primaryColor="#ffffff" />
+              </div>
+              <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
+                {t('projects.emptyTitle')}
+              </h2>
+              <p className="max-w-[280px] text-[13px] text-[#8A8896]">{t('projects.emptyBody')}</p>
+              {newButton}
+            </div>
+          ) : visible.length === 0 ? (
+            <p className="py-16 text-center text-[13px] text-[#8A8896]">
+              {query.trim()
+                ? t('projects.searchEmpty', { query: query.trim() })
+                : t('projects.categoryEmpty')}
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3.5 min-[640px]:grid-cols-3 min-[1000px]:grid-cols-4">
+              {visible.map((p) => (
+                <ProjectCard
+                  key={p.id}
+                  project={p}
+                  onRename={() => openRename(p)}
+                  onDelete={() => setDialog({ kind: 'delete', project: p })}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {dialog && dialog.kind !== 'delete' && (
+          <Modal onClose={() => setDialog(null)}>
+            <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
+              {t(dialog.kind === 'create' ? 'projects.createTitle' : 'projects.renameTitle')}
+            </h2>
+            <input
+              type="text"
+              autoFocus
+              value={draftName}
+              maxLength={200}
+              onChange={(e) => setDraftName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== 'Enter' || busy || !draftName.trim()) return;
+                if (dialog.kind === 'create') void handleCreate();
+                else void handleRename(dialog.project);
+              }}
+              className="mb-4 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none focus:border-[#16A34A]"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDialog(null)}
+                className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+              >
+                {t('projects.dialogCancel')}
+              </button>
+              <button
+                type="button"
+                disabled={busy || !draftName.trim()}
+                onClick={() =>
+                  dialog.kind === 'create' ? void handleCreate() : void handleRename(dialog.project)
+                }
+                className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              >
+                {t(dialog.kind === 'create' ? 'projects.createConfirm' : 'projects.renameConfirm')}
+              </button>
+            </div>
+          </Modal>
+        )}
+
+        {dialog?.kind === 'delete' && (
+          <Modal onClose={() => setDialog(null)}>
+            <h2 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
+              {t('projects.deleteTitle', { name: dialog.project.name })}
+            </h2>
+            <p className="mb-4 text-[13px] leading-relaxed text-[#8A8896]">
+              {t('projects.deleteBody')}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDialog(null)}
+                className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+              >
+                {t('projects.dialogCancel')}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void handleDelete(dialog.project)}
+                className="rounded-full bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+              >
+                {t('projects.deleteConfirm')}
+              </button>
+            </div>
+          </Modal>
+        )}
       </main>
-      {/* Below 900px the rail gives way to the bottom bar. */}
-      <MobileNav current="dashboard" userEmail={userEmail} />
-    </div>
+    </AppFrame>
   );
 }

@@ -44,7 +44,7 @@ export function AudienceCards({ cards }: { cards: AudienceCardData[] }) {
                 {card.icon(lead ? '#15803D' : '#ffffff')}
               </div>
               <span
-                className={`mb-2 font-[family-name:var(--font-jetbrains-mono)] text-[11px] uppercase tracking-wide ${
+                className={`mb-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wide ${
                   lead ? 'text-white/85' : 'text-[#15803D]'
                 }`}
               >

@@ -168,7 +168,7 @@ export function AssistantWidget() {
               <Chat set="light" size={19} primaryColor="#ffffff" />
             </span>
             <div className="min-w-0">
-              <h2 className="truncate font-[family-name:var(--font-general-sans)] text-[15px] font-semibold text-[#17161F]">
+              <h2 className="truncate font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
                 {t('assistant.title')}
               </h2>
               <p className="flex items-center gap-1.5 text-[11.5px] text-[#5F6B64]">

@@ -31,7 +31,7 @@ export function AdminNav({ role }: { role: string }) {
     <aside className="hidden w-[210px] shrink-0 flex-col border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-5 min-[900px]:flex">
       <div className="mb-6.5 flex items-center gap-2.5 px-1.5">
         <BrandMark />
-        <span className="font-[family-name:var(--font-general-sans)] text-sm font-semibold text-[#17161F]">
+        <span className="font-[family-name:var(--font-display)] text-sm font-semibold text-[#17161F]">
           RenderBox
         </span>
       </div>
@@ -57,7 +57,7 @@ export function AdminNav({ role }: { role: string }) {
         })}
       </nav>
 
-      <div className="mt-auto px-1.5 font-[family-name:var(--font-jetbrains-mono)] text-[10px] text-[#8A8896]">
+      <div className="mt-auto px-1.5 font-[family-name:var(--font-mono)] text-[10px] text-[#8A8896]">
         <div>{t('admin.roleLabel', { role })}</div>
         <Link href="/app" className="mt-3 inline-block hover:text-[#17161F]">
           {t('admin.backToApp')}
