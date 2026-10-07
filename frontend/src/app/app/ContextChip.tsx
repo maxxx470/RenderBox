@@ -16,32 +16,15 @@
 // Read-only on purpose: editing a material has a whole panel of its own, with
 // the confidence, the source and the save/undo states this popover has no room
 // for. Sending someone there is honest; a second, poorer editor is not.
+import { Document } from 'react-iconly';
 import { CHIP_STATIC } from './chip';
 import type { MaterialRow } from './MaterialsPanel';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { POPOVER_HEADING, popoverPanelClass, useHoverPopover } from './useHoverPopover';
 
-/** A sheet with a pen — the reference's own mark for this control. */
+/** Iconly's Document (Curved), grey like the other chip glyphs. */
 function ContextGlyph() {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      fill="none"
-      stroke="#8A8896"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="flex-shrink-0"
-    >
-      <path d="M13.4 3.6H6.4A2.4 2.4 0 0 0 4 6v12a2.4 2.4 0 0 0 2.4 2.4h11.2A2.4 2.4 0 0 0 20 18v-6.4" />
-      <path d="M7.6 8.4h5" />
-      <path d="M7.6 12.4h3.2" />
-      <path d="M18.1 3.3a1.9 1.9 0 0 1 2.7 2.7l-5.4 5.4-3.4.7.7-3.4z" />
-    </svg>
-  );
+  return <Document set="curved" size={15} primaryColor="#8A8896" />;
 }
 
 export function ContextChip({ materials }: { materials: MaterialRow[] }) {

@@ -8,7 +8,7 @@
 // visible action rather than a side-effect of the first upload.
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Folder, Edit, Delete, Search, Image as ImageIcon, ArrowRight } from 'react-iconly';
+import { Folder, Edit, Delete, Search, Image as ImageIcon, ArrowRight, Chat } from 'react-iconly';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -296,18 +296,7 @@ export function ProjectsGrid({
                   onClick={openAssistant}
                   className="inline-flex items-center gap-2 rounded-full border border-[#15803D33] bg-[#E8F5EC] px-4 py-2 text-[12.5px] font-semibold text-[#15803D] transition-[background-color,color,translate] duration-200 hover:-translate-y-0.5 hover:bg-[#15803D] hover:text-white"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="14"
-                    height="14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    aria-hidden
-                  >
-                    <path d="M12 2v4m0 12v4M2 12h4m12 0h4m-2.93-7.07-2.83 2.83M7.76 16.24l-2.83 2.83M4.34 4.93l2.83 2.83m7.07 7.07 2.83 2.83" />
-                  </svg>
+                  <Chat set="curved" size={16} primaryColor="currentColor" />
                   {t('page.askAssistant')}
                 </button>
               ) : undefined
