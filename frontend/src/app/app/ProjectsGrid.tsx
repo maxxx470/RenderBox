@@ -88,7 +88,7 @@ function ProjectCard({
           // of the same card.
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#F7F7FA] pb-10">
             <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#DEDEE8] bg-white">
-              <ImageIcon set="light" size={18} primaryColor="#8A8896" />
+              <ImageIcon set="curved" size={18} primaryColor="#8A8896" />
             </span>
             <span className="text-[11px] text-[#6B6878]">{t('projects.cardEmpty')}</span>
           </div>
@@ -149,7 +149,7 @@ function ProjectCard({
           title={t('projects.renameAction')}
           className="flex h-7 w-7 items-center justify-center rounded-full border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#DEDEE8]"
         >
-          <Edit set="light" size={14} primaryColor="#17161F" />
+          <Edit set="curved" size={14} primaryColor="#17161F" />
         </button>
         <button
           type="button"
@@ -158,7 +158,7 @@ function ProjectCard({
           title={t('projects.deleteAction')}
           className="flex h-7 w-7 items-center justify-center rounded-full border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#E5484D]"
         >
-          <Delete set="light" size={14} primaryColor="#E5484D" />
+          <Delete set="curved" size={14} primaryColor="#E5484D" />
         </button>
       </div>
     </div>
@@ -337,7 +337,7 @@ export function ProjectsGrid({
                 className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#15803D] underline-offset-4 hover:underline"
               >
                 {t('projects.seeAll')}
-                <ArrowRight set="light" size={15} primaryColor="#15803D" />
+                <ArrowRight set="curved" size={15} primaryColor="#15803D" />
               </Link>
             </div>
           )}
@@ -348,7 +348,7 @@ export function ProjectsGrid({
           {!isDashboard && (
             <div className="mb-6 flex flex-col items-stretch gap-3 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] p-2.5 min-[900px]:flex-row min-[900px]:items-center">
               <div className="flex flex-1 items-center gap-2 rounded-lg border border-[#ECECF2] bg-white px-3 py-2 focus-within:border-[#16A34A]">
-                <Search set="light" size={15} primaryColor="#15803D" />
+                <Search set="curved" size={15} primaryColor="#15803D" />
                 <input
                   type="search"
                   value={query}
@@ -397,7 +397,7 @@ export function ProjectsGrid({
             // line, one sentence and an underlined link.
             <div className="rounded-2xl border border-dashed border-[#DEDEE8] bg-[#F7F7FA] p-10 text-center">
               <div className="mb-2 flex justify-center">
-                <Folder set="light" size={32} primaryColor="#15803D" />
+                <Folder set="curved" size={32} primaryColor="#15803D" />
               </div>
               <h3 className="font-[family-name:var(--font-display)] text-[14px] font-bold text-[#17161F]">
                 {t('projects.emptyTitle')}

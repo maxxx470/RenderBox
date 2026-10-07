@@ -27,7 +27,7 @@ export function BrandMark({
         inverse ? 'bg-white' : 'bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]'
       } ${s.box}`}
     >
-      <Home set="light" size={s.icon} primaryColor={inverse ? '#15803D' : '#ffffff'} />
+      <Home set="curved" size={s.icon} primaryColor={inverse ? '#15803D' : '#ffffff'} />
     </span>
   );
 }

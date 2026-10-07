@@ -53,16 +53,16 @@ export function EngineSelect({
         <span
           className={`flex h-[22px] w-[22px] items-center justify-center rounded-full ${ENGINE_COLORS[engine].mark}`}
         >
-          <Image set="light" size={12} primaryColor={ENGINE_COLORS[engine].glyph} />
+          <Image set="curved" size={12} primaryColor={ENGINE_COLORS[engine].glyph} />
         </span>
         <span className="text-[12.5px] font-medium text-[#17161F]">
           {ENGINE_LABELS[engine].name[locale]}
         </span>
         <span className="ml-0.5 flex-shrink-0">
           {open ? (
-            <ChevronUp set="light" size={13} primaryColor="#8A8896" />
+            <ChevronUp set="curved" size={13} primaryColor="#8A8896" />
           ) : (
-            <ChevronDown set="light" size={13} primaryColor="#8A8896" />
+            <ChevronDown set="curved" size={13} primaryColor="#8A8896" />
           )}
         </span>
       </button>
@@ -88,7 +88,7 @@ export function EngineSelect({
                 <span
                   className={`flex h-[28px] w-[28px] flex-shrink-0 items-center justify-center rounded-full ${ENGINE_COLORS[key].mark}`}
                 >
-                  <Image set="light" size={14} primaryColor={ENGINE_COLORS[key].glyph} />
+                  <Image set="curved" size={14} primaryColor={ENGINE_COLORS[key].glyph} />
                 </span>
                 <span className="flex-1">
                   <span className="block text-[13px] font-semibold text-[#17161F]">

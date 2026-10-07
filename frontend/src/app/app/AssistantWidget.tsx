@@ -165,7 +165,7 @@ export function AssistantWidget() {
         <header className="flex flex-shrink-0 items-center justify-between gap-3 border-b border-[#ECECF2] px-4 py-3.5">
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
-              <Chat set="light" size={19} primaryColor="#ffffff" />
+              <Chat set="curved" size={19} primaryColor="#ffffff" />
             </span>
             <div className="min-w-0">
               <h2 className="truncate font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
@@ -183,7 +183,7 @@ export function AssistantWidget() {
             aria-label={t('assistant.close')}
             className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#F7F7FA]"
           >
-            <CloseSquare set="light" size={20} primaryColor="#8A8896" />
+            <CloseSquare set="curved" size={20} primaryColor="#8A8896" />
           </button>
         </header>
 
@@ -193,7 +193,7 @@ export function AssistantWidget() {
             'renderbox',
             'RenderBox',
             <Chat
-              set="light"
+              set="curved"
               size={14}
               primaryColor={mode === 'renderbox' ? '#ffffff' : '#15803D'}
             />,
@@ -202,7 +202,7 @@ export function AssistantWidget() {
             'search',
             t('assistant.modeSearch'),
             <Discovery
-              set="light"
+              set="curved"
               size={14}
               primaryColor={mode === 'search' ? '#ffffff' : '#15803D'}
             />,
@@ -301,7 +301,7 @@ export function AssistantWidget() {
               aria-label={t('assistant.send')}
               className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] disabled:opacity-40"
             >
-              <Send set="light" size={16} primaryColor="#ffffff" />
+              <Send set="curved" size={16} primaryColor="#ffffff" />
             </button>
           </div>
           <p className="mt-1.5 text-center text-[10.5px] text-[#8A8896]">

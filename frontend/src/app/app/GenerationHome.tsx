@@ -94,7 +94,7 @@ function EmptyFanCard({
       {lead ? (
         <>
           <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
-            <Upload set="light" size={20} primaryColor="#ffffff" />
+            <Upload set="curved" size={20} primaryColor="#ffffff" />
           </span>
           <span className="max-w-[150px] text-center text-[12.5px] font-medium text-[#6B6878]">
             {t('app.genHomeCardPlaceholder')}
@@ -102,7 +102,7 @@ function EmptyFanCard({
         </>
       ) : (
         <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-[#DEDEE8] bg-white">
-          <Upload set="light" size={20} primaryColor="#C9C7D1" />
+          <Upload set="curved" size={20} primaryColor="#C9C7D1" />
         </span>
       )}
     </button>
@@ -501,7 +501,7 @@ export function GenerationHome({
           // tier there's nothing to do in any mode.
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
             <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#E8F5EC]">
-              <Folder set="light" size={24} primaryColor="#15803D" />
+              <Folder set="curved" size={24} primaryColor="#15803D" />
             </div>
             <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
               {t('app.genHomeNoTierTitle')}

@@ -186,7 +186,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
     <div className="grid grid-cols-2 gap-2.5 min-[640px]:gap-3.5 min-[1000px]:grid-cols-4">
       <StatCard
         tone={TONES.blue}
-        icon={(c) => <Folder set="light" size={16} primaryColor={c} />}
+        icon={(c) => <Folder set="curved" size={16} primaryColor={c} />}
         label={t('dashboard.cardProjectsLabel')}
         value={data.projectCount.toLocaleString(intl)}
         subtext={t('dashboard.cardProjectsSub')}
@@ -194,7 +194,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
       />
       <StatCard
         tone={TONES.red}
-        icon={(c) => <ImageIcon set="light" size={16} primaryColor={c} />}
+        icon={(c) => <ImageIcon set="curved" size={16} primaryColor={c} />}
         label={t('dashboard.statRenders')}
         value={data.renderCount.toLocaleString(intl)}
         subtext={t('dashboard.cardRendersSub')}
@@ -202,7 +202,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
       />
       <StatCard
         tone={TONES.yellow}
-        icon={(c) => <TimeCircle set="light" size={16} primaryColor={c} />}
+        icon={(c) => <TimeCircle set="curved" size={16} primaryColor={c} />}
         label={t('dashboard.statLastActivity')}
         value={data.lastActivityAt ? shortDate(data.lastActivityAt) : '—'}
         subtext={
@@ -218,7 +218,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
       >
         <StatCard
           tone={TONES.amber}
-          icon={(c) => <Star set="light" size={16} primaryColor={c} />}
+          icon={(c) => <Star set="curved" size={16} primaryColor={c} />}
           label={t('dashboard.cardQuotaLabel')}
           value={hasPlan ? data.quotaRemaining!.toLocaleString(intl) : '0'}
           subtext={

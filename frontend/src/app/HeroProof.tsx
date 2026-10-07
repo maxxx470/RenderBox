@@ -28,7 +28,7 @@ function CommunityBadge() {
   const t = useTranslations();
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white px-3.5 py-1.5 shadow-[0_2px_10px_-4px_rgba(23,22,31,0.18)]">
-      <User set="light" size={15} primaryColor="#15803D" />
+      <User set="curved" size={15} primaryColor="#15803D" />
       <span className="text-[14px] font-semibold text-[#17161F]">{t('landing.proofUsers')}</span>
     </span>
   );

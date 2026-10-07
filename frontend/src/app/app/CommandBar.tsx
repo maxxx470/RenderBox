@@ -85,7 +85,7 @@ export function useObjectUrl(file: File | null | undefined): string | null {
 function StatusPill({ active, label }: { active: boolean; label: string }) {
   return (
     <span className={active ? CHIP_ACTIVE : CHIP_STATIC}>
-      {active && <TickSquare set="light" size={12} primaryColor="#ffffff" />}
+      {active && <TickSquare set="curved" size={12} primaryColor="#ffffff" />}
       {label}
     </span>
   );
@@ -276,7 +276,7 @@ export function CommandBar({
             }`}
           >
             {locked ? (
-              <Lock set="light" size={12} primaryColor="#8A8896" />
+              <Lock set="curved" size={12} primaryColor="#8A8896" />
             ) : (
               <span
                 aria-hidden
@@ -503,7 +503,7 @@ export function CommandBar({
               settingsOpen ? 'border-[#16A34A] bg-[#E8F5EC]' : ''
             }`}
           >
-            <Setting set="light" size={15} primaryColor={settingsOpen ? '#166534' : '#17161F'} />
+            <Setting set="curved" size={15} primaryColor={settingsOpen ? '#166534' : '#17161F'} />
           </button>
 
           {/* The settings: inline from 640px; on a phone, a full-width tray
@@ -527,7 +527,7 @@ export function CommandBar({
             {generating ? (
               <span className="rb-spin h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white" />
             ) : (
-              <Send set="light" size={15} primaryColor="#ffffff" />
+              <Send set="curved" size={15} primaryColor="#ffffff" />
             )}
             <span className="hidden min-[640px]:inline">{submitLabel}</span>
           </button>

@@ -125,7 +125,7 @@ export function MaterialsPanel({
 
       {materials.length === 0 ? (
         <div className="flex h-[80%] flex-col items-center justify-center gap-2.5 text-center">
-          <Lock set="light" size={22} primaryColor="#8A8896" style={{ opacity: 0.5 }} />
+          <Lock set="curved" size={22} primaryColor="#8A8896" style={{ opacity: 0.5 }} />
           {/* No "soon" badge here. The sheet is not an unbuilt feature — it is
               built, and simply has nothing to show until a render exists. The
               sentence above states that condition exactly; the badge said the

@@ -601,7 +601,7 @@ export function AppShell({
               aria-label={t('app.treeTitle')}
               title={t('app.treeTitle')}
             >
-              <Category set="light" size={16} primaryColor="#8A8896" />
+              <Category set="curved" size={16} primaryColor="#8A8896" />
             </button>
           </div>
           <div className="flex items-center gap-2.5">
@@ -611,7 +611,7 @@ export function AppShell({
               className="rounded-full border border-[#ECECF2] p-1.5 min-[900px]:hidden"
               aria-label={mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')}
             >
-              <Filter2 set="light" size={16} primaryColor="#8A8896" />
+              <Filter2 set="curved" size={16} primaryColor="#8A8896" />
             </button>
           </div>
         </div>
@@ -735,7 +735,7 @@ export function AppShell({
                             style={{ left: `${comparePos}%` }}
                           >
                             <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_10px_26px_-6px_rgba(22,163,74,0.6)]">
-                              <Swap set="light" size={15} primaryColor="#15803D" />
+                              <Swap set="curved" size={15} primaryColor="#15803D" />
                             </div>
                           </div>
                         </>
@@ -759,7 +759,7 @@ export function AppShell({
                             }`}
                           >
                             <Swap
-                              set="light"
+                              set="curved"
                               size={15}
                               primaryColor={comparing ? '#ffffff' : '#17161F'}
                             />
@@ -773,7 +773,7 @@ export function AppShell({
                           title={t('app.downloadButton')}
                           className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
                         >
-                          <Download set="light" size={15} primaryColor="#17161F" />
+                          <Download set="curved" size={15} primaryColor="#17161F" />
                         </a>
                       </div>
                     </>
@@ -783,7 +783,7 @@ export function AppShell({
                   {fileDragOver && (
                     <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#15803D] bg-[#E8F5ECF2] px-6">
                       <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
-                        <Upload set="light" size={24} primaryColor="#ffffff" />
+                        <Upload set="curved" size={24} primaryColor="#ffffff" />
                       </div>
                       <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
                         {t('app.canvasDropTitle')}

@@ -212,7 +212,7 @@ export function EnhanceClient({
           <div
             className={`flex h-[52px] w-[52px] items-center justify-center rounded-full ${GRADIENT}`}
           >
-            <Folder set="light" size={24} primaryColor="#ffffff" />
+            <Folder set="curved" size={24} primaryColor="#ffffff" />
           </div>
           <h2 className="text-[15px] font-semibold text-[#17161F]">
             {t('app.genHomeNoTierTitle')}
@@ -259,7 +259,7 @@ export function EnhanceClient({
                 <span
                   className={`flex h-14 w-14 items-center justify-center rounded-full ${GRADIENT}`}
                 >
-                  <Upload set="light" size={24} primaryColor="#ffffff" />
+                  <Upload set="curved" size={24} primaryColor="#ffffff" />
                 </span>
                 <span className="text-[16px] font-semibold text-[#17161F]">
                   {t('enhance.dropTitle')}
@@ -310,7 +310,7 @@ export function EnhanceClient({
                       download="renderbox-enhance.png"
                       className={`inline-flex items-center gap-2 rounded-full ${GRADIENT} px-4.5 py-2.5 text-[13px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
                     >
-                      <Download set="light" size={16} primaryColor="#ffffff" />
+                      <Download set="curved" size={16} primaryColor="#ffffff" />
                       {t('enhance.download')}
                     </a>
                     {session && (
@@ -318,7 +318,7 @@ export function EnhanceClient({
                         href={`/app/${session.projectId}`}
                         className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white px-4.5 py-2.5 text-[13px] font-semibold text-[#17161F] transition-colors hover:border-[#DEDEE8]"
                       >
-                        <Paper set="light" size={16} primaryColor="#6B6878" />
+                        <Paper set="curved" size={16} primaryColor="#6B6878" />
                         {t('enhance.openProject')}
                       </Link>
                     )}

@@ -47,7 +47,7 @@ function HowItWorks() {
           className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-3.5 py-2 text-[12.5px] font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
         >
           {t('dashboard.howCta')}
-          <ArrowRight set="light" size={14} primaryColor="#ffffff" />
+          <ArrowRight set="curved" size={14} primaryColor="#ffffff" />
         </Link>
       </div>
       {/* The three steps, shown rather than listed: a photo or a sketch, an
@@ -109,7 +109,7 @@ export function DashboardVideoCard() {
             onClick={() => setPlaying(true)}
             className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
           >
-            <Play set="light" size={14} primaryColor="#15803D" />
+            <Play set="curved" size={14} primaryColor="#15803D" />
             {t('dashboard.videoPlay')}
           </button>
         </div>

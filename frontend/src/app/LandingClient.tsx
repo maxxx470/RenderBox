@@ -296,7 +296,7 @@ function HeroPresetTags() {
 function RenderVisual() {
   return (
     <div className={`flex h-full w-full items-center justify-center ${GRADIENT}`}>
-      <ImageIcon set="light" size={40} primaryColor="#ffffff" />
+      <ImageIcon set="curved" size={40} primaryColor="#ffffff" />
     </div>
   );
 }
@@ -447,7 +447,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 {t('landing.heroBadgeNew')}
               </span>
               {t('landing.heroBadgeText')}
-              <ChevronRight set="light" size={13} primaryColor="#6B6878" />
+              <ChevronRight set="curved" size={13} primaryColor="#6B6878" />
             </Link>
             {/* No Reveal wrapper here: rb-word-in is the entrance, and
                 stacking Reveal's own opacity/translate on top would fight it
@@ -497,7 +497,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 </div>
               </div>
               <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
-                <ImageIcon set="light" size={14} primaryColor="#D97706" />
+                <ImageIcon set="curved" size={14} primaryColor="#D97706" />
                 {t('landing.heroChipFacade')}
               </div>
               <div
@@ -597,19 +597,19 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             cards={
               [
                 {
-                  icon: (c) => <Home set="light" size={22} primaryColor={c} />,
+                  icon: (c) => <Home set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience1Tab'),
                   title: t('landing.audience1Title'),
                   body: t('landing.audience1Body'),
                 },
                 {
-                  icon: (c) => <Location set="light" size={22} primaryColor={c} />,
+                  icon: (c) => <Location set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience2Tab'),
                   title: t('landing.audience2Title'),
                   body: t('landing.audience2Body'),
                 },
                 {
-                  icon: (c) => <Graph set="light" size={22} primaryColor={c} />,
+                  icon: (c) => <Graph set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience3Tab'),
                   title: t('landing.audience3Title'),
                   body: t('landing.audience3Body'),
@@ -644,7 +644,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                     not at a checklist (owner's brief, 2026-10-06). */}
                 <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
                   <div className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white min-[640px]:flex">
-                    <Document set="light" size={22} primaryColor="#D97706" />
+                    <Document set="curved" size={22} primaryColor="#D97706" />
                   </div>
                   <div>
                     <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
@@ -674,7 +674,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                   <div
                     className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${GRADIENT} min-[640px]:flex`}
                   >
-                    <Category set="light" size={22} primaryColor="#ffffff" />
+                    <Category set="curved" size={22} primaryColor="#ffffff" />
                   </div>
                   <div>
                     <span
@@ -712,7 +712,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 <div
                   className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${GRADIENT} min-[640px]:flex`}
                 >
-                  <Swap set="light" size={22} primaryColor="#ffffff" />
+                  <Swap set="curved" size={22} primaryColor="#ffffff" />
                 </div>
                 <div>
                   <span

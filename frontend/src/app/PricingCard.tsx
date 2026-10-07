@@ -21,7 +21,7 @@ export function CheckItem({ children, light = false }: { children: ReactNode; li
           light ? 'bg-white' : 'bg-[#FACC15]'
         }`}
       >
-        <TickSquare set="light" size={11} primaryColor={light ? '#15803D' : '#17161F'} />
+        <TickSquare set="curved" size={11} primaryColor={light ? '#15803D' : '#17161F'} />
       </span>
       {children}
     </li>

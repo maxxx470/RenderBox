@@ -171,9 +171,9 @@ export function HomeSidebar({
           className={RAIL_TOGGLE}
         >
           {folded ? (
-            <ArrowRight set="light" size={16} primaryColor="#15803D" />
+            <ArrowRight set="curved" size={16} primaryColor="#15803D" />
           ) : (
-            <ArrowLeft set="light" size={16} primaryColor="#15803D" />
+            <ArrowLeft set="curved" size={16} primaryColor="#15803D" />
           )}
         </button>
       </div>
@@ -244,7 +244,7 @@ export function HomeSidebar({
             folded ? FOOT_ROUND : FOOT_WIDE
           }`}
         >
-          <Chat set="light" size={18} primaryColor="#15803D" />
+          <Chat set="curved" size={18} primaryColor="#15803D" />
           {!folded && <span>{t('app.assistant')}</span>}
         </button>
         {placeholder ? (
@@ -257,7 +257,7 @@ export function HomeSidebar({
               folded ? FOOT_ROUND : FOOT_WIDE
             }`}
           >
-            <Login set="light" size={18} primaryColor="#D6432A" />
+            <Login set="curved" size={18} primaryColor="#D6432A" />
             {!folded && <span>{t('landing.navLogin')}</span>}
           </Link>
         ) : (
@@ -271,7 +271,7 @@ export function HomeSidebar({
               folded ? FOOT_ROUND : FOOT_WIDE
             }`}
           >
-            <Logout set="light" size={18} primaryColor="#D6432A" />
+            <Logout set="curved" size={18} primaryColor="#D6432A" />
             {!folded && <span>{t('parametres.logoutButton')}</span>}
           </button>
         )}

@@ -75,7 +75,7 @@ function HeroCardFace({
         // awaiting content rather than as a solid block someone forgot to fill.
         <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
           <span className="flex h-[86px] w-[86px] items-center justify-center rounded-full border-2 border-dashed border-white/40 bg-white/10 backdrop-blur-sm">
-            <ImageIcon set="light" size={26} primaryColor="#17161F" />
+            <ImageIcon set="curved" size={26} primaryColor="#17161F" />
           </span>
           <span
             aria-hidden
@@ -287,7 +287,7 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
       className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#FDE047_0%,#FACC15_50%,#EAB308_100%)] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_0_0_3px_#FFFFFF,0_10px_22px_-8px_rgba(161,98,7,0.55)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
     >
       {ctaLabel}
-      <ArrowRight set="light" size={15} primaryColor="#17161F" />
+      <ArrowRight set="curved" size={15} primaryColor="#17161F" />
     </Link>
   );
 

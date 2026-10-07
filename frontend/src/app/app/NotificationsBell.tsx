@@ -105,7 +105,7 @@ export function NotificationsBell() {
           open ? 'bg-[#F7F7FA]' : ''
         }`}
       >
-        <Notification set="light" size={20} primaryColor="#15803D" />
+        <Notification set="curved" size={20} primaryColor="#15803D" />
         {unread > 0 && (
           <span
             aria-hidden
@@ -149,7 +149,7 @@ export function NotificationsBell() {
             ) : items && items.length === 0 ? (
               <div className="flex flex-col items-center gap-2 px-6 py-8 text-center">
                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E8F5EC]">
-                  <Notification set="light" size={20} primaryColor="#15803D" />
+                  <Notification set="curved" size={20} primaryColor="#15803D" />
                 </span>
                 <p className="text-[13.5px] font-medium text-[#17161F]">
                   {t('app.notificationsEmpty')}

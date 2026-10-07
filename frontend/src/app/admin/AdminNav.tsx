@@ -50,7 +50,7 @@ export function AdminNav({ role }: { role: string }) {
                   : 'text-[#8A8896] hover:text-[#17161F]'
               }`}
             >
-              <Icon set="light" size={16} primaryColor={active ? '#16A34A' : 'currentColor'} />
+              <Icon set="curved" size={16} primaryColor={active ? '#16A34A' : 'currentColor'} />
               {t(LABEL_KEY[href])}
             </Link>
           );
@@ -92,7 +92,7 @@ export function AdminMobileNav() {
                   active ? 'bg-[#E8F5EC] text-[#166534]' : 'text-[#3D3B49]'
                 }`}
               >
-                <Icon set="light" size={19} primaryColor="#15803D" />
+                <Icon set="curved" size={19} primaryColor="#15803D" />
                 <span className="max-w-full truncate px-1">{t(LABEL_KEY[href])}</span>
               </Link>
             );

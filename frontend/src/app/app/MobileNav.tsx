@@ -113,7 +113,7 @@ export function MobileNav({
                 aria-expanded={moreOpen}
                 className={item(moreActive)}
               >
-                <MoreCircle set="light" size={20} primaryColor="#15803D" />
+                <MoreCircle set="curved" size={20} primaryColor="#15803D" />
                 <span>{t('app.mobileMore')}</span>
               </button>
 
@@ -151,7 +151,7 @@ export function MobileNav({
                     }}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold text-[#166534] transition-colors hover:bg-[#E8F5EC]"
                   >
-                    <Chat set="light" size={18} primaryColor="#15803D" />
+                    <Chat set="curved" size={18} primaryColor="#15803D" />
                     {t('app.assistant')}
                   </button>
                   {placeholder ? (
@@ -163,7 +163,7 @@ export function MobileNav({
                         onClick={() => setMoreOpen(false)}
                         className="flex w-full items-center gap-3 rounded-xl bg-[#FCEDEA]/80 px-3 py-2.5 text-[14px] font-semibold text-[#C2361F] transition-colors hover:bg-[#FCEDEA]"
                       >
-                        <Login set="light" size={18} primaryColor="#D6432A" />
+                        <Login set="curved" size={18} primaryColor="#D6432A" />
                         {t('landing.navLogin')}
                       </Link>
                     </>
@@ -181,7 +181,7 @@ export function MobileNav({
                         }}
                         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#C2361F] transition-colors hover:bg-[#FCEDEA] disabled:opacity-60"
                       >
-                        <Logout set="light" size={18} primaryColor="#D6432A" />
+                        <Logout set="curved" size={18} primaryColor="#D6432A" />
                         {t('parametres.logoutButton')}
                       </button>
                     </>
@@ -198,11 +198,11 @@ export function MobileNav({
               aria-label={t('app.mobileNew')}
               className={newClass}
             >
-              <Plus set="light" size={26} primaryColor="#ffffff" />
+              <Plus set="curved" size={26} primaryColor="#ffffff" />
             </button>
           ) : (
             <Link href="/app/generer" aria-label={t('app.mobileNew')} className={newClass}>
-              <Plus set="light" size={26} primaryColor="#ffffff" />
+              <Plus set="curved" size={26} primaryColor="#ffffff" />
             </Link>
           )}
         </div>

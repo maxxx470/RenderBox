@@ -38,7 +38,7 @@ export function StaggeredChecklist({ items }: { items: string[] }) {
                 transitionDelay: `${delayMs}ms`,
               }}
             >
-              <TickSquare set="light" size={15} primaryColor="#D97706" />
+              <TickSquare set="curved" size={15} primaryColor="#D97706" />
             </span>
             {item}
           </li>

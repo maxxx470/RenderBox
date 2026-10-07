@@ -60,9 +60,9 @@ export function ElementsPicker({
         {t('app.elementsChip')}
         <span className="flex-shrink-0">
           {open ? (
-            <ChevronUp set="light" size={12} primaryColor="#8A8896" />
+            <ChevronUp set="curved" size={12} primaryColor="#8A8896" />
           ) : (
-            <ChevronDown set="light" size={12} primaryColor="#8A8896" />
+            <ChevronDown set="curved" size={12} primaryColor="#8A8896" />
           )}
         </span>
       </button>

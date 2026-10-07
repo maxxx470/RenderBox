@@ -34,7 +34,7 @@ export function FaqAccordion({
                 className={`flex-shrink-0 ${reducedMotion ? '' : 'transition-transform duration-200 ease-out'}`}
                 style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
               >
-                <ChevronDown set="light" size={16} primaryColor="#6B6878" />
+                <ChevronDown set="curved" size={16} primaryColor="#6B6878" />
               </span>
             </button>
             <div

@@ -73,7 +73,7 @@ export function AppTopbar({ title, tier, quotaMax, quotaRemaining, userEmail }: 
           title={t('parametres.title')}
           className="hidden h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-[#F7F7FA] min-[900px]:flex"
         >
-          <Setting set="light" size={20} primaryColor="#15803D" />
+          <Setting set="curved" size={20} primaryColor="#15803D" />
         </Link>
         <NotificationsBell />
 

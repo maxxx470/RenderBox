@@ -99,7 +99,7 @@ function PlanCard({
         <ul className="mb-4 space-y-2 text-[11px] font-medium text-[#17161F]">
           {(['tarifs.checkEngines', 'tarifs.checkEditing'] as const).map((k) => (
             <li key={k} className="flex items-center gap-2">
-              <TickSquare set="light" size={14} primaryColor="#1E7A3D" />
+              <TickSquare set="curved" size={14} primaryColor="#1E7A3D" />
               <span>{t(k)}</span>
             </li>
           ))}
@@ -211,7 +211,7 @@ export function TarifsClient({
         <div className="relative mb-6 flex items-start gap-2.5 overflow-hidden rounded-xl border border-[#ECECF2] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(23,22,31,0.05)]">
           <span aria-hidden className="absolute bottom-0 left-0 top-0 w-[2px] bg-[#B7791F]" />
           <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#FDF3E2]">
-            <Danger set="light" size={13} primaryColor="#B7791F" />
+            <Danger set="curved" size={13} primaryColor="#B7791F" />
           </span>
           <p className="flex-1 text-[13px] font-medium leading-snug text-[#17161F]">
             {tier ? t('tarifs.alertEmpty') : t('tarifs.alertNone')}
@@ -237,7 +237,7 @@ export function TarifsClient({
       {/* Historique. */}
       <section className="mb-4 overflow-hidden rounded-xl border border-[#ECECF2] bg-white shadow-[0_1px_2px_rgba(23,22,31,0.04)]">
         <h2 className="flex items-center gap-2 border-b border-[#ECECF2] bg-[#F7F7FA] px-4 py-3 text-[13px] font-bold text-[#17161F]">
-          <Wallet set="light" size={18} primaryColor="#15803D" />
+          <Wallet set="curved" size={18} primaryColor="#15803D" />
           {t('tarifs.historyTitle')}
         </h2>
         {history.length === 0 ? (
