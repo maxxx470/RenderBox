@@ -77,7 +77,7 @@ export function EditPanel({
                 className="mx-auto mb-2 h-[86px] w-full rounded-lg object-cover"
               />
             ) : (
-              <span className="mx-auto mb-2 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#EFF3F0]">
+              <span className="mx-auto mb-2 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#F1F0F4]">
                 <Upload set="light" size={15} primaryColor="#8A8896" />
               </span>
             )}
@@ -107,7 +107,7 @@ export function EditPanel({
         </div>
       ) : (
         <div className="mb-4.5">
-          <p className="mb-3 text-xs leading-relaxed text-[#5F6B64]">{t('edit.zoneHint')}</p>
+          <p className="mb-3 text-xs leading-relaxed text-[#6B6878]">{t('edit.zoneHint')}</p>
           {pins.some((p) => p.comment.trim()) && (
             <>
               <span className="mb-2 block text-xs font-semibold text-[#17161F]">
@@ -120,7 +120,7 @@ export function EditPanel({
                       key={p.id}
                       className="flex items-start gap-2 rounded-xl bg-[#F7F7FA] px-2.5 py-2"
                     >
-                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#15803D] font-[family-name:var(--font-mono)] text-[10.5px] font-semibold text-white">
+                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#DC2626] font-[family-name:var(--font-mono)] text-[10.5px] font-semibold text-white">
                         {i + 1}
                       </span>
                       <span className="min-w-0 flex-1 text-[12.5px] leading-snug text-[#17161F]">
@@ -140,7 +140,7 @@ export function EditPanel({
               </ol>
             </>
           )}
-          <p className="mt-3 text-[11px] leading-relaxed text-[#5F6B64]">
+          <p className="mt-3 text-[11px] leading-relaxed text-[#6B6878]">
             {t('annotate.max', { n: MAX_ANNOTATIONS })} {t('annotate.engineNote')}
           </p>
         </div>

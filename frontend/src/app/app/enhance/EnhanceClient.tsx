@@ -37,7 +37,7 @@ import { RequestError, readErrorCode, isServiceNotConfigured } from '../request-
 import { BeforeAfterSlider } from '@/app/BeforeAfterSlider';
 
 const GRADIENT = 'bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]';
-const HEADING = 'mb-2.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#5F6B64]';
+const HEADING = 'mb-2.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#6B6878]';
 
 /** The uploaded photo, once it exists server-side. */
 interface Session {
@@ -203,6 +203,7 @@ export function EnhanceClient({
     <AppSurface
       {...surface}
       quotaRemaining={remaining}
+      eyebrow={t('page.enhanceEyebrow')}
       title={t('enhance.title')}
       subtitle={t('enhance.subtitle')}
     >
@@ -216,7 +217,7 @@ export function EnhanceClient({
           <h2 className="text-[15px] font-semibold text-[#17161F]">
             {t('app.genHomeNoTierTitle')}
           </h2>
-          <p className="max-w-[320px] text-[13px] text-[#5F6B64]">{t('app.genHomeNoTierBody')}</p>
+          <p className="max-w-[320px] text-[13px] text-[#6B6878]">{t('app.genHomeNoTierBody')}</p>
           <Link
             href="/app/tarifs"
             className={`inline-flex items-center gap-2 rounded-full ${GRADIENT} px-5 py-2.5 text-[13px] font-semibold text-white`}
@@ -263,7 +264,7 @@ export function EnhanceClient({
                 <span className="text-[16px] font-semibold text-[#17161F]">
                   {t('enhance.dropTitle')}
                 </span>
-                <span className="text-[13px] text-[#5F6B64]">{t('enhance.dropHint')}</span>
+                <span className="text-[13px] text-[#6B6878]">{t('enhance.dropHint')}</span>
               </button>
             ) : resultId && beforeSrc ? (
               <BeforeAfterSlider
@@ -288,11 +289,11 @@ export function EnhanceClient({
                     role="status"
                     className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 px-6 text-center backdrop-blur-[2px]"
                   >
-                    <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-[#CDEBD6] border-t-[#16A34A]" />
+                    <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-[#CDEBD6] border-t-[#15803D]" />
                     <span className="text-[14px] font-semibold text-[#17161F]">
                       {t('enhance.working')}
                     </span>
-                    <span className="max-w-[36ch] text-[12.5px] text-[#5F6B64]">
+                    <span className="max-w-[36ch] text-[12.5px] text-[#6B6878]">
                       {t('enhance.workingHint')}
                     </span>
                   </div>
@@ -317,7 +318,7 @@ export function EnhanceClient({
                         href={`/app/${session.projectId}`}
                         className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white px-4.5 py-2.5 text-[13px] font-semibold text-[#17161F] transition-colors hover:border-[#DEDEE8]"
                       >
-                        <Paper set="light" size={16} primaryColor="#5F6B64" />
+                        <Paper set="light" size={16} primaryColor="#6B6878" />
                         {t('enhance.openProject')}
                       </Link>
                     )}
@@ -349,7 +350,7 @@ export function EnhanceClient({
                     onClick={() => toggleOption(key)}
                     className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors ${
                       on
-                        ? 'border-[#CDEBD6] bg-[#E8F5EC]'
+                        ? 'border-[#16A34A] bg-[#E8F5EC]'
                         : 'border-[#ECECF2] bg-white hover:border-[#DEDEE8]'
                     }`}
                   >
@@ -380,7 +381,7 @@ export function EnhanceClient({
                       >
                         {ENHANCE_OPTIONS[key].label[locale]}
                       </span>
-                      <span className="block text-[12px] text-[#5F6B64]">
+                      <span className="block text-[12px] text-[#6B6878]">
                         {ENHANCE_OPTIONS[key].hint[locale]}
                       </span>
                     </span>
@@ -400,7 +401,7 @@ export function EnhanceClient({
                   className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-semibold transition-colors ${
                     strength === s
                       ? 'bg-white text-[#17161F] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
-                      : 'text-[#5F6B64]'
+                      : 'text-[#6B6878]'
                   }`}
                 >
                   {ENHANCE_STRENGTH_LABELS[s][locale]}
@@ -420,7 +421,7 @@ export function EnhanceClient({
                   className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-semibold transition-colors ${
                     engine === e
                       ? 'bg-white text-[#17161F] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
-                      : 'text-[#5F6B64]'
+                      : 'text-[#6B6878]'
                   }`}
                 >
                   <span className={`h-2 w-2 rounded-full ${ENGINE_COLORS[e].dot}`} aria-hidden />
@@ -439,7 +440,7 @@ export function EnhanceClient({
               maxLength={2000}
               rows={2}
               placeholder={t('enhance.instructionPlaceholder')}
-              className="w-full resize-none rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] focus:border-[#16A34A]"
+              className="w-full resize-none rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] focus:border-[#15803D]"
             />
 
             <button
@@ -450,7 +451,7 @@ export function EnhanceClient({
             >
               {working ? t('enhance.working') : resultId ? t('enhance.retry') : t('enhance.submit')}
             </button>
-            <p className="mt-2.5 text-center text-[12px] text-[#5F6B64]">
+            <p className="mt-2.5 text-center text-[12px] text-[#6B6878]">
               {t('enhance.costNote')}
               {remaining !== null && surface.quotaMax !== null
                 ? ` · ${remaining}/${surface.quotaMax}`

@@ -1,16 +1,12 @@
-import { NextResponse } from 'next/server';
-import { redirect, notFound } from 'next/navigation';
-import { requireAuth } from '@/lib/server/middleware';
+import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/server/prisma';
 import { buildRenderTree } from '@/lib/server/render-tree';
-import { checkTierQuota } from '@/lib/server/generation/tier-quota';
 import { AppShell } from '../AppShell';
+import { loadShell } from '../shell-data';
 
 export default async function AppProjectPage({ params }: { params: Promise<{ projet: string }> }) {
-  const auth = await requireAuth();
-  if (auth instanceof NextResponse) {
-    redirect('/connexion');
-  }
+  // Account and plan: shared with the app layout, see shell-data.ts.
+  const { auth, quota } = await loadShell();
 
   const { projet } = await params;
 
@@ -24,7 +20,7 @@ export default async function AppProjectPage({ params }: { params: Promise<{ pro
   // one that doesn't exist — same "don't leak existence" posture as
   // requireOrgRole's 404-not-403 (see CLAUDE.md).
   const owned = { projectId: projet, project: { userId: auth.user.sub } };
-  const [project, nodes, materials, quota] = await Promise.all([
+  const [project, nodes, materials] = await Promise.all([
     prisma.project.findFirst({
       where: { id: projet, userId: auth.user.sub },
       select: { id: true, name: true },
@@ -48,9 +44,6 @@ export default async function AppProjectPage({ params }: { params: Promise<{ pro
       orderBy: { face: 'asc' },
       select: { id: true, face: true, valeur: true, source: true, confidence: true },
     }),
-    // count: 0 — read-only status check, same lazy-expiry semantics as
-    // /app's home screen (see tier-quota.ts).
-    checkTierQuota(prisma, auth.user.sub, 0),
   ]);
   if (!project) {
     notFound();

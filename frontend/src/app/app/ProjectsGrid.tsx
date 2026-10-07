@@ -7,9 +7,8 @@
 // Opening a project is a deliberate click, and creating one is a single
 // visible action rather than a side-effect of the first upload.
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Folder, Edit, Delete, Search, Image as ImageIcon, ArrowRight } from 'react-iconly';
+import { Folder, Edit, Delete, Search, Image as ImageIcon, ArrowRight } from 'react-iconly';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -18,14 +17,18 @@ import { DashboardVideoCard } from './DashboardVideoCard';
 import { DashboardCarousel } from './DashboardCarousel';
 import { AppFrame } from './AppFrame';
 import { MOBILE_NAV_PAD } from './MobileNav';
+import { PageHeader } from './PageHeader';
+import { openAssistant } from './AssistantWidget';
 import { CATEGORY_LABELS, PROJECT_CATEGORIES, type ProjectCategory } from './project-categories';
 
 // Full literal class strings — Tailwind's scanner cannot see a class built
 // from an interpolated value (see the JIT note in CLAUDE.md).
+// Metrio's filter pills: white with a hairline and bold grey text, the chosen
+// one filled with the brand colour (#15803D carries white 11.5px bold at 5:1).
 const FILTER_PILL =
-  'inline-flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-1.5 text-[12.5px] font-medium text-[#3D3B49] transition-colors hover:border-[#DEDEE8] hover:text-[#17161F]';
+  'inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-[#ECECF2] bg-white px-3 py-1 text-[11.5px] font-bold text-[#4B4A57] transition-colors hover:border-[#DEDEE8] hover:text-[#17161F]';
 const FILTER_PILL_ACTIVE =
-  'inline-flex items-center gap-1.5 rounded-full border border-[#16A34A] bg-[#E8F5EC] px-3.5 py-1.5 text-[12.5px] font-semibold text-[#166534]';
+  'inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-[#15803D] bg-[#15803D] px-3 py-1 text-[11.5px] font-bold text-white';
 const COUNT = 'font-[family-name:var(--font-mono)] text-[11px] opacity-70';
 
 /** How many projects the dashboard shows before "Voir tous les projets". */
@@ -43,7 +46,6 @@ export interface ProjectCardData {
 }
 
 type Dialog =
-  | { kind: 'create' }
   | { kind: 'rename'; project: ProjectCardData }
   | { kind: 'delete'; project: ProjectCardData }
   | null;
@@ -68,7 +70,7 @@ function ProjectCard({
     // exists to show got two thirds. The latest render of a project is the
     // best available answer to "which project is this", so it fills the card
     // and the name sits on it.
-    <div className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#F7F7FA] transition-[transform,box-shadow,border-color] duration-[220ms] ease-out hover:border-[#DEDEE8] hover:shadow-[0_18px_34px_-18px_rgba(23,22,31,0.35)] motion-safe:hover:-translate-y-0.5">
+    <div className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#F7F7FA] transition-[transform,translate,scale,box-shadow,border-color] duration-[220ms] ease-out hover:border-[#DEDEE8] hover:shadow-[0_18px_34px_-18px_rgba(23,22,31,0.35)] motion-safe:hover:-translate-y-0.5">
       <Link href={`/app/${project.id}`} className="absolute inset-0 block">
         {project.thumbnailNodeId ? (
           <img
@@ -88,7 +90,7 @@ function ProjectCard({
             <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#DEDEE8] bg-white">
               <ImageIcon set="light" size={18} primaryColor="#8A8896" />
             </span>
-            <span className="text-[11px] text-[#5F6B64]">{t('projects.cardEmpty')}</span>
+            <span className="text-[11px] text-[#6B6878]">{t('projects.cardEmpty')}</span>
           </div>
         )}
 
@@ -190,13 +192,11 @@ export function ProjectsGrid({
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
-  const router = useRouter();
   const { toast } = useToast();
 
   const [projects, setProjects] = useState(initialProjects);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<ProjectCategory | null>(null);
-  const [sort, setSort] = useState<'recent' | 'name'>('recent');
   const [dialog, setDialog] = useState<Dialog>(null);
   const [draftName, setDraftName] = useState('');
   const [busy, setBusy] = useState(false);
@@ -225,40 +225,12 @@ export function ProjectsGrid({
           (!q || p.name.toLowerCase().includes(q)) &&
           (!category || p.categories.includes(category)),
       )
-      .sort(sort === 'name' ? (a, b) => a.name.localeCompare(b.name, locale) : byRecent);
-  }, [projects, query, category, sort, isDashboard, locale]);
-
-  function openCreate() {
-    setDraftName(
-      t('projects.defaultName', {
-        date: new Date().toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US', {
-          day: 'numeric',
-          month: 'short',
-        }),
-      }),
-    );
-    setDialog({ kind: 'create' });
-  }
+      .sort(byRecent);
+  }, [projects, query, category, isDashboard]);
 
   function openRename(project: ProjectCardData) {
     setDraftName(project.name);
     setDialog({ kind: 'rename', project });
-  }
-
-  async function handleCreate() {
-    const name = draftName.trim();
-    if (!name) return;
-    setBusy(true);
-    try {
-      const created = await api<{ id: string }>('/api/projects', {
-        method: 'POST',
-        body: { name },
-      });
-      router.push(`/app/${created.id}`);
-    } catch {
-      toast(t('projects.createError'), 'error');
-      setBusy(false);
-    }
   }
 
   async function handleRename(project: ProjectCardData) {
@@ -289,16 +261,9 @@ export function ProjectsGrid({
     }
   }
 
-  const newButton = (
-    <button
-      type="button"
-      onClick={openCreate}
-      className="inline-flex flex-shrink-0 items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2.5 text-[13px] font-semibold text-white shadow-[0_8px_20px_-10px_#16A34A]"
-    >
-      <Plus set="light" size={16} primaryColor="#ffffff" />
-      {t('projects.newButton')}
-    </button>
-  );
+  // No "Nouveau projet" here (owner, 2026-10-06): a project is born from a
+  // render, in the generation space. This page is the archive of everything
+  // already worked on, to come back to.
 
   return (
     <AppFrame
@@ -318,85 +283,89 @@ export function ProjectsGrid({
         className={`min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#FBFBFD] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
       >
         <div className="mx-auto max-w-[1100px]">
+          {/* The page head, as on every Metrio page: eyebrow, bold title, one
+              line — and on the dashboard Metrio's "ask the assistant" pill. */}
+          <PageHeader
+            eyebrow={t(isDashboard ? 'page.dashboardEyebrow' : 'page.projectsEyebrow')}
+            title={t(isDashboard ? 'dashboard.title' : 'page.projectsTitle')}
+            subtitle={t(isDashboard ? 'page.dashboardSubtitle' : 'projects.archiveSubtitle')}
+            action={
+              isDashboard ? (
+                <button
+                  type="button"
+                  onClick={openAssistant}
+                  className="inline-flex items-center gap-2 rounded-full border border-[#15803D33] bg-[#E8F5EC] px-4 py-2 text-[12.5px] font-semibold text-[#15803D] transition-[background-color,color,translate] duration-200 hover:-translate-y-0.5 hover:bg-[#15803D] hover:text-white"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    aria-hidden
+                  >
+                    <path d="M12 2v4m0 12v4M2 12h4m12 0h4m-2.93-7.07-2.83 2.83M7.76 16.24l-2.83 2.83M4.34 4.93l2.83 2.83m7.07 7.07 2.83 2.83" />
+                  </svg>
+                  {t('page.askAssistant')}
+                </button>
+              ) : undefined
+            }
+          />
+
           {isDashboard && (
-            <>
-              {/* Two banners on top, as in the reference: the "3 steps" film
-                  and the showcase carousel, given equal room since the film
-                  carries text that has to stay readable. */}
-              <div className="mb-5 grid grid-cols-1 gap-4 min-[900px]:grid-cols-2">
+            // As on Metrio: the four figures straight under the title, then
+            // the two banners (the "3 steps" film and the showcase).
+            <div className="mb-8 flex flex-col gap-5">
+              <DashboardStats data={dashboard} />
+              <div className="grid grid-cols-1 gap-4 min-[900px]:grid-cols-2">
                 <DashboardVideoCard />
                 <DashboardCarousel />
-              </div>
-              <DashboardStats data={dashboard} />
-            </>
-          )}
-
-          {/* Section heading. On the dashboard: the latest projects and the way
-              to all of them; on the Projets page: how many there are. */}
-          {projects.length > 0 && (
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
-                {isDashboard
-                  ? t('projects.recentTitle')
-                  : t('projects.allTitle', { n: String(projects.length) })}
-              </h2>
-              <div className="flex items-center gap-2.5">
-                {isDashboard && (
-                  <Link
-                    href="/app/projets"
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-semibold text-[#15803D] hover:bg-[#E8F5EC]"
-                  >
-                    {t('projects.seeAll')}
-                    <ArrowRight set="light" size={15} primaryColor="#15803D" />
-                  </Link>
-                )}
-                {newButton}
               </div>
             </div>
           )}
 
-          {!isDashboard && projects.length > 0 && (
-            <>
-              <div className="mb-3 flex flex-col gap-2.5 min-[640px]:flex-row">
-                <div className="flex flex-1 items-center gap-2.5 rounded-full border border-[#ECECF2] bg-white px-4 py-2.5 focus-within:border-[#16A34A]">
-                  <Search set="light" size={15} primaryColor="#8A8896" />
-                  <input
-                    type="search"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder={t('projects.searchPlaceholder')}
-                    aria-label={t('projects.searchPlaceholder')}
-                    className="w-full bg-transparent text-[13.5px] text-[#17161F] outline-none placeholder:text-[#8A8896]"
-                  />
-                </div>
-                <div
-                  role="radiogroup"
-                  aria-label={t('projects.sortLabel')}
-                  className="flex flex-shrink-0 items-center gap-0.5 self-start rounded-full border border-[#ECECF2] bg-white p-1"
-                >
-                  {(['recent', 'name'] as const).map((k) => (
-                    <button
-                      key={k}
-                      type="button"
-                      role="radio"
-                      aria-checked={sort === k}
-                      onClick={() => setSort(k)}
-                      className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors ${
-                        sort === k ? 'bg-[#15803D] text-white' : 'text-[#3D3B49] hover:bg-[#F7F7FA]'
-                      }`}
-                    >
-                      {t(k === 'recent' ? 'projects.sortRecent' : 'projects.sortName')}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          {/* On the dashboard: the latest projects and the way to all of them. */}
+          {isDashboard && projects.length > 0 && (
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-[family-name:var(--font-display)] text-[16px] font-bold text-[#17161F]">
+                {t('projects.recentTitle')}
+              </h2>
+              <Link
+                href="/app/projets"
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#15803D] underline-offset-4 hover:underline"
+              >
+                {t('projects.seeAll')}
+                <ArrowRight set="light" size={15} primaryColor="#15803D" />
+              </Link>
+            </div>
+          )}
 
-              {/* The categories, each with how many projects it holds. */}
+          {/* Metrio's search-and-filter bar: one grey band holding the search
+              field, then "FILTRE :" and the categories as pills — the chosen
+              one solid green, as Metrio fills its own in blue. */}
+          {!isDashboard && (
+            <div className="mb-6 flex flex-col items-stretch gap-3 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] p-2.5 min-[900px]:flex-row min-[900px]:items-center">
+              <div className="flex flex-1 items-center gap-2 rounded-lg border border-[#ECECF2] bg-white px-3 py-2 focus-within:border-[#16A34A]">
+                <Search set="light" size={15} primaryColor="#15803D" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t('projects.searchPlaceholder')}
+                  aria-label={t('projects.searchPlaceholder')}
+                  className="w-full bg-transparent text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896]"
+                />
+              </div>
               <div
                 role="radiogroup"
                 aria-label={t('projects.categoryLabel')}
-                className="mb-5 flex flex-wrap items-center gap-1.5"
+                className="flex items-center gap-1 overflow-x-auto pb-1 [scrollbar-width:none] min-[900px]:pb-0"
               >
+                <span className="mr-1 hidden text-[11px] font-bold uppercase text-[#4B4A57] min-[1100px]:inline">
+                  {t('projects.filterLabel')}
+                </span>
                 <button
                   type="button"
                   role="radio"
@@ -405,7 +374,6 @@ export function ProjectsGrid({
                   className={category === null ? FILTER_PILL_ACTIVE : FILTER_PILL}
                 >
                   {t('projects.filterAll')}
-                  <span className={COUNT}>{projects.length}</span>
                 </button>
                 {categoryCounts.map(({ key, count }) => (
                   <button
@@ -421,19 +389,28 @@ export function ProjectsGrid({
                   </button>
                 ))}
               </div>
-            </>
+            </div>
           )}
 
           {projects.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-[#ECECF2] bg-white py-20 text-center">
-              <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
-                <Folder set="light" size={24} primaryColor="#ffffff" />
+            // Metrio's empty state: a dashed grey panel, the folder, a bold
+            // line, one sentence and an underlined link.
+            <div className="rounded-2xl border border-dashed border-[#DEDEE8] bg-[#F7F7FA] p-10 text-center">
+              <div className="mb-2 flex justify-center">
+                <Folder set="light" size={32} primaryColor="#15803D" />
               </div>
-              <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
+              <h3 className="font-[family-name:var(--font-display)] text-[14px] font-bold text-[#17161F]">
                 {t('projects.emptyTitle')}
-              </h2>
-              <p className="max-w-[280px] text-[13px] text-[#8A8896]">{t('projects.emptyBody')}</p>
-              {newButton}
+              </h3>
+              <p className="mx-auto mt-1 max-w-sm text-[12.5px] text-[#6B6878]">
+                {t('projects.emptyBody')}
+              </p>
+              <Link
+                href="/app/generer"
+                className="mt-3 inline-block text-[13px] font-medium text-[#15803D] underline underline-offset-4 hover:opacity-70"
+              >
+                {t('projects.startCta')}
+              </Link>
             </div>
           ) : visible.length === 0 ? (
             <p className="py-16 text-center text-[13px] text-[#8A8896]">
@@ -455,10 +432,10 @@ export function ProjectsGrid({
           )}
         </div>
 
-        {dialog && dialog.kind !== 'delete' && (
+        {dialog?.kind === 'rename' && (
           <Modal onClose={() => setDialog(null)}>
             <h2 className="mb-3 font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
-              {t(dialog.kind === 'create' ? 'projects.createTitle' : 'projects.renameTitle')}
+              {t('projects.renameTitle')}
             </h2>
             <input
               type="text"
@@ -468,8 +445,7 @@ export function ProjectsGrid({
               onChange={(e) => setDraftName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key !== 'Enter' || busy || !draftName.trim()) return;
-                if (dialog.kind === 'create') void handleCreate();
-                else void handleRename(dialog.project);
+                void handleRename(dialog.project);
               }}
               className="mb-4 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none focus:border-[#16A34A]"
             />
@@ -484,12 +460,10 @@ export function ProjectsGrid({
               <button
                 type="button"
                 disabled={busy || !draftName.trim()}
-                onClick={() =>
-                  dialog.kind === 'create' ? void handleCreate() : void handleRename(dialog.project)
-                }
+                onClick={() => void handleRename(dialog.project)}
                 className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
               >
-                {t(dialog.kind === 'create' ? 'projects.createConfirm' : 'projects.renameConfirm')}
+                {t('projects.renameConfirm')}
               </button>
             </div>
           </Modal>

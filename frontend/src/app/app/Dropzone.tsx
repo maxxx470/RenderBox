@@ -37,7 +37,7 @@ export function Dropzone({
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
       className={`flex flex-1 cursor-pointer flex-col items-center justify-center gap-3.5 rounded-2xl border-2 border-dashed ${
-        dragOver ? 'border-[#16A34A] bg-[#E8F5EC]' : 'border-[#ECECF2] bg-[#F7F7FA]'
+        dragOver ? 'border-[#15803D] bg-[#E8F5EC]' : 'border-[#ECECF2] bg-[#F7F7FA]'
       }`}
     >
       <input

@@ -66,7 +66,7 @@ export function MobileNav({
   ];
   const more: { page: RailPage; href: string; label: string; icon: RailIconName }[] = [
     { page: 'projects', href: '/app/projets', label: t('app.railProjects'), icon: 'projects' },
-    { page: 'info', href: '/app/info', label: t('info.title'), icon: 'info' },
+    { page: 'info', href: '/app/info', label: t('app.railInfo'), icon: 'info' },
     { page: 'settings', href: '/parametres', label: t('parametres.title'), icon: 'settings' },
     { page: 'pricing', href: '/app/tarifs', label: t('app.railPricing'), icon: 'pricing' },
   ];
@@ -149,7 +149,7 @@ export function MobileNav({
                       setMoreOpen(false);
                       openAssistant();
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#15803D] transition-colors hover:bg-[#E8F5EC]"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold text-[#166534] transition-colors hover:bg-[#E8F5EC]"
                   >
                     <Chat set="light" size={18} primaryColor="#15803D" />
                     {t('app.assistant')}
@@ -161,9 +161,9 @@ export function MobileNav({
                         href="/connexion"
                         role="menuitem"
                         onClick={() => setMoreOpen(false)}
-                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#17161F] transition-colors hover:bg-[#F7F7FA]"
+                        className="flex w-full items-center gap-3 rounded-xl bg-[#FCEDEA]/80 px-3 py-2.5 text-[14px] font-semibold text-[#C2361F] transition-colors hover:bg-[#FCEDEA]"
                       >
-                        <Login set="light" size={18} primaryColor="#15803D" />
+                        <Login set="light" size={18} primaryColor="#D6432A" />
                         {t('landing.navLogin')}
                       </Link>
                     </>
@@ -179,9 +179,9 @@ export function MobileNav({
                           await logout();
                           router.push('/connexion');
                         }}
-                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#B4232A] transition-colors hover:bg-[#FDEEEE] disabled:opacity-60"
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#C2361F] transition-colors hover:bg-[#FCEDEA] disabled:opacity-60"
                       >
-                        <Logout set="light" size={18} primaryColor="#E5484D" />
+                        <Logout set="light" size={18} primaryColor="#D6432A" />
                         {t('parametres.logoutButton')}
                       </button>
                     </>

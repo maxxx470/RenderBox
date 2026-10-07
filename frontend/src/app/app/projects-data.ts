@@ -1,9 +1,6 @@
 import 'server-only';
-import { NextResponse } from 'next/server';
-import { redirect } from 'next/navigation';
-import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
-import { checkTierQuota } from '@/lib/server/generation/tier-quota';
+import { loadShell } from './shell-data';
 import type { ProjectCardData } from './ProjectsGrid';
 import type { DashboardData } from './DashboardStats';
 import { categoriesOf } from './project-categories';
@@ -36,17 +33,12 @@ export async function loadProjectsPage(): Promise<{
   dashboard: DashboardData;
   userEmail: string;
 }> {
-  const auth = await requireAuth();
-  if (auth instanceof NextResponse) {
-    redirect('/connexion');
-  }
-
+  // The account and its plan (3) come from loadShell, shared with the app
+  // layout so a first load reads them once — see shell-data.ts.
+  const { auth, quota } = await loadShell();
   const userId = auth.user.sub;
 
-  // checkTierQuota with count: 0 reads status without consuming anything —
-  // and, by design, is also what clears a lapsed period, so loading the page
-  // keeps the displayed plan honest.
-  const [projects, generatedNodes, quota] = await Promise.all([
+  const [projects, generatedNodes] = await Promise.all([
     prisma.project.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -66,7 +58,6 @@ export async function loadProjectsPage(): Promise<{
       orderBy: { createdAt: 'desc' },
       select: { id: true, projectId: true, preset: true, editType: true, createdAt: true },
     }),
-    checkTierQuota(prisma, userId, 0),
   ]);
 
   // Newest-first, so the first node seen for a project is its latest render.

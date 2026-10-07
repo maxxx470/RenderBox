@@ -109,7 +109,7 @@ export function NotificationsBell() {
         {unread > 0 && (
           <span
             aria-hidden
-            className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-[1.5px] border-white bg-[#16A34A]"
+            className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-[1.5px] border-white bg-[#DC2626]"
           />
         )}
       </button>
@@ -130,7 +130,7 @@ export function NotificationsBell() {
               <button
                 type="button"
                 onClick={() => void markAllRead()}
-                className="rounded-full px-2 py-1 text-[12px] font-semibold text-[#15803D] hover:bg-[#E8F5EC]"
+                className="rounded-full px-2 py-1 text-[12px] font-semibold text-[#166534] hover:bg-[#E8F5EC]"
               >
                 {t('app.notificationsMarkAll')}
               </button>
@@ -143,7 +143,7 @@ export function NotificationsBell() {
                 <span className="rb-spin h-5 w-5 rounded-full border-2 border-[#CDEBD6] border-t-[#15803D]" />
               </div>
             ) : failed ? (
-              <p className="px-4 py-8 text-center text-[13px] text-[#5F6B64]">
+              <p className="px-4 py-8 text-center text-[13px] text-[#6B6878]">
                 {t('app.notificationsError')}
               </p>
             ) : items && items.length === 0 ? (
@@ -154,7 +154,7 @@ export function NotificationsBell() {
                 <p className="text-[13.5px] font-medium text-[#17161F]">
                   {t('app.notificationsEmpty')}
                 </p>
-                <p className="text-[12.5px] leading-relaxed text-[#5F6B64]">
+                <p className="text-[12.5px] leading-relaxed text-[#6B6878]">
                   {t('app.notificationsEmptyHint')}
                 </p>
               </div>
@@ -164,18 +164,18 @@ export function NotificationsBell() {
                   <li
                     key={n.id}
                     className={`flex gap-3 border-b border-[#F2F2F6] px-4 py-3 last:border-b-0 ${
-                      n.readAt ? '' : 'bg-[#F6FBF7]'
+                      n.readAt ? '' : 'bg-[#F0FAF3]'
                     }`}
                   >
                     <span
                       aria-hidden
                       className={`mt-1.5 h-2 w-2 flex-shrink-0 rounded-full ${
-                        n.readAt ? 'bg-transparent' : 'bg-[#16A34A]'
+                        n.readAt ? 'bg-transparent' : 'bg-[#DC2626]'
                       }`}
                     />
                     <div className="min-w-0">
                       <p className="text-[13px] font-semibold text-[#17161F]">{n.title}</p>
-                      <p className="mt-0.5 text-[12.5px] leading-snug text-[#5F6B64]">{n.body}</p>
+                      <p className="mt-0.5 text-[12.5px] leading-snug text-[#6B6878]">{n.body}</p>
                       <p className="mt-1 font-[family-name:var(--font-mono)] text-[10.5px] text-[#8A8896]">
                         {relativeTime(n.createdAt, locale)}
                       </p>
@@ -190,7 +190,7 @@ export function NotificationsBell() {
           <Link
             href="/app/info"
             onClick={() => setOpen(false)}
-            className="block border-t border-[#ECECF2] px-4 py-3 text-center text-[12.5px] font-semibold text-[#15803D] hover:bg-[#F6FBF7]"
+            className="block border-t border-[#ECECF2] px-4 py-3 text-center text-[12.5px] font-semibold text-[#166534] hover:bg-[#F0FAF3]"
           >
             {t('app.notificationsNews')}
           </Link>

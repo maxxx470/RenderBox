@@ -36,7 +36,7 @@ export default function ExemplePage() {
         <h1 className="font-[family-name:var(--font-display)] text-[30px] font-bold tracking-[-0.5px] text-[#17161F]">
           {t('exemple.title')}
         </h1>
-        <p className="mt-2.5 max-w-[62ch] text-[15px] leading-[1.55] text-[#5F6B64]">
+        <p className="mt-2.5 max-w-[62ch] text-[15px] leading-[1.55] text-[#6B6878]">
           {t('exemple.subtitle')}
         </p>
 
@@ -86,7 +86,7 @@ export default function ExemplePage() {
                   </div>
                 ))}
                 {lone && (
-                  <p className="max-w-[46ch] text-[14px] leading-[1.6] text-[#5F6B64]">
+                  <p className="max-w-[46ch] text-[14px] leading-[1.6] text-[#6B6878]">
                     {t('exemple.esquisseNote')}
                   </p>
                 )}
@@ -101,7 +101,7 @@ export default function ExemplePage() {
           <h2 className="font-[family-name:var(--font-display)] text-[19px] font-bold text-[#17161F]">
             {t('exemple.materialsTitle')}
           </h2>
-          <p className="mt-2 max-w-[62ch] text-[14px] leading-[1.55] text-[#5F6B64]">
+          <p className="mt-2 max-w-[62ch] text-[14px] leading-[1.55] text-[#6B6878]">
             {t('exemple.materialsIntro')}
           </p>
           <div className="mt-4 rounded-[16px] border border-[#ECECF2] bg-[#F7F7FA] p-5">

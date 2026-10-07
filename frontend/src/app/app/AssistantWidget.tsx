@@ -171,7 +171,7 @@ export function AssistantWidget() {
               <h2 className="truncate font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
                 {t('assistant.title')}
               </h2>
-              <p className="flex items-center gap-1.5 text-[11.5px] text-[#5F6B64]">
+              <p className="flex items-center gap-1.5 text-[11.5px] text-[#6B6878]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" aria-hidden />
                 {t('assistant.status')}
               </p>
@@ -222,7 +222,7 @@ export function AssistantWidget() {
                   key={s}
                   type="button"
                   onClick={() => void ask(s)}
-                  className="rounded-full border border-[#CDEBD6] bg-[#E8F5EC] px-3 py-1.5 text-left text-[12.5px] font-medium text-[#166534] transition-colors hover:border-[#16A34A]"
+                  className="rounded-full border border-[#CDEBD6] bg-[#F0FAF3] px-3 py-1.5 text-left text-[12.5px] font-medium text-[#166534] transition-colors hover:border-[#16A34A]"
                 >
                   {s}
                 </button>
@@ -243,7 +243,7 @@ export function AssistantWidget() {
                   <div className="whitespace-pre-wrap">{renderInline(m.content)}</div>
                   {m.sources && (
                     <div className="mt-2 border-t border-[#ECECF2] pt-2">
-                      <span className="text-[11px] font-medium text-[#5F6B64]">
+                      <span className="text-[11px] font-medium text-[#6B6878]">
                         {t('assistant.sources')}
                       </span>
                       <ul className="mt-1 flex flex-col gap-1">
@@ -271,7 +271,7 @@ export function AssistantWidget() {
             <div className="flex justify-start">
               <div className="flex items-center gap-2 rounded-2xl rounded-tl-md border border-[#ECECF2] bg-white px-3.5 py-2.5">
                 <span className="rb-spin h-3.5 w-3.5 rounded-full border-2 border-[#CDEBD6] border-t-[#15803D]" />
-                <span className="text-[12.5px] text-[#5F6B64]">{t('assistant.thinking')}</span>
+                <span className="text-[12.5px] text-[#6B6878]">{t('assistant.thinking')}</span>
               </div>
             </div>
           )}
@@ -283,7 +283,7 @@ export function AssistantWidget() {
           onSubmit={onSubmit}
           className="flex-shrink-0 border-t border-[#ECECF2] bg-white px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3"
         >
-          <div className="flex items-center gap-2 rounded-full border border-[#ECECF2] bg-[#F7F7FA] py-1.5 pl-4 pr-1.5 focus-within:border-[#16A34A]">
+          <div className="flex items-center gap-2 rounded-full border border-[#ECECF2] bg-[#F7F7FA] py-1.5 pl-4 pr-1.5 focus-within:border-[#15803D]">
             <input
               ref={inputRef}
               value={input}

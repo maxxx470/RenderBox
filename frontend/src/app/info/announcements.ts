@@ -39,6 +39,39 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'edit-from-image',
+    date: '2026-10-06',
+    kind: 'shipped',
+    title: {
+      fr: 'Commenter et Ajouter, dès la page Image',
+      en: 'Comment and Add, straight from the Image page',
+    },
+    body: {
+      fr: 'Plus besoin d’un rendu pour modifier une image : épinglez-la dans la barre de commande, choisissez Commenter et elle s’affiche en grand pour y poser vos commentaires, ou Ajouter pour y placer un élément d’après sa photo. Le projet s’ouvre sur le résultat. Les ambiances sont maintenant montrées par une miniature, et sur téléphone les réglages se replient derrière un seul bouton.',
+      en: 'You no longer need a render to edit an image: pin it in the command bar, choose Comment and it opens large so you can place your comments, or Add to place an element from a photo of it. The project opens on the result. Ambiances are now shown as thumbnails, and on a phone the settings fold behind a single button.',
+    },
+  },
+  {
+    id: 'subscription-page',
+    date: '2026-10-06',
+    kind: 'shipped',
+    title: { fr: 'Une page Abonnement plus claire', en: 'A clearer Subscription page' },
+    body: {
+      fr: 'La page Abonnement montre votre solde de rendus et la fin de votre formule, les trois formules côte à côte, puis l’historique de vos paiements. Une formule dure 30 jours, sans prélèvement automatique.',
+      en: 'The Subscription page shows your renders left and when your plan ends, the three plans side by side, then your payment history. A plan lasts 30 days, with no automatic charge.',
+    },
+  },
+  {
+    id: 'faster-navigation',
+    date: '2026-10-06',
+    kind: 'shipped',
+    title: { fr: 'Navigation plus rapide', en: 'Faster navigation' },
+    body: {
+      fr: 'La barre latérale et l’en-tête restent en place quand vous changez de page : la page choisie est marquée tout de suite et seul le contenu se recharge. Sur l’Accueil, vos chiffres sont regroupés en quatre cartes, juste sous le titre.',
+      en: 'The sidebar and the header now stay put when you change page: the page you pick is marked at once and only the content reloads. On Home, your figures sit in four cards, right under the title.',
+    },
+  },
+  {
     id: 'projects-page',
     date: '2026-10-06',
     kind: 'shipped',

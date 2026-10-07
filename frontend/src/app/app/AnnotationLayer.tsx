@@ -58,7 +58,7 @@ function useImageBox(imgRef: RefObject<HTMLImageElement | null>): Box | null {
 }
 
 const PIN =
-  'flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white font-[family-name:var(--font-mono)] text-[12px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(21,128,61,0.75)]';
+  'flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white font-[family-name:var(--font-mono)] text-[12px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(220,38,38,0.6)]';
 
 export function AnnotationLayer({
   imgRef,
@@ -113,6 +113,29 @@ export function AnnotationLayer({
 
   if (!box) return null;
 
+  // The bubble opens on the side of the pin with room, in pixels so it also
+  // stays inside a phone-width image: 240px at most, never wider than the
+  // image allows, clamped 8px from either edge.
+  // When neither side has room (a phone), it opens under the pin — or over
+  // it, low in the image — so it never covers the pin it belongs to.
+  const bubbleW = Math.min(240, box.width - 16);
+  const pinX = active ? (active.x / 100) * box.width : 0;
+  const pinY = active ? (active.y / 100) * box.height : 0;
+  const fitsRight = pinX + 20 + bubbleW <= box.width;
+  const fitsLeft = pinX - 20 - bubbleW >= 0;
+  const beside = fitsRight || fitsLeft;
+  const clampX = (x: number) => Math.max(8, Math.min(box.width - bubbleW - 8, x));
+  const bubbleLeft = clampX(
+    fitsRight ? pinX + 20 : fitsLeft ? pinX - 20 - bubbleW : pinX - bubbleW / 2,
+  );
+  const bubbleV: { top?: string | number; bottom?: string | number } = beside
+    ? active && active.y > 65
+      ? { bottom: `calc(${100 - active.y}% - 14px)` }
+      : { top: `calc(${active?.y ?? 0}% - 14px)` }
+    : active && active.y > 55
+      ? { bottom: box.height - pinY + 22 }
+      : { top: pinY + 22 };
+
   return (
     <div
       onClick={handleClick}
@@ -132,7 +155,7 @@ export function AnnotationLayer({
             setDraft(p.comment);
             setActiveId(p.id);
           }}
-          className={`absolute ${PIN} ${p.id === activeId ? 'scale-110 bg-[#166534]' : 'bg-[#15803D]'} transition-transform duration-150 ease-out`}
+          className={`absolute ${PIN} ${p.id === activeId ? 'scale-110 bg-[#B91C1C]' : 'bg-[#DC2626]'} transition-transform duration-150 ease-out`}
           style={{ left: `${p.x}%`, top: `${p.y}%` }}
         >
           {i + 1}
@@ -142,14 +165,11 @@ export function AnnotationLayer({
       {active && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute z-10 w-[240px] rounded-2xl border border-[#E1E9E3] bg-white p-2.5 shadow-[0_18px_40px_-16px_rgba(23,22,31,0.45)]"
+          className="absolute z-10 rounded-2xl border border-[#ECECF2] bg-white p-2.5 shadow-[0_18px_40px_-16px_rgba(23,22,31,0.45)]"
           style={{
-            // Opens on the side with room, so a pin near an edge never pushes
-            // its own bubble out of the canvas.
-            left: active.x > 60 ? undefined : `calc(${active.x}% + 20px)`,
-            right: active.x > 60 ? `calc(${100 - active.x}% + 20px)` : undefined,
-            top: active.y > 65 ? undefined : `calc(${active.y}% - 14px)`,
-            bottom: active.y > 65 ? `calc(${100 - active.y}% - 14px)` : undefined,
+            width: bubbleW,
+            left: bubbleLeft,
+            ...bubbleV,
           }}
         >
           <textarea

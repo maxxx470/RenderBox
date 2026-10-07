@@ -27,7 +27,7 @@ import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
 import { EditPanel } from './EditPanel';
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
-import { CommandBar, type AppMode } from './CommandBar';
+import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
 import { RequestError, readErrorCode, isServiceNotConfigured } from './request-error';
 
 interface UploadResponse {
@@ -92,7 +92,13 @@ export function AppShell({
   const projectName = initialProjectName;
 
   const [tree, setTree] = useState<RenderTreeNode[]>(initialTree);
-  const [selectedId, setSelectedId] = useState<string | null>(initialTree[0]?.id ?? null);
+  // ?node= opens on a given image — the generation space lands here on the
+  // result of a Commenter/Ajouter it ran (see GenerationHome).
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    const wanted = searchParams.get('node');
+    if (wanted && flattenTree(initialTree).some((n) => n.id === wanted)) return wanted;
+    return initialTree[0]?.id ?? null;
+  });
   // Rendered with the page (see [projet]/page.tsx) — fetching them after
   // hydration added a whole extra round trip before the panel filled in.
   const [materials, setMaterials] = useState<MaterialRow[]>(initialMaterials);
@@ -120,6 +126,7 @@ export function AppShell({
   const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [pickingElement, setPickingElement] = useState(false);
+  const referenceUrl = useObjectUrl(mode === 'add' ? referenceFile : null);
   const [pins, setPins] = useState<Pin[]>([]);
   const [variantCount, setVariantCount] = useState(3);
   const [submittingEdit, setSubmittingEdit] = useState(false);
@@ -373,7 +380,7 @@ export function AppShell({
   }
 
   async function handleEditSubmit() {
-    if (mode === 'generate' || !selectedNode || selectedNode.kind !== 'GENERATED') return;
+    if (mode === 'generate' || !selectedNode) return;
     // In "Commenter" the comments carry the instructions; the bar's text is
     // an optional overall note.
     const notes = pins.filter((p) => p.comment.trim());
@@ -481,7 +488,8 @@ export function AppShell({
   const parentNode = selectedNode?.parentId
     ? (flat.find((n) => n.id === selectedNode.parentId) ?? null)
     : null;
-  const canEdit = mode !== 'generate' && selectedNode?.kind === 'GENERATED';
+  // Any image can be commented on or added to — a render or the photo itself.
+  const canEdit = mode !== 'generate' && Boolean(selectedNode);
   const hasComments = pins.some((p) => p.comment.trim());
 
   // Same wording as the rail rows — the breadcrumb names the very nodes the
@@ -520,6 +528,22 @@ export function AppShell({
               : !prompt.trim()
                 ? t('app.hintNoPrompt')
                 : undefined;
+
+  // The image the action starts from, then (Ajouter) the element to add.
+  const pinned: PinnedImage[] = [];
+  if (selectedId)
+    pinned.push({
+      key: 'source',
+      src: `/api/render-nodes/${selectedId}/image`,
+      caption: t('app.cmdSourceTag'),
+    });
+  if (referenceUrl)
+    pinned.push({
+      key: 'reference',
+      src: referenceUrl,
+      caption: t('app.cmdReferenceTag'),
+      onRemove: () => setReferenceFile(null),
+    });
 
   return (
     // Same frame as /app/generer: the shared rail runs the full height on the
@@ -628,7 +652,7 @@ export function AppShell({
                   className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-[#E8F5EC] to-[#F7F7FA] transition-colors duration-150 ease-out ${
                     // Same outline tone as the rails and the command bar, so the
                     // three panels read as one family.
-                    fileDragOver ? 'border-[#16A34A]' : 'border-[#DEDEE8]'
+                    fileDragOver ? 'border-[#15803D]' : 'border-[#DEDEE8]'
                   } ${mode === 'retouch' ? 'select-none' : ''}`}
                 >
                   {selectedId && (
@@ -659,7 +683,7 @@ export function AppShell({
                       />
 
                       {/* "Commenter": numbered pins laid over the image itself. */}
-                      {mode === 'retouch' && selectedNode?.kind === 'GENERATED' && (
+                      {mode === 'retouch' && selectedNode && (
                         <AnnotationLayer
                           imgRef={imgRef}
                           pins={pins}
@@ -696,7 +720,7 @@ export function AppShell({
                           <span className="pointer-events-none absolute bottom-3.5 left-3.5 rounded-2xl bg-[#17161F] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] text-white">
                             {nodeLabel(parentNode)}
                           </span>
-                          <span className="pointer-events-none absolute bottom-3.5 right-3.5 rounded-2xl bg-[#16A34A] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] text-white">
+                          <span className="pointer-events-none absolute bottom-3.5 right-3.5 rounded-2xl bg-[#17161F] px-2.5 py-1 font-[family-name:var(--font-mono)] text-[10px] text-white">
                             {nodeLabel(selectedNode)}
                           </span>
                           <div
@@ -711,7 +735,7 @@ export function AppShell({
                             style={{ left: `${comparePos}%` }}
                           >
                             <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_10px_26px_-6px_rgba(22,163,74,0.6)]">
-                              <Swap set="light" size={15} primaryColor="#16A34A" />
+                              <Swap set="light" size={15} primaryColor="#15803D" />
                             </div>
                           </div>
                         </>
@@ -730,7 +754,7 @@ export function AppShell({
                             title={t('app.compareToggle')}
                             className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95] ${
                               comparing
-                                ? 'border-transparent bg-[#16A34A]'
+                                ? 'border-transparent bg-[#15803D]'
                                 : 'border-[#ECECF2] bg-white'
                             }`}
                           >
@@ -757,7 +781,7 @@ export function AppShell({
                   {/* pointer-events-none so the overlay never becomes the drag
                     target itself, which would unbalance the enter/leave count. */}
                   {fileDragOver && (
-                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#16A34A] bg-[#E8F5ECF2] px-6">
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#15803D] bg-[#E8F5ECF2] px-6">
                       <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
                         <Upload set="light" size={24} primaryColor="#ffffff" />
                       </div>
@@ -778,7 +802,7 @@ export function AppShell({
                   )}
                   {busy && (
                     <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#FFFFFFD9]">
-                      <span className="rb-spin h-8 w-8 rounded-full border-2 border-[#ECECF2] border-t-[#16A34A]" />
+                      <span className="rb-spin h-8 w-8 rounded-full border-2 border-[#ECECF2] border-t-[#15803D]" />
                       <span className="font-[family-name:var(--font-display)] text-[13.5px] font-semibold text-[#17161F]">
                         {t('app.generatingOverlay')}
                       </span>
@@ -841,7 +865,8 @@ export function AppShell({
         <CommandBar
           mode={mode}
           onModeChange={handleModeChange}
-          editEnabled={selectedNode?.kind === 'GENERATED'}
+          editEnabled={Boolean(selectedNode)}
+          editDisabledHint={t('app.modeSelectNodeHint')}
           // Enhance is its own page; it opens on the image selected here and
           // files the result into this same project.
           enhanceHref={
@@ -873,13 +898,12 @@ export function AppShell({
           engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
           onEngineChange={handleEngineChange}
           engineLocked={mode === 'retouch'}
-          onUploadFile={handleFile}
-          onAttachReference={setReferenceFile}
+          // Generate: a new photo. Ajouter: the element's reference. Commenter
+          // comments on the image itself — nothing to attach.
+          onAttach={mode === 'generate' ? handleFile : mode === 'add' ? setReferenceFile : null}
+          attachTitle={mode === 'retouch' ? t('app.cmdAttachRetouch') : undefined}
           uploading={uploading}
-          // The image the action starts from, then the element to add.
-          sourceSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}
-          attachment={mode === 'add' ? referenceFile : null}
-          onRemoveAttachment={() => setReferenceFile(null)}
+          pinned={pinned}
           variantCount={variantCount}
           onVariantCountChange={setVariantCount}
           imageSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}

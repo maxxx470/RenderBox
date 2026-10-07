@@ -21,7 +21,7 @@ export default function InfoPage() {
         <h1 className="font-[family-name:var(--font-display)] text-[28px] font-bold tracking-[-0.5px] text-[#17161F]">
           {t('info.title')}
         </h1>
-        <p className="mb-9 mt-2.5 text-[14px] leading-[1.6] text-[#5F6B64]">{t('info.subtitle')}</p>
+        <p className="mb-9 mt-2.5 text-[14px] leading-[1.6] text-[#6B6878]">{t('info.subtitle')}</p>
         <AnnouncementList />
       </div>
       <SiteFooter />

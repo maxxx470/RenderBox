@@ -34,7 +34,12 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
   const { t, locale } = useLocale();
 
   return (
-    <AppSurface {...surface} title={t('info.title')} subtitle={t('info.subtitle')}>
+    <AppSurface
+      {...surface}
+      eyebrow={t('page.infoEyebrow')}
+      title={t('app.railInfo')}
+      subtitle={t('info.subtitle')}
+    >
       {/* Narrower than the frame's 1100px. A changelog is prose, and prose
           set across a full-width dashboard column runs to ~140 characters a
           line — roughly twice the distance an eye can carry a line break
@@ -54,7 +59,7 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
                   <h3 className="font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
                     {t(f.title)}
                   </h3>
-                  <p className="mt-0.5 text-[13px] leading-[1.5] text-[#5F6B64]">{t(f.body)}</p>
+                  <p className="mt-0.5 text-[13px] leading-[1.5] text-[#6B6878]">{t(f.body)}</p>
                 </div>
                 <MotionFilm
                   src={`/motion/${f.id}-${locale}.mp4`}

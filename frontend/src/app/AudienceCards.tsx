@@ -45,7 +45,7 @@ export function AudienceCards({ cards }: { cards: AudienceCardData[] }) {
               </div>
               <span
                 className={`mb-2 font-[family-name:var(--font-mono)] text-[11px] uppercase tracking-wide ${
-                  lead ? 'text-white/85' : 'text-[#15803D]'
+                  lead ? 'text-white/85' : 'text-[#B45309]'
                 }`}
               >
                 {card.label}
@@ -59,7 +59,7 @@ export function AudienceCards({ cards }: { cards: AudienceCardData[] }) {
               </h3>
               <p
                 className={`max-w-[34ch] text-[13.5px] leading-[1.6] ${
-                  lead ? 'text-white/90' : 'text-[#5F6B64]'
+                  lead ? 'text-white/90' : 'text-[#6B6878]'
                 }`}
               >
                 {card.body}

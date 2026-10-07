@@ -21,7 +21,7 @@ export function FaqAccordion({
         return (
           <div
             key={item.q}
-            className="rounded-2xl border border-[#E1E9E3] bg-white shadow-[0_8px_24px_-18px_rgba(23,22,31,0.25)] transition-colors hover:border-[#C9D6CD]"
+            className="rounded-2xl border border-[#ECECF2] bg-white shadow-[0_8px_24px_-18px_rgba(23,22,31,0.25)] transition-colors hover:border-[#DEDEE8]"
           >
             <button
               type="button"
@@ -34,7 +34,7 @@ export function FaqAccordion({
                 className={`flex-shrink-0 ${reducedMotion ? '' : 'transition-transform duration-200 ease-out'}`}
                 style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
               >
-                <ChevronDown set="light" size={16} primaryColor="#5F6B64" />
+                <ChevronDown set="light" size={16} primaryColor="#6B6878" />
               </span>
             </button>
             <div
@@ -42,7 +42,7 @@ export function FaqAccordion({
               style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
             >
               <div className="overflow-hidden">
-                <p className="px-5 pb-4 text-[13.5px] leading-[1.6] text-[#5F6B64]">{item.a}</p>
+                <p className="px-5 pb-4 text-[13.5px] leading-[1.6] text-[#6B6878]">{item.a}</p>
               </div>
             </div>
           </div>

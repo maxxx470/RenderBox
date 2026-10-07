@@ -110,7 +110,7 @@ export default function PaiementRetourPage() {
         ) : (
           <>
             {watching && (
-              <span className="rb-spin h-7 w-7 rounded-full border-2 border-[#ECECF2] border-t-[#16A34A]" />
+              <span className="rb-spin h-7 w-7 rounded-full border-2 border-[#ECECF2] border-t-[#15803D]" />
             )}
             <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[#17161F]">
               {copy[outcome].title}

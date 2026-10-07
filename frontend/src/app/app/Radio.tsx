@@ -14,13 +14,13 @@ export function Radio({ checked }: { checked: boolean }) {
     <span
       aria-hidden
       className={`flex h-[15px] w-[15px] flex-shrink-0 items-center justify-center rounded-full border transition-colors duration-150 ease-out ${
-        checked ? 'border-[#16A34A]' : 'border-[#DEDEE8]'
+        checked ? 'border-[#15803D]' : 'border-[#DEDEE8]'
       }`}
     >
       {/* Scaled rather than mounted: a dot that pops from nothing reads as a
           glitch, one that grows from 0.4 reads as a control answering. */}
       <span
-        className={`h-[7px] w-[7px] rounded-full bg-[#16A34A] transition-transform duration-150 ease-out ${
+        className={`h-[7px] w-[7px] rounded-full bg-[#15803D] transition-transform duration-150 ease-out ${
           checked ? 'scale-100' : 'scale-0'
         }`}
       />

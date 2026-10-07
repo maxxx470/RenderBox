@@ -18,10 +18,10 @@ export function CheckItem({ children, light = false }: { children: ReactNode; li
     >
       <span
         className={`mt-px flex h-4.5 w-4.5 flex-shrink-0 items-center justify-center rounded-full ${
-          light ? 'bg-white' : 'bg-[#16A34A]'
+          light ? 'bg-white' : 'bg-[#FACC15]'
         }`}
       >
-        <TickSquare set="light" size={11} primaryColor={light ? '#15803D' : '#ffffff'} />
+        <TickSquare set="light" size={11} primaryColor={light ? '#15803D' : '#17161F'} />
       </span>
       {children}
     </li>
@@ -71,12 +71,12 @@ export function PricingCard({
           <span className="text-[28px] font-bold tracking-[-0.5px]">
             {tier.priceXof.toLocaleString('fr-FR')} FCFA
           </span>
-          <span className={`text-[12px] ${tier.featured ? 'text-white/80' : 'text-[#5F6B64]'}`}>
+          <span className={`text-[12px] ${tier.featured ? 'text-white/80' : 'text-[#6B6878]'}`}>
             {t('landing.pricingPeriod')}
           </span>
         </div>
         <div
-          className={`text-[12px] ${MONO} ${tier.featured ? 'text-white/80' : 'text-[#5F6B64]'}`}
+          className={`text-[12px] ${MONO} ${tier.featured ? 'text-white/80' : 'text-[#6B6878]'}`}
         >
           ~{tier.priceUsdDisplay} $
         </div>

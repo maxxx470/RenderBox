@@ -161,11 +161,20 @@ export function Glyph({
 }
 
 /**
- * Bare glyph (2026-10-05, after the Metrio reference): no tile, drawn in the
- * brand green (#15803D, 5.0:1 on white) — the active row is itself a filled
- * green pill, so there the glyph turns white.
+ * Bare glyph (2026-10-05, after the Metrio reference): no tile. Idle glyphs
+ * are brand green (#15803D, 5.0:1), as Metrio draws its idle icons in its
+ * blue (owner, 2026-10-07); the active row is a filled green pill, so there
+ * the glyph turns white.
  */
-export function RailIcon({ name, active = false }: { name: RailIconName; active?: boolean }) {
+export function RailIcon({
+  name,
+  active = false,
+  color = '#15803D',
+}: {
+  name: RailIconName;
+  active?: boolean;
+  color?: string;
+}) {
   return (
     <span aria-hidden className="flex h-5 w-5 flex-shrink-0 items-center justify-center">
       <svg
@@ -173,7 +182,7 @@ export function RailIcon({ name, active = false }: { name: RailIconName; active?
         width="19"
         height="19"
         fill="none"
-        stroke={active ? '#ffffff' : '#15803D'}
+        stroke={active ? '#ffffff' : color}
         strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"

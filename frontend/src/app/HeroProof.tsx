@@ -8,15 +8,15 @@
 // third opened on a zero, which reads as an empty counter before it reads as a
 // promise. What is left is what only this strip can say.
 //
-// The audience figure is the owner's TikTok following, and it says exactly
-// that. It is NOT a user count — RenderBox has none yet — and the copy must
-// keep naming the platform, otherwise the number silently becomes a claim
-// about the product that nobody can back up.
+// The audience line is the owner's own figure and wording (2026-10-07):
+// "Plus de 5 000 utilisateurs", exactly that and nothing more. It replaced a
+// TikTok follower count the owner found too narrow. It is a claim about the
+// product, so it must stay true — the owner answers for the number.
 //
 // Still deliberately absent: a star rating. There are no reviews to average.
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { TOOL_LOGOS } from './tool-logos';
-import { CountUp } from './CountUp';
+import { User } from 'react-iconly';
 
 // TikTok's own mark (Simple Icons, CC0), inlined like the vendor marks in
 // tool-logos.ts. Kept here rather than in that file: that list means "tools
@@ -28,15 +28,8 @@ function CommunityBadge() {
   const t = useTranslations();
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white px-3.5 py-1.5 shadow-[0_2px_10px_-4px_rgba(23,22,31,0.18)]">
-      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden focusable="false">
-        <path d={TIKTOK_PATH} fill="#17161F" />
-      </svg>
-      <span className="text-[14px] text-[#3D3B49]">
-        <b className="font-semibold text-[#17161F]">
-          <CountUp to={100000} />+
-        </b>{' '}
-        {t('landing.proofCommunity')}
-      </span>
+      <User set="light" size={15} primaryColor="#15803D" />
+      <span className="text-[14px] font-semibold text-[#17161F]">{t('landing.proofUsers')}</span>
     </span>
   );
 }

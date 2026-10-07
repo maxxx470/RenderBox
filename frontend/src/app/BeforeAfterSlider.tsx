@@ -130,7 +130,7 @@ export function BeforeAfterSlider({
             onClick={() => handleManualToggle(true)}
             className={`flex-1 rounded-full border px-3 py-2 text-[12.5px] font-medium transition-colors ${
               showAfter
-                ? 'border-transparent bg-[#16A34A] text-white'
+                ? 'border-transparent bg-[#17161F] text-white'
                 : 'border-[#ECECF2] text-[#3D3B49]'
             }`}
           >
@@ -161,7 +161,7 @@ export function BeforeAfterSlider({
         // image covers every child at once, including the drawn SVG
         // fallbacks, and puts the fix where the competing gesture is owned.
         onDragStart={(e) => e.preventDefault()}
-        className="relative hidden aspect-[16/10] w-full cursor-ew-resize touch-none select-none overflow-hidden rounded-2xl border border-[#E1E9E3] min-[640px]:block"
+        className="relative hidden aspect-[16/10] w-full cursor-ew-resize touch-none select-none overflow-hidden rounded-2xl border border-[#ECECF2] min-[640px]:block"
       >
         <div className="absolute inset-0">{before}</div>
         <span
@@ -173,7 +173,7 @@ export function BeforeAfterSlider({
         <div className="absolute inset-0" style={{ clipPath: `inset(0 0 0 ${position}%)` }}>
           {after}
           <span
-            className={`absolute right-3 top-3 rounded-full bg-[#16A34A] px-2.5 py-1 text-[10px] font-medium text-white ${MONO}`}
+            className={`absolute right-3 top-3 rounded-full bg-[#FACC15] px-2.5 py-1 text-[10px] font-semibold text-[#17161F] ${MONO}`}
           >
             {afterLabel}
           </span>
@@ -191,7 +191,7 @@ export function BeforeAfterSlider({
           className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]"
           style={{ left: `${position}%` }}
         >
-          <div className="absolute left-1/2 top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#15803D] shadow-[0_10px_26px_-6px_rgba(22,163,74,0.6)]">
+          <div className="absolute left-1/2 top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#B45309] shadow-[0_10px_26px_-6px_rgba(22,163,74,0.6)]">
             <svg
               width="16"
               height="16"

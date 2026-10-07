@@ -1,46 +1,26 @@
 'use client';
 
-// The ambiance chip — RenderBox's own control, with no counterpart in the
-// reference bar, because the reference generates anything and this generates
-// architectural renders: the light in the output is the single decision that
-// matters most here.
+// The ambiance chip — RenderBox's own control: the light in the output is the
+// single decision that matters most for an architectural render.
 //
-// The five presets used to sit in the bar as five separate pills, which is
-// what made the row read as scattered controls rather than one command bar.
-// Collapsed into a single chip that names the current choice and opens the
-// list, the row keeps the reference's density: a few equal-weight chips, then
-// the generate button.
+// 2026-10-06 — each ambiance is shown by a real render of it (the owner's own
+// images, public/presets/thumb/*, 300x200), not by a colour swatch: a small
+// round picture on the chip, and a grid of pictures in the menu, so the choice
+// is made by looking at the result.
 import { ChevronUp, ChevronDown } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { PRESET_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import { CHIP_BASE } from './chip';
-import { Radio } from './Radio';
 import { POPOVER_HEADING, popoverPanelClass, useHoverPopover } from './useHoverPopover';
 
-// The light each preset produces, as a swatch. Same encoding as the landing's
-// preset cards — it previews the result instead of naming a category, and it
-// replaces a star icon that meant "favourite" everywhere else in the world.
-//
-// Full literal class strings: Tailwind's scanner cannot see a class built by
-// interpolating a colour value (see the JIT note in CLAUDE.md).
-const AMBIANCE_SWATCH: Record<PresetKey, string> = {
-  jour_ext: 'bg-[linear-gradient(135deg,#7FC4FF_0%,#EAF6FF_100%)]',
-  jour_int: 'bg-[linear-gradient(135deg,#FFD9A0_0%,#FFF8EE_100%)]',
-  nuit_ext: 'bg-[linear-gradient(135deg,#141B3D_0%,#4C63D2_100%)]',
-  nuit_int: 'bg-[linear-gradient(135deg,#2A1D12_0%,#F5A94B_100%)]',
-  esquisse: 'bg-[linear-gradient(135deg,#D9D9E2_0%,#F7F7FA_100%)]',
+/** One picture per ambiance. */
+export const PRESET_THUMB: Record<PresetKey, string> = {
+  jour_ext: '/presets/thumb/jour-ext.jpg',
+  jour_int: '/presets/thumb/jour-int.jpg',
+  nuit_ext: '/presets/thumb/nuit-ext.jpg',
+  nuit_int: '/presets/thumb/nuit-int.jpg',
+  esquisse: '/presets/thumb/esquisse.jpg',
 };
-
-function Swatch({ preset, size = 'sm' }: { preset: PresetKey; size?: 'sm' | 'md' }) {
-  return (
-    <span
-      aria-hidden
-      className={`flex-shrink-0 rounded-full border border-[#DEDEE8] ${
-        size === 'sm' ? 'h-3 w-3' : 'h-5 w-5'
-      } ${AMBIANCE_SWATCH[preset]}`}
-    />
-  );
-}
 
 export function PresetSelect({
   preset,
@@ -67,9 +47,13 @@ export function PresetSelect({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={t('app.presetLabel')}
-        className={CHIP_BASE}
+        className={`${CHIP_BASE} pl-1`}
       >
-        <Swatch preset={preset} />
+        <img
+          src={PRESET_THUMB[preset]}
+          alt=""
+          className="h-5 w-5 flex-shrink-0 rounded-full border border-white object-cover shadow-[0_0_0_1px_#ECECF2]"
+        />
         {PRESETS[preset].label[locale]}
         <span className="flex-shrink-0">
           {open ? (
@@ -81,36 +65,57 @@ export function PresetSelect({
       </button>
 
       {open && (
-        <div className={`${popoverPanelClass({ placement })} w-[244px]`} role="menu">
+        <div
+          className={`${popoverPanelClass({ placement })} w-[296px] max-w-[calc(100vw-32px)]`}
+          role="menu"
+        >
           <p className={POPOVER_HEADING}>{t('app.presetLabel')}</p>
-          {PRESET_KEYS.map((key) => {
-            const selected = key === preset;
-            const isSketch = key === 'esquisse';
-            return (
-              <button
-                key={key}
-                type="button"
-                role="menuitemradio"
-                aria-checked={selected}
-                onClick={() => {
-                  onChange(key);
-                  closeNow();
-                }}
-                className="flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-left transition-colors duration-150 ease-out hover:bg-[#F7F7FA]"
-              >
-                <Radio checked={selected} />
-                <Swatch preset={key} size="md" />
-                <span className="flex-1 text-[13px] font-medium text-[#17161F]">
-                  {PRESETS[key].label[locale]}
-                </span>
-                {isSketch && (
-                  <span className="rounded-md bg-[#E8F5EC] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[9px] text-[#166534]">
-                    {t('app.presetNewBadge')}
+          <div className="grid grid-cols-2 gap-1.5 p-1">
+            {PRESET_KEYS.map((key) => {
+              const selected = key === preset;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={selected}
+                  onClick={() => {
+                    onChange(key);
+                    closeNow();
+                  }}
+                  className={`group relative overflow-hidden rounded-xl border-2 text-left transition-colors duration-150 ease-out ${
+                    selected ? 'border-[#16A34A]' : 'border-transparent hover:border-[#CDEBD6]'
+                  }`}
+                >
+                  <img
+                    src={PRESET_THUMB[key]}
+                    alt=""
+                    className="aspect-[3/2] w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
+                  />
+                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-2 pb-1.5 pt-4 text-[11.5px] font-semibold text-white">
+                    {PRESETS[key].label[locale]}
                   </span>
-                )}
-              </button>
-            );
-          })}
+                  {selected && (
+                    <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#15803D]">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="#ffffff"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <path d="m5 12.5 4.5 4.5L19 7.5" />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

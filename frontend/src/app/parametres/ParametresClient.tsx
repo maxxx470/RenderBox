@@ -68,7 +68,12 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
   // so the page arrives whole instead of as a blank screen with an ellipsis.
   if (!user) {
     return (
-      <AppSurface {...surface} title={t('parametres.title')}>
+      <AppSurface
+        {...surface}
+        eyebrow={t('page.accountEyebrow')}
+        title={t('parametres.title')}
+        subtitle={t('page.settingsSubtitle')}
+      >
         <p className="text-[13px] text-[#8A8896]">…</p>
       </AppSurface>
     );
@@ -77,7 +82,12 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
   const googleLinked = user.linkedProviders.includes('google');
 
   return (
-    <AppSurface {...surface} title={t('parametres.title')}>
+    <AppSurface
+      {...surface}
+      eyebrow={t('page.accountEyebrow')}
+      title={t('parametres.title')}
+      subtitle={t('page.settingsSubtitle')}
+    >
       <div className="flex max-w-lg flex-col gap-6">
         <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
           <h2 className="text-[15px] font-semibold text-[#17161F]">

@@ -2,21 +2,30 @@
 //
 // 2026-10-05 — restyled after the owner's reference (Metrio's dashboard
 // rail): grouped entries under small uppercase captions, bare line icons, and
-// the page you are on as a FILLED pill — brand gradient, white label, white
-// glyph — instead of a tinted row. Larger type (14.5px) to match.
+// the page you are on as a FILLED green pill with a white label and glyph.
+//
+// 2026-10-07 — green used exactly as Metrio uses its blue: green line icons
+// when idle, the page you are on as a solid green pill, a grey hover.
 //
 // Full literal class strings — Tailwind's scanner only sees complete tokens
 // (see the JIT note in CLAUDE.md).
 
 /** Geometry and type, shared by every entry. */
 export const ROW =
-  'flex items-center gap-3 rounded-full px-4 py-2.5 text-[14.5px] transition-[background-color,color,box-shadow] duration-150 ease-out';
+  'flex items-center gap-3 rounded-full text-[14.5px] transition-[background-color,color,box-shadow] duration-150 ease-out';
+
+/** Expanded: a full-width pill. */
+export const ROW_WIDE = 'px-4 py-2.5';
 
 /**
- * Unselected: ink-2 label on the white rail (10.4:1), a faint green-grey
- * wash on hover.
+ * Folded: a perfect circle (equal height and width, rounded-full), centred in
+ * the 76px rail — the owner asked for the coloured ground to close into a
+ * round once the rail is folded, as in Metrio.
  */
-export const ROW_IDLE = 'font-medium text-[#3D3B49] hover:bg-[#EFF3F0] hover:text-[#17161F]';
+export const ROW_ROUND = 'mx-auto h-11 w-11 justify-center p-0';
+
+/** Unselected: ink-2 label on the white rail (10.4:1), a neutral grey wash on hover, as in Metrio. */
+export const ROW_IDLE = 'font-medium text-[#3D3B49] hover:bg-[#F7F7FA] hover:text-[#17161F]';
 
 /**
  * Selected: a solid green pill with a white label, flat like the reference.
@@ -28,8 +37,8 @@ export const ROW_ACTIVE =
 
 /** Small uppercase group caption ("Navigation", "Principal", "Compte"). */
 export const RAIL_CAPTION =
-  'px-4 text-[12.5px] font-semibold uppercase tracking-[0.08em] text-[#5F6B64]';
+  'px-4 text-[12.5px] font-semibold uppercase tracking-[0.08em] text-[#6B6878]';
 
 /** The collapse toggle: a bordered circle, as in the reference. */
 export const RAIL_TOGGLE =
-  'hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-[#CDEBD6] bg-white transition-colors hover:border-[#CDEBD6] hover:bg-[#E8F5EC] min-[900px]:flex';
+  'hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-[#CDEBD6] bg-white transition-colors hover:bg-[#E8F5EC] min-[900px]:flex';

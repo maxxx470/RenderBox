@@ -17,6 +17,7 @@ import { AppFrame } from './AppFrame';
 import type { RailPage } from './HomeSidebar';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import type { PricingTierId } from '@/lib/pricing-tiers';
+import { PageHeader } from './PageHeader';
 
 export interface AppSurfaceProps {
   current: RailPage;
@@ -32,14 +33,25 @@ export function AppSurface({
   quotaMax,
   quotaRemaining,
   userEmail,
+  eyebrow,
   title,
   subtitle,
+  headerAction,
+  headTitle,
+  headAlign,
   children,
 }: AppSurfaceProps & {
-  /** Shown in the header bar, as Metrio titles its pages. */
+  /** The small uppercase line above the title (PageHeader). */
+  eyebrow: string;
+  /** The page title — in the header bar and, in bold, at the top of the page. */
   title: string;
-  /** One line at the top of the page. Optional — not every page owes an explanation. */
+  /** One line under the title. */
   subtitle?: string;
+  headerAction?: ReactNode;
+  /** The heading in the page when it differs from the header bar's name
+   *  (Metrio: "Abonnement" in the bar, "Rechargez votre compte" on the page). */
+  headTitle?: string;
+  headAlign?: 'left' | 'center';
   children: ReactNode;
 }) {
   return (
@@ -50,9 +62,13 @@ export function AppSurface({
         className={`min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#FBFBFD] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
       >
         <div className="mx-auto max-w-[1100px]">
-          {subtitle && (
-            <p className="mb-7 max-w-[62ch] text-[14px] leading-[1.6] text-[#5F6B64]">{subtitle}</p>
-          )}
+          <PageHeader
+            eyebrow={eyebrow}
+            title={headTitle ?? title}
+            subtitle={subtitle}
+            action={headerAction}
+            align={headAlign ?? 'left'}
+          />
           {children}
         </div>
       </main>

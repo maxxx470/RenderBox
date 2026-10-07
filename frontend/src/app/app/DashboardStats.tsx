@@ -1,13 +1,20 @@
 'use client';
 
-// The dashboard header that sits above the project grid on /app.
+// The four figure cards at the top of the dashboard (/app).
 //
-// Every figure here comes from the database on the server (see the page that
-// renders this) — nothing is estimated, projected or padded. When a value
-// cannot exist yet (no active plan), the card says so and offers the action
-// that would create it, rather than showing a zero that looks like a failure.
+// 2026-10-07 — rebuilt on Metrio's StatCard (src/components/ui/StatCard.tsx),
+// as the owner asked: a soft tinted card, the icon in a small tile top-left,
+// the label in uppercase top-right, the figure large bottom-left with one
+// line under it, and a small graphic bottom-right (ring, bars or curve).
+// The tints keep the owner's earlier rule — no green among these four: blue
+// for projects, red for renders, yellow for activity, and Metrio's own
+// cream-amber for what is left of the plan.
+//
+// Every figure comes from the database on the server (projects-data.ts) —
+// nothing is estimated, projected or padded.
 import Link from 'next/link';
-import { Folder, Image as ImageIcon, Chart, TimeCircle } from 'react-iconly';
+import type { ReactNode } from 'react';
+import { Folder, Image as ImageIcon, TimeCircle, Star } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 
@@ -25,57 +32,138 @@ export interface DashboardData {
   periodEndsAt: string | null;
 }
 
-const TIER_LABEL_KEY = {
-  decouverte: 'app.tierDecouverte',
-  standard: 'app.tierStandard',
-  pro: 'app.tierPro',
-} as const;
+interface Tone {
+  /** Card ground. */
+  bg: string;
+  /** Icon, graphic. */
+  ink: string;
+  /** Icon tile ground (the ink at 15%). */
+  tile: string;
+  /** Uppercase label — the tone's dark end, ≥ 6:1 on its ground. */
+  label: string;
+}
 
-// The three secondary cards share one neutral treatment.
-//
-// They used to carry a tinted ground each — green, sky blue, amber — on the
-// argument that four grounds read as four distinct facts. Two problems. The
-// sky and amber were borrowed from the landing's audience tabs, and those
-// tabs no longer exist: the hues had no second home on the site and read as
-// decoration invented for this row. And giving every card its own colour
-// flattens the hierarchy it was meant to create — when everything is
-// emphasised, the quota card, the only one that changes behaviour rather
-// than just its number, stops leading.
-//
-// So: quota keeps the green ground and the widest column, and the three
-// figures beside it are one quiet object. Colour is spent once, where it
-// means something.
-const CARD = 'rounded-2xl border border-[#ECECF2] bg-white p-4 shadow-[0_1px_3px_#17161F0A]';
-const CHIP = 'mb-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-[#F7F7FA]';
-const ICON_COLOR = '#5F6B64';
+const TONES = {
+  blue: { bg: '#EEF3FF', ink: '#2563EB', tile: 'rgba(37,99,235,0.15)', label: '#1E3A8A' },
+  red: { bg: '#FDEEEE', ink: '#DC2626', tile: 'rgba(220,38,38,0.13)', label: '#991B1B' },
+  yellow: { bg: '#FEF9E1', ink: '#CA8A04', tile: 'rgba(202,138,4,0.15)', label: '#854D0E' },
+  amber: { bg: '#FDF3E2', ink: '#B7791F', tile: 'rgba(183,121,31,0.15)', label: '#8A5B15' },
+} satisfies Record<string, Tone>;
+
+type Graphic = { kind: 'ring'; value: number } | { kind: 'bars' } | { kind: 'curve' };
+
+function MiniGraphic({ graphic, color }: { graphic: Graphic; color: string }) {
+  if (graphic.kind === 'ring') {
+    const r = 18;
+    const c = 2 * Math.PI * r;
+    return (
+      <svg width="48" height="48" viewBox="0 0 48 48" aria-hidden className="flex-shrink-0">
+        <circle cx="24" cy="24" r={r} stroke={color} strokeWidth="4.5" fill="none" opacity="0.15" />
+        <circle
+          cx="24"
+          cy="24"
+          r={r}
+          stroke={color}
+          strokeWidth="4.5"
+          fill="none"
+          strokeDasharray={`${c} ${c}`}
+          strokeDashoffset={c - (graphic.value / 100) * c}
+          strokeLinecap="round"
+          transform="rotate(-90 24 24)"
+          style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
+        />
+      </svg>
+    );
+  }
+  if (graphic.kind === 'bars') {
+    const heights = [10, 16, 12, 22, 14, 20, 28];
+    return (
+      <svg width="48" height="32" viewBox="0 0 48 32" aria-hidden className="flex-shrink-0">
+        {heights.map((h, i) => (
+          <rect
+            key={i}
+            x={2 + i * 7}
+            y={32 - h}
+            width="4"
+            height={h}
+            rx="1.5"
+            fill={color}
+            opacity={i === heights.length - 1 ? 1 : 0.3}
+          />
+        ))}
+      </svg>
+    );
+  }
+  return (
+    <svg
+      width="64"
+      height="32"
+      viewBox="0 0 64 32"
+      aria-hidden
+      className="flex-shrink-0 overflow-visible"
+    >
+      <polyline
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points="2,26 12,22 22,14 32,18 42,8 52,12 62,4"
+        opacity="0.8"
+      />
+      <circle cx="62" cy="4" r="3.5" fill={color} stroke="#ffffff" strokeWidth="1.5" />
+    </svg>
+  );
+}
 
 function StatCard({
+  tone,
   icon,
-  value,
   label,
-  empty = false,
+  value,
+  subtext,
+  graphic,
 }: {
-  icon: (color: string) => React.ReactNode;
-  value: string;
+  tone: Tone;
+  icon: (color: string) => ReactNode;
   label: string;
-  /** No figure to show yet — say so in words rather than printing a dash.
-      A lone em-dash in the big numeral slot reads as a missing value, i.e.
-      as a bug, not as "nothing has happened yet". */
-  empty?: boolean;
+  value: string;
+  subtext: string;
+  graphic: Graphic;
 }) {
   return (
-    <div className={CARD}>
-      <div className={CHIP}>{icon(ICON_COLOR)}</div>
-      <div
-        className={
-          empty
-            ? 'text-[13.5px] font-medium leading-[1.35] text-[#5F6B64]'
-            : 'font-[family-name:var(--font-display)] text-[22px] font-bold leading-none text-[#17161F]'
-        }
-      >
-        {value}
+    <div
+      style={{ backgroundColor: tone.bg }}
+      className="relative flex min-h-[120px] flex-col justify-between overflow-hidden rounded-[20px] border border-[#ECECF2] p-4 shadow-[0_1px_3px_rgba(23,22,31,0.04)] min-[640px]:p-6"
+    >
+      <div className="flex w-full items-center justify-between gap-1">
+        {/* A rounded square, as in Metrio's card: a tile, not a button. */}
+        <span
+          style={{ backgroundColor: tone.tile }}
+          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg min-[640px]:h-8 min-[640px]:w-8"
+        >
+          {icon(tone.ink)}
+        </span>
+        <span
+          style={{ color: tone.label }}
+          className="truncate text-right text-[9.5px] font-bold uppercase tracking-wider min-[640px]:text-[11px]"
+        >
+          {label}
+        </span>
       </div>
-      <div className="mt-1.5 text-[12px] text-[#5F6B64]">{label}</div>
+      <div className="mt-1.5 flex w-full items-end justify-between gap-1">
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate font-[family-name:var(--font-display)] text-[20px] font-black leading-tight tracking-tight text-[#17161F] min-[640px]:text-[24px] min-[900px]:text-[28px]">
+            {value}
+          </span>
+          <span className="truncate text-[10px] font-medium leading-normal text-[#4B4A57] min-[640px]:text-[11px]">
+            {subtext}
+          </span>
+        </div>
+        <div className="hidden h-10 flex-shrink-0 items-center justify-center min-[400px]:flex min-[640px]:h-12">
+          <MiniGraphic graphic={graphic} color={tone.ink} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -88,96 +176,64 @@ export function DashboardStats({ data }: { data: DashboardData }) {
   const shortDate = (iso: string) =>
     new Date(iso).toLocaleDateString(intl, { day: 'numeric', month: 'short' });
 
-  const used =
-    data.quotaMax !== null && data.quotaRemaining !== null
-      ? data.quotaMax - data.quotaRemaining
-      : 0;
+  const hasPlan = data.tier !== null && data.quotaMax !== null && data.quotaRemaining !== null;
+  const used = hasPlan ? data.quotaMax! - data.quotaRemaining! : 0;
   // Guarded against a max of 0 so a future free tier can't divide by zero.
-  const pct = data.quotaMax ? Math.min(100, Math.round((used / data.quotaMax) * 100)) : 0;
+  const pct =
+    hasPlan && data.quotaMax ? Math.min(100, Math.round((used / data.quotaMax) * 100)) : 0;
 
   return (
-    <div className="mb-8 grid grid-cols-1 gap-4 min-[860px]:grid-cols-[1.4fr_1fr_1fr_1fr]">
-      {/* Quota — the one card that changes behaviour rather than just its
-          number, so it leads and takes the widest column. */}
-      <div className="rounded-2xl border border-[#C6E9D1] bg-[#F0FAF3] p-4 shadow-[0_1px_3px_#17161F0A]">
-        {data.tier && data.quotaMax !== null && data.quotaRemaining !== null ? (
-          <>
-            <div className="mb-2.5 flex items-center justify-between gap-2">
-              <span className="text-[12px] text-[#5F6B64]">{t('dashboard.quotaLabel')}</span>
-              <span className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-2.5 py-1 text-[10.5px] font-semibold text-white">
-                {t(TIER_LABEL_KEY[data.tier])}
-              </span>
-            </div>
-            <div className="font-[family-name:var(--font-display)] text-[22px] font-bold leading-none text-[#17161F]">
-              {data.quotaRemaining.toLocaleString(intl)}
-              <span className="ml-1.5 text-[13px] font-medium text-[#5F6B64]">
-                {t('dashboard.quotaOf', { max: data.quotaMax.toLocaleString(intl) })}
-              </span>
-            </div>
-            {/* Violet-tinted track, not the page's neutral line colour: at 0%
-                used the bar has no fill at all, and a bare grey hairline on
-                this green ground read as a stray rule rather than as an
-                empty gauge. */}
-            <div
-              className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#CFEEDB]"
-              role="progressbar"
-              aria-valuenow={pct}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={t('dashboard.quotaLabel')}
-            >
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#16A34A] to-[#166534]"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            {data.periodEndsAt && (
-              <div className="mt-2.5 font-[family-name:var(--font-mono)] text-[11px] text-[#5F6B64]">
-                {t('dashboard.renewsOn', { date: shortDate(data.periodEndsAt) })}
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="mb-1.5 text-[12px] text-[#5F6B64]">{t('dashboard.quotaLabel')}</div>
-            <div className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
-              {t('dashboard.noTierTitle')}
-            </div>
-            <p className="mt-1.5 text-[12px] leading-[1.5] text-[#5F6B64]">
-              {t('dashboard.noTierBody')}
-            </p>
-            <Link
-              href="/app/tarifs"
-              className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-3.5 py-2 text-[12.5px] font-semibold text-white"
-            >
-              {t('dashboard.noTierCta')}
-            </Link>
-          </>
-        )}
-      </div>
-
+    <div className="grid grid-cols-2 gap-2.5 min-[640px]:gap-3.5 min-[1000px]:grid-cols-4">
       <StatCard
+        tone={TONES.blue}
         icon={(c) => <Folder set="light" size={16} primaryColor={c} />}
+        label={t('dashboard.cardProjectsLabel')}
         value={data.projectCount.toLocaleString(intl)}
-        label={t('dashboard.statProjects')}
+        subtext={t('dashboard.cardProjectsSub')}
+        graphic={{ kind: 'ring', value: Math.min(100, data.projectCount * 10) }}
       />
       <StatCard
+        tone={TONES.red}
         icon={(c) => <ImageIcon set="light" size={16} primaryColor={c} />}
-        value={data.renderCount.toLocaleString(intl)}
         label={t('dashboard.statRenders')}
+        value={data.renderCount.toLocaleString(intl)}
+        subtext={t('dashboard.cardRendersSub')}
+        graphic={{ kind: 'bars' }}
       />
       <StatCard
-        icon={(c) =>
-          data.lastActivityAt ? (
-            <TimeCircle set="light" size={16} primaryColor={c} />
-          ) : (
-            <Chart set="light" size={16} primaryColor={c} />
-          )
-        }
-        value={data.lastActivityAt ? shortDate(data.lastActivityAt) : t('dashboard.statNoActivity')}
+        tone={TONES.yellow}
+        icon={(c) => <TimeCircle set="light" size={16} primaryColor={c} />}
         label={t('dashboard.statLastActivity')}
-        empty={!data.lastActivityAt}
+        value={data.lastActivityAt ? shortDate(data.lastActivityAt) : '—'}
+        subtext={
+          data.lastActivityAt ? t('dashboard.cardActivitySub') : t('dashboard.cardActivityNone')
+        }
+        graphic={{ kind: 'curve' }}
       />
+      {/* What is left of the plan — Metrio's "pages restantes" card. It opens
+          the subscription page, where the plan is changed or renewed. */}
+      <Link
+        href="/app/tarifs"
+        className="rounded-[20px] transition-transform hover:-translate-y-0.5"
+      >
+        <StatCard
+          tone={TONES.amber}
+          icon={(c) => <Star set="light" size={16} primaryColor={c} />}
+          label={t('dashboard.cardQuotaLabel')}
+          value={hasPlan ? data.quotaRemaining!.toLocaleString(intl) : '0'}
+          subtext={
+            hasPlan
+              ? data.periodEndsAt
+                ? `${t('dashboard.quotaOf', { max: data.quotaMax!.toLocaleString(intl) })} · ${t(
+                    'dashboard.renewsOn',
+                    { date: shortDate(data.periodEndsAt) },
+                  )}`
+                : t('dashboard.quotaOf', { max: data.quotaMax!.toLocaleString(intl) })
+              : t('dashboard.noTierTitle')
+          }
+          graphic={{ kind: 'ring', value: 100 - pct }}
+        />
+      </Link>
     </div>
   );
 }

@@ -1,8 +1,13 @@
 // POST /api/projects/[projectId]/edit — Phase 5 advanced editing: add an
 // element (with a reference image), retouch a specific zone, or — since
 // 2026-10-06 — "annotate": point-and-comment edits (several numbered points,
-// one comment each, see generation/annotations.ts), on an already-GENERATED
-// RenderNode, producing 1-4 sibling variant nodes.
+// one comment each, see generation/annotations.ts), on any RenderNode of the
+// project, producing 1-4 sibling variant nodes.
+//
+// Since 2026-10-06 the source may also be an UPLOADED photo (owner: Commenter
+// and Ajouter must work on an image just pinned in the command bar, not only
+// on a finished render). A photo has no ambiance, so none is applied: the
+// edit changes what was asked and keeps the photo's own light.
 //
 // Annotate always runs on gpt-image whatever engine the client sends, and
 // re-reads the materials from the result: a comment usually changes one.
@@ -257,16 +262,6 @@ export async function POST(
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    if (sourceNode.kind !== 'GENERATED') {
-      return NextResponse.json(
-        {
-          error: 'SOURCE_NOT_EDITABLE',
-          message: 'Only a previously generated render can be edited, not a raw upload',
-        },
-        { status: 400, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-
     if (!isEngineConfigured(engine)) {
       return NextResponse.json(
         { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
@@ -328,7 +323,11 @@ export async function POST(
     // Materials sheet + preset are inherited from the node being edited, not
     // re-specified by the caller — an edit is a refinement of an already
     // materials-tagged render, not a new generation.
-    const preset: PresetKey = (sourceNode.preset as PresetKey | null) ?? 'jour_ext';
+    //
+    // A render carries the ambiance it was made with; an uploaded photo has
+    // none, and relighting it as "jour_ext" would change far more than the
+    // one thing asked for — so no preset at all.
+    const preset = (sourceNode.preset as PresetKey | null) ?? null;
     let assembledPrompt: string;
     if (editType === 'annotate') {
       // Neither the materials sheet ("keep these materials") nor the preset
@@ -344,11 +343,13 @@ export async function POST(
         editType === 'add_element'
           ? `Add the following element into the scene, using the attached reference image for its appearance: ${instruction}`
           : `${describeZone(zone!)} Requested change: ${instruction}`;
-      assembledPrompt = buildGenerationPrompt({
-        materialsSnapshot: materials,
-        preset,
-        customPrompt: editInstruction,
-      });
+      assembledPrompt = preset
+        ? buildGenerationPrompt({
+            materialsSnapshot: materials,
+            preset,
+            customPrompt: editInstruction,
+          })
+        : `${editInstruction}\nKeep everything else in the image exactly as it is: framing, light, materials.`;
     }
 
     const settled = await Promise.allSettled(

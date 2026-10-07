@@ -68,7 +68,7 @@ function TreeLevel({
                 nested in it — a button inside a button is invalid HTML. */}
             <div
               className={`group/row flex items-center rounded-lg transition-colors ${
-                selected ? 'bg-[#EFF3F0]' : 'hover:bg-[#EFF3F0]/60'
+                selected ? 'bg-[#F1F0F4]' : 'hover:bg-[#F1F0F4]/60'
               }`}
             >
               <button
@@ -84,10 +84,10 @@ function TreeLevel({
                     <ImageIcon
                       set="light"
                       size={13}
-                      primaryColor={selected ? '#16A34A' : '#8A8896'}
+                      primaryColor={selected ? '#15803D' : '#8A8896'}
                     />
                   ) : (
-                    <Upload set="light" size={13} primaryColor={selected ? '#16A34A' : '#8A8896'} />
+                    <Upload set="light" size={13} primaryColor={selected ? '#15803D' : '#8A8896'} />
                   )}
                 </span>
                 <span className="truncate">{label}</span>

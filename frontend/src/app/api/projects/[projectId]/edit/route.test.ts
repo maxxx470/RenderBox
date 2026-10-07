@@ -1,6 +1,6 @@
 // Phase 5 — payload validation (add_element needs a reference image,
-// targeted_retouch needs a zone, variantCount is 1-4), source-node-must-be-
-// GENERATED guard, multi-variant creation (N RenderNodes, N-unit rate-limit
+// targeted_retouch needs a zone, variantCount is 1-4), editing an uploaded
+// photo without an ambiance, multi-variant creation (N RenderNodes, N-unit rate-limit
 // charge), and the moderation gate on the reference image.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
@@ -196,7 +196,7 @@ describe('POST /api/projects/[projectId]/edit — validation', () => {
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 
-  it('400s when the source node is an UPLOADED node, not GENERATED', async () => {
+  it('edits an UPLOADED photo too, without imposing an ambiance on it', async () => {
     prismaMock.renderNode.findUnique.mockResolvedValue({
       id: SOURCE_NODE_ID,
       projectId: PROJECT_ID,
@@ -205,11 +205,18 @@ describe('POST /api/projects/[projectId]/edit — validation', () => {
       kind: 'UPLOADED',
       preset: null,
     } as never);
-    const res = await POST(makeReq(baseFields()), ctx());
-    expect(res.status).toBe(400);
-    const body = (await res.json()) as { error: string };
-    expect(body.error).toBe('SOURCE_NOT_EDITABLE');
-    expect(mockGenerate).not.toHaveBeenCalled();
+    const res = await POST(
+      makeReq(baseFields({ editType: 'add_element', zone: '' }), pngFile()),
+      ctx(),
+    );
+    expect(res.status).toBe(201);
+    const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
+    expect(input.prompt).toContain('Add the following element');
+    expect(input.prompt).not.toContain('full daylight');
+    expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({
+      parentId: SOURCE_NODE_ID,
+      preset: null,
+    });
   });
 });
 

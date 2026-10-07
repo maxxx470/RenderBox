@@ -48,6 +48,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import { Reveal } from './Reveal';
+import { PresentationVideo } from './PresentationVideo';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { FaqAccordion } from './FaqAccordion';
 import { HeroProof } from './HeroProof';
@@ -127,30 +128,45 @@ function SectionHeader({
   light?: boolean;
   align?: 'center' | 'left';
 }) {
+  // The section's entrance, as on Metrio: eyebrow, title and subtitle each
+  // arrive in turn (blurred → sharp, see Reveal), 90ms apart, so reaching a
+  // new section reads as a beat rather than a page that was already there.
   return (
-    <Reveal
+    <div
       className={`mb-11 max-w-[640px] ${align === 'center' ? 'mx-auto text-center' : 'text-left'}`}
     >
-      <p className={`mb-3 text-[13px] font-medium ${light ? 'text-white/85' : 'text-[#17161F]'}`}>
-        {eyebrow}
-      </p>
-      <h2
-        className={`text-[30px] font-bold leading-[1.2] tracking-[-0.6px] min-[640px]:text-[36px] ${
-          light ? 'text-white' : 'text-[#17161F]'
-        }`}
-      >
-        {title}
-      </h2>
-      {subtitle ? (
+      <Reveal>
         <p
-          className={`mt-3.5 text-[14.5px] leading-[1.6] ${
-            light ? 'text-white/85' : 'text-[#5F6B64]'
-          } ${align === 'center' ? 'mx-auto max-w-[520px]' : ''}`}
+          className={`mb-3 inline-flex items-center gap-2 text-[13px] font-medium ${light ? 'text-white/85' : 'text-[#17161F]'}`}
         >
-          {subtitle}
+          <span
+            aria-hidden
+            className={`h-1.5 w-1.5 rounded-full ${light ? 'bg-[#FACC15]' : 'bg-[#EAB308]'}`}
+          />
+          {eyebrow}
         </p>
+      </Reveal>
+      <Reveal delayMs={90}>
+        <h2
+          className={`text-[30px] font-bold leading-[1.2] tracking-[-0.6px] min-[640px]:text-[36px] ${
+            light ? 'text-white' : 'text-[#17161F]'
+          }`}
+        >
+          {title}
+        </h2>
+      </Reveal>
+      {subtitle ? (
+        <Reveal delayMs={180}>
+          <p
+            className={`mt-3.5 text-[14.5px] leading-[1.6] ${
+              light ? 'text-white/85' : 'text-[#6B6878]'
+            } ${align === 'center' ? 'mx-auto max-w-[520px]' : ''}`}
+          >
+            {subtitle}
+          </p>
+        </Reveal>
       ) : null}
-    </Reveal>
+    </div>
   );
 }
 
@@ -203,8 +219,8 @@ function PresetCard({
   alt: string;
 }) {
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] transition-colors hover:border-[#C9D6CD]">
-      <div className="aspect-[3/2] w-full overflow-hidden bg-[#EFF3F0]">
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] transition-colors hover:border-[#DEDEE8]">
+      <div className="aspect-[3/2] w-full overflow-hidden bg-[#F1F0F4]">
         <img
           src={AMBIANCE_IMAGE[ambiance]}
           alt={alt}
@@ -215,7 +231,7 @@ function PresetCard({
       </div>
       <div className="flex flex-1 flex-col p-5.5">
         <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">{title}</h4>
-        <p className="text-[13px] leading-[1.55] text-[#5F6B64]">{body}</p>
+        <p className="text-[13px] leading-[1.55] text-[#6B6878]">{body}</p>
       </div>
     </div>
   );
@@ -224,7 +240,7 @@ function PresetCard({
 function SketchVisual() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-[#F7F7FA]">
-      <svg viewBox="0 0 200 140" className="h-3/4 w-3/4 text-[#C9D6CD]" fill="none">
+      <svg viewBox="0 0 200 140" className="h-3/4 w-3/4 text-[#DEDEE8]" fill="none">
         <rect x="20" y="60" width="160" height="60" stroke="currentColor" strokeWidth="1.5" />
         <path d="M20 60 L100 20 L180 60" stroke="currentColor" strokeWidth="1.5" />
         <rect x="45" y="80" width="24" height="40" stroke="currentColor" strokeWidth="1.2" />
@@ -263,7 +279,7 @@ function HeroPresetTags() {
               ? `${GRADIENT} text-white`
               : style === 'ink'
                 ? 'bg-[#17161F] text-white'
-                : 'bg-[#E8F5EC] text-[#15803D]'
+                : 'bg-[#FEF3C7] text-[#92400E]'
           }`}
         >
           {PRESETS[preset].label[locale]}
@@ -423,7 +439,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 showing what they make. */}
             <Link
               href="/exemple"
-              className="rb-card-in mb-6 inline-flex items-center gap-2 rounded-full border border-[#E1E9E3] bg-white py-1 pl-1 pr-3 text-[12.5px] font-medium text-[#17161F] shadow-[0_8px_20px_-14px_rgba(23,22,31,0.35)] transition-colors hover:border-[#C9D6CD]"
+              className="rb-card-in mb-6 inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white py-1 pl-1 pr-3 text-[12.5px] font-medium text-[#17161F] shadow-[0_8px_20px_-14px_rgba(23,22,31,0.35)] transition-colors hover:border-[#DEDEE8]"
             >
               <span
                 className={`rounded-full ${GRADIENT} px-2.5 py-0.5 text-[11px] font-semibold text-white`}
@@ -431,7 +447,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 {t('landing.heroBadgeNew')}
               </span>
               {t('landing.heroBadgeText')}
-              <ChevronRight set="light" size={13} primaryColor="#5F6B64" />
+              <ChevronRight set="light" size={13} primaryColor="#6B6878" />
             </Link>
             {/* No Reveal wrapper here: rb-word-in is the entrance, and
                 stacking Reveal's own opacity/translate on top would fight it
@@ -442,7 +458,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               suffix={t('landing.heroTitleSuffix')}
               className="mx-auto max-w-[860px] text-[40px] font-bold leading-[1.1] tracking-[-1.2px] min-[640px]:text-[58px]"
             />
-            <p className="mx-auto mt-5 max-w-[560px] text-[15px] leading-[1.6] text-[#5F6B64]">
+            <p className="mx-auto mt-5 max-w-[560px] text-[15px] leading-[1.6] text-[#6B6878]">
               {t('landing.heroSubtitle')}
             </p>
           </div>
@@ -462,7 +478,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               >
                 {t('landing.heroCtaPrimary')}
               </Link>
-              <div className="relative rounded-[28px] border border-[#E1E9E3] bg-white p-4 shadow-[0_30px_60px_-28px_rgba(22,101,52,0.45)] min-[640px]:p-6">
+              <div className="relative rounded-[28px] border border-[#ECECF2] bg-white p-4 shadow-[0_30px_60px_-28px_rgba(22,101,52,0.45)] min-[640px]:p-6">
                 <div className="mb-3.5 flex items-center justify-between">
                   <span className={`text-[11px] text-[#8A8896] ${MONO}`}>
                     {t('landing.heroPreviewProject')}
@@ -481,7 +497,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 </div>
               </div>
               <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
-                <ImageIcon set="light" size={14} primaryColor="#16A34A" />
+                <ImageIcon set="light" size={14} primaryColor="#D97706" />
                 {t('landing.heroChipFacade')}
               </div>
               <div
@@ -501,6 +517,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           <HeroProof />
         </Reveal>
 
+        {/* PRESENTATION VIDEO — right after the hero and the compatible
+            tools (owner, 2026-10-06). A placeholder until the site is
+            finished and the film is made, framed like Metrio's: a browser
+            window that straightens as it scrolls in. */}
+        <PresentationVideo />
+
         {/* BEFORE / AFTER */}
         <section className="py-14 min-[860px]:py-20">
           <SectionHeader
@@ -515,7 +537,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               return (
                 <Reveal key={pair.kind} delayMs={100 + i * 120}>
                   <p className="mb-3 flex items-center gap-2 text-[15px] font-semibold text-[#17161F]">
-                    <span aria-hidden className="h-2 w-2 rounded-full bg-[#16A34A]" />
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-[#EAB308]" />
                     {t(exterior ? 'landing.beforeAfterExterior' : 'landing.beforeAfterInterior')}
                   </p>
                   <BeforeAfterSlider
@@ -622,7 +644,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                     not at a checklist (owner's brief, 2026-10-06). */}
                 <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
                   <div className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white min-[640px]:flex">
-                    <Document set="light" size={22} primaryColor="#15803D" />
+                    <Document set="light" size={22} primaryColor="#D97706" />
                   </div>
                   <div>
                     <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
@@ -656,14 +678,14 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                   </div>
                   <div>
                     <span
-                      className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#15803D] ${MONO}`}
+                      className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#B45309] ${MONO}`}
                     >
                       {t('landing.split2Tag')}
                     </span>
                     <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
                       {t('landing.treeTitle')}
                     </h3>
-                    <p className="max-w-[680px] text-[14px] leading-[1.55] text-[#5F6B64] min-[640px]:text-[15px]">
+                    <p className="max-w-[680px] text-[14px] leading-[1.55] text-[#6B6878] min-[640px]:text-[15px]">
                       {t('landing.treeSubtitle')}
                     </p>
                   </div>
@@ -694,14 +716,14 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 </div>
                 <div>
                   <span
-                    className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#15803D] ${MONO}`}
+                    className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#B45309] ${MONO}`}
                   >
                     {t('landing.enginesEyebrow')}
                   </span>
                   <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
                     {t('landing.enginesTitle')}
                   </h3>
-                  <p className="max-w-[680px] text-[14px] leading-[1.55] text-[#5F6B64] min-[640px]:text-[15px]">
+                  <p className="max-w-[680px] text-[14px] leading-[1.55] text-[#6B6878] min-[640px]:text-[15px]">
                     {t('landing.enginesSubtitle')}
                   </p>
                 </div>
@@ -765,7 +787,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
 
           <Reveal delayMs={240} className="mx-auto mt-5 max-w-[760px]">
             <div className="flex flex-col gap-5 rounded-[24px] border border-dashed border-[#DEDEE8] bg-white p-5 min-[640px]:flex-row min-[640px]:items-center">
-              <div className="w-full flex-shrink-0 overflow-hidden rounded-2xl bg-[#EFF3F0] min-[640px]:w-[240px]">
+              <div className="w-full flex-shrink-0 overflow-hidden rounded-2xl bg-[#F1F0F4] min-[640px]:w-[240px]">
                 <img
                   src="/presets/esquisse.jpg"
                   alt={t('landing.presetsSketchAlt')}
@@ -781,7 +803,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 <h4 className="mb-2 text-[15px] font-semibold text-[#17161F]">
                   {t('landing.presetsSketchTitle')}
                 </h4>
-                <p className="max-w-[62ch] text-[13px] leading-[1.55] text-[#5F6B64]">
+                <p className="max-w-[62ch] text-[13px] leading-[1.55] text-[#6B6878]">
                   {t('landing.presetsSketchBody')}
                 </p>
               </div>

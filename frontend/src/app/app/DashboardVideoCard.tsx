@@ -109,7 +109,7 @@ export function DashboardVideoCard() {
             onClick={() => setPlaying(true)}
             className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
           >
-            <Play set="light" size={14} primaryColor="#16A34A" />
+            <Play set="light" size={14} primaryColor="#15803D" />
             {t('dashboard.videoPlay')}
           </button>
         </div>

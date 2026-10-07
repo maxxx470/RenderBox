@@ -146,7 +146,7 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                     <td className="border-b border-[#ECECF2] px-3.5 py-3">
-                      <span className="rounded-lg bg-[#16A34A12] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] text-[#15803D]">
+                      <span className="rounded-lg bg-[#E8F5EC] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] text-[#166534]">
                         {u.role}
                       </span>
                     </td>

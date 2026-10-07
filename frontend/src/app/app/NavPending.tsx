@@ -37,7 +37,7 @@ export function NavPendingIcon({ children }: { children: ReactNode }) {
       aria-live="polite"
       className="flex h-6.5 w-6.5 flex-shrink-0 items-center justify-center rounded-full border border-[#ECECF2] bg-white"
     >
-      <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-[#DEDEE8] border-t-[#16A34A]" />
+      <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-[#DEDEE8] border-t-[#15803D]" />
     </span>
   );
 }

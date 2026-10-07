@@ -7,7 +7,7 @@
 //
 // Three layers make the "shine", and each does one job:
 //   1. GROUND — a green wash running down the card. Pale on purpose: the
-//      body text is #5F6B64, and #5F6B64 on the darkest stop here measures
+//      body text is #6B6878, and #6B6878 on the darkest stop here measures
 //      4.6:1, just over the 4.5:1 floor. A stop any deeper would push the
 //      paragraph under it, and a card nobody can read is not a brighter card.
 //   2. SHEEN — a soft white highlight in the top-left corner, which is what
@@ -42,7 +42,7 @@ export const CARD_GRADIENT = 'bg-[linear-gradient(155deg,#FBFEFC_0%,#EAF7EE_46%,
  * rather than grey — a neutral drop shadow under a green card reads as dirt.
  */
 export const CARD_GRADIENT_EDGE =
-  'shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_3px_rgba(23,22,31,0.04)] transition-[transform,box-shadow,border-color] duration-[220ms] ease-out hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_20px_38px_-18px_rgba(22,163,74,0.5)] motion-safe:hover:scale-[1.02]';
+  'shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_3px_rgba(23,22,31,0.04)] transition-[transform,translate,scale,box-shadow,border-color] duration-[220ms] ease-out hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_20px_38px_-18px_rgba(22,163,74,0.5)] motion-safe:hover:scale-[1.02]';
 
 /**
  * The resting border, kept OUT of the edge token above.
