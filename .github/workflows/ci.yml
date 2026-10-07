@@ -55,18 +55,10 @@ jobs:
       # Fail the build on high/critical CVEs in production deps.
       # Dev-only advisories are tolerated (they don't ship to users).
       #
-      # 3 advisories are explicitly ignored via package.json's
-      # pnpm.auditConfig.ignoreGhsas (GHSA-f88m-g3jw-g9cj sharp/libvips,
-      # GHSA-6g55-p6wh-862q + GHSA-r28c-9q8g-f849 postcss sourceMappingURL)
-      # — both packages are next@16.2.12's own internal/bundled deps
-      # (pnpm overrides can't reach a dependency a package declares for
-      # itself), and neither is reachable in this app: sharp only runs via
-      # next/image (never imported — images go through our own
-      # authenticated proxy route, see CLAUDE.md), and the postcss findings
-      # are build-time-only file-read issues against our own trusted build
-      # input, not something a deployed-app visitor can trigger. Pinned to
-      # 16.2.12 rather than the otherwise-CVE-clean 16.3.x line because
-      # 16.3.1+ hits an unresolved Vercel platform bug (missing
-      # .next/next-server.js.nft.json during Vercel's packaging step).
+      # Transitive fixes are forced through package.json's pnpm.overrides
+      # (pnpm 9 ignores an overrides key in pnpm-workspace.yaml). next is on
+      # 16.3.8: 16.2.12 was pinned to dodge a Vercel packaging bug seen on
+      # 16.3.3, but 2026-10 RCE advisories need >= 16.3.6. The few GHSAs left
+      # in pnpm.auditConfig.ignoreGhsas predate that upgrade.
       - name: Audit (prod deps, high+ severity)
         run: pnpm audit --prod --audit-level=high
