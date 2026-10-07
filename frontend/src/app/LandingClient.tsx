@@ -32,11 +32,12 @@ import {
   Category,
   ChevronRight,
   Document,
-  Graph,
+  Edit,
   Home,
   Image as ImageIcon,
   Location,
   Swap,
+  Work,
 } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
@@ -358,7 +359,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
     }
   }
 
-  const faqItems = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+  const faqItems = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
     q: t(`landing.faq${n}Q` as 'landing.faq1Q'),
     a: t(`landing.faq${n}A` as 'landing.faq1A'),
   }));
@@ -603,16 +604,22 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                   body: t('landing.audience1Body'),
                 },
                 {
-                  icon: (c) => <Location set="curved" size={22} primaryColor={c} />,
+                  icon: (c) => <Work set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience2Tab'),
                   title: t('landing.audience2Title'),
                   body: t('landing.audience2Body'),
                 },
                 {
-                  icon: (c) => <Graph set="curved" size={22} primaryColor={c} />,
+                  icon: (c) => <Edit set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience3Tab'),
                   title: t('landing.audience3Title'),
                   body: t('landing.audience3Body'),
+                },
+                {
+                  icon: (c) => <Location set="curved" size={22} primaryColor={c} />,
+                  label: t('landing.audience4Tab'),
+                  title: t('landing.audience4Title'),
+                  body: t('landing.audience4Body'),
                 },
               ] satisfies AudienceCardData[]
             }

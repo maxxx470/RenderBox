@@ -65,7 +65,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.railEnhance': 'Enhance',
   'enhance.title': 'Enhance',
   'enhance.subtitle':
-    'Drop an existing render: RenderBox makes it sharper, better lit and more realistic, without touching the design.',
+    'Drop an existing render: RenderBox makes it sharper, better lit and more realistic, keeping your framing and your architecture as the reference.',
   'enhance.dropTitle': 'Drop your render here',
   'enhance.dropHint': 'JPG, PNG, WebP or HEIC, or click to choose',
   'enhance.change': 'Change image',
@@ -221,7 +221,8 @@ const en: Record<keyof typeof fr, string> = {
     'Choose a plan to unlock your monthly generations (Engine 1 + Engine 2).',
   'app.genHomeChooseTier': 'View pricing',
   'app.genHomeExampleTag': 'Example',
-  'app.genHomeCardPlaceholder': 'Add a photo to start your first render',
+  'app.genHomeCardPlaceholder':
+    'Upload a photo, a sketch or an image export of your project to start',
   'app.genHomeAddHint': 'Describe the element to add, and attach a photo of it with the paperclip.',
   'app.genHomeCommentHint': 'Click the image where it should change, then write your comment.',
   'app.genHomeNeedPhoto': 'Pin an image first with the paperclip.',
@@ -507,7 +508,7 @@ const en: Record<keyof typeof fr, string> = {
 
   'landing.heroTitlePrefix': 'Your plans become ',
   'landing.heroTitleAccent': 'photorealistic 3D renders',
-  'landing.heroTitleSuffix': ' that get clients to sign',
+  'landing.heroTitleSuffix': '',
   'landing.heroCtaPrimary': 'Generate my first render',
   'landing.heroCtaSecondary': 'See an example',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
@@ -518,7 +519,7 @@ const en: Record<keyof typeof fr, string> = {
 
   // "your exports", not "works with": RenderBox reads the images these tools
   // export, it does not integrate with them. Do not shorten.
-  'landing.proofCompatible': 'Works with your exports from',
+  'landing.proofCompatible': 'Import image exports from',
   // The figure and the wording are the founder's (2026-10-07): exactly
   // "More than 5,000 users", nothing more. Do not rephrase.
   'landing.proofUsers': 'More than 5,000 users',
@@ -545,16 +546,19 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterAltAfterInterior':
     'The same living room as a photorealistic render: timber panelling, linen sofa, garden in daylight.',
 
-  'landing.audienceTitle': 'Built for everyone who sells before they build',
-  'landing.audience1Title': 'The same materials at every revision',
+  'landing.audienceTitle': 'Built for building professionals',
+  'landing.audience1Title': 'More variants, without redoing your renders',
   'landing.audience1Body':
-    'Present your projects with consistent renders at every iteration, without starting from scratch at every client revision.',
-  'landing.audience2Title': 'Sold before the first stone is laid',
+    'Try another facade, another ambiance or another material at every revision: the project’s materials stay the same from one view to the next.',
+  'landing.audience2Title': 'Technical projects everyone understands',
   'landing.audience2Body':
-    'Bring off-plan properties to life for your buyers — a day render, a night render, a furnished render, in minutes.',
-  'landing.audience3Title': 'A whole development, no design studio',
+    'A view of your model becomes an image a client, a site meeting or a submission can read.',
+  'landing.audience3Title': 'From drawing to presentation visual',
   'landing.audience3Body':
-    'Produce the sales visuals for an entire development without multiplying back-and-forths with a graphic designer.',
+    'A sketch or an export becomes a presentable render in minutes, then gets corrected with simple comments.',
+  'landing.audience4Title': 'The project shown before the first stone',
+  'landing.audience4Body':
+    'A day render, a night render, a furnished interior for your buyers, without endless back-and-forths with a visualiser.',
 
   'landing.checklistTitle':
     'Consistent renders. A memory that never betrays you. Fewer back-and-forths.',
@@ -563,7 +567,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.checklistItem3': 'Re-injected into every new generation',
   'landing.checklistItem4': 'Full, browsable history per project',
   'landing.checklistItem5': 'Pick up any render as a new starting point',
-  'landing.checklistCta': 'Start for free',
+  'landing.checklistCta': 'Generate my first render',
 
   'landing.split1FaceMain': 'MAIN FAÇADE',
   'landing.split1FaceMainValue': 'White trowelled render',
@@ -609,14 +613,14 @@ const en: Record<keyof typeof fr, string> = {
   'landing.ctaBandTitle': 'Ready to generate your first renders?',
   'landing.ctaBandBody':
     'Upload a photo, pick a preset, and let RenderBox remember every material for you.',
-  'landing.ctaBandButton': 'Start for free',
+  'landing.ctaBandButton': 'Generate my first render',
   'landing.navHow': 'How it works',
   'landing.navFaq': 'FAQ',
   'landing.menuClose': 'Close the menu',
   'landing.heroBadgeNew': 'New',
   'landing.heroBadgeText': 'Two AI engines in one project',
   'landing.heroSubtitle':
-    'Upload a photo or a sketch: RenderBox generates renders that stay consistent from one view to the next, materials included.',
+    'Upload a photo, a sketch or an image export of your plans: RenderBox generates renders that stay consistent from one view to the next, materials included.',
   'landing.eyebrowResult': 'The result',
   'landing.eyebrowFeatures': 'Key features',
   'landing.eyebrowHow': 'How it works',
@@ -649,17 +653,26 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faq6A':
     'With the Comment mode: click the render where it should change, write the change (up to 8 comments), then Apply. The rest of the image is kept and the original stays in the project tree.',
   'landing.faq6Q': 'How do I change part of a render?',
+  'landing.faq8Q': 'Which files can I upload?',
+  'landing.faq8A':
+    'Images: JPG, PNG, WebP or HEIC, up to 15 MB — a photo, a scanned sketch, a screenshot or an image export of a view from your software (SketchUp, Revit, AutoCAD, Archicad, Rhino). Project files (.skp, .rvt, .dwg, .pln, .3dm) are not read directly: export the view as an image first.',
+  'landing.faq9Q': 'Can I improve a render made with other software?',
+  'landing.faq9A':
+    'Yes, with Enhance: drop the render, tick what should improve (sharpness, light, materials, sky and planting, life and atmosphere) and pick the strength. The framing is kept.',
+  'landing.faq10Q': 'Does RenderBox change my architecture?',
+  'landing.faq10A':
+    'RenderBox starts from your image and asks the engines to keep the framing, the volumes and the openings. The result is still AI generation: check the details, and fix what needs fixing with Comment.',
   'landing.pricingFeatureAssistant': 'Built-in assistant to guide you',
 
   'landing.footerProductHeading': 'Product',
   'landing.footerTagline':
-    'Photorealistic 3D renders from your plans, with the same materials from one view to the next.',
+    'Realistic renders to design, explore and present your projects, with the same materials from one view to the next.',
   'landing.footerResourcesHeading': 'Resources',
   'landing.footerCopyright': '© {year} RenderBox. All rights reserved.',
   'landing.footerLegalLinks': 'Terms · Privacy',
 
-  'landing.pricingTitlePrefix': 'A tier for ',
-  'landing.pricingTitleAccent': 'every pace',
+  'landing.pricingTitlePrefix': 'Pick the volume that fits ',
+  'landing.pricingTitleAccent': 'your projects',
   'landing.pricingSubtitle':
     'Same engines, same ambiances: only the number of renders a month changes.',
   'landing.pricingPeriod': '/ month',
@@ -676,8 +689,9 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingError': 'Could not start checkout. Try again.',
 
   'landing.audience1Tab': 'Architects',
-  'landing.audience2Tab': 'Agencies',
-  'landing.audience3Tab': 'Developers',
+  'landing.audience2Tab': 'Engineers & design offices',
+  'landing.audience3Tab': 'Building draughtspeople',
+  'landing.audience4Tab': 'Developers & builders',
 
   'landing.feedStudioQuery1': 'Detect the materials on the main facade',
   'landing.feedStudioQuery2': 'Check the back facade',

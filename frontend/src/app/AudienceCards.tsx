@@ -1,6 +1,7 @@
 'use client';
 
-// "Fonctionnalités clés" — three columns, one per audience.
+// "Fonctionnalités clés" — one card per trade (four since 2026-10-07: architects,
+// engineers & design offices, building draughtspeople, developers & builders).
 //
 // Reference layout (2026-10-05 green charter): centred cards on the grey band,
 // a round icon on top, and the MIDDLE card lifted out in the brand gradient.
@@ -24,7 +25,7 @@ export interface AudienceCardData {
 
 export function AudienceCards({ cards }: { cards: AudienceCardData[] }) {
   return (
-    <div className="grid grid-cols-1 gap-5 min-[860px]:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 min-[640px]:grid-cols-2 min-[1100px]:grid-cols-4">
       {cards.map((card, i) => {
         const lead = i === 1;
         return (

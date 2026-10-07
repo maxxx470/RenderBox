@@ -118,7 +118,7 @@ export function buildSystemPrompt(mode: AssistantMode, locale: 'fr' | 'en'): str
   const lang =
     locale === 'en'
       ? 'Answer in English unless the user writes in another language.'
-      : "Réponds en français, sauf si l'utilisateur écrit dans une autre langue.";
+      : "Réponds en français en vouvoyant l'utilisateur, sauf s'il écrit dans une autre langue.";
   if (mode === 'search') {
     return `Tu es l'assistant recherche de RenderBox, un outil de rendus architecturaux par IA. Tu as accès à Internet.
 Tu aides sur : architecture, matériaux et revêtements (aspect, usage, entretien, prix indicatifs), styles architecturaux, éclairage et ambiance, végétation, références de projets.
