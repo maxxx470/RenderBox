@@ -48,6 +48,34 @@ describe('buildEnhancePrompt', () => {
   });
 });
 
+describe('buildEnhancePrompt references', () => {
+  it('names each reference image after the source, by its option', () => {
+    const prompt = buildEnhancePrompt({
+      options: ['materials', 'sky'],
+      strength: 'subtle',
+      references: ['materials', 'sky'],
+    });
+    expect(prompt).toContain('The first image is the render to enhance.');
+    expect(prompt).toContain(`Image 2 is a reference for ${ENHANCE_OPTIONS.materials.reference}.`);
+    expect(prompt).toContain(`Image 3 is a reference for ${ENHANCE_OPTIONS.sky.reference}.`);
+  });
+
+  it('says nothing about references when there are none', () => {
+    const prompt = buildEnhancePrompt({ options: ['lighting'], strength: 'subtle' });
+    expect(prompt).not.toContain('reference');
+  });
+
+  it('runs on the instruction alone when nothing is ticked', () => {
+    const prompt = buildEnhancePrompt({
+      options: [],
+      strength: 'subtle',
+      instruction: 'brighter interior',
+    });
+    expect(prompt.split('\n')[0]).toContain('Keep the exact same composition');
+    expect(prompt.endsWith('\nbrighter interior')).toBe(true);
+  });
+});
+
 describe('isEnhanceOptionKey', () => {
   it('accepts known keys and rejects anything else', () => {
     expect(isEnhanceOptionKey('detail')).toBe(true);

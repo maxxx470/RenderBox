@@ -1,19 +1,19 @@
-import { ProjectsGrid } from './ProjectsGrid';
-import { loadProjectsPage } from './projects-data';
+import { ImagesGrid } from './ImagesGrid';
+import { loadImagesPage } from './images-data';
 
-// /app — the dashboard, and the first screen after sign-in: the "3 steps"
-// film and the showcase, the account figures, then the most recent projects.
-// Every project, with its category filters, is on /app/projets.
+// /app — the dashboard, and the first screen after sign-in: the account
+// figures, the "3 steps" film and the showcase, then the latest images
+// (every one is in Mes images, /app/images).
 //
 // The generation space it used to share this route with now lives at
-// /app/generer, reachable from the sidebar. The data (three database calls)
-// is shared with /app/projets — see projects-data.ts.
+// /app/generer, reachable from the sidebar. The data is shared with Mes
+// images — see images-data.ts.
 export default async function AppDashboardPage() {
-  const { projects, dashboard, userEmail } = await loadProjectsPage();
+  const { images, dashboard, userEmail } = await loadImagesPage();
   return (
-    <ProjectsGrid
+    <ImagesGrid
       variant="dashboard"
-      initialProjects={projects}
+      initialImages={images}
       dashboard={dashboard}
       userEmail={userEmail}
     />

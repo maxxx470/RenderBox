@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'my-images-enhance',
+    date: '2026-10-08',
+    kind: 'shipped',
+    title: {
+      fr: 'Mes images et un nouvel Enhance',
+      en: 'My images and a new Enhance',
+    },
+    body: {
+      fr: 'La page Projets devient « Mes images » : toutes vos images importées, générées ou améliorées, filtrées en Tout, Importées, Générées ou Enhance, à télécharger ou supprimer. Enhance a sa propre barre de commande pour décrire l’amélioration, et chaque élément à améliorer accepte une image de référence. La page Image et un projet partagent la même disposition, avec la fiche matériaux et l’arbre à droite.',
+      en: 'The Projects page becomes "My images": every image you uploaded, generated or enhanced, filtered by All, Uploaded, Generated or Enhance, to download or delete. Enhance has its own command bar to describe the improvement, and each item to improve takes a reference image. The Image page and a project share one layout, with the materials sheet and the tree on the right.',
+    },
+  },
+  {
     id: 'edit-from-image',
     date: '2026-10-06',
     kind: 'shipped',

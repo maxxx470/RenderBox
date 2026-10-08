@@ -129,3 +129,41 @@ describe('DELETE /api/render-nodes/[id]', () => {
     expect(mockDeleteBlobs).not.toHaveBeenCalled();
   });
 });
+
+describe('DELETE /api/render-nodes/[id]?scope=single', () => {
+  function makeSingleReq(): NextRequest {
+    return new NextRequest('http://test/api/render-nodes/n2?scope=single', {
+      method: 'DELETE',
+      headers: { 'x-csrf-token': 'csrf-tok', cookie: 'app-csrf=csrf-tok' },
+    });
+  }
+
+  it("removes only that image's blob, never its descendants'", async () => {
+    const res = await DELETE(makeSingleReq(), params);
+    expect(res.status).toBe(200);
+    expect(mockDeleteBlobs).toHaveBeenCalledWith(['https://blob/2']);
+    expect(prismaMock.renderNode.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it('moves what was made from it up to the image it came from', async () => {
+    const res = await DELETE(makeSingleReq(), params);
+    const body = (await res.json()) as {
+      deletedCount: number;
+      tree: { id: string; children: { id: string }[] }[];
+    };
+    expect(body.deletedCount).toBe(1);
+    const n1 = body.tree.find((n) => n.id === 'n1');
+    expect(n1?.children.map((c) => c.id)).toEqual(['n3']);
+    expect(prismaMock.renderNode.updateMany).toHaveBeenCalledWith({
+      where: { parentId: 'n2' },
+      data: { parentId: 'n1' },
+    });
+  });
+
+  it('keeps the row when blob deletion fails', async () => {
+    mockDeleteBlobs.mockRejectedValueOnce(new Error('blob down'));
+    const res = await DELETE(makeSingleReq(), params);
+    expect(res.status).toBe(502);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+});

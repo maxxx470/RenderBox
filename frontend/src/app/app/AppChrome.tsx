@@ -71,21 +71,26 @@ export function useAppChrome(): ChromeContext | null {
   return useContext(Ctx);
 }
 
-/** Which rail entry a URL belongs to. An open project sits under Projets. */
+/**
+ * Which rail entry a URL belongs to. An open project sits under Image, where
+ * images are made — Mes images is the list, not a kind of generation
+ * (owner, 2026-10-08). An Enhance project never reaches here: /app/[projet]
+ * redirects it to /app/enhance.
+ */
 export function railPageFor(pathname: string): RailPage {
   if (pathname === '/app') return 'dashboard';
-  if (pathname.startsWith('/app/projets')) return 'projects';
+  if (pathname.startsWith('/app/images')) return 'images';
   if (pathname.startsWith('/app/generer')) return 'generate';
   if (pathname.startsWith('/app/enhance')) return 'enhance';
   if (pathname.startsWith('/app/tarifs')) return 'pricing';
   if (pathname.startsWith('/app/info')) return 'info';
   if (pathname.startsWith('/parametres')) return 'settings';
-  return 'projects';
+  return 'generate';
 }
 
 const TITLE_KEY: Record<RailPage, TranslationKey> = {
   dashboard: 'dashboard.title',
-  projects: 'app.railProjects',
+  images: 'app.railImages',
   generate: 'app.genHomeTitle',
   enhance: 'enhance.title',
   pricing: 'tarifs.title',

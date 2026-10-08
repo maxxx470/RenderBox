@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { Upload, CloseSquare } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { AppMode } from './CommandBar';
-import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
+import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
 import type { Pin } from './AnnotationLayer';
 import { MAX_ANNOTATIONS } from '@/lib/server/generation/annotations';
 
@@ -19,9 +19,13 @@ export function EditPanel({
   onReferenceChange,
   pins,
   onPinsChange,
+  lockedHint,
 }: {
   mode: Extract<AppMode, 'retouch' | 'add'>;
   canEdit: boolean;
+  /** Why editing is off — on a project, no render is selected; on the Image
+      page, no photo is pinned yet. */
+  lockedHint: string;
   referenceFile: File | null;
   onReferenceChange: (file: File | null) => void;
   /** "Commenter" mode: the comments placed on the image, in order. */
@@ -44,9 +48,9 @@ export function EditPanel({
   }, [referenceFile]);
 
   return (
-    // Mirrors MaterialsPanel: outlined panel on desktop, opaque drawer on
-    // mobile where it sits over a dimmed backdrop.
-    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border-l-0">
+    // Takes MaterialsPanel's place at the top of the editor's right column
+    // while Commenter / Ajouter is on; the column draws the card.
+    <section className="px-4 py-4.5">
       <h3 className="mb-1 font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]">
         {t('edit.panelTitle')}
       </h3>
@@ -54,7 +58,7 @@ export function EditPanel({
 
       {!canEdit && (
         <div className="mb-4.5 rounded-xl bg-[#F7F7FA] p-3.5 text-xs leading-relaxed text-[#8A8896]">
-          {t('app.modeSelectNodeHint')}
+          {lockedHint}
         </div>
       )}
 
@@ -147,6 +151,6 @@ export function EditPanel({
       )}
 
       <p className="text-center text-[10.5px] leading-relaxed text-[#8A8896]">{t('edit.note')}</p>
-    </aside>
+    </section>
   );
 }

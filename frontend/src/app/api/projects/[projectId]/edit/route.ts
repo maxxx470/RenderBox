@@ -36,14 +36,10 @@ import {
   type GenerateRenderOutput,
 } from '@/lib/server/generation/engines';
 import { uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
-import { verifyMagicBytes } from '@/lib/server/upload/sniff';
+import { checkImageFile } from '@/lib/server/upload/check-image-file';
 import { buildRenderTree } from '@/lib/server/render-tree';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
 import { describeZone, ZoneSchema } from '@/lib/server/generation/describe-zone';
-import {
-  moderateImage,
-  ModerationNotConfiguredError,
-} from '@/lib/server/moderation/moderate-image';
 import { log } from '@/lib/server/observability/log';
 import type { PresetKey } from '@/lib/server/generation/presets';
 import {
@@ -77,87 +73,6 @@ const FieldsSchema = z
     message: 'annotations are required for annotate',
     path: ['annotations'],
   });
-
-type ImageCheck = { ok: true; buffer: Buffer; mimeType: string } | { ok: false; res: NextResponse };
-
-/**
- * Size, MIME allow-list, magic bytes, then moderation — the same gate for the
- * add_element reference and the annotate marked copy. Both come from the
- * client, so neither is trusted because of what it claims to be.
- */
-async function checkImageFile(
-  file: File,
-  requestId: string,
-  what: 'Reference image' | 'Marked image',
-): Promise<ImageCheck> {
-  const headers = { 'x-request-id': requestId };
-  const allowedMime = (process.env.UPLOAD_ALLOWED_MIME ?? 'image/jpeg,image/png,image/webp')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const maxBytes = Number.parseInt(process.env.UPLOAD_MAX_BYTES ?? '15728640', 10);
-
-  if (file.size > maxBytes) {
-    return {
-      ok: false,
-      res: NextResponse.json(
-        { code: 'FILE_TOO_LARGE', message: `Max ${maxBytes} bytes` },
-        { status: 413, headers },
-      ),
-    };
-  }
-  if (!allowedMime.includes(file.type)) {
-    return {
-      ok: false,
-      res: NextResponse.json(
-        { code: 'INVALID_MIME', message: `MIME ${file.type} not allowed` },
-        { status: 415, headers },
-      ),
-    };
-  }
-
-  const buf = Buffer.from(await file.arrayBuffer());
-  const { match, sniffed } = verifyMagicBytes(buf, file.type);
-  if (sniffed && !match) {
-    return {
-      ok: false,
-      res: NextResponse.json(
-        { code: 'MAGIC_BYTE_MISMATCH', message: 'File bytes do not match declared MIME' },
-        { status: 415, headers },
-      ),
-    };
-  }
-
-  let moderation;
-  try {
-    moderation = await moderateImage(buf, file.type);
-  } catch (e) {
-    if (e instanceof ModerationNotConfiguredError) {
-      return {
-        ok: false,
-        res: NextResponse.json(
-          { code: 'MODERATION_NOT_CONFIGURED', message: 'Content moderation is not configured' },
-          { status: 503, headers },
-        ),
-      };
-    }
-    throw e;
-  }
-  if (moderation.flagged) {
-    log.warn('edit: uploaded image flagged by moderation', {
-      what,
-      categories: moderation.categories,
-    });
-    return {
-      ok: false,
-      res: NextResponse.json(
-        { code: 'CONTENT_FLAGGED', message: `${what} was flagged by content moderation` },
-        { status: 422, headers },
-      ),
-    };
-  }
-  return { ok: true, buffer: buf, mimeType: file.type };
-}
 
 export async function POST(
   req: NextRequest,

@@ -1,5 +1,10 @@
 // DELETE /api/render-nodes/[id] — remove a render and everything derived
 // from it, blobs included, then return the project's fresh tree.
+//
+// ?scope=single (Mes images, owner 2026-10-08: "seulement l'image") removes
+// that one image only. What was made from it is kept and moves up to the
+// image it came from, so the tree keeps a lineage instead of orphans; a
+// project left with no image at all goes too, being nothing but a container.
 export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from 'next/server';
@@ -49,6 +54,44 @@ export async function DELETE(
         blobUrl: true,
       },
     });
+
+    if (req.nextUrl.searchParams.get('scope') === 'single') {
+      const target = all.find((n) => n.id === id);
+      if (!target) {
+        return NextResponse.json(
+          { error: 'NODE_NOT_FOUND', message: 'Render not found' },
+          { status: 404, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      // Blob first, row second — see below.
+      try {
+        await deleteBlobs([target.blobUrl]);
+      } catch (err) {
+        log.error('render-node.delete.blobs_failed', { nodeId: id, err: String(err) });
+        return NextResponse.json(
+          { error: 'STORAGE_CLEANUP_FAILED', message: 'Could not delete the stored images' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      const projectEmpty = all.length === 1;
+      await prisma.$transaction([
+        prisma.renderNode.updateMany({
+          where: { parentId: id },
+          data: { parentId: target.parentId },
+        }),
+        prisma.renderNode.delete({ where: { id } }),
+        ...(projectEmpty ? [prisma.project.delete({ where: { id: node.projectId } })] : []),
+      ]);
+      const remaining: FlatRenderNode[] = all
+        .filter((n) => n.id !== id)
+        .map(({ blobUrl: _blobUrl, ...rest }) =>
+          rest.parentId === id ? { ...rest, parentId: target.parentId } : rest,
+        );
+      return NextResponse.json(
+        { deletedCount: 1, tree: buildRenderTree(remaining) },
+        { headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
 
     const branch = collectBranch(all, id);
     const branchIds = new Set(branch.map((n) => n.id));

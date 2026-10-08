@@ -25,7 +25,8 @@ import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 
 export interface DashboardData {
-  projectCount: number;
+  /** Every image of the account: uploaded, generated, enhanced. */
+  imageCount: number;
   renderCount: number;
   /** ISO date of the most recent render, or null when nothing has been generated. */
   lastActivityAt: string | null;
@@ -171,10 +172,10 @@ export function DashboardStats({ data }: { data: DashboardData }) {
     <div className="grid grid-cols-2 gap-2.5 min-[640px]:gap-4 min-[1280px]:grid-cols-4">
       <ServiceCard
         tone="red"
-        title={t('dashboard.cardProjectsTitle', { count: n(data.projectCount) })}
-        sub={t('dashboard.cardProjectsSub')}
-        linkLabel={t('dashboard.cardProjectsLink')}
-        href="/app/projets"
+        title={t('dashboard.cardImagesTitle', { count: n(data.imageCount) })}
+        sub={t('dashboard.cardImagesSub')}
+        linkLabel={t('dashboard.cardImagesLink')}
+        href="/app/images"
         art={CARD_ART.projects}
       />
       <ServiceCard
@@ -194,7 +195,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
         }
         sub={data.lastActivityAt ? t('dashboard.cardActivitySub') : t('dashboard.cardActivityNone')}
         linkLabel={t('dashboard.cardActivityLink')}
-        href={data.lastActivityAt ? '/app/projets' : '/app/generer'}
+        href={data.lastActivityAt ? '/app/images' : '/app/generer'}
         art={CARD_ART.activity}
       />
       {/* What is left of the plan; it opens the subscription page. */}

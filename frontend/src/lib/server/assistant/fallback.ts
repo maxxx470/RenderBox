@@ -44,8 +44,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'sharp',
       'upscale',
     ],
-    fr: "La page Enhance améliore un rendu existant sans changer le cadrage ni le bâtiment : déposez l'image, cochez ce qu'il faut améliorer (netteté, lumière, matériaux, ciel et végétation, vie et ambiance), choisissez l'intensité Léger ou Marqué, puis lancez.",
-    en: 'The Enhance page improves an existing render without changing the framing or the building: drop the image, tick what to improve (sharpness, lighting, materials, sky and planting, life and atmosphere), pick Subtle or Strong, then run it.',
+    fr: "La page Enhance améliore un rendu existant sans changer le cadrage ni le bâtiment : joignez l'image avec le trombone de la barre, cochez ce qu'il faut améliorer (netteté, détail, lumière, matériaux, ciel, végétation, vie et ambiance) — le « + » de chaque élément ajoute une image de référence — ou décrivez-le vous-même dans la barre, choisissez l'intensité Léger ou Marqué, puis lancez.",
+    en: 'The Enhance page improves an existing render without changing the framing or the building: attach the image with the paperclip in the bar, tick what to improve (sharpness, detail, lighting, materials, sky, planting, life and atmosphere) — the "+" of each item adds a reference image — or describe it yourself in the bar, pick Subtle or Strong, then run it.',
   },
   {
     keys: ['moteur', 'engine', 'rouge', 'jaune', 'red', 'yellow'],
@@ -64,7 +64,7 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'branch',
       'history',
     ],
-    fr: "Dans un projet, l'« Arbre du projet » garde tous vos rendus. Cliquez sur n'importe lequel pour le rouvrir et en faire le point de départ d'une nouvelle variante (autre ambiance, autre moteur, commentaire…). Rien ne se perd. Sur téléphone, l'arbre s'ouvre avec le bouton en haut à gauche.",
+    fr: "Dans un projet, l'« Arbre du projet » garde tous vos rendus. Cliquez sur n'importe lequel pour le rouvrir et en faire le point de départ d'une nouvelle variante (autre ambiance, autre moteur, commentaire…). Rien ne se perd. Sur téléphone, l'arbre s'ouvre avec le bouton en haut à droite.",
     en: 'Inside a project, the "Project tree" keeps every render. Click any of them to reopen it and use it as the starting point of a new variant (another ambiance, another engine, a comment…). Nothing gets lost. On a phone, open the tree with the button at the top left.',
   },
   {
@@ -97,7 +97,7 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
   },
   {
     keys: ['télécharg', 'telecharg', 'export', 'download'],
-    fr: 'Pour télécharger un rendu : ouvrez le projet, sélectionnez le rendu dans l’arbre et utilisez le bouton de téléchargement.',
+    fr: 'Pour télécharger un rendu : dans Mes images, survolez l’image et utilisez le bouton de téléchargement ; ou ouvrez-la, sélectionnez-la dans l’arbre et utilisez le bouton de téléchargement.',
     en: 'To download a render: open the project, select the render in the tree and use the download button.',
   },
   {
@@ -132,8 +132,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'rendu',
       'render',
     ],
-    fr: 'Pour un premier rendu : page Image (ou le bouton « + »), déposez une photo ou un croquis, choisissez une ambiance et un moteur, ajoutez une description si vous voulez, puis « Générer ». Un projet est créé automatiquement.',
-    en: 'For a first render: the Image page (or the "+" button), drop a photo or a sketch, pick an ambiance and an engine, add a description if you like, then "Generate". A project is created automatically.',
+    fr: 'Pour un premier rendu : page Image (ou le bouton « + »), joignez une photo ou un croquis avec le trombone de la barre de commande, choisissez une ambiance et un moteur, ajoutez une description si vous voulez, puis « Générer ». Un projet est créé automatiquement.',
+    en: 'For a first render: the Image page (or the "+" button), attach a photo or a sketch with the paperclip in the command bar, pick an ambiance and an engine, add a description if you like, then "Generate". A project is created automatically.',
   },
 ];
 

@@ -108,10 +108,9 @@ export function MaterialsPanel({
   const t = useTranslations();
 
   return (
-    // Same outlined-panel treatment as the left rail — one flush side and one
-    // outlined side would read as a layout mistake. bg-white matters on
-    // mobile, where this is a fixed drawer over a dimmed backdrop.
-    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border-l-0">
+    // The top of the editor's right column (owner, 2026-10-08), the project
+    // tree under it; the column draws the card, this only lays out its part.
+    <section className="px-4 py-4.5">
       <div className="mb-1 flex items-center justify-between">
         <h3 className="font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]">
           {t('app.materialsTitle')}
@@ -124,7 +123,7 @@ export function MaterialsPanel({
       </div>
 
       {materials.length === 0 ? (
-        <div className="flex h-[80%] flex-col items-center justify-center gap-2.5 text-center">
+        <div className="flex flex-col items-center justify-center gap-2.5 py-5 text-center">
           <Lock set="curved" size={22} primaryColor="#8A8896" style={{ opacity: 0.5 }} />
           {/* No "soon" badge here. The sheet is not an unbuilt feature — it is
               built, and simply has nothing to show until a render exists. The
@@ -147,6 +146,6 @@ export function MaterialsPanel({
           </div>
         </>
       )}
-    </aside>
+    </section>
   );
 }

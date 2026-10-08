@@ -8,10 +8,10 @@
 // project ready to render; Commenter shows the pinned image large, takes
 // numbered comments on it and runs the edit; Ajouter takes a photo of the
 // element and runs the edit. The edits then open the project on their result.
-import { useEffect, useRef, useState, type DragEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Folder, Upload } from 'react-iconly';
+import { Category, Folder, Upload } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -22,9 +22,10 @@ import { RequestError, readErrorCode, isServiceNotConfigured } from './request-e
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
-import { EXAMPLE_RENDERS, type ExampleRender } from './generer-examples';
+import { EXAMPLE_RENDERS } from './generer-examples';
+import { CARD_SHAPE, CARD_TRANSFORM, ExampleFanCard, FAN_SLOTS } from './fan';
 import type { PricingTierId } from '@/lib/pricing-tiers';
-import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
+import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
 import { isRatioSupported, type RatioKey } from '@/lib/server/generation/ratios';
 import {
   DEFAULT_RESOLUTION,
@@ -33,7 +34,7 @@ import {
 } from '@/lib/server/generation/resolutions';
 import { AppFrame } from './AppFrame';
 import { MOBILE_NAV_PAD } from './MobileNav';
-import { PageHeader } from './PageHeader';
+import { SideColumn } from './SideColumn';
 import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
@@ -47,21 +48,6 @@ export interface RecentRenderCardData {
   editType: string | null;
 }
 
-const CARD_TRANSFORM = [
-  '',
-  '-rotate-3 translate-y-1.5',
-  'rotate-2 -translate-y-1 z-[2]',
-  '-rotate-2 translate-y-2.5',
-];
-
-/** How many positions the fan lays out, filled or not. */
-const FAN_SLOTS = CARD_TRANSFORM.length;
-
-// Shared geometry so a filled slot and an empty one occupy exactly the same
-// space — otherwise the fan would shift as renders replace placeholders.
-const CARD_SHAPE =
-  'group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] shadow-[0_20px_40px_-20px_#17161F30] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0';
-
 // An empty slot in the fan.
 //
 // Only the FIRST empty slot carries the instruction and the brand tile. The
@@ -69,25 +55,24 @@ const CARD_SHAPE =
 // prompt and started reading as a rendering glitch — four identical
 // sentences side by side. The remaining slots keep the fan's shape (that
 // silhouette is the motif) and stay quiet.
+//
+// Not a button since 2026-10-08: an image comes in through the command bar's
+// paperclip, the one way in (owner).
 function EmptyFanCard({
   index,
   lead,
-  onClick,
 }: {
   index: number;
   /** The first slot with nothing in it — the one that speaks. */
   lead: boolean;
-  onClick: () => void;
 }) {
   const t = useTranslations();
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
       style={{ animationDelay: `${index * 90}ms` }}
-      aria-label={lead ? undefined : t('app.genHomeCardPlaceholder')}
-      className={`rb-card-in ${CARD_SHAPE} flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[#ECECF2] bg-[#FBFBFD] hover:border-[#435CFE] ${
+      aria-hidden={!lead}
+      className={`rb-card-in ${CARD_SHAPE} flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[#ECECF2] bg-[#FBFBFD] ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
@@ -105,7 +90,7 @@ function EmptyFanCard({
           <Upload set="curved" size={20} primaryColor="#C9C7D1" />
         </span>
       )}
-    </button>
+    </div>
   );
 }
 
@@ -150,54 +135,6 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
   );
 }
 
-// An example render, shown only to an account with nothing of its own yet.
-//
-// Same geometry as RenderFanCard so the fan never shifts, but two things are
-// deliberately different: the tag reads "exemple" rather than the preset, and
-// the card is not a link. The in-app gallery it used to open was removed on
-// 2026-10-06 (Enhance took its place), so it is a picture, not a destination.
-function ExampleFanCard({ example, index }: { example: ExampleRender; index: number }) {
-  const { locale } = useLocale();
-  const t = useTranslations();
-
-  return (
-    <div
-      style={{ animationDelay: `${index * 90}ms` }}
-      className={`rb-card-in ${CARD_SHAPE} bg-[#F7F7FA] ${
-        index === 0 ? '' : '-ml-6'
-      } ${CARD_TRANSFORM[index] ?? ''}`}
-    >
-      <img src={example.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      {/* Scrim only when something has to be read over the image, and deeper
-          than RenderFanCard's: these images are not known in advance, and a
-          pale one would drop a white caption below the contrast floor — the
-          defect the hero fan hit. With no caption it would just dim the
-          example on the screen meant to show what the product produces. */}
-      {example.preset && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-      )}
-      {/* The badge stays — these four slots otherwise hold the user's OWN
-          renders, and an unlabelled RenderBox showcase image there would read
-          as their work. What changed is how it reads: a black chip carrying
-          the lowercase word "example" at 9.5px was the smallest, darkest type
-          on the screen, and it looked like a debug annotation left in the
-          build. Frosted white at a readable size, naming the product, reads
-          as the caption it is. It carries its own ground either way, so it
-          stays legible over a pale image or a dark one. */}
-      <span className="absolute left-3 top-3 rounded-lg bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-[#17161F] backdrop-blur-sm">
-        {t('app.genHomeExampleTag')}
-      </span>
-      {/* Only when the set spans several ambiances — see generer-examples.ts.
-          Four cards captioned with the same word would say nothing. */}
-      {example.preset && (
-        <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-display)] text-sm font-semibold text-white">
-          {PRESETS[example.preset].label[locale]}
-        </span>
-      )}
-    </div>
-  );
-}
-
 export function GenerationHome({
   recentRenders,
   tier,
@@ -239,7 +176,8 @@ export function GenerationHome({
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [pins, setPins] = useState<Pin[]>([]);
   const [variantCount, setVariantCount] = useState(2);
-  const [dragOver, setDragOver] = useState(false);
+  // Below 900px the right column (sheet + tree) is a drawer.
+  const [panelOpen, setPanelOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -388,15 +326,6 @@ export function GenerationHome({
     }
   }
 
-  function handleDrop(e: DragEvent<HTMLDivElement>) {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    if (mode === 'add' && photoFile) setReferenceFile(file);
-    else pinPhoto(file);
-  }
-
   // Examples are an empty-state device, not decoration: the moment the user
   // has anything of their own, the fan belongs to them.
   const showExamples = recentRenders.length === 0 && EXAMPLE_RENDERS.length > 0;
@@ -474,11 +403,12 @@ export function GenerationHome({
       onModeChange={handleModeChange}
       onNew={() => fileInputRef.current?.click()}
     >
-      {/* min-w-0 so this flex child can shrink below its content's intrinsic
-          width instead of pushing the workspace off a narrow screen. */}
-      <main
-        className={`flex min-w-0 flex-1 flex-col overflow-hidden bg-[#EEEEF1] px-2 pt-4 min-[640px]:px-4 min-[900px]:px-7.5 min-[900px]:pt-5 ${MOBILE_NAV_PAD}`}
-      >
+      {/* The same layout as a project (owner, 2026-10-08): on the left the
+          canvas with the command bar under it at the same width, on the right
+          the materials sheet and the project tree — empty until the first
+          render, which opens its project. min-w-0 so the column can shrink
+          below its content's width on a narrow screen. */}
+      <main className={`flex min-w-0 flex-1 flex-col overflow-hidden ${MOBILE_NAV_PAD}`}>
         <input
           ref={fileInputRef}
           type="file"
@@ -490,41 +420,48 @@ export function GenerationHome({
             e.target.value = '';
           }}
         />
-        <PageHeader
-          eyebrow={t('page.generateEyebrow')}
-          title={t('app.genHomeTitle')}
-          subtitle={t('page.generateSubtitle')}
-          className="mb-3 px-1"
-        />
-        {!tier ? (
-          // Blocking, not a late error at generate-time: without an active
-          // tier there's nothing to do in any mode.
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#EEF1FF]">
-              <Folder set="curved" size={24} primaryColor="#2948FC" />
-            </div>
-            <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
-              {t('app.genHomeNoTierTitle')}
+        <div className="flex items-center justify-end gap-2 px-5.5 pt-4 min-[900px]:hidden">
+          <button
+            type="button"
+            onClick={() => setPanelOpen(true)}
+            className="rounded-xl p-1.5"
+            aria-label={`${mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')} · ${t('app.treeTitle')}`}
+          >
+            <Category set="curved" size={16} primaryColor="#8A8896" />
+          </button>
+        </div>
+        {/* Same side padding as the command bar below it, as on a project. */}
+        <section className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 pt-4 min-[640px]:px-5 min-[640px]:pt-5">
+          <div className="mb-4">
+            <h2 className="mb-1 font-[family-name:var(--font-display)] text-base font-semibold text-[#17161F]">
+              {t('app.genHomeTitle')}
             </h2>
-            <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeNoTierBody')}</p>
-            <Link
-              href="/app/tarifs"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-2.5 text-[13px] font-semibold text-white"
-            >
-              {t('app.genHomeChooseTier')}
-            </Link>
+            <p className="text-[13px] text-[#8A8896]">{t('page.generateSubtitle')}</p>
           </div>
-        ) : (
-          <>
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              className="flex min-h-0 flex-1 flex-col px-1"
-            >
+          {!tier ? (
+            // Blocking, not a late error at generate-time: without an active
+            // tier there's nothing to do in any mode.
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+              <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#EEF1FF]">
+                <Folder set="curved" size={24} primaryColor="#2948FC" />
+              </div>
+              <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
+                {t('app.genHomeNoTierTitle')}
+              </h2>
+              <p className="max-w-[320px] text-[13px] text-[#8A8896]">
+                {t('app.genHomeNoTierBody')}
+              </p>
+              <Link
+                href="/app/tarifs"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-2.5 text-[13px] font-semibold text-white"
+              >
+                {t('app.genHomeChooseTier')}
+              </Link>
+            </div>
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col">
+              {/* No drag-and-drop on the canvas (owner, 2026-10-08): images
+                  come in through the command bar's paperclip. */}
               {largeSrc ? (
                 // Commenter / Ajouter on the pinned image: shown as large as
                 // the screen allows, so a comment can be placed precisely.
@@ -584,91 +521,92 @@ export function GenerationHome({
                     if (example)
                       return <ExampleFanCard key={`example-${i}`} example={example} index={i} />;
                     return (
-                      <EmptyFanCard
-                        key={`slot-${i}`}
-                        index={i}
-                        lead={i === recentRenders.length}
-                        onClick={() => fileInputRef.current?.click()}
-                      />
+                      <EmptyFanCard key={`slot-${i}`} index={i} lead={i === recentRenders.length} />
                     );
                   })}
                 </div>
               )}
             </div>
+          )}
+        </section>
 
-            {/* The command bar, the same component the workspace uses. The
-                drop target wraps it so a photo can land anywhere on it. */}
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              className={`rounded-[22px] transition-colors ${
-                dragOver ? 'bg-[#EEF1FF]' : 'bg-transparent'
-              }`}
-            >
-              <CommandBar
-                mode={mode}
-                onModeChange={handleModeChange}
-                // All three modes are open here: Commenter and Ajouter work
-                // on the image pinned in the bar.
-                editEnabled
-                enhanceHref="/app/enhance"
-                engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
-                onEngineChange={handleEngineChange}
-                engineLocked={mode === 'retouch'}
-                ratio={ratio}
-                onRatioChange={setRatio}
-                resolution={resolution}
-                onResolutionChange={setResolution}
-                preset={preset}
-                onPresetChange={setPreset}
-                prompt={prompt}
-                onPromptChange={setPrompt}
-                // The paperclip pins the image to work on; in Ajouter, once
-                // that is there, it takes the element's photo.
-                onAttach={mode === 'add' && photoFile ? setReferenceFile : pinPhoto}
-                attachTitle={
-                  mode === 'add' && photoFile
-                    ? t('app.cmdAttachReference')
-                    : mode === 'generate'
-                      ? t('app.cmdAttach')
-                      : t('app.cmdAttachSource')
-                }
-                uploading={false}
-                pinned={pinned}
-                variantCount={variantCount}
-                onVariantCountChange={setVariantCount}
-                zoneSelected={hasComments}
-                referenceAdded={Boolean(referenceFile)}
-                imageSrc={largeSrc}
-                materials={[]}
-                elementNodes={[]}
-                onPickElement={() => {}}
-                pickingElement={false}
-                onSubmit={() => {
-                  if (!photoFile || sendDisabled) return;
-                  if (mode === 'generate') void quickStart(photoFile);
-                  else void runEdit(photoFile);
-                }}
-                inputDisabled={creating}
-                sendDisabled={sendDisabled}
-                sendHint={sendHint}
-                submitLabel={
-                  mode === 'generate'
-                    ? t('app.submitGenerate')
-                    : mode === 'retouch'
-                      ? t('app.modeRetouch')
-                      : t('app.modeAdd')
-                }
-                generating={creating}
-              />
-            </div>
-          </>
+        {tier && (
+          <CommandBar
+            mode={mode}
+            onModeChange={handleModeChange}
+            // All three modes are open here: Commenter and Ajouter work
+            // on the image pinned in the bar.
+            editEnabled
+            engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
+            onEngineChange={handleEngineChange}
+            engineLocked={mode === 'retouch'}
+            ratio={ratio}
+            onRatioChange={setRatio}
+            resolution={resolution}
+            onResolutionChange={setResolution}
+            preset={preset}
+            onPresetChange={setPreset}
+            prompt={prompt}
+            onPromptChange={setPrompt}
+            // The paperclip pins the image to work on; in Ajouter, once
+            // that is there, it takes the element's photo.
+            onAttach={mode === 'add' && photoFile ? setReferenceFile : pinPhoto}
+            attachTitle={
+              mode === 'add' && photoFile
+                ? t('app.cmdAttachReference')
+                : mode === 'generate'
+                  ? t('app.cmdAttach')
+                  : t('app.cmdAttachSource')
+            }
+            uploading={false}
+            pinned={pinned}
+            variantCount={variantCount}
+            onVariantCountChange={setVariantCount}
+            zoneSelected={hasComments}
+            referenceAdded={Boolean(referenceFile)}
+            imageSrc={largeSrc}
+            materials={[]}
+            elementNodes={[]}
+            onPickElement={() => {}}
+            pickingElement={false}
+            onSubmit={() => {
+              if (!photoFile || sendDisabled) return;
+              if (mode === 'generate') void quickStart(photoFile);
+              else void runEdit(photoFile);
+            }}
+            inputDisabled={creating}
+            sendDisabled={sendDisabled}
+            sendHint={sendHint}
+            submitLabel={
+              mode === 'generate'
+                ? t('app.submitGenerate')
+                : mode === 'retouch'
+                  ? t('app.modeRetouch')
+                  : t('app.modeAdd')
+            }
+            generating={creating}
+            fill
+          />
         )}
       </main>
+
+      <SideColumn
+        mode={mode}
+        materials={[]}
+        onSaveMaterial={async () => {}}
+        canEdit={Boolean(photoFile)}
+        lockedHint={t('app.genHomeNeedPhoto')}
+        referenceFile={referenceFile}
+        onReferenceChange={setReferenceFile}
+        pins={pins}
+        onPinsChange={setPins}
+        tree={[]}
+        selectedId={null}
+        onSelect={() => {}}
+        onDelete={() => {}}
+        mobileOpen={panelOpen}
+        onMobileClose={() => setPanelOpen(false)}
+      />
     </AppFrame>
   );
 }

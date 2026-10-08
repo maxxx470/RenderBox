@@ -15,12 +15,17 @@
 //      yellow — "Commenter" exists on Pixel IA only, so it locks Visio);
 //   2. beside it, a big square send button with the action's verb;
 //   3. under it, the actions as chips with a coloured tile (Générer,
-//      Commenter, Ajouter, Enhance), then the settings (ambiance, ratio, size,
+//      Commenter, Ajouter), then the settings (ambiance, ratio, size,
 //      variants, context, elements) — on a phone behind a "Réglages" button,
 //      while the send button shrinks into the composer.
 //   Behind the frame, soft light columns in the charter's blue and red.
+//
+// Later the same day (owner): no Enhance tab any more — Enhance is its own
+// page, reached from the rail; and the bar keeps one height whatever is
+// pinned ("je ne veux pas que la commande bar bouge"): the thumbnails sit in
+// the composer's bottom row beside the paperclip, and why the send button is
+// off is said in that row too, instead of on lines that came and went.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import Link from 'next/link';
 import { Send, TickSquare, Lock, Setting } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { PresetKey } from '@/lib/server/generation/presets';
@@ -29,7 +34,7 @@ import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-lab
 import type { RatioKey } from '@/lib/server/generation/ratios';
 import type { ResolutionKey } from '@/lib/server/generation/resolutions';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
-import { ACCEPTED_UPLOAD_TYPES } from './Dropzone';
+import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
 import { PresetSelect } from './PresetSelect';
 import { RatioChip } from './RatioChip';
 import { RatioSelect } from './RatioSelect';
@@ -50,7 +55,7 @@ const MODES = [
 
 /** The engine toggle's frame, on the composer panel. */
 const SEGMENT = 'flex items-center gap-0.5 rounded-[10px] bg-white p-0.5';
-/** An action chip of the bottom row (Générer, Commenter, Ajouter, Enhance). */
+/** An action chip of the bottom row (Générer, Commenter, Ajouter). */
 const TAB =
   'flex h-8 flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-lg pl-1.5 pr-2.5 text-[12px] font-medium transition-colors duration-150 ease-out disabled:cursor-not-allowed';
 /** One engine of the toggle. */
@@ -58,18 +63,17 @@ const ENGINE_TAB =
   'flex h-7 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2 text-[11.5px] font-semibold transition-colors duration-150 ease-out disabled:cursor-not-allowed';
 /** The small coloured square before each action's name, as in the reference. */
 const MODE_TILE = 'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[6px]';
-const MODE_TILE_COLOR: Record<AppMode | 'enhance', string> = {
+const MODE_TILE_COLOR: Record<AppMode, string> = {
   generate: 'bg-[#2948FC]',
   // Comment pins are red in the app (AnnotationLayer): the action wears it.
   retouch: 'bg-[#F34857]',
   add: 'bg-[#17161F]',
-  enhance: 'bg-gradient-to-br from-[#435CFE] to-[#F34857]',
 };
 /** Square icon buttons of the composer (paperclip, settings on a phone). */
-const ROUND =
+export const ROUND =
   'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white text-[#17161F] transition-colors hover:bg-[#E9E9EE] disabled:cursor-not-allowed disabled:opacity-40';
 /** The glow behind the bar: soft light columns in the charter's blue and red. */
-const GLOW =
+export const GLOW =
   'pointer-events-none absolute -inset-x-20 -bottom-10 -top-20 -z-10 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0)_0px,rgba(255,255,255,0.4)_26px,rgba(255,255,255,0)_52px),linear-gradient(90deg,#A3C2FB_0%,#435CFE_22%,#F88B98_50%,#2948FC_78%,#A3C2FB_100%)] opacity-90 blur-[16px] [mask-image:radial-gradient(ellipse_52%_58%_at_50%_55%,#000_40%,transparent_100%)]';
 
 /** One image shown in the composer. */
@@ -104,25 +108,28 @@ function StatusPill({ active, label }: { active: boolean; label: string }) {
   );
 }
 
-function Pinned({ image, removeLabel }: { image: PinnedImage; removeLabel: string }) {
+// The same 32px as the paperclip beside it, so pinning an image never changes
+// the bar's height. Its role (photo, reference) is on the tooltip.
+export function Pinned({ image, removeLabel }: { image: PinnedImage; removeLabel: string }) {
   return (
-    <div className="rb-pop-up relative h-12 w-12 flex-shrink-0">
-      <img src={image.src} alt="" className="h-full w-full rounded-[12px] object-cover" />
-      <span className="absolute inset-x-0.5 bottom-0.5 truncate rounded-xl bg-white/90 px-1 text-center text-[8.5px] font-semibold text-[#17161F] backdrop-blur-sm">
-        {image.caption}
-      </span>
+    <div className="rb-pop-up relative h-8 w-8 flex-shrink-0" title={image.caption}>
+      <img
+        src={image.src}
+        alt={image.caption}
+        className="h-full w-full rounded-lg object-cover shadow-[0_0_0_2px_#ffffff]"
+      />
       {image.onRemove && (
         <button
           type="button"
           onClick={image.onRemove}
           aria-label={removeLabel}
           title={removeLabel}
-          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-md border-2 border-white bg-[#17161F] text-white shadow-[0_2px_6px_rgba(23,22,31,0.3)] transition-transform hover:scale-110"
+          className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-[5px] border-[1.5px] border-white bg-[#17161F] text-white shadow-[0_2px_6px_rgba(23,22,31,0.3)] transition-transform hover:scale-110"
         >
           <svg
             viewBox="0 0 24 24"
-            width="9"
-            height="9"
+            width="7"
+            height="7"
             fill="none"
             stroke="currentColor"
             strokeWidth="3.4"
@@ -141,7 +148,6 @@ export function CommandBar({
   onModeChange,
   editEnabled,
   editDisabledHint,
-  enhanceHref,
   ratio,
   onRatioChange,
   resolution,
@@ -173,6 +179,7 @@ export function CommandBar({
   elementNodes,
   onPickElement,
   pickingElement,
+  fill = false,
 }: {
   mode: AppMode;
   onModeChange: (mode: AppMode) => void;
@@ -180,8 +187,6 @@ export function CommandBar({
   editEnabled: boolean;
   /** Why Commenter/Ajouter are off, on their tooltip. */
   editDisabledHint?: string;
-  /** Where the Enhance tab leads — the tool is its own page. */
-  enhanceHref: string;
   ratio: RatioKey;
   onRatioChange: (ratio: RatioKey) => void;
   resolution: ResolutionKey;
@@ -224,6 +229,11 @@ export function CommandBar({
   elementNodes: RenderTreeNode[];
   onPickElement: (nodeId: string) => void;
   pickingElement: boolean;
+  /**
+   * Take the column's full width instead of the centred 920px — the project
+   * editor lines the bar up with the canvas above it (owner, 2026-10-08).
+   */
+  fill?: boolean;
 }) {
   const { t, locale } = useLocale();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -389,6 +399,10 @@ export function CommandBar({
     );
   }
 
+  // Why the send button is off, said in the composer's row (and under the bar
+  // on a phone). Without it the bar is a dead end.
+  const showHint = Boolean(sendHint && sendDisabled && !generating);
+
   const sendButton = (big: boolean) => (
     <button
       type="button"
@@ -414,8 +428,10 @@ export function CommandBar({
   );
 
   return (
-    <div className="relative isolate px-2.5 pb-2.5 pt-3 min-[640px]:px-5 min-[640px]:pb-4 min-[640px]:pt-5">
-      <div className="relative mx-auto max-w-[920px]">
+    // z-20: the menus open upwards over the page, whose cards (the fan) carry
+    // their own z-index for the tilt and would otherwise cover them.
+    <div className="relative isolate z-20 px-2.5 pb-2.5 pt-3 min-[640px]:px-5 min-[640px]:pb-4 min-[640px]:pt-5">
+      <div className={`relative ${fill ? '' : 'mx-auto max-w-[920px]'}`}>
         <div aria-hidden className={GLOW} />
         <div className="rounded-[24px] bg-white p-2 shadow-[0_24px_60px_-28px_rgba(41,72,252,0.55),0_1px_2px_rgba(23,22,31,0.06)]">
           <input
@@ -434,13 +450,6 @@ export function CommandBar({
             {/* 1 — the composer: pinned images, the prompt, then the paperclip,
                 the hint and the engines. */}
             <div className="flex min-w-0 flex-1 flex-col rounded-[18px] bg-[#F4F4F7] px-3 pb-2.5 pt-3 min-[640px]:px-4">
-              {pinned.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2 pt-1">
-                  {pinned.map((p) => (
-                    <Pinned key={p.key} image={p} removeLabel={t('app.cmdRemoveAttachment')} />
-                  ))}
-                </div>
-              )}
               <textarea
                 ref={promptRef}
                 rows={1}
@@ -485,8 +494,21 @@ export function CommandBar({
                     <Glyph name="clip" size={15} color="#3D3B49" />
                   )}
                 </button>
-                <span className="hidden min-w-0 flex-1 truncate text-[12px] text-[#8A8896] min-[640px]:block">
-                  {uploading ? t('app.commandBarUploading') : (attachTitle ?? t('app.cmdAttach'))}
+                {pinned.map((p) => (
+                  <Pinned key={p.key} image={p} removeLabel={t('app.cmdRemoveAttachment')} />
+                ))}
+                <span
+                  className={`hidden min-w-0 flex-1 truncate text-[12px] min-[640px]:block ${
+                    showHint ? 'text-[#6B6878]' : 'text-[#8A8896]'
+                  }`}
+                >
+                  {uploading
+                    ? t('app.commandBarUploading')
+                    : showHint
+                      ? sendHint
+                      : pinned.length > 0
+                        ? ''
+                        : (attachTitle ?? t('app.cmdAttach'))}
                 </span>
                 {/* Phone: the settings fold behind a button. */}
                 <button
@@ -545,16 +567,6 @@ export function CommandBar({
                   m.key === 'generate' || editEnabled,
                 ),
               )}
-              <Link
-                href={enhanceHref}
-                className={`${TAB} bg-[#F2F2F5] text-[#3D3B49] hover:bg-[#E9E9EE]`}
-                title={t('enhance.subtitle')}
-              >
-                <span className={`${MODE_TILE} ${MODE_TILE_COLOR.enhance}`}>
-                  <Glyph name="enhance" size={12} color="#ffffff" />
-                </span>
-                {t('enhance.title')}
-              </Link>
             </div>
             <span aria-hidden className="mx-1 hidden h-5 w-px bg-[#ECECF2] min-[640px]:block" />
             <div
@@ -566,9 +578,12 @@ export function CommandBar({
             </div>
           </div>
 
-          {/* Why the button is off. Without this the bar is a dead end. */}
-          {sendHint && sendDisabled && !generating && (
-            <p className="px-2 pb-1.5 pt-1 text-[11.5px] text-[#6B6878]">{sendHint}</p>
+          {/* Why the button is off — a phone has no room for it in the
+              composer's row. Without this the bar is a dead end. */}
+          {showHint && (
+            <p className="px-2 pb-1.5 pt-1 text-[11.5px] text-[#6B6878] min-[640px]:hidden">
+              {sendHint}
+            </p>
           )}
         </div>
       </div>

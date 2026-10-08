@@ -23,7 +23,7 @@ import { AssistantWidget, openAssistant } from './AssistantWidget';
  *  margins and the phone's safe area. Nothing from 900px up. */
 export const MOBILE_NAV_PAD = 'pb-[calc(104px+env(safe-area-inset-bottom))] min-[900px]:pb-0';
 
-const MORE_PAGES: RailPage[] = ['projects', 'info', 'settings', 'pricing'];
+const MORE_PAGES: RailPage[] = ['images', 'info', 'settings', 'pricing'];
 
 export function MobileNav({
   current,
@@ -65,7 +65,7 @@ export function MobileNav({
     { page: 'enhance', href: '/app/enhance', label: t('app.railEnhance'), icon: 'enhance' },
   ];
   const more: { page: RailPage; href: string; label: string; icon: RailIconName }[] = [
-    { page: 'projects', href: '/app/projets', label: t('app.railProjects'), icon: 'projects' },
+    { page: 'images', href: '/app/images', label: t('app.railImages'), icon: 'projects' },
     { page: 'info', href: '/app/info', label: t('app.railInfo'), icon: 'info' },
     { page: 'settings', href: '/parametres', label: t('parametres.title'), icon: 'settings' },
     { page: 'pricing', href: '/app/tarifs', label: t('app.railPricing'), icon: 'pricing' },
