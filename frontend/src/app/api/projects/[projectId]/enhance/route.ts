@@ -41,7 +41,8 @@ import {
   ENHANCE_STRENGTHS,
   type EnhanceOptionKey,
 } from '@/lib/server/generation/enhance';
-import { RATIO_KEYS, isRatioSupported } from '@/lib/server/generation/ratios';
+import { RATIO_KEYS } from '@/lib/server/generation/ratios';
+import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { checkImageFile } from '@/lib/server/upload/check-image-file';
 import type { ReferenceImage } from '@/lib/server/generation/engines/types';
 
@@ -53,6 +54,7 @@ const Fields = z
     strength: z.enum(ENHANCE_STRENGTHS),
     instruction: z.string().trim().max(2000).optional(),
     ratio: z.enum(RATIO_KEYS).default('auto'),
+    resolution: z.enum(RESOLUTION_KEYS).default('1k'),
   })
   .refine((v) => v.options.length > 0 || Boolean(v.instruction), {
     message: 'tick an improvement or describe one',
@@ -102,6 +104,7 @@ export async function POST(
       strength: text('strength'),
       instruction: text('instruction'),
       ratio: text('ratio'),
+      resolution: text('resolution'),
     });
     if (!parsed.success) {
       return NextResponse.json(
@@ -109,17 +112,7 @@ export async function POST(
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    const { sourceNodeId, engine, options, strength, instruction, ratio } = parsed.data;
-
-    if (!isRatioSupported(ratio, engine)) {
-      return NextResponse.json(
-        {
-          error: 'RATIO_NOT_SUPPORTED',
-          message: `Engine "${engine}" cannot produce a ${ratio} image`,
-        },
-        { status: 400, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+    const { sourceNodeId, engine, options, strength, instruction, ratio, resolution } = parsed.data;
 
     // One reference per ticked improvement, in the options' fixed order so the
     // prompt numbers them the way they are sent. A reference for an option
@@ -210,6 +203,7 @@ export async function POST(
         prompt,
         ...(referenceImages.length > 0 ? { referenceImages } : {}),
         ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
+        resolution,
       });
     } catch (e) {
       if (e instanceof EngineNotConfiguredError) {

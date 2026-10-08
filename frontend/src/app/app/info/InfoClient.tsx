@@ -2,34 +2,24 @@
 
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { AppSurface, type AppSurfaceProps } from '../AppSurface';
-import { AnnouncementList } from '@/app/info/AnnouncementList';
 import { MotionFilm } from '@/app/MotionFilm';
 
-/** The landing's three feature films, shown here too so the features are
- *  explained inside the app, not only to visitors (owner's brief,
- *  2026-10-06). Same files as the landing: public/motion/<id>-<locale>.mp4. */
+/** The landing's feature films, shown here too so the features are explained
+ *  inside the app, not only to visitors (owner's brief, 2026-10-06). Same
+ *  files as the landing: public/motion/<id>-<locale>.mp4. A new film is one
+ *  more line here; the grid takes it in, two per row. */
 const FILMS = [
-  {
-    id: 'etapes',
-    title: 'dashboard.howTitle',
-    body: 'info.filmEtapesBody',
-    alt: 'dashboard.filmAlt',
-  },
-  {
-    id: 'commenter',
-    title: 'landing.commentTitle',
-    body: 'landing.commentSubtitle',
-    alt: 'landing.commentAlt',
-  },
-  { id: 'arbre', title: 'landing.treeTitle', body: 'landing.treeSubtitle', alt: 'landing.treeAlt' },
-  {
-    id: 'moteurs',
-    title: 'landing.enginesTitle',
-    body: 'landing.enginesSubtitle',
-    alt: 'landing.enginesAlt',
-  },
+  { id: 'etapes', alt: 'dashboard.filmAlt' },
+  { id: 'commenter', alt: 'landing.commentAlt' },
+  { id: 'arbre', alt: 'landing.treeAlt' },
+  { id: 'moteurs', alt: 'landing.enginesAlt' },
 ] as const;
 
+/**
+ * 2026-10-08 (owner): only the films, two per row — no caption under them and
+ * no written changelog below ("les utilisateurs comprendront mieux que du
+ * texte écrit"). The changelog still lives on the public /info page.
+ */
 export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
   const { t, locale } = useLocale();
 
@@ -38,37 +28,18 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
       {...surface}
       eyebrow={t('page.infoEyebrow')}
       title={t('app.railInfo')}
-      subtitle={t('info.subtitle')}
+      subtitle={t('info.guideTitle')}
     >
-      {/* Narrower than the frame's 1100px. A changelog is prose, and prose
-          set across a full-width dashboard column runs to ~140 characters a
-          line — roughly twice the distance an eye can carry a line break
-          reliably. */}
-      <div className="max-w-[760px]">
-        <section className="mb-10">
-          <h2 className="mb-4 font-[family-name:var(--font-display)] text-[17px] font-semibold text-[#17161F]">
-            {t('info.guideTitle')}
-          </h2>
-          <div className="flex flex-col gap-5">
-            {FILMS.map((f) => (
-              <article key={f.id} className="rounded-[20px] bg-[#F7F7FA] p-3 min-[640px]:p-4">
-                <div className="mb-3 px-1">
-                  <h3 className="font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
-                    {t(f.title)}
-                  </h3>
-                  <p className="mt-0.5 text-[13px] leading-[1.5] text-[#6B6878]">{t(f.body)}</p>
-                </div>
-                <MotionFilm
-                  src={`/motion/${f.id}-${locale}.mp4`}
-                  poster={`/motion/${f.id}-${locale}.jpg`}
-                  label={t(f.alt)}
-                  className="rounded-[14px]"
-                />
-              </article>
-            ))}
-          </div>
-        </section>
-        <AnnouncementList />
+      <div className="grid grid-cols-1 gap-4 min-[900px]:grid-cols-2 min-[900px]:gap-5">
+        {FILMS.map((f) => (
+          <MotionFilm
+            key={f.id}
+            src={`/motion/${f.id}-${locale}.mp4`}
+            poster={`/motion/${f.id}-${locale}.jpg`}
+            label={t(f.alt)}
+            className="rounded-[18px]"
+          />
+        ))}
       </div>
     </AppSurface>
   );

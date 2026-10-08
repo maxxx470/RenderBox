@@ -36,9 +36,9 @@ export async function generateWithGptImage(
     ),
   );
 
-  // gpt-image-1 takes a pixel size, not a ratio. Omitted for 'auto' (and for
-  // any ratio this engine cannot produce — the route refuses those before we
-  // get here, so reaching this with null means 'auto').
+  // gpt-image-1 takes a pixel size, not a ratio: the one nearest the ratio
+  // asked for, cropped to the exact ratio and enlarged to the size asked for
+  // afterwards (output-shape.ts, applied by index.ts). Omitted for 'auto'.
   const size = input.aspectRatio ? RATIOS[input.aspectRatio].openai : null;
 
   const response = await client.images.edit({

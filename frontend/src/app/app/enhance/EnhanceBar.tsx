@@ -9,7 +9,6 @@
 // CommandBar: the thumbnail sits beside the paperclip.
 import { useEffect, useRef } from 'react';
 import { useLocale } from '@/lib/i18n/LocaleContext';
-import type { EngineName } from '@/lib/server/generation/engines/types';
 import type { RatioKey } from '@/lib/server/generation/ratios';
 import type { ResolutionKey } from '@/lib/server/generation/resolutions';
 import { GLOW, Pinned, ROUND, SendButton, type PinnedImage } from '../CommandBar';
@@ -27,7 +26,6 @@ export function EnhanceBar({
   onRatioChange,
   resolution,
   onResolutionChange,
-  engine,
   onSubmit,
   sendDisabled,
   sendHint,
@@ -42,7 +40,6 @@ export function EnhanceBar({
   onRatioChange: (ratio: RatioKey) => void;
   resolution: ResolutionKey;
   onResolutionChange: (resolution: ResolutionKey) => void;
-  engine: EngineName;
   onSubmit: () => void;
   sendDisabled: boolean;
   /** Why the send button is off. */
@@ -133,16 +130,10 @@ export function EnhanceBar({
             {send(true)}
           </div>
           <div className="flex flex-wrap items-center gap-1.5 px-0.5 pb-0.5 pt-2">
-            <RatioSelect
-              ratio={ratio}
-              onChange={onRatioChange}
-              engine={engine}
-              disabled={working}
-            />
+            <RatioSelect ratio={ratio} onChange={onRatioChange} disabled={working} />
             <ResolutionSelect
               resolution={resolution}
               onChange={onResolutionChange}
-              engine={engine}
               disabled={working}
             />
           </div>

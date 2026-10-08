@@ -2,9 +2,8 @@
 
 // Output-ratio chip for the command bar.
 //
-// Unlike RatioChip — which only *reports* the dimensions of the image already
-// on screen — this one decides what the next generation will produce, and the
-// value is sent to the engine.
+// It decides the shape of what the next generation or edit will produce, and
+// the value is sent to the engine ('auto' keeps the image's own framing).
 //
 // The panel is the reference bar's own: a grid of tiles each drawn to its own
 // proportion with the ratio written inside it, and a large preview beside
@@ -13,20 +12,11 @@
 // the control that decides the SHAPE of the output was read entirely off
 // text.
 //
-// Ratios the selected engine cannot produce are shown but disabled. Hiding
-// them would leave the user wondering why the grid shrank when they switched
-// engine; approximating them would be worse still (16:9 asked, 3:2 returned,
-// no way to tell). AppShell resets an unsupported choice to 'auto' when the
-// engine changes, so this can never submit a ratio the route would refuse.
+// Every ratio is available on both engines since 2026-10-08 (owner: a paying
+// user gets everything) — see generation/ratios.ts and output-shape.ts.
 import { ChevronUp, ChevronDown } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
-import {
-  RATIO_KEYS,
-  RATIOS,
-  isRatioSupported,
-  type RatioKey,
-} from '@/lib/server/generation/ratios';
-import type { EngineName } from '@/lib/server/generation/engines/types';
+import { RATIO_KEYS, RATIOS, type RatioKey } from '@/lib/server/generation/ratios';
 import { CHIP_BASE } from './chip';
 import { POPOVER_HEADING, popoverPanelClass, useHoverPopover } from './useHoverPopover';
 
@@ -69,13 +59,11 @@ function RatioGlyph({ ratio }: { ratio: RatioKey }) {
 export function RatioSelect({
   ratio,
   onChange,
-  engine,
   disabled,
   placement = 'up',
 }: {
   ratio: RatioKey;
   onChange: (ratio: RatioKey) => void;
-  engine: EngineName;
   disabled?: boolean;
   placement?: 'up' | 'down';
 }) {
@@ -116,13 +104,11 @@ export function RatioSelect({
           <p className={POPOVER_HEADING}>{t('app.ratioLabel')}</p>
           <div className="flex items-stretch gap-2.5 p-1">
             {/* Tiles left, preview right — the reference's arrangement. Three
-                columns rather than its seven: we offer six ratios, not
-                thirteen, and stretching six across that width would leave the
-                grid mostly air. */}
+                columns, four rows for the eleven ratios (2026-10-08): wider,
+                the panel ran under the side column. */}
             <div className="grid flex-1 grid-cols-3 gap-1.5">
               {RATIO_KEYS.map((key) => {
                 const selected = key === ratio;
-                const available = isRatioSupported(key, engine);
                 const shape = proportions(key, 26);
                 return (
                   <button
@@ -130,18 +116,14 @@ export function RatioSelect({
                     type="button"
                     role="menuitemradio"
                     aria-checked={selected}
-                    disabled={!available}
-                    title={available ? undefined : t('app.ratioUnsupported')}
                     onClick={() => {
                       onChange(key);
                       closeNow();
                     }}
                     className={`flex h-[52px] flex-col items-center justify-center gap-1 rounded-[10px] border transition-colors duration-150 ease-out ${
-                      !available
-                        ? 'cursor-not-allowed border-transparent bg-[#F4F4F6] opacity-40'
-                        : selected
-                          ? 'border-[#2948FC] bg-[#F4F6FF]'
-                          : 'border-transparent bg-[#F4F4F6] hover:bg-[#ECECF0]'
+                      selected
+                        ? 'border-[#2948FC] bg-[#F4F6FF]'
+                        : 'border-transparent bg-[#F4F4F6] hover:bg-[#ECECF0]'
                     }`}
                   >
                     <span

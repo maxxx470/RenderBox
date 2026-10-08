@@ -9,8 +9,8 @@
 import 'server-only';
 import { PRESET_KEYS, PRESETS } from '@/lib/server/generation/presets';
 import { PRICING_TIERS } from '@/lib/pricing-tiers';
-import { RATIO_KEYS, supportedRatios } from '@/lib/server/generation/ratios';
-import { RESOLUTIONS, supportedResolutions } from '@/lib/server/generation/resolutions';
+import { RATIO_KEYS } from '@/lib/server/generation/ratios';
+import { RESOLUTIONS, RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import {
   ENHANCE_OPTION_KEYS,
   ENHANCE_OPTIONS,
@@ -35,14 +35,8 @@ export function buildRenderBoxDoc(): string {
   ).join(' ; ');
   const m1 = ENGINE_LABELS.nanobanana;
   const m2 = ENGINE_LABELS.gpt_image;
-  const ratios = (e: 'nanobanana' | 'gpt_image') =>
-    supportedRatios(e)
-      .map((r) => (r === 'auto' ? 'Auto' : r))
-      .join(', ');
-  const res = (e: 'nanobanana' | 'gpt_image') =>
-    supportedResolutions(e)
-      .map((r) => RESOLUTIONS[r].label)
-      .join(', ');
+  const ratios = RATIO_KEYS.map((r) => (r === 'auto' ? 'Auto' : r)).join(', ');
+  const res = RESOLUTION_KEYS.map((r) => RESOLUTIONS[r].label).join(', ');
   const enhance = ENHANCE_OPTION_KEYS.map(
     (k) => `${ENHANCE_OPTIONS[k].label.fr} (${ENHANCE_OPTIONS[k].hint.fr})`,
   ).join(' ; ');
@@ -70,7 +64,7 @@ IMAGE (générer un rendu)
 3. Décrivez éventuellement ce que vous voulez dans la barre de commande, puis « Générer ».
 - Commenter et Ajouter marchent aussi depuis Image, sur l'image épinglée : en Commenter, elle s'affiche en grand et on clique dessus pour poser les commentaires ; en Ajouter, on décrit l'élément et on joint sa photo avec le trombone. À l'envoi, un projet est créé et s'ouvre sur le résultat.
 - LA BARRE DE COMMANDE, un cadre blanc. À gauche, la zone de saisie : les images épinglées en miniature (l'image de départ « Source », la photo ou la référence), la consigne en grand, qui s'agrandit avec le texte (Entrée envoie, Maj+Entrée va à la ligne), puis le trombone pour joindre une image et les deux moteurs toujours visibles (${m1.name.fr} rouge, ${m2.name.fr} jaune) : un clic suffit pour changer. À droite, le grand bouton carré d'envoi. En dessous, les actions en pastilles (Générer, Commenter, Ajouter) puis les réglages. Enhance n'est plus dans la barre : c'est sa propre page, dans la barre latérale. La barre garde toujours la même hauteur : l'image épinglée s'affiche en petit à côté du trombone. Sur téléphone, le bouton d'envoi est dans la zone de saisie et les réglages se déplient avec le bouton « Réglages » (roue dentée).
-- Réglages de la barre de commande : ambiance (chaque ambiance est montrée par une miniature d'un vrai rendu), format (${ratios('nanobanana')} pour ${m1.name.fr} ; ${ratios('gpt_image')} pour ${m2.name.fr}), résolution (${res('nanobanana')} aujourd'hui ; 2K et 4K sont affichés mais pas encore disponibles).
+- Réglages de la barre de commande : ambiance (chaque ambiance est montrée par une miniature d'un vrai rendu), format (${ratios} — tous disponibles avec les deux moteurs, en génération comme en retouche ; Auto garde le cadrage de l'image), résolution (${res}, avec les deux moteurs). ${m1.name.fr} rend directement au format et à la taille choisis ; ${m2.name.fr} produit son image puis RenderBox la recadre au format exact et l'agrandit à la taille choisie (l'agrandissement ajoute des pixels, pas de détail : pour un vrai 4K détaillé, choisir ${m1.name.fr}).
 - Réglages aussi dans la barre : Contexte (ce que le moteur a retenu du projet), @ Éléments (réutiliser une image du projet comme référence), et en mode Commenter ou Ajouter le nombre de Variantes (1 à 4).
 
 LES DEUX MOTEURS
@@ -109,7 +103,7 @@ PARAMÈTRES
 - Compte connecté, moteur par défaut (pré-sélectionné dans la barre de commande), comptes liés (connexion Google), historique de facturation, déconnexion. La langue se change avec le sélecteur FR / EN en haut des pages.
 
 INFO
-- La page « Info » : les films des fonctions et les nouveautés de RenderBox, datées.
+- La page « Info » de l'application : les films qui montrent les fonctions, deux par ligne, sans texte. Les nouveautés datées, elles, sont sur la page Info publique du site.
 
 FORMATS ACCEPTÉS
 - Images JPEG, PNG ou WebP.`;

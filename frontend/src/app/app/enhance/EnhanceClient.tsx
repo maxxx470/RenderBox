@@ -39,12 +39,8 @@ import {
   type EnhanceOptionKey,
   type EnhanceStrength,
 } from '@/lib/server/generation/enhance';
-import { isRatioSupported, type RatioKey } from '@/lib/server/generation/ratios';
-import {
-  DEFAULT_RESOLUTION,
-  isResolutionSupported,
-  type ResolutionKey,
-} from '@/lib/server/generation/resolutions';
+import type { RatioKey } from '@/lib/server/generation/ratios';
+import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/resolutions';
 import { BeforeAfterSlider } from '@/app/BeforeAfterSlider';
 import { AppFrame } from '../AppFrame';
 import type { AppSurfaceProps } from '../AppSurface';
@@ -237,12 +233,9 @@ export function EnhanceClient({
     }
   }, [user?.defaultEngine]);
 
-  // Same rule as the workspace: an engine that cannot produce the chosen ratio
-  // or size drops the choice back to its default.
+  // Both engines honour every ratio and size (2026-10-08): the choice stays.
   function handleEngineChange(next: EngineName) {
     setEngine(next);
-    if (!isRatioSupported(ratio, next)) setRatio('auto');
-    if (!isResolutionSupported(resolution, next)) setResolution(DEFAULT_RESOLUTION);
   }
 
   function pickFile(next: File | null) {
@@ -324,6 +317,7 @@ export function EnhanceClient({
       form.append('engine', engine);
       form.append('strength', strength);
       form.append('ratio', ratio);
+      form.append('resolution', resolution);
       for (const key of options) form.append('options', key);
       if (instruction.trim()) form.append('instruction', instruction.trim());
       for (const key of options) {
@@ -534,7 +528,6 @@ export function EnhanceClient({
             onRatioChange={setRatio}
             resolution={resolution}
             onResolutionChange={setResolution}
-            engine={engine}
             onSubmit={() => void run()}
             sendDisabled={!canRun}
             sendHint={sendHint}

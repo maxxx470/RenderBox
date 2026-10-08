@@ -5,6 +5,7 @@ import 'server-only';
 import type { EngineName, GenerateRenderInput, GenerateRenderOutput } from './types';
 import { generateWithNanobanana } from './nanobanana';
 import { generateWithGptImage } from './gpt-image';
+import { shapeOutput } from '../output-shape';
 
 export { EngineNotConfiguredError, ENGINE_NAMES } from './types';
 export type {
@@ -36,5 +37,8 @@ export async function generateRender(
   engine: EngineName,
   input: GenerateRenderInput,
 ): Promise<GenerateRenderOutput> {
-  return GENERATORS[engine](input);
+  // Every engine's image leaves here at the exact ratio and at least the size
+  // asked for (2026-10-08, every option on both engines — see output-shape.ts).
+  const output = await GENERATORS[engine](input);
+  return shapeOutput(output, { ratio: input.aspectRatio, resolution: input.resolution });
 }

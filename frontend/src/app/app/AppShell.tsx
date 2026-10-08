@@ -10,10 +10,10 @@ import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { collectBranch, type RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import type { EngineName } from '@/lib/server/generation/engines/types';
-import { isRatioSupported, RATIO_KEYS, type RatioKey } from '@/lib/server/generation/ratios';
+import { isRatioKey, type RatioKey } from '@/lib/server/generation/ratios';
 import {
   DEFAULT_RESOLUTION,
-  isResolutionSupported,
+  isResolutionKey,
   type ResolutionKey,
 } from '@/lib/server/generation/resolutions';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -119,12 +119,13 @@ export function AppShell({
   // Carried over from the /app quick-start bar (?ratio=), like prompt/preset.
   const [ratio, setRatio] = useState<RatioKey>(() => {
     const r = searchParams.get('ratio');
-    return r && (RATIO_KEYS as readonly string[]).includes(r) ? (r as RatioKey) : 'auto';
+    return r && isRatioKey(r) ? r : 'auto';
   });
-  // Output size. Not sent to the route: neither adapter takes a size
-  // parameter today (see resolutions.ts), and only 1K is selectable, so the
-  // state exists to hold the choice the day one of them does.
-  const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
+  // Output size (1K / 2K / 4K), carried over from the generation space too.
+  const [resolution, setResolution] = useState<ResolutionKey>(() => {
+    const r = searchParams.get('resolution');
+    return r && isResolutionKey(r) ? r : DEFAULT_RESOLUTION;
+  });
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [pickingElement, setPickingElement] = useState(false);
   const referenceUrl = useObjectUrl(mode === 'add' ? referenceFile : null);
@@ -160,14 +161,8 @@ export function AppShell({
   }, [user?.defaultEngine, searchParams]);
 
   function handleEngineChange(next: EngineName) {
+    // Both engines honour every ratio and size (2026-10-08): the choice stays.
     setEngine(next);
-    // Not every engine can produce every ratio (gpt-image-1 has no 16:9).
-    // Falling back to 'auto' keeps the chip honest about what the new engine
-    // will actually do, and stops the route ever seeing a ratio it refuses.
-    if (!isRatioSupported(ratio, next)) setRatio('auto');
-    // Same rule for the size: an engine that cannot return 4K must not be
-    // left displaying 4K.
-    if (!isResolutionSupported(resolution, next)) setResolution(DEFAULT_RESOLUTION);
     void api('/api/users/me', {
       method: 'PATCH',
       body: { defaultEngine: next },
@@ -311,6 +306,7 @@ export function AppShell({
           customPrompt: prompt.trim() || undefined,
           // 'auto' is the absence of a request, so it is not sent at all.
           ratio: ratio === 'auto' ? undefined : ratio,
+          resolution,
         },
       });
       setTree(res.tree);
@@ -351,6 +347,8 @@ export function AppShell({
       form.append('instruction', prompt.trim());
       form.append('variantCount', String(variantCount));
       form.append('engine', mode === 'retouch' ? ANNOTATE_ENGINE : engine);
+      form.append('ratio', ratio);
+      form.append('resolution', resolution);
       if (mode === 'retouch') {
         form.append(
           'annotations',
@@ -776,7 +774,6 @@ export function AppShell({
           pinned={pinned}
           variantCount={variantCount}
           onVariantCountChange={setVariantCount}
-          imageSrc={selectedId ? `/api/render-nodes/${selectedId}/image` : null}
           materials={materials}
           elementNodes={flattenTree(tree)}
           onPickElement={handlePickElement}

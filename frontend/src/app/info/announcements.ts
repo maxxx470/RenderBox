@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'all-formats-sizes',
+    date: '2026-10-08',
+    kind: 'shipped',
+    title: {
+      fr: 'Tous les formats et toutes les tailles',
+      en: 'Every format and every size',
+    },
+    body: {
+      fr: 'Onze formats (dont 16:9, 9:16, 4:3, 4:5 et 21:9) et les résolutions 1K, 2K et 4K sont disponibles avec les deux moteurs, pour générer comme pour retoucher. Visio rend directement à la taille choisie.',
+      en: 'Eleven formats (including 16:9, 9:16, 4:3, 4:5 and 21:9) and 1K, 2K and 4K output are available on both engines, for generating as well as editing. Visio renders straight at the chosen size.',
+    },
+  },
+  {
     id: 'my-images-enhance',
     date: '2026-10-08',
     kind: 'shipped',

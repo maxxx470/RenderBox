@@ -179,12 +179,7 @@ const fr = {
   'app.presetLabel': 'Ambiance',
   'app.engineLabel': 'Moteur',
   'app.resolutionLabel': 'Résolution',
-  'app.resolutionUnsupported': 'Ce moteur ne rend pas dans cette taille.',
-  'app.resolutionNote':
-    "Les deux moteurs rendent en 1K aujourd'hui. Le 2K et le 4K demandent un modèle qui les produit vraiment — ils restent affichés pour ne pas cacher ce qui manque.",
   'app.ratioAuto': 'Auto',
-  'app.ratioUnsupported': 'Ce moteur ne peut pas produire ce format.',
-  'app.ratioUnsupportedBadge': 'indispo.',
   'app.submitGenerate': 'Générer',
   'app.hintNoImage': "Ajoutez d'abord une image au projet.",
   'app.hintNoPrompt': 'Décrivez ce que vous voulez obtenir.',
@@ -276,8 +271,6 @@ const fr = {
   'info.title': 'Informations',
   'info.subtitle': 'Ce qui a changé dans RenderBox, du plus récent au plus ancien.',
   'info.guideTitle': 'Les fonctionnalités en vidéo',
-  'info.filmEtapesBody':
-    'Une photo ou un croquis, une ambiance, un rendu — de jour comme de nuit, dedans comme dehors.',
   'info.plannedHeading': 'À venir',
   'info.shippedHeading': 'Mises à jour',
   'info.badgePlanned': 'à venir',
@@ -528,9 +521,9 @@ const fr = {
   // « vos exports » et pas « fonctionne avec » : RenderBox lit les images que
   // ces logiciels exportent, il ne s'y branche pas. Ne pas raccourcir.
   'landing.proofCompatible': 'Importez les exports image de',
-  // Le chiffre et la formulation sont ceux du fondateur (2026-10-07) : « Plus
-  // de 5 000 utilisateurs », exactement, rien de plus. Ne pas reformuler.
-  'landing.proofUsers': 'Plus de 5 000 utilisateurs',
+  // Le chiffre et la formulation sont ceux du fondateur (2026-10-08) : « Plus
+  // de 5 000 personnes utilisent RenderBox », exactement. Ne pas reformuler.
+  'landing.proofUsers': 'Plus de 5 000 personnes utilisent RenderBox',
   'landing.videoEyebrow': 'Présentation',
   'landing.videoTitle': 'RenderBox en vidéo',
   'landing.videoSoon': 'Vidéo de présentation bientôt disponible',

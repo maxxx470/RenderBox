@@ -270,9 +270,10 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
   const middle = Math.floor(HERO_CARDS.length / 2);
   const tag = t('landing.heroFanTag');
 
-  // 2026-10-08 — red, the accent of the red-and-blue charter (the owner's
-  // dashboard cards): the brand red #F34857 → #EF3E50, deepening at the end,
-  // with white text. Yellow (2026-10-07) left with the rest of the old palette.
+  // 2026-10-08 (evening) — yellow, the owner's choice for this one button:
+  // Pixel IA's #FACC15 between a lighter and a deeper yellow, with ink text
+  // (13:1 on #FACC15). Red earlier the same day; an exception to the
+  // red-and-blue charter, recorded in CLAUDE.md.
   //
   // Earlier, a yellow version carried a 10px hard offset block of the SAME yellow plus a 5px
   // white ring — a sticker/brutalist device on a page whose every other
@@ -284,10 +285,10 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
     <Link
       href={ctaHref}
       style={{ animationDelay: `${middle * 90 + 220}ms` }}
-      className="rb-card-in inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#F34857_0%,#EF3E50_55%,#E2364A_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_0_0_3px_#FFFFFF,0_10px_22px_-8px_rgba(239,62,80,0.55)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+      className="rb-card-in inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#FDE047_0%,#FACC15_55%,#EAB308_100%)] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_0_0_3px_#FFFFFF,0_10px_22px_-8px_rgba(234,179,8,0.6)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
     >
       {ctaLabel}
-      <ArrowRight set="curved" size={15} primaryColor="#ffffff" />
+      <ArrowRight set="curved" size={15} primaryColor="#17161F" />
     </Link>
   );
 

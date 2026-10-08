@@ -26,12 +26,8 @@ import { EXAMPLE_RENDERS } from './generer-examples';
 import { CARD_SHAPE, CARD_TRANSFORM, ExampleFanCard, FAN_SLOTS } from './fan';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
-import { isRatioSupported, type RatioKey } from '@/lib/server/generation/ratios';
-import {
-  DEFAULT_RESOLUTION,
-  isResolutionSupported,
-  type ResolutionKey,
-} from '@/lib/server/generation/resolutions';
+import type { RatioKey } from '@/lib/server/generation/ratios';
+import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/resolutions';
 import { AppFrame } from './AppFrame';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { SideColumn } from './SideColumn';
@@ -160,13 +156,9 @@ export function GenerationHome({
   const [ratio, setRatio] = useState<RatioKey>('auto');
   const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
 
-  // Mirrors AppShell: an engine that cannot produce the chosen ratio or size
-  // drops the choice back to its default rather than carrying a request it
-  // will not honour.
+  // Both engines honour every ratio and size (2026-10-08): the choice stays.
   function handleEngineChange(next: EngineName) {
     setEngine(next);
-    if (!isRatioSupported(ratio, next)) setRatio('auto');
-    if (!isResolutionSupported(resolution, next)) setResolution(DEFAULT_RESOLUTION);
   }
   const [prompt, setPrompt] = useState('');
   const [preset, setPreset] = useState<PresetKey>('jour_ext');
@@ -270,6 +262,7 @@ export function GenerationHome({
       params.set('engine', engine);
       // 'auto' is the default on the other side — no need to spell it out.
       if (ratio !== 'auto') params.set('ratio', ratio);
+      if (resolution !== DEFAULT_RESOLUTION) params.set('resolution', resolution);
       router.push(`/app/${projectId}?${params.toString()}`);
     } catch (err) {
       errorToast(err, 'app.genHomeQuickStartError');
@@ -293,6 +286,8 @@ export function GenerationHome({
       form.append('instruction', prompt.trim());
       form.append('variantCount', String(variantCount));
       form.append('engine', mode === 'retouch' ? ANNOTATE_ENGINE : engine);
+      form.append('ratio', ratio);
+      form.append('resolution', resolution);
       if (mode === 'retouch') {
         form.append(
           'annotations',
@@ -564,7 +559,6 @@ export function GenerationHome({
             onVariantCountChange={setVariantCount}
             zoneSelected={hasComments}
             referenceAdded={Boolean(referenceFile)}
-            imageSrc={largeSrc}
             materials={[]}
             elementNodes={[]}
             onPickElement={() => {}}

@@ -8,6 +8,7 @@
 // `import type` is erased at compile time, so neither module creates a
 // runtime edge and there is no import cycle to resolve.
 import type { RatioKey } from '../ratios';
+import type { ResolutionKey } from '../resolutions';
 
 export type EngineName = 'nanobanana' | 'gpt_image';
 
@@ -35,6 +36,9 @@ export interface GenerateRenderInput {
   // generation behaved before the ratio control existed. Each engine
   // translates this itself — see generation/ratios.ts.
   aspectRatio?: RatioKey | undefined;
+  // Requested output size (1K / 2K / 4K). Visio renders at it; any engine
+  // output smaller than it is enlarged afterwards — see output-shape.ts.
+  resolution?: ResolutionKey | undefined;
 }
 
 export interface GenerateRenderOutput {

@@ -47,6 +47,8 @@ import {
   AnnotationsSchema,
   buildAnnotationPrompt,
 } from '@/lib/server/generation/annotations';
+import { RATIO_KEYS } from '@/lib/server/generation/ratios';
+import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
 
 const FieldsSchema = z
@@ -60,6 +62,9 @@ const FieldsSchema = z
     engine: z.enum(ENGINE_NAMES),
     zone: ZoneSchema.optional(),
     annotations: AnnotationsSchema.optional(),
+    // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
+    ratio: z.enum(RATIO_KEYS).default('auto'),
+    resolution: z.enum(RESOLUTION_KEYS).default('1k'),
   })
   .refine((v) => v.editType === 'annotate' || v.instruction.length > 0, {
     message: 'instruction is required',
@@ -140,6 +145,8 @@ export async function POST(
       engine: form.get('engine'),
       zone: parsedZone,
       annotations: parsedAnnotations,
+      ratio: form.get('ratio') || undefined,
+      resolution: form.get('resolution') || undefined,
     });
     if (!parsed.success) {
       return NextResponse.json(
@@ -147,7 +154,16 @@ export async function POST(
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    const { sourceNodeId, editType, instruction, variantCount, zone, annotations } = parsed.data;
+    const {
+      sourceNodeId,
+      editType,
+      instruction,
+      variantCount,
+      zone,
+      annotations,
+      ratio,
+      resolution,
+    } = parsed.data;
     // Annotate is a gpt-image feature: the client's engine choice does not
     // apply to it (see generation/annotations.ts).
     const engine = editType === 'annotate' ? ANNOTATE_ENGINE : parsed.data.engine;
@@ -274,6 +290,8 @@ export async function POST(
           sourceMimeType: sourceNode.mimeType,
           prompt: assembledPrompt,
           referenceImages,
+          ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
+          resolution,
         }),
       ),
     );

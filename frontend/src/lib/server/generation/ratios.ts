@@ -3,15 +3,26 @@
 // component) enumerates these to build its selector, exactly as it already
 // does with PRESET_KEYS and ENGINE_NAMES.
 //
-// The two engines express the same idea differently — Gemini takes a ratio
-// string, gpt-image-1 takes one of three fixed pixel sizes — so each entry
-// carries both, and `null` means "this engine cannot produce this ratio".
-// Nothing here approximates: offering 16:9 on an engine that would silently
-// return 3:2 turns a control into a lie. Ratios an engine cannot honour are
-// disabled in the UI and refused by the route.
-import type { EngineName } from './engines/types';
-
-export const RATIO_KEYS = ['auto', '1:1', '3:2', '2:3', '16:9', '9:16'] as const;
+// Every ratio is available on both engines since 2026-10-08 (owner: there is
+// no free mode, a paying user gets everything). Each engine reaches it its
+// own way, and the result is the ratio asked for, never an approximation:
+//   • Visio (Gemini's image models) takes the ratio string as is;
+//   • Pixel IA (gpt-image-1) only knows three pixel sizes, so it is asked for
+//     the nearest one and the image is cropped to the exact ratio afterwards
+//     (see output-shape.ts).
+export const RATIO_KEYS = [
+  'auto',
+  '1:1',
+  '4:3',
+  '3:4',
+  '3:2',
+  '2:3',
+  '16:9',
+  '9:16',
+  '5:4',
+  '4:5',
+  '21:9',
+] as const;
 
 export type RatioKey = (typeof RATIO_KEYS)[number];
 
@@ -21,55 +32,45 @@ type OpenAiSize = '1024x1024' | '1536x1024' | '1024x1536';
 export interface RatioSpec {
   /** Shown as-is in the UI — a ratio needs no translation. */
   label: string;
-  /** `config.imageConfig.aspectRatio` for Gemini, null when unsupported. */
+  /** Width over height, null for 'auto'. */
+  value: number | null;
+  /** `config.imageConfig.aspectRatio` for Gemini, null for 'auto'. */
   gemini: string | null;
-  /** `size` for the OpenAI edit call, null when unsupported. */
+  /** The gpt-image-1 size to ask for before cropping, null for 'auto'. */
   openai: OpenAiSize | null;
+}
+
+/** The gpt-image-1 size whose shape is closest to a ratio. */
+function nearestOpenAiSize(value: number): OpenAiSize {
+  // Boundaries halfway (geometrically) between 2:3, 1:1 and 3:2.
+  if (value >= Math.sqrt(1.5)) return '1536x1024';
+  if (value <= 1 / Math.sqrt(1.5)) return '1024x1536';
+  return '1024x1024';
+}
+
+function spec(key: Exclude<RatioKey, 'auto'>): RatioSpec {
+  const [w, h] = key.split(':').map(Number) as [number, number];
+  const value = w / h;
+  return { label: key, value, gemini: key, openai: nearestOpenAiSize(value) };
 }
 
 export const RATIOS: Record<RatioKey, RatioSpec> = {
   // The default. Sends nothing to either engine, so the output keeps the
   // framing the engine would have chosen from the source image — which is
   // what every generation did before this control existed.
-  auto: { label: 'Auto', gemini: null, openai: null },
-  '1:1': { label: '1:1', gemini: '1:1', openai: '1024x1024' },
-  '3:2': { label: '3:2', gemini: '3:2', openai: '1536x1024' },
-  '2:3': { label: '2:3', gemini: '2:3', openai: '1024x1536' },
-  // Gemini-only: gpt-image-1 has no 16:9 size, and 1536x1024 is 3:2.
-  '16:9': { label: '16:9', gemini: '16:9', openai: null },
-  '9:16': { label: '9:16', gemini: '9:16', openai: null },
+  auto: { label: 'Auto', value: null, gemini: null, openai: null },
+  '1:1': spec('1:1'),
+  '4:3': spec('4:3'),
+  '3:4': spec('3:4'),
+  '3:2': spec('3:2'),
+  '2:3': spec('2:3'),
+  '16:9': spec('16:9'),
+  '9:16': spec('9:16'),
+  '5:4': spec('5:4'),
+  '4:5': spec('4:5'),
+  '21:9': spec('21:9'),
 };
 
-/**
- * Whether an engine can actually produce this ratio. 'auto' is always
- * supported — it asks for nothing.
- */
-export function isRatioSupported(ratio: RatioKey, engine: EngineName): boolean {
-  if (ratio === 'auto') return true;
-  const spec = RATIOS[ratio];
-  return engine === 'nanobanana' ? spec.gemini !== null : spec.openai !== null;
-}
-
-/** The ratios an engine can honour, in declaration order. */
-export function supportedRatios(engine: EngineName): RatioKey[] {
-  return RATIO_KEYS.filter((r) => isRatioSupported(r, engine));
-}
-
-/**
- * The pixel size the generation will actually be asked for, or null when the
- * request carries no size at all.
- *
- * This is read off what the adapters really send, not off a table of what the
- * models are believed to output: gpt-image.ts passes `RATIOS[r].openai` as
- * `size`, and nanobanana.ts passes only an aspect ratio and never a size. So
- * for Gemini the answer is genuinely "whatever the model returns" — printing
- * a pixel figure there would be inventing one.
- *
- * Used by the command bar's output chip, which is why this lives beside the
- * ratios rather than in the UI: the day an adapter starts sending a size,
- * this is the file that changes and the chip follows.
- */
-export function requestedSize(ratio: RatioKey, engine: EngineName): string | null {
-  if (engine !== 'gpt_image') return null;
-  return RATIOS[ratio].openai;
+export function isRatioKey(value: string): value is RatioKey {
+  return (RATIO_KEYS as readonly string[]).includes(value);
 }

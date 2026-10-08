@@ -8,8 +8,9 @@
 // third opened on a zero, which reads as an empty counter before it reads as a
 // promise. What is left is what only this strip can say.
 //
-// The audience line is the owner's own figure and wording (2026-10-07):
-// "Plus de 5 000 utilisateurs", exactly that and nothing more. It replaced a
+// The audience line is the owner's own figure and wording: "Plus de 5 000
+// personnes utilisent RenderBox" (2026-10-08, was "Plus de 5 000
+// utilisateurs"), on a yellow ground so it stands out (owner). It replaced a
 // TikTok follower count the owner found too narrow. It is a claim about the
 // product, so it must stay true — the owner answers for the number.
 //
@@ -27,8 +28,8 @@ export const TIKTOK_PATH =
 function CommunityBadge() {
   const t = useTranslations();
   return (
-    <span className="inline-flex items-center gap-2 rounded-lg bg-white px-3.5 py-1.5 shadow-[0_2px_10px_-4px_rgba(23,22,31,0.18)]">
-      <User set="curved" size={15} primaryColor="#2948FC" />
+    <span className="inline-flex items-center gap-2 rounded-xl bg-[#FACC15] px-4 py-2 shadow-[0_8px_20px_-10px_rgba(234,179,8,0.7)]">
+      <User set="curved" size={16} primaryColor="#17161F" />
       <span className="text-[14px] font-semibold text-[#17161F]">{t('landing.proofUsers')}</span>
     </span>
   );

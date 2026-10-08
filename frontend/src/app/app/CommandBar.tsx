@@ -36,7 +36,6 @@ import type { ResolutionKey } from '@/lib/server/generation/resolutions';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
 import { PresetSelect } from './PresetSelect';
-import { RatioChip } from './RatioChip';
 import { RatioSelect } from './RatioSelect';
 import { ResolutionSelect } from './ResolutionSelect';
 import { ContextChip } from './ContextChip';
@@ -225,7 +224,6 @@ export function CommandBar({
   pinned,
   variantCount,
   onVariantCountChange,
-  imageSrc,
   materials,
   elementNodes,
   onPickElement,
@@ -272,8 +270,6 @@ export function CommandBar({
   /** How many versions an edit produces — the edit modes only. */
   variantCount?: number;
   onVariantCountChange?: (n: number) => void;
-  /** The image an edit works on — the ratio chip reads its real dimensions. */
-  imageSrc: string | null;
   /** What the engine has memorised about this project. */
   materials: MaterialRow[];
   /** Every image in the project, offered as a reusable element reference. */
@@ -371,24 +367,18 @@ export function CommandBar({
         onChange={onPresetChange}
         disabled={inputDisabled}
       />,
-      <RatioSelect
-        key="ratio"
-        ratio={ratio}
-        onChange={onRatioChange}
-        engine={engine}
-        disabled={inputDisabled}
-      />,
     );
-  } else if (imageSrc) {
-    // An edit keeps the framing of the image it works on: reported, not chosen.
-    settings.push(<RatioChip key="ratio" src={imageSrc} />);
   }
+  // Every mode chooses its ratio since 2026-10-08 (owner: every format, in
+  // generation and in edits alike); 'auto' keeps the image's own framing.
+  settings.push(
+    <RatioSelect key="ratio" ratio={ratio} onChange={onRatioChange} disabled={inputDisabled} />,
+  );
   settings.push(
     <ResolutionSelect
       key="res"
       resolution={resolution}
       onChange={onResolutionChange}
-      engine={engine}
       disabled={inputDisabled}
     />,
   );

@@ -177,12 +177,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.presetLabel': 'Ambiance',
   'app.engineLabel': 'Engine',
   'app.resolutionLabel': 'Resolution',
-  'app.resolutionUnsupported': 'This engine does not render at that size.',
-  'app.resolutionNote':
-    'Both engines render at 1K today. 2K and 4K need a model that actually produces them — they stay listed rather than hiding what is missing.',
   'app.ratioAuto': 'Auto',
-  'app.ratioUnsupported': 'This engine cannot produce that format.',
-  'app.ratioUnsupportedBadge': 'n/a',
   'app.submitGenerate': 'Generate',
   'app.hintNoImage': 'Add an image to the project first.',
   'app.hintNoPrompt': 'Describe what you want.',
@@ -267,8 +262,6 @@ const en: Record<keyof typeof fr, string> = {
   'info.title': 'Updates',
   'info.subtitle': 'What changed in RenderBox, newest first.',
   'info.guideTitle': 'Features in motion',
-  'info.filmEtapesBody':
-    'A photo or a sketch, an ambiance, a render — by day or by night, inside or out.',
   'info.plannedHeading': 'Coming up',
   'info.shippedHeading': 'Updates',
   'info.badgePlanned': 'planned',
@@ -513,9 +506,9 @@ const en: Record<keyof typeof fr, string> = {
   // "your exports", not "works with": RenderBox reads the images these tools
   // export, it does not integrate with them. Do not shorten.
   'landing.proofCompatible': 'Import image exports from',
-  // The figure and the wording are the founder's (2026-10-07): exactly
-  // "More than 5,000 users", nothing more. Do not rephrase.
-  'landing.proofUsers': 'More than 5,000 users',
+  // The figure and the wording are the founder's (2026-10-08): "More than
+  // 5,000 people use RenderBox". Do not rephrase.
+  'landing.proofUsers': 'More than 5,000 people use RenderBox',
   'landing.videoEyebrow': 'Overview',
   'landing.videoTitle': 'RenderBox on video',
   'landing.videoSoon': 'Presentation video coming soon',
