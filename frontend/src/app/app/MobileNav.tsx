@@ -3,7 +3,7 @@
 // The app's navigation below 900px, after the owner's Metrio reference
 // (Metrio 4.0, src/layouts/MobileNav.tsx): a white floating pill at the
 // bottom of the screen with the three main entries and a "Plus" button
-// whose menu holds the rest, and beside it a round green "+" that starts a new
+// whose menu holds the rest, and beside it a round blue "+" that starts a new
 // render. It replaces the old off-canvas rail, which hid the whole app
 // behind a small menu button.
 //
@@ -74,12 +74,12 @@ export function MobileNav({
 
   // One tap target: 56×52, label under the glyph, the current one on the tint.
   const item = (active: boolean) =>
-    `flex h-[52px] w-14 flex-col items-center justify-center gap-0.5 rounded-full text-[10.5px] font-medium transition-colors duration-150 ${
-      active ? 'bg-[#E8F5EC] text-[#166534]' : 'text-[#3D3B49]'
+    `flex h-[52px] w-14 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-medium transition-colors duration-150 ${
+      active ? 'bg-[#EEF1FF] text-[#1E36D6]' : 'text-[#3D3B49]'
     }`;
 
   const newClass =
-    'ml-3 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] shadow-[0_10px_24px_-8px_rgba(21,128,61,0.7)] transition-transform duration-150 active:scale-90';
+    'ml-3 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] shadow-[0_10px_24px_-8px_rgba(41,72,252,0.7)] transition-transform duration-150 active:scale-90';
 
   return (
     <>
@@ -88,7 +88,7 @@ export function MobileNav({
         className="pointer-events-none fixed inset-x-0 bottom-0 z-40 min-[900px]:hidden"
       >
         <div className="pointer-events-auto flex items-end justify-center px-4 pb-[calc(20px+env(safe-area-inset-bottom))] pt-3">
-          <div className="flex items-center gap-1 rounded-full border border-[#ECECF2] bg-white/95 p-1.5 shadow-[0_8px_30px_rgba(23,22,31,0.10)] backdrop-blur-md">
+          <div className="flex items-center gap-1 rounded-2xl bg-white/95 p-1.5 shadow-[0_8px_30px_rgba(23,22,31,0.10)] backdrop-blur-md">
             {main.map((m) => {
               const active = current === m.page;
               return (
@@ -113,14 +113,14 @@ export function MobileNav({
                 aria-expanded={moreOpen}
                 className={item(moreActive)}
               >
-                <MoreCircle set="curved" size={20} primaryColor="#15803D" />
+                <MoreCircle set="curved" size={20} primaryColor="#2948FC" />
                 <span>{t('app.mobileMore')}</span>
               </button>
 
               {moreOpen && (
                 <div
                   role="menu"
-                  className="rb-pop-up absolute bottom-full left-1/2 mb-3 w-56 -translate-x-1/2 rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_12px_32px_rgba(23,22,31,0.14)]"
+                  className="rb-pop-up absolute bottom-full left-1/2 mb-3 w-56 -translate-x-1/2 rounded-2xl bg-white p-2 shadow-[0_12px_32px_rgba(23,22,31,0.14)]"
                 >
                   {more.map((m) => {
                     const active = current === m.page;
@@ -133,7 +133,7 @@ export function MobileNav({
                         {...(active ? { 'aria-current': 'page' as const } : {})}
                         className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-colors ${
                           active
-                            ? 'bg-[#E8F5EC] text-[#166534]'
+                            ? 'bg-[#EEF1FF] text-[#1E36D6]'
                             : 'text-[#3D3B49] hover:bg-[#F7F7FA]'
                         }`}
                       >
@@ -149,9 +149,9 @@ export function MobileNav({
                       setMoreOpen(false);
                       openAssistant();
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold text-[#166534] transition-colors hover:bg-[#E8F5EC]"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-semibold text-[#1E36D6] transition-colors hover:bg-[#EEF1FF]"
                   >
-                    <Chat set="curved" size={18} primaryColor="#15803D" />
+                    <Chat set="curved" size={18} primaryColor="#2948FC" />
                     {t('app.assistant')}
                   </button>
                   {placeholder ? (

@@ -165,7 +165,7 @@ export function AnnotationLayer({
       {active && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute z-10 rounded-2xl border border-[#ECECF2] bg-white p-2.5 shadow-[0_18px_40px_-16px_rgba(23,22,31,0.45)]"
+          className="absolute z-10 rounded-2xl bg-white p-2.5 shadow-[0_18px_40px_-16px_rgba(23,22,31,0.45)]"
           style={{
             width: bubbleW,
             left: bubbleLeft,
@@ -196,7 +196,7 @@ export function AnnotationLayer({
                 onChange(pins.filter((p) => p.id !== active.id));
                 setActiveId(null);
               }}
-              className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#E5484D] hover:bg-[#E5484D0F]"
+              className="rounded-lg px-2.5 py-1 text-[12px] font-medium text-[#E5484D] hover:bg-[#E5484D0F]"
             >
               {t('annotate.remove')}
             </button>
@@ -204,7 +204,7 @@ export function AnnotationLayer({
               type="button"
               onClick={() => close(true)}
               disabled={!draft.trim()}
-              className="rounded-full bg-[#15803D] px-3.5 py-1 text-[12px] font-semibold text-white disabled:opacity-40"
+              className="rounded-lg bg-[#2948FC] px-3.5 py-1 text-[12px] font-semibold text-white disabled:opacity-40"
             >
               {t('annotate.save')}
             </button>
@@ -219,7 +219,7 @@ export function AnnotationLayer({
  * The render with its numbered markers burnt in — attached to the request as
  * the second image, so the engine sees exactly where each comment points.
  * Drawn at the image's natural size; JPEG keeps a large render well under the
- * upload limit. The markers are red, not the brand green, on purpose: this
+ * upload limit. The markers are red, not the brand blue, on purpose: this
  * image is only ever read by the engine, never shown, and red stands out
  * against foliage and lawns where green markers would vanish.
  */

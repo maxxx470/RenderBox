@@ -87,13 +87,13 @@ function EmptyFanCard({
       onClick={onClick}
       style={{ animationDelay: `${index * 90}ms` }}
       aria-label={lead ? undefined : t('app.genHomeCardPlaceholder')}
-      className={`rb-card-in ${CARD_SHAPE} flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[#ECECF2] bg-[#FBFBFD] hover:border-[#16A34A] ${
+      className={`rb-card-in ${CARD_SHAPE} flex flex-col items-center justify-center gap-3 border-2 border-dashed border-[#ECECF2] bg-[#FBFBFD] hover:border-[#435CFE] ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
       {lead ? (
         <>
-          <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
+          <span className="flex h-[46px] w-[46px] items-center justify-center rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]">
             <Upload set="curved" size={20} primaryColor="#ffffff" />
           </span>
           <span className="max-w-[150px] text-center text-[12.5px] font-medium text-[#6B6878]">
@@ -101,7 +101,7 @@ function EmptyFanCard({
           </span>
         </>
       ) : (
-        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-full border border-[#DEDEE8] bg-white">
+        <span className="flex h-[46px] w-[46px] items-center justify-center rounded-xl bg-white">
           <Upload set="curved" size={20} primaryColor="#C9C7D1" />
         </span>
       )}
@@ -130,7 +130,7 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
       // 90ms apart: enough to read as a deal of cards, short enough that the
       // last one lands well before anyone reaches for it.
       style={{ animationDelay: `${index * 90}ms` }}
-      className={`rb-card-in ${CARD_SHAPE} border border-[#ECECF2] bg-[#F7F7FA] ${
+      className={`rb-card-in ${CARD_SHAPE} bg-[#F7F7FA] ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
@@ -140,7 +140,7 @@ function RenderFanCard({ render, index }: { render: RecentRenderCardData; index:
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-      <span className="absolute left-3 top-3 rounded-2xl border border-[#ECECF2] bg-white px-2 py-1 font-[family-name:var(--font-mono)] text-[9.5px] text-[#8A8896]">
+      <span className="absolute left-3 top-3 rounded-2xl bg-white px-2 py-1 font-[family-name:var(--font-mono)] text-[9.5px] text-[#8A8896]">
         {tag}
       </span>
       <span className="absolute inset-x-3.5 bottom-3.5 font-[family-name:var(--font-display)] text-sm font-semibold text-white">
@@ -163,7 +163,7 @@ function ExampleFanCard({ example, index }: { example: ExampleRender; index: num
   return (
     <div
       style={{ animationDelay: `${index * 90}ms` }}
-      className={`rb-card-in ${CARD_SHAPE} border border-[#ECECF2] bg-[#F7F7FA] ${
+      className={`rb-card-in ${CARD_SHAPE} bg-[#F7F7FA] ${
         index === 0 ? '' : '-ml-6'
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
@@ -184,7 +184,7 @@ function ExampleFanCard({ example, index }: { example: ExampleRender; index: num
           build. Frosted white at a readable size, naming the product, reads
           as the caption it is. It carries its own ground either way, so it
           stays legible over a pale image or a dark one. */}
-      <span className="absolute left-3 top-3 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-[#17161F] backdrop-blur-sm">
+      <span className="absolute left-3 top-3 rounded-lg bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-[#17161F] backdrop-blur-sm">
         {t('app.genHomeExampleTag')}
       </span>
       {/* Only when the set spans several ambiances — see generer-examples.ts.
@@ -477,7 +477,7 @@ export function GenerationHome({
       {/* min-w-0 so this flex child can shrink below its content's intrinsic
           width instead of pushing the workspace off a narrow screen. */}
       <main
-        className={`flex min-w-0 flex-1 flex-col overflow-hidden px-2 pt-4 min-[640px]:px-4 min-[900px]:px-7.5 min-[900px]:pt-5 ${MOBILE_NAV_PAD}`}
+        className={`flex min-w-0 flex-1 flex-col overflow-hidden bg-[#EEEEF1] px-2 pt-4 min-[640px]:px-4 min-[900px]:px-7.5 min-[900px]:pt-5 ${MOBILE_NAV_PAD}`}
       >
         <input
           ref={fileInputRef}
@@ -500,8 +500,8 @@ export function GenerationHome({
           // Blocking, not a late error at generate-time: without an active
           // tier there's nothing to do in any mode.
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#E8F5EC]">
-              <Folder set="curved" size={24} primaryColor="#15803D" />
+            <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#EEF1FF]">
+              <Folder set="curved" size={24} primaryColor="#2948FC" />
             </div>
             <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
               {t('app.genHomeNoTierTitle')}
@@ -509,7 +509,7 @@ export function GenerationHome({
             <p className="max-w-[320px] text-[13px] text-[#8A8896]">{t('app.genHomeNoTierBody')}</p>
             <Link
               href="/app/tarifs"
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-5 py-2.5 text-[13px] font-semibold text-white"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-2.5 text-[13px] font-semibold text-white"
             >
               {t('app.genHomeChooseTier')}
             </Link>
@@ -533,14 +533,14 @@ export function GenerationHome({
                     <span
                       aria-hidden
                       className={`mr-1.5 inline-block h-2 w-2 rounded-full align-middle ${
-                        mode === 'retouch' ? 'bg-[#DC2626]' : 'bg-[#16A34A]'
+                        mode === 'retouch' ? 'bg-[#DC2626]' : 'bg-[#435CFE]'
                       }`}
                     />
                     {t(mode === 'retouch' ? 'app.genHomeCommentHint' : 'app.genHomeAddHint')}
                   </p>
                   <div
                     ref={stageRef}
-                    className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#F7F7FA]"
+                    className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-[#F7F7FA]"
                   >
                     <img
                       ref={imgRef}
@@ -566,7 +566,7 @@ export function GenerationHome({
                     )}
                     {creating && (
                       <div className="absolute inset-0 flex items-center justify-center bg-white/55 backdrop-blur-[2px]">
-                        <span className="rb-spin h-8 w-8 rounded-full border-[3px] border-[#CDEBD6] border-t-[#15803D]" />
+                        <span className="rb-spin h-8 w-8 rounded-full border-[3px] border-[#D5DCFF] border-t-[#2948FC]" />
                       </div>
                     )}
                   </div>
@@ -606,7 +606,7 @@ export function GenerationHome({
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               className={`rounded-[22px] transition-colors ${
-                dragOver ? 'bg-[#E8F5EC]' : 'bg-transparent'
+                dragOver ? 'bg-[#EEF1FF]' : 'bg-transparent'
               }`}
             >
               <CommandBar

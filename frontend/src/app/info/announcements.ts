@@ -87,8 +87,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     kind: 'shipped',
     title: { fr: 'Une barre de commande complète', en: 'A complete command bar' },
     body: {
-      fr: 'Tout se fait depuis la barre : les actions Générer, Commenter, Ajouter et Enhance côte à côte, les deux moteurs toujours visibles (Moteur 1 rouge, Moteur 2 jaune), un trombone pour joindre une image, qui s’affiche en miniature, et le nombre de variantes. Le bouton « ? » ouvre l’assistant.',
-      en: 'Everything happens in the bar: the Generate, Comment, Add and Enhance actions side by side, both engines always on show (Engine 1 red, Engine 2 yellow), a paperclip to attach an image, shown as a thumbnail, and the number of variants. The "?" button opens the assistant.',
+      fr: 'Tout se fait depuis la barre : les actions Générer, Commenter, Ajouter et Enhance côte à côte, les deux moteurs toujours visibles (Visio rouge, Pixel IA jaune), un trombone pour joindre une image, qui s’affiche en miniature, et le nombre de variantes. Le bouton « ? » ouvre l’assistant.',
+      en: 'Everything happens in the bar: the Generate, Comment, Add and Enhance actions side by side, both engines always on show (Visio red, Pixel AI yellow), a paperclip to attach an image, shown as a thumbnail, and the number of variants. The "?" button opens the assistant.',
     },
   },
   {
@@ -120,8 +120,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
       en: 'Comment: point, comment, it’s changed',
     },
     body: {
-      fr: 'Le mode « Retoucher » devient « Commenter ». Cliquez sur le rendu à l’endroit à changer, écrivez ce qui doit changer dans la bulle — jusqu’à 8 commentaires numérotés — puis « Appliquer ». Ce mode utilise toujours le Moteur 2, le plus précis pour suivre des consignes localisées, et la mémoire des matériaux est mise à jour après la modification.',
-      en: '"Retouch" becomes "Comment". Click the render where it should change, type the change in the bubble — up to 8 numbered comments — then "Apply". This mode always uses Engine 2, the most precise at following localized instructions, and the material memory is updated after the edit.',
+      fr: 'Le mode « Retoucher » devient « Commenter ». Cliquez sur le rendu à l’endroit à changer, écrivez ce qui doit changer dans la bulle — jusqu’à 8 commentaires numérotés — puis « Appliquer ». Ce mode utilise toujours Pixel IA, le plus précis pour suivre des consignes localisées, et la mémoire des matériaux est mise à jour après la modification.',
+      en: '"Retouch" becomes "Comment". Click the render where it should change, type the change in the bubble — up to 8 numbered comments — then "Apply". This mode always uses Pixel AI, the most precise at following localized instructions, and the material memory is updated after the edit.',
     },
   },
   {
@@ -153,8 +153,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     kind: 'shipped',
     title: { fr: 'Une couleur par moteur', en: 'One colour per engine' },
     body: {
-      fr: 'Moteur 1 est rouge, Moteur 2 est jaune, partout où un moteur est indiqué : on voit d’un coup d’œil quel moteur a produit quel rendu.',
-      en: 'Engine 1 is red, Engine 2 is yellow, wherever an engine is shown: you can tell at a glance which engine made which render.',
+      fr: 'Visio est rouge, Pixel IA est jaune, partout où un moteur est indiqué : on voit d’un coup d’œil quel moteur a produit quel rendu.',
+      en: 'Visio is red, Pixel AI is yellow, wherever an engine is shown: you can tell at a glance which engine made which render.',
     },
   },
   {

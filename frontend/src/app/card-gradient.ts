@@ -6,7 +6,7 @@
 // is the defect already removed from the rails and from the preset cards.
 //
 // Three layers make the "shine", and each does one job:
-//   1. GROUND — a green wash running down the card. Pale on purpose: the
+//   1. GROUND — a blue wash running down the card. Pale on purpose: the
 //      body text is #6B6878, and #6B6878 on the darkest stop here measures
 //      4.6:1, just over the 4.5:1 floor. A stop any deeper would push the
 //      paragraph under it, and a card nobody can read is not a brighter card.
@@ -14,9 +14,9 @@
 //      actually reads as gloss. It is a separate absolutely-positioned layer
 //      rather than a second background image, so it can brighten on hover
 //      independently of the ground.
-//   3. HOVER — growth, a green-tinted shadow, and a firmer border. The
+//   3. HOVER — growth, a blue-tinted shadow, and a firmer border. The
 //      shadow is tinted rather than grey: a neutral drop shadow under a
-//      green card reads as dirt.
+//      blue card reads as dirt.
 //
 // Full literal class strings — Tailwind's scanner never sees a class built by
 // interpolating a value (see the JIT note in CLAUDE.md).
@@ -25,24 +25,24 @@
  * The card itself. Compose with padding at the call site.
  *
  * The gradient travels by HUE, not by darkness: near-white, then the pale
- * form of the charter's #16A34A, then the pale form of its #166534. A
+ * form of the charter's #435CFE, then the pale form of its #1E36D6. A
  * single-hue wash at this lightness barely reads as a gradient at all — the
- * first attempt ran #FCFEFD to #ECF8F0 and looked like a flat card with a
+ * first attempt ran #FCFDFF to #EEF1FF and looked like a flat card with a
  * printing fault. Shifting indigo to purple across the diagonal reads as a
  * gradient while every stop stays light enough for the body text below.
  */
-export const CARD_GRADIENT = 'bg-[linear-gradient(155deg,#FBFEFC_0%,#EAF7EE_46%,#F1F9F3_100%)]';
+export const CARD_GRADIENT = 'bg-[linear-gradient(155deg,#FCFDFF_0%,#EDF0FF_46%,#F3F5FF_100%)]';
 
 /**
  * Border, gloss and hover.
  *
  * The inset white hairline along the top edge is the detail that sells
  * "polished": it is the highlight a physical surface catches, and without it
- * the card is just a coloured rectangle. The outer shadow is green-tinted
- * rather than grey — a neutral drop shadow under a green card reads as dirt.
+ * the card is just a coloured rectangle. The outer shadow is blue-tinted
+ * rather than grey — a neutral drop shadow under a blue card reads as dirt.
  */
 export const CARD_GRADIENT_EDGE =
-  'shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_3px_rgba(23,22,31,0.04)] transition-[transform,translate,scale,box-shadow,border-color] duration-[220ms] ease-out hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_20px_38px_-18px_rgba(22,163,74,0.5)] motion-safe:hover:scale-[1.02]';
+  'shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_1px_3px_rgba(23,22,31,0.04)] transition-[transform,translate,scale,box-shadow,border-color] duration-[220ms] ease-out hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.95),0_20px_38px_-18px_rgba(67,92,254,0.5)] motion-safe:hover:scale-[1.02]';
 
 /**
  * The resting border, kept OUT of the edge token above.
@@ -55,7 +55,7 @@ export const CARD_GRADIENT_EDGE =
  * attribute. That is a coin flip, and it would land on the hover state too.
  * So the border is its own token, applied only where nothing else claims it.
  */
-export const CARD_GRADIENT_BORDER = 'border border-[#D3EEDB] hover:border-[#A7DCB8]';
+export const CARD_GRADIENT_BORDER = 'hover:border-[#B9C6FF]';
 
 /**
  * The gloss layer. Render as the first child of a `relative overflow-hidden`

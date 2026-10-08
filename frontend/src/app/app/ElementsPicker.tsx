@@ -89,7 +89,7 @@ export function ElementsPicker({
                     onPick(node.id);
                     closeNow();
                   }}
-                  className="aspect-square overflow-hidden rounded-full border border-[#ECECF2] transition-colors duration-150 ease-out hover:border-[#16A34A]"
+                  className="aspect-square overflow-hidden rounded-xl transition-colors duration-150 ease-out hover:bg-[#EEF1FF]"
                 >
                   <img
                     src={`/api/render-nodes/${node.id}/image`}

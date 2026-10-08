@@ -143,8 +143,8 @@ export function AssistantWidget() {
       type="button"
       onClick={() => setMode(m)}
       aria-pressed={mode === m}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-colors ${
-        mode === m ? 'bg-[#15803D] text-white' : 'bg-[#F7F7FA] text-[#3D3B49] hover:bg-[#ECECF2]'
+      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-colors ${
+        mode === m ? 'bg-[#2948FC] text-white' : 'bg-[#F7F7FA] text-[#3D3B49] hover:bg-[#ECECF2]'
       }`}
     >
       {icon}
@@ -164,7 +164,7 @@ export function AssistantWidget() {
         {/* Header */}
         <header className="flex flex-shrink-0 items-center justify-between gap-3 border-b border-[#ECECF2] px-4 py-3.5">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]">
               <Chat set="curved" size={19} primaryColor="#ffffff" />
             </span>
             <div className="min-w-0">
@@ -172,7 +172,7 @@ export function AssistantWidget() {
                 {t('assistant.title')}
               </h2>
               <p className="flex items-center gap-1.5 text-[11.5px] text-[#6B6878]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A]" aria-hidden />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#435CFE]" aria-hidden />
                 {t('assistant.status')}
               </p>
             </div>
@@ -181,7 +181,7 @@ export function AssistantWidget() {
             type="button"
             onClick={() => setOpen(false)}
             aria-label={t('assistant.close')}
-            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#F7F7FA]"
+            className="flex h-10 w-10 items-center justify-center rounded-xl hover:bg-[#F7F7FA]"
           >
             <CloseSquare set="curved" size={20} primaryColor="#8A8896" />
           </button>
@@ -195,7 +195,7 @@ export function AssistantWidget() {
             <Chat
               set="curved"
               size={14}
-              primaryColor={mode === 'renderbox' ? '#ffffff' : '#15803D'}
+              primaryColor={mode === 'renderbox' ? '#ffffff' : '#2948FC'}
             />,
           )}
           {modeButton(
@@ -204,14 +204,14 @@ export function AssistantWidget() {
             <Discovery
               set="curved"
               size={14}
-              primaryColor={mode === 'search' ? '#ffffff' : '#15803D'}
+              primaryColor={mode === 'search' ? '#ffffff' : '#2948FC'}
             />,
           )}
         </div>
 
         {/* Conversation */}
         <div className="flex-1 space-y-3 overflow-y-auto bg-[#FBFBFD] px-4 py-4">
-          <div className="max-w-[88%] rounded-2xl rounded-tl-md border border-[#ECECF2] bg-white px-3.5 py-2.5 text-[13.5px] leading-relaxed text-[#17161F]">
+          <div className="max-w-[88%] rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-[13.5px] leading-relaxed text-[#17161F]">
             {t(mode === 'search' ? 'assistant.welcomeSearch' : 'assistant.welcome')}
           </div>
 
@@ -222,7 +222,7 @@ export function AssistantWidget() {
                   key={s}
                   type="button"
                   onClick={() => void ask(s)}
-                  className="rounded-full border border-[#CDEBD6] bg-[#F0FAF3] px-3 py-1.5 text-left text-[12.5px] font-medium text-[#166534] transition-colors hover:border-[#16A34A]"
+                  className="rounded-lg bg-[#F4F6FF] px-3 py-1.5 text-left text-[12.5px] font-medium text-[#1E36D6] transition-colors hover:bg-[#EEF1FF]"
                 >
                   {s}
                 </button>
@@ -233,13 +233,13 @@ export function AssistantWidget() {
           {messages.map((m) =>
             m.role === 'user' ? (
               <div key={m.id} className="flex justify-end">
-                <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-tr-md bg-[#15803D] px-3.5 py-2.5 text-[13.5px] leading-relaxed text-white">
+                <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-tr-md bg-[#2948FC] px-3.5 py-2.5 text-[13.5px] leading-relaxed text-white">
                   {m.content}
                 </div>
               </div>
             ) : (
               <div key={m.id} className="flex justify-start">
-                <div className="max-w-[88%] rounded-2xl rounded-tl-md border border-[#ECECF2] bg-white px-3.5 py-2.5 text-[13.5px] leading-relaxed text-[#17161F]">
+                <div className="max-w-[88%] rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5 text-[13.5px] leading-relaxed text-[#17161F]">
                   <div className="whitespace-pre-wrap">{renderInline(m.content)}</div>
                   {m.sources && (
                     <div className="mt-2 border-t border-[#ECECF2] pt-2">
@@ -253,7 +253,7 @@ export function AssistantWidget() {
                               href={s.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[11.5px] text-[#15803D] underline-offset-2 hover:underline"
+                              className="text-[11.5px] text-[#2948FC] underline-offset-2 hover:underline"
                             >
                               {s.title}
                             </a>
@@ -269,8 +269,8 @@ export function AssistantWidget() {
 
           {loading && (
             <div className="flex justify-start">
-              <div className="flex items-center gap-2 rounded-2xl rounded-tl-md border border-[#ECECF2] bg-white px-3.5 py-2.5">
-                <span className="rb-spin h-3.5 w-3.5 rounded-full border-2 border-[#CDEBD6] border-t-[#15803D]" />
+              <div className="flex items-center gap-2 rounded-2xl rounded-tl-md bg-white px-3.5 py-2.5">
+                <span className="rb-spin h-3.5 w-3.5 rounded-full border-2 border-[#D5DCFF] border-t-[#2948FC]" />
                 <span className="text-[12.5px] text-[#6B6878]">{t('assistant.thinking')}</span>
               </div>
             </div>
@@ -283,7 +283,7 @@ export function AssistantWidget() {
           onSubmit={onSubmit}
           className="flex-shrink-0 border-t border-[#ECECF2] bg-white px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3"
         >
-          <div className="flex items-center gap-2 rounded-full border border-[#ECECF2] bg-[#F7F7FA] py-1.5 pl-4 pr-1.5 focus-within:border-[#15803D]">
+          <div className="flex items-center gap-2 rounded-lg border border-[#ECECF2] bg-[#F7F7FA] py-1.5 pl-4 pr-1.5 focus-within:border-[#2948FC]">
             <input
               ref={inputRef}
               value={input}
@@ -299,7 +299,7 @@ export function AssistantWidget() {
               type="submit"
               disabled={!input.trim() || loading}
               aria-label={t('assistant.send')}
-              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] disabled:opacity-40"
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] disabled:opacity-40"
             >
               <Send set="curved" size={16} primaryColor="#ffffff" />
             </button>

@@ -86,23 +86,24 @@ export function Glyph({
 }
 
 /**
- * Bare glyph (2026-10-05, after the Metrio reference): no tile. Idle glyphs
- * are brand green (#15803D, 5.0:1), as Metrio draws its idle icons in its
- * blue (owner, 2026-10-07); the active row is a filled green pill, so there
- * the glyph turns white.
+ * Bare glyph, no tile. `color` at rest, `activeColor` on the current page:
+ * the rail (2026-10-08) draws ink glyphs that turn blue on its tinted row; the
+ * phone bar keeps blue glyphs that turn white on its solid blue entry.
  */
 export function RailIcon({
   name,
   active = false,
-  color = '#15803D',
+  color = '#2948FC',
+  activeColor = '#ffffff',
 }: {
   name: RailIconName;
   active?: boolean;
   color?: string;
+  activeColor?: string;
 }) {
   return (
     <span aria-hidden className="flex h-5 w-5 flex-shrink-0 items-center justify-center">
-      <Glyph name={name} size={20} color={active ? '#ffffff' : color} />
+      <Glyph name={name} size={20} color={active ? activeColor : color} />
     </span>
   );
 }

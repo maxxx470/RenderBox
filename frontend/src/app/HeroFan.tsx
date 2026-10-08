@@ -59,7 +59,7 @@ function HeroCardFace({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-[22px] border border-[#DEDEE8] shadow-[0_24px_48px_-24px_rgba(23,22,31,0.45)] ${
+      className={`relative overflow-hidden rounded-[22px] shadow-[0_24px_48px_-24px_rgba(23,22,31,0.45)] ${
         card.src ? 'bg-[#F7F7FA]' : HERO_CARD_GRADIENT[card.preset]
       } ${className}`}
     >
@@ -74,7 +74,7 @@ function HeroCardFace({
         // sweep, the usual "image slot" motif, so the empty card reads as
         // awaiting content rather than as a solid block someone forgot to fill.
         <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
-          <span className="flex h-[86px] w-[86px] items-center justify-center rounded-full border-2 border-dashed border-white/40 bg-white/10 backdrop-blur-sm">
+          <span className="flex h-[86px] w-[86px] items-center justify-center rounded-2xl border-2 border-dashed border-white/40 bg-white/10 backdrop-blur-sm">
             <ImageIcon set="curved" size={26} primaryColor="#17161F" />
           </span>
           <span
@@ -252,7 +252,7 @@ function HeroSlider({ tag }: { tag: string }) {
           >
             <span
               className={`h-1.5 rounded-full transition-all duration-300 ease-out ${
-                i === index ? 'w-5 bg-[#EAB308]' : 'w-1.5 bg-[#DEDEE8]'
+                i === index ? 'w-5 bg-[#F34857]' : 'w-1.5 bg-[#DEDEE8]'
               }`}
             />
           </button>
@@ -270,11 +270,11 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
   const middle = Math.floor(HERO_CARDS.length / 2);
   const tag = t('landing.heroFanTag');
 
-  // 2026-10-07 — yellow again, at the owner's request ("jaune ou rouge, celle
-  // qui matche le plus"): yellow wins over red, which would read as an error
-  // or a warning on a first-visit page. Ink text on the yellow (13.9:1).
+  // 2026-10-08 — red, the accent of the red-and-blue charter (the owner's
+  // dashboard cards): the brand red #F34857 → #EF3E50, deepening at the end,
+  // with white text. Yellow (2026-10-07) left with the rest of the old palette.
   //
-  // Earlier, the yellow carried a 10px hard offset block of the SAME yellow plus a 5px
+  // Earlier, a yellow version carried a 10px hard offset block of the SAME yellow plus a 5px
   // white ring — a sticker/brutalist device on a page whose every other
   // surface is soft-shadowed and green, so it read as pasted on. What the
   // button actually needs, floating over photographs, is separation from busy
@@ -284,10 +284,10 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
     <Link
       href={ctaHref}
       style={{ animationDelay: `${middle * 90 + 220}ms` }}
-      className="rb-card-in inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#FDE047_0%,#FACC15_50%,#EAB308_100%)] px-5 py-3 text-sm font-semibold text-[#17161F] shadow-[0_0_0_3px_#FFFFFF,0_10px_22px_-8px_rgba(161,98,7,0.55)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+      className="rb-card-in inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#F34857_0%,#EF3E50_55%,#E2364A_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_0_0_3px_#FFFFFF,0_10px_22px_-8px_rgba(239,62,80,0.55)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
     >
       {ctaLabel}
-      <ArrowRight set="curved" size={15} primaryColor="#17161F" />
+      <ArrowRight set="curved" size={15} primaryColor="#ffffff" />
     </Link>
   );
 

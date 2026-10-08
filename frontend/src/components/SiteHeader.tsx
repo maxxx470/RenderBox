@@ -53,31 +53,31 @@ export function SiteHeader({
           <nav className="hidden items-center gap-1 text-[13.5px] font-medium text-[#3D3B49] min-[860px]:flex">
             <Link
               href="/#fonctionnalites"
-              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('landing.navFeatures')}
             </Link>
             <Link
               href="/#comment"
-              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('landing.navHow')}
             </Link>
             <Link
               href="/#tarifs"
-              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('landing.navPricing')}
             </Link>
             <Link
               href="/exemple"
-              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('landing.navExamples')}
             </Link>
             <Link
               href="/info"
-              className="rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('info.navLabel')}
             </Link>
@@ -92,7 +92,7 @@ export function SiteHeader({
           {cta && (
             <Link
               href={cta.href}
-              className="inline-flex items-center rounded-full bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)] px-5 py-2.5 text-[13.5px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
+              className="inline-flex items-center rounded-xl bg-[linear-gradient(135deg,#435CFE_0%,#2948FC_48%,#1E36D6_100%)] px-5 py-2.5 text-[13.5px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]"
             >
               {cta.label}
             </Link>

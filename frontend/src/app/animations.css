@@ -6,13 +6,13 @@
 
 @keyframes rb-pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.55);
+    box-shadow: 0 0 0 0 rgba(67, 92, 254, 0.55);
   }
   70% {
-    box-shadow: 0 0 0 18px rgba(22, 163, 74, 0);
+    box-shadow: 0 0 0 18px rgba(67, 92, 254, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+    box-shadow: 0 0 0 0 rgba(67, 92, 254, 0);
   }
 }
 
@@ -71,10 +71,10 @@
 @keyframes rb-badge-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+    box-shadow: 0 0 0 0 rgba(67, 92, 254, 0.4);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+    box-shadow: 0 0 0 6px rgba(67, 92, 254, 0);
   }
 }
 
@@ -193,11 +193,11 @@
 .rb-gradient-pan {
   background-image: linear-gradient(
     115deg,
-    #16a34a 0%,
-    #15803d 25%,
-    #166534 50%,
-    #15803d 75%,
-    #16a34a 100%
+    #435cfe 0%,
+    #2948fc 25%,
+    #1e36d6 50%,
+    #2948fc 75%,
+    #435cfe 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;

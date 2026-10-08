@@ -7,7 +7,7 @@ export default function AppLoading() {
   return (
     <SkeletonScreen
       label="Chargement"
-      className="min-w-0 flex-1 overflow-hidden bg-[#FBFBFD] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8"
+      className="min-w-0 flex-1 overflow-hidden bg-[#EEEEF1] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8"
     >
       <div className="mx-auto max-w-[1100px]">
         <div className="mb-6 grid grid-cols-2 gap-3 min-[860px]:grid-cols-4">
@@ -18,7 +18,7 @@ export default function AppLoading() {
         <SkeletonBlock className="mb-4 h-5 w-[160px]" />
         <div className="grid grid-cols-2 gap-3.5 min-[640px]:grid-cols-3 min-[1000px]:grid-cols-4">
           {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-            <div key={i} className="overflow-hidden rounded-2xl border border-[#ECECF2] bg-white">
+            <div key={i} className="overflow-hidden rounded-2xl bg-white">
               <SkeletonBlock className="aspect-[4/3] rounded-none" />
               <div className="px-3 pb-3 pt-2.5">
                 <SkeletonBlock className="mb-2 h-3.5 w-4/5" />

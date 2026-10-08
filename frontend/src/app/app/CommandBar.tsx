@@ -4,24 +4,21 @@
 // the generation space (GenerationHome).
 //
 // Rebuilt on 2026-10-06 at the owner's request ("trop basique"): everything
-// the product can do is reachable from here. Compacted the same day ("trop
-// grande, trop surchargée, les trucs sont trop gros"): smaller type and
-// controls, no help button (the assistant lives in the rail), and on a phone
-// the settings fold behind one "Réglages" button.
+// the product can do is reachable from here. Compacted the same day.
 //
-// ---------------------------------------------------------------------------
-// Three bands, top to bottom
-// ---------------------------------------------------------------------------
-//   1. What to do: Générer · Commenter · Ajouter · Enhance as tabs, and from
-//      640px both engines beside them, each in its own colour (Moteur 1 red,
-//      Moteur 2 yellow). "Commenter" exists on Moteur 2 only, so choosing it
-//      locks Moteur 1 and says why.
-//   2. The composer, as in a chat app: pinned images as thumbnails (never a
-//      filename), then the prompt, which grows with what is typed.
-//   3. How: the paperclip, the settings (ambiance, ratio, size, variants,
-//      what the engine remembers, elements of the project) and the send
-//      button alone on the right. Below 640px the engines sit here, and the
-//      settings open in a tray under a "Réglages" button.
+// 2026-10-08 — redrawn on the owner's "Aurora" reference (same features):
+//   a frame holding — white since the same evening (owner: "en blanc et non
+//   noir"; it was dark ink #17161F for a few hours) —
+//   1. the composer, a lighter panel: pinned images as thumbnails (never a
+//      filename), the prompt in large type (Enter sends), then the paperclip,
+//      a hint, and both engines in their colours (Visio red, Pixel IA
+//      yellow — "Commenter" exists on Pixel IA only, so it locks Visio);
+//   2. beside it, a big square send button with the action's verb;
+//   3. under it, the actions as chips with a coloured tile (Générer,
+//      Commenter, Ajouter, Enhance), then the settings (ambiance, ratio, size,
+//      variants, context, elements) — on a phone behind a "Réglages" button,
+//      while the send button shrinks into the composer.
+//   Behind the frame, soft light columns in the charter's blue and red.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Send, TickSquare, Lock, Setting } from 'react-iconly';
@@ -51,13 +48,29 @@ const MODES = [
   { key: 'add', glyph: 'add', labelKey: 'app.modeAdd' },
 ] as const satisfies readonly { key: AppMode; glyph: RailIconName; labelKey: string }[];
 
-/** The two segmented groups share one frame. */
-const SEGMENT = 'flex items-center gap-0.5 rounded-full border border-[#ECECF2] bg-[#F7F7FA] p-0.5';
+/** The engine toggle's frame, on the composer panel. */
+const SEGMENT = 'flex items-center gap-0.5 rounded-[10px] bg-white p-0.5';
+/** An action chip of the bottom row (Générer, Commenter, Ajouter, Enhance). */
 const TAB =
-  'flex h-7 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-[11.5px] font-semibold transition-colors duration-150 ease-out disabled:cursor-not-allowed';
-/** Round icon buttons of the bottom band (paperclip, settings). */
+  'flex h-8 flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-lg pl-1.5 pr-2.5 text-[12px] font-medium transition-colors duration-150 ease-out disabled:cursor-not-allowed';
+/** One engine of the toggle. */
+const ENGINE_TAB =
+  'flex h-7 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2 text-[11.5px] font-semibold transition-colors duration-150 ease-out disabled:cursor-not-allowed';
+/** The small coloured square before each action's name, as in the reference. */
+const MODE_TILE = 'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[6px]';
+const MODE_TILE_COLOR: Record<AppMode | 'enhance', string> = {
+  generate: 'bg-[#2948FC]',
+  // Comment pins are red in the app (AnnotationLayer): the action wears it.
+  retouch: 'bg-[#F34857]',
+  add: 'bg-[#17161F]',
+  enhance: 'bg-gradient-to-br from-[#435CFE] to-[#F34857]',
+};
+/** Square icon buttons of the composer (paperclip, settings on a phone). */
 const ROUND =
-  'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] transition-colors hover:border-[#CDEBD6] hover:bg-[#F0FAF3] disabled:cursor-not-allowed disabled:opacity-40';
+  'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white text-[#17161F] transition-colors hover:bg-[#E9E9EE] disabled:cursor-not-allowed disabled:opacity-40';
+/** The glow behind the bar: soft light columns in the charter's blue and red. */
+const GLOW =
+  'pointer-events-none absolute -inset-x-20 -bottom-10 -top-20 -z-10 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0)_0px,rgba(255,255,255,0.4)_26px,rgba(255,255,255,0)_52px),linear-gradient(90deg,#A3C2FB_0%,#435CFE_22%,#F88B98_50%,#2948FC_78%,#A3C2FB_100%)] opacity-90 blur-[16px] [mask-image:radial-gradient(ellipse_52%_58%_at_50%_55%,#000_40%,transparent_100%)]';
 
 /** One image shown in the composer. */
 export interface PinnedImage {
@@ -94,12 +107,8 @@ function StatusPill({ active, label }: { active: boolean; label: string }) {
 function Pinned({ image, removeLabel }: { image: PinnedImage; removeLabel: string }) {
   return (
     <div className="rb-pop-up relative h-12 w-12 flex-shrink-0">
-      <img
-        src={image.src}
-        alt=""
-        className="h-full w-full rounded-[12px] border border-[#ECECF2] object-cover"
-      />
-      <span className="absolute inset-x-0.5 bottom-0.5 truncate rounded-full bg-white/90 px-1 text-center text-[8.5px] font-semibold text-[#17161F] backdrop-blur-sm">
+      <img src={image.src} alt="" className="h-full w-full rounded-[12px] object-cover" />
+      <span className="absolute inset-x-0.5 bottom-0.5 truncate rounded-xl bg-white/90 px-1 text-center text-[8.5px] font-semibold text-[#17161F] backdrop-blur-sm">
         {image.caption}
       </span>
       {image.onRemove && (
@@ -108,7 +117,7 @@ function Pinned({ image, removeLabel }: { image: PinnedImage; removeLabel: strin
           onClick={image.onRemove}
           aria-label={removeLabel}
           title={removeLabel}
-          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#17161F] text-white shadow-[0_2px_6px_rgba(23,22,31,0.3)] transition-transform hover:scale-110"
+          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-md border-2 border-white bg-[#17161F] text-white shadow-[0_2px_6px_rgba(23,22,31,0.3)] transition-transform hover:scale-110"
         >
           <svg
             viewBox="0 0 24 24"
@@ -195,7 +204,7 @@ export function CommandBar({
   generating: boolean;
   engine: EngineName;
   onEngineChange: (engine: EngineName) => void;
-  /** The mode imposes its engine ("Commenter" → Moteur 2): shown, not choosable. */
+  /** The mode imposes its engine ("Commenter" → Pixel IA): shown, not choosable. */
   engineLocked?: boolean;
   /** What the paperclip does in the current mode; null turns it off. */
   onAttach: ((file: File) => void) | null;
@@ -243,12 +252,12 @@ export function CommandBar({
         onClick={() => onModeChange(key)}
         className={`${TAB} ${
           selected
-            ? 'bg-[#15803D] text-white shadow-[0_4px_10px_-6px_rgba(21,128,61,0.8)]'
-            : 'text-[#3D3B49] enabled:hover:bg-white disabled:opacity-45'
+            ? 'bg-[#EEF1FF] font-semibold text-[#1E36D6] shadow-[inset_0_0_0_1.5px_#2948FC]'
+            : 'bg-[#F2F2F5] text-[#3D3B49] enabled:hover:bg-[#E9E9EE] disabled:opacity-40'
         }`}
       >
-        <span className="hidden min-[640px]:inline-flex">
-          <Glyph name={glyph} size={14} color={selected ? '#ffffff' : '#15803D'} />
+        <span className={`${MODE_TILE} ${MODE_TILE_COLOR[key]}`}>
+          <Glyph name={glyph} size={12} color="#ffffff" />
         </span>
         {label}
       </button>
@@ -269,10 +278,10 @@ export function CommandBar({
             disabled={inputDisabled || locked}
             onClick={() => onEngineChange(e)}
             title={locked ? t('annotate.engineLocked') : ENGINE_LABELS[e].description[locale]}
-            className={`${TAB} px-2 ${
+            className={`${ENGINE_TAB} ${
               selected
                 ? `${ENGINE_COLORS[e].chip} shadow-[0_4px_10px_-6px_rgba(23,22,31,0.45)]`
-                : 'text-[#3D3B49] enabled:hover:bg-white disabled:opacity-45'
+                : 'text-[#3D3B49] enabled:hover:bg-[#F2F2F5] disabled:opacity-45'
             }`}
           >
             {locked ? (
@@ -331,7 +340,7 @@ export function CommandBar({
           disabled={inputDisabled || variantCount <= 1}
           onClick={() => onVariantCountChange(Math.max(1, variantCount - 1))}
           aria-label={t('app.cmdVariantsLess')}
-          className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#F7F7FA] text-[12px] leading-none text-[#17161F] disabled:opacity-40"
+          className="flex h-4.5 w-4.5 items-center justify-center rounded-md bg-[#F7F7FA] text-[12px] leading-none text-[#17161F] disabled:opacity-40"
         >
           −
         </button>
@@ -343,7 +352,7 @@ export function CommandBar({
           disabled={inputDisabled || variantCount >= 4}
           onClick={() => onVariantCountChange(Math.min(4, variantCount + 1))}
           aria-label={t('app.cmdVariantsMore')}
-          className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#F7F7FA] text-[12px] leading-none text-[#17161F] disabled:opacity-40"
+          className="flex h-4.5 w-4.5 items-center justify-center rounded-md bg-[#F7F7FA] text-[12px] leading-none text-[#17161F] disabled:opacity-40"
         >
           +
         </button>
@@ -380,163 +389,188 @@ export function CommandBar({
     );
   }
 
+  const sendButton = (big: boolean) => (
+    <button
+      type="button"
+      disabled={sendDisabled || generating}
+      onClick={onSubmit}
+      aria-label={submitLabel}
+      title={submitLabel}
+      className={
+        big
+          ? 'group hidden w-[104px] flex-shrink-0 flex-col items-center justify-center gap-2 rounded-[18px] bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] text-[12px] font-semibold text-white shadow-[0_10px_22px_-10px_rgba(41,72,252,0.8)] transition-[filter,transform] duration-150 ease-out enabled:hover:brightness-110 enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none min-[640px]:flex'
+          : 'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] transition-[filter] enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 min-[640px]:hidden'
+      }
+    >
+      {generating ? (
+        <span className="rb-spin h-5 w-5 rounded-full border-2 border-white/40 border-t-white" />
+      ) : (
+        <span className="transition-transform duration-150 ease-out group-enabled:group-hover:-translate-y-0.5">
+          <Send set="curved" size={big ? 26 : 18} primaryColor="#ffffff" />
+        </span>
+      )}
+      {big && <span className="px-1 text-center leading-tight">{submitLabel}</span>}
+    </button>
+  );
+
   return (
-    // No separator line above: the bar carries its own outline.
-    <div className="px-2.5 pb-2.5 pt-1.5 min-[640px]:px-5 min-[640px]:pb-4">
-      <div className="mx-auto max-w-[920px] rounded-[20px] border border-[#DEDEE8] bg-white shadow-[0_10px_30px_-18px_rgba(23,22,31,0.35)]">
-        <input
-          ref={fileRef}
-          type="file"
-          accept={ACCEPTED_UPLOAD_TYPES.join(',')}
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) onAttach?.(file);
-            e.target.value = '';
-          }}
-        />
-
-        {/* 1 — what to do (and, from 640px, with which engine). */}
-        <div className="flex items-center justify-between gap-2 border-b border-[#ECECF2] px-2 py-1.5">
-          <div
-            role="tablist"
-            aria-label={t('app.modesLabel')}
-            className={`${SEGMENT} max-w-full overflow-x-auto [scrollbar-width:none]`}
-          >
-            {MODES.map((m) =>
-              modeTab(
-                m.key,
-                m.glyph,
-                m.key === 'retouch' ? (
-                  <>
-                    {t(m.labelKey)}
-                    {/* Commenter exists on Moteur 2 only: its colour, on the tab. */}
-                    <span
-                      aria-hidden
-                      title={t('annotate.engineNote')}
-                      className={`h-1.5 w-1.5 rounded-full ${ENGINE_COLORS.gpt_image.dot}`}
-                    />
-                  </>
-                ) : (
-                  t(m.labelKey)
-                ),
-                m.key === 'generate' || editEnabled,
-              ),
-            )}
-            <Link
-              href={enhanceHref}
-              className={`${TAB} text-[#3D3B49] hover:bg-white`}
-              title={t('enhance.subtitle')}
-            >
-              <span className="hidden min-[640px]:inline-flex">
-                <Glyph name="enhance" size={14} color="#15803D" />
-              </span>
-              {t('enhance.title')}
-            </Link>
-          </div>
-          <div className="hidden min-[640px]:block">{engines}</div>
-        </div>
-
-        {/* 2 — the composer. */}
-        <div className="px-3 pt-2">
-          {pinned.length > 0 && (
-            <div className="mb-1.5 flex flex-wrap gap-2 pt-1.5">
-              {pinned.map((p) => (
-                <Pinned key={p.key} image={p} removeLabel={t('app.cmdRemoveAttachment')} />
-              ))}
-            </div>
-          )}
-          <textarea
-            ref={promptRef}
-            rows={1}
-            placeholder={
-              placeholder ??
-              (mode === 'generate'
-                ? t('app.cmdbarPlaceholder')
-                : mode === 'retouch'
-                  ? t('edit.instructionPlaceholderRetouch')
-                  : t('edit.instructionPlaceholderAdd'))
-            }
-            value={prompt}
-            disabled={inputDisabled}
-            maxLength={2000}
-            onChange={(e) => onPromptChange(e.target.value)}
-            onKeyDown={(e) => {
-              // Enter sends, Shift+Enter breaks the line — as in a chat.
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!sendDisabled) onSubmit();
-              }
+    <div className="relative isolate px-2.5 pb-2.5 pt-3 min-[640px]:px-5 min-[640px]:pb-4 min-[640px]:pt-5">
+      <div className="relative mx-auto max-w-[920px]">
+        <div aria-hidden className={GLOW} />
+        <div className="rounded-[24px] bg-white p-2 shadow-[0_24px_60px_-28px_rgba(41,72,252,0.55),0_1px_2px_rgba(23,22,31,0.06)]">
+          <input
+            ref={fileRef}
+            type="file"
+            accept={ACCEPTED_UPLOAD_TYPES.join(',')}
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onAttach?.(file);
+              e.target.value = '';
             }}
-            className="block w-full resize-none bg-transparent px-0.5 py-1 text-[13.5px] leading-[1.5] text-[#17161F] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed"
           />
-        </div>
 
-        {/* 3 — how. */}
-        <div className="flex flex-wrap items-center gap-1.5 px-2.5 pb-2.5 pt-1.5">
-          <button
-            type="button"
-            // Not tied to inputDisabled: a project with no image yet has its
-            // whole bar off, and the paperclip is exactly how to fix that.
-            disabled={uploading || generating || !onAttach}
-            onClick={() => fileRef.current?.click()}
-            aria-label={t('app.cmdAttach')}
-            title={uploading ? t('app.commandBarUploading') : (attachTitle ?? t('app.cmdAttach'))}
-            className={ROUND}
-          >
-            {uploading ? (
-              <span className="rb-spin h-3.5 w-3.5 rounded-full border-2 border-[#CDEBD6] border-t-[#15803D]" />
-            ) : (
-              <Glyph name="clip" size={15} />
-            )}
-          </button>
+          <div className="flex gap-2">
+            {/* 1 — the composer: pinned images, the prompt, then the paperclip,
+                the hint and the engines. */}
+            <div className="flex min-w-0 flex-1 flex-col rounded-[18px] bg-[#F4F4F7] px-3 pb-2.5 pt-3 min-[640px]:px-4">
+              {pinned.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2 pt-1">
+                  {pinned.map((p) => (
+                    <Pinned key={p.key} image={p} removeLabel={t('app.cmdRemoveAttachment')} />
+                  ))}
+                </div>
+              )}
+              <textarea
+                ref={promptRef}
+                rows={1}
+                placeholder={
+                  placeholder ??
+                  (mode === 'generate'
+                    ? t('app.cmdbarPlaceholder')
+                    : mode === 'retouch'
+                      ? t('edit.instructionPlaceholderRetouch')
+                      : t('edit.instructionPlaceholderAdd'))
+                }
+                value={prompt}
+                disabled={inputDisabled}
+                maxLength={2000}
+                onChange={(e) => onPromptChange(e.target.value)}
+                onKeyDown={(e) => {
+                  // Enter sends, Shift+Enter breaks the line — as in a chat.
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!sendDisabled) onSubmit();
+                  }
+                }}
+                className="block w-full resize-none bg-transparent px-0.5 py-1 text-[15px] leading-[1.5] text-[#17161F] caret-[#2948FC] outline-none placeholder:text-[#8A8896] disabled:cursor-not-allowed min-[640px]:text-[17px]"
+              />
 
-          {/* Phone: the engines live here, and the settings behind a button. */}
-          <div className="min-[640px]:hidden">{engines}</div>
-          <button
-            type="button"
-            onClick={() => setSettingsOpen((v) => !v)}
-            aria-expanded={settingsOpen}
-            aria-label={t('app.cmdSettings')}
-            title={t('app.cmdSettings')}
-            className={`${ROUND} min-[640px]:hidden ${
-              settingsOpen ? 'border-[#16A34A] bg-[#E8F5EC]' : ''
-            }`}
-          >
-            <Setting set="curved" size={15} primaryColor={settingsOpen ? '#166534' : '#17161F'} />
-          </button>
+              <div className="mt-2 flex items-center gap-2">
+                <button
+                  type="button"
+                  // Not tied to inputDisabled: a project with no image yet has its
+                  // whole bar off, and the paperclip is exactly how to fix that.
+                  disabled={uploading || generating || !onAttach}
+                  onClick={() => fileRef.current?.click()}
+                  aria-label={t('app.cmdAttach')}
+                  title={
+                    uploading ? t('app.commandBarUploading') : (attachTitle ?? t('app.cmdAttach'))
+                  }
+                  className={ROUND}
+                >
+                  {uploading ? (
+                    <span className="rb-spin h-3.5 w-3.5 rounded-full border-2 border-[#D5DCFF] border-t-[#2948FC]" />
+                  ) : (
+                    <Glyph name="clip" size={15} color="#3D3B49" />
+                  )}
+                </button>
+                <span className="hidden min-w-0 flex-1 truncate text-[12px] text-[#8A8896] min-[640px]:block">
+                  {uploading ? t('app.commandBarUploading') : (attachTitle ?? t('app.cmdAttach'))}
+                </span>
+                {/* Phone: the settings fold behind a button. */}
+                <button
+                  type="button"
+                  onClick={() => setSettingsOpen((v) => !v)}
+                  aria-expanded={settingsOpen}
+                  aria-label={t('app.cmdSettings')}
+                  title={t('app.cmdSettings')}
+                  className={`${ROUND} min-[640px]:hidden ${settingsOpen ? 'bg-[#EEF1FF]' : ''}`}
+                >
+                  <Setting
+                    set="curved"
+                    size={15}
+                    primaryColor={settingsOpen ? '#1E36D6' : '#3D3B49'}
+                  />
+                </button>
+                <div className="ml-auto flex min-w-0 items-center gap-2">
+                  <span className="hidden text-[11.5px] text-[#8A8896] min-[900px]:inline">
+                    {t('app.engineLabel')}
+                  </span>
+                  {engines}
+                  {sendButton(false)}
+                </div>
+              </div>
+            </div>
 
-          {/* The settings: inline from 640px; on a phone, a full-width tray
-              under this row while the button above is on. */}
-          <div
-            className={`${
-              settingsOpen ? 'flex' : 'hidden'
-            } order-last w-full flex-wrap items-center gap-1.5 border-t border-[#ECECF2] pt-2 min-[640px]:order-none min-[640px]:flex min-[640px]:w-auto min-[640px]:border-0 min-[640px]:pt-0`}
-          >
-            {settings}
+            {/* 2 — the big square send button, with the action's verb. */}
+            {sendButton(true)}
           </div>
 
-          {/* The control that spends a generation, with its verb from 640px. */}
-          <button
-            type="button"
-            disabled={sendDisabled || generating}
-            onClick={onSubmit}
-            aria-label={submitLabel}
-            className="ml-auto flex h-8 flex-shrink-0 items-center justify-center gap-1.5 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-2.5 text-[12.5px] font-semibold text-white shadow-[0_6px_14px_-6px_rgba(22,163,74,0.7)] transition-transform duration-150 ease-out enabled:hover:-translate-y-0.5 enabled:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none min-[640px]:px-3.5"
-          >
-            {generating ? (
-              <span className="rb-spin h-3.5 w-3.5 rounded-full border-2 border-white/40 border-t-white" />
-            ) : (
-              <Send set="curved" size={15} primaryColor="#ffffff" />
-            )}
-            <span className="hidden min-[640px]:inline">{submitLabel}</span>
-          </button>
-        </div>
+          {/* 3 — the actions, then the settings, as chips. On a phone the
+              settings show only while their button is on. */}
+          <div className="flex flex-wrap items-center gap-1.5 px-0.5 pb-0.5 pt-2">
+            <div
+              role="tablist"
+              aria-label={t('app.modesLabel')}
+              className="flex max-w-full items-center gap-1.5 overflow-x-auto [scrollbar-width:none]"
+            >
+              {MODES.map((m) =>
+                modeTab(
+                  m.key,
+                  m.glyph,
+                  m.key === 'retouch' ? (
+                    <>
+                      {t(m.labelKey)}
+                      {/* Commenter exists on Pixel IA only: its colour, on the chip. */}
+                      <span
+                        aria-hidden
+                        title={t('annotate.engineNote')}
+                        className={`h-1.5 w-1.5 rounded-full ${ENGINE_COLORS.gpt_image.dot}`}
+                      />
+                    </>
+                  ) : (
+                    t(m.labelKey)
+                  ),
+                  m.key === 'generate' || editEnabled,
+                ),
+              )}
+              <Link
+                href={enhanceHref}
+                className={`${TAB} bg-[#F2F2F5] text-[#3D3B49] hover:bg-[#E9E9EE]`}
+                title={t('enhance.subtitle')}
+              >
+                <span className={`${MODE_TILE} ${MODE_TILE_COLOR.enhance}`}>
+                  <Glyph name="enhance" size={12} color="#ffffff" />
+                </span>
+                {t('enhance.title')}
+              </Link>
+            </div>
+            <span aria-hidden className="mx-1 hidden h-5 w-px bg-[#ECECF2] min-[640px]:block" />
+            <div
+              className={`${
+                settingsOpen ? 'flex' : 'hidden'
+              } w-full flex-wrap items-center gap-1.5 min-[640px]:flex min-[640px]:w-auto`}
+            >
+              {settings}
+            </div>
+          </div>
 
-        {/* Why the button is off. Without this the bar is a dead end. */}
-        {sendHint && sendDisabled && !generating && (
-          <p className="-mt-1 px-3.5 pb-2.5 text-[11px] text-[#6B6878]">{sendHint}</p>
-        )}
+          {/* Why the button is off. Without this the bar is a dead end. */}
+          {sendHint && sendDisabled && !generating && (
+            <p className="px-2 pb-1.5 pt-1 text-[11.5px] text-[#6B6878]">{sendHint}</p>
+          )}
+        </div>
       </div>
     </div>
   );

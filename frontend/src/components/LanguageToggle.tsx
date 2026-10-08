@@ -40,7 +40,7 @@ export function LanguageInlineSwitch({ className = '' }: { className?: string })
 export function LanguageToggle() {
   return (
     <div className="fixed right-3 top-3 z-50 min-[640px]:right-5 min-[640px]:top-4">
-      <div className="rounded-full border border-[#ECECF2] bg-white/95 px-3 py-1.5 shadow-[0_4px_14px_-6px_rgba(23,22,31,0.18)] backdrop-blur">
+      <div className="rounded-lg bg-white/95 px-3 py-1.5 shadow-[0_4px_14px_-6px_rgba(23,22,31,0.18)] backdrop-blur">
         <LanguageInlineSwitch />
       </div>
     </div>

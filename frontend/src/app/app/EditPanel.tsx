@@ -46,7 +46,7 @@ export function EditPanel({
   return (
     // Mirrors MaterialsPanel: outlined panel on desktop, opaque drawer on
     // mobile where it sits over a dimmed backdrop.
-    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8]">
+    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border-l-0">
       <h3 className="mb-1 font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]">
         {t('edit.panelTitle')}
       </h3>
@@ -65,7 +65,7 @@ export function EditPanel({
           </span>
           <label
             className={`block rounded-xl border border-dashed border-[#ECECF2] p-4.5 text-center text-xs text-[#8A8896] ${
-              canEdit ? 'cursor-pointer hover:border-[#16A34A]' : 'cursor-not-allowed opacity-50'
+              canEdit ? 'cursor-pointer hover:border-[#435CFE]' : 'cursor-not-allowed opacity-50'
             }`}
           >
             {previewUrl ? (
@@ -77,7 +77,7 @@ export function EditPanel({
                 className="mx-auto mb-2 h-[86px] w-full rounded-lg object-cover"
               />
             ) : (
-              <span className="mx-auto mb-2 flex h-[30px] w-[30px] items-center justify-center rounded-full bg-[#F1F0F4]">
+              <span className="mx-auto mb-2 flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-[#F1F0F4]">
                 <Upload set="curved" size={15} primaryColor="#8A8896" />
               </span>
             )}
@@ -120,7 +120,7 @@ export function EditPanel({
                       key={p.id}
                       className="flex items-start gap-2 rounded-xl bg-[#F7F7FA] px-2.5 py-2"
                     >
-                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#DC2626] font-[family-name:var(--font-mono)] text-[10.5px] font-semibold text-white">
+                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-[#DC2626] font-[family-name:var(--font-mono)] text-[10.5px] font-semibold text-white">
                         {i + 1}
                       </span>
                       <span className="min-w-0 flex-1 text-[12.5px] leading-snug text-[#17161F]">
@@ -130,7 +130,7 @@ export function EditPanel({
                         type="button"
                         onClick={() => onPinsChange(pins.filter((q) => q.id !== p.id))}
                         aria-label={t('annotate.remove')}
-                        className="flex-shrink-0 rounded-full p-0.5 hover:bg-[#E5484D0F]"
+                        className="flex-shrink-0 rounded-md p-0.5 hover:bg-[#E5484D0F]"
                       >
                         <CloseSquare set="curved" size={14} primaryColor="#E5484D" />
                       </button>

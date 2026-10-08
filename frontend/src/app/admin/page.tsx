@@ -14,7 +14,7 @@ interface Stats {
 
 function StatCard({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className="rounded-[14px] border border-[#ECECF2] px-4.5 py-4">
+    <div className="rounded-[14px] bg-white px-4.5 py-4">
       <div className="mb-2 text-[11px] text-[#8A8896]">{label}</div>
       <div className="font-[family-name:var(--font-display)] text-[22px] font-bold text-[#17161F]">
         {value}
@@ -84,7 +84,7 @@ export default function AdminOverviewPage() {
       <div className="mt-8">
         <Link
           href="/admin/journal"
-          className="text-[13px] font-medium text-[#15803D] hover:underline"
+          className="text-[13px] font-medium text-[#2948FC] hover:underline"
         >
           {t('admin.overview.viewAllJournal')}
         </Link>

@@ -30,7 +30,7 @@ export function StaggeredChecklist({ items }: { items: string[] }) {
             }}
           >
             <span
-              className="mt-0.5 flex-shrink-0 text-[#B45309] transition-[opacity,transform,translate,scale] duration-200"
+              className="mt-0.5 flex-shrink-0 text-[#C21F33] transition-[opacity,transform,translate,scale] duration-200"
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? 'scale(1)' : 'scale(0)',
@@ -38,7 +38,7 @@ export function StaggeredChecklist({ items }: { items: string[] }) {
                 transitionDelay: `${delayMs}ms`,
               }}
             >
-              <TickSquare set="curved" size={15} primaryColor="#D97706" />
+              <TickSquare set="curved" size={15} primaryColor="#F34857" />
             </span>
             {item}
           </li>

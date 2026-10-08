@@ -36,7 +36,7 @@ import { ACCEPTED_UPLOAD_TYPES } from '../Dropzone';
 import { RequestError, readErrorCode, isServiceNotConfigured } from '../request-error';
 import { BeforeAfterSlider } from '@/app/BeforeAfterSlider';
 
-const GRADIENT = 'bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]';
+const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
 const HEADING = 'mb-2.5 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#6B6878]';
 
 /** The uploaded photo, once it exists server-side. */
@@ -208,9 +208,9 @@ export function EnhanceClient({
       subtitle={t('enhance.subtitle')}
     >
       {!surface.tier ? (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-[22px] border border-[#ECECF2] bg-[#F7F7FA] px-6 py-16 text-center">
+        <div className="flex flex-col items-center justify-center gap-4 rounded-[22px] bg-[#F7F7FA] px-6 py-16 text-center">
           <div
-            className={`flex h-[52px] w-[52px] items-center justify-center rounded-full ${GRADIENT}`}
+            className={`flex h-[52px] w-[52px] items-center justify-center rounded-2xl ${GRADIENT}`}
           >
             <Folder set="curved" size={24} primaryColor="#ffffff" />
           </div>
@@ -220,7 +220,7 @@ export function EnhanceClient({
           <p className="max-w-[320px] text-[13px] text-[#6B6878]">{t('app.genHomeNoTierBody')}</p>
           <Link
             href="/app/tarifs"
-            className={`inline-flex items-center gap-2 rounded-full ${GRADIENT} px-5 py-2.5 text-[13px] font-semibold text-white`}
+            className={`inline-flex items-center gap-2 rounded-xl ${GRADIENT} px-5 py-2.5 text-[13px] font-semibold text-white`}
           >
             {t('app.genHomeChooseTier')}
           </Link>
@@ -252,12 +252,12 @@ export function EnhanceClient({
                 onDrop={handleDrop}
                 className={`flex aspect-[16/10] w-full flex-col items-center justify-center gap-3.5 rounded-[22px] border-2 border-dashed px-6 text-center transition-colors ${
                   dragOver
-                    ? 'border-[#16A34A] bg-[#E8F5EC]'
-                    : 'border-[#DEDEE8] bg-[#FBFBFD] hover:border-[#16A34A]'
+                    ? 'border-[#435CFE] bg-[#EEF1FF]'
+                    : 'border-[#DEDEE8] bg-[#FBFBFD] hover:border-[#435CFE]'
                 }`}
               >
                 <span
-                  className={`flex h-14 w-14 items-center justify-center rounded-full ${GRADIENT}`}
+                  className={`flex h-14 w-14 items-center justify-center rounded-2xl ${GRADIENT}`}
                 >
                   <Upload set="curved" size={24} primaryColor="#ffffff" />
                 </span>
@@ -279,7 +279,7 @@ export function EnhanceClient({
               <div
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleDrop}
-                className="relative aspect-[16/10] w-full overflow-hidden rounded-[22px] border border-[#ECECF2] bg-[#F7F7FA]"
+                className="relative aspect-[16/10] w-full overflow-hidden rounded-[22px] bg-[#F7F7FA]"
               >
                 {beforeSrc && (
                   <img src={beforeSrc} alt="" className="h-full w-full object-contain" />
@@ -289,7 +289,7 @@ export function EnhanceClient({
                     role="status"
                     className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 px-6 text-center backdrop-blur-[2px]"
                   >
-                    <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-[#CDEBD6] border-t-[#15803D]" />
+                    <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-[#D5DCFF] border-t-[#2948FC]" />
                     <span className="text-[14px] font-semibold text-[#17161F]">
                       {t('enhance.working')}
                     </span>
@@ -308,7 +308,7 @@ export function EnhanceClient({
                     <a
                       href={nodeImage(resultId)}
                       download="renderbox-enhance.png"
-                      className={`inline-flex items-center gap-2 rounded-full ${GRADIENT} px-4.5 py-2.5 text-[13px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
+                      className={`inline-flex items-center gap-2 rounded-xl ${GRADIENT} px-4.5 py-2.5 text-[13px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
                     >
                       <Download set="curved" size={16} primaryColor="#ffffff" />
                       {t('enhance.download')}
@@ -316,7 +316,7 @@ export function EnhanceClient({
                     {session && (
                       <Link
                         href={`/app/${session.projectId}`}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white px-4.5 py-2.5 text-[13px] font-semibold text-[#17161F] transition-colors hover:border-[#DEDEE8]"
+                        className="inline-flex items-center gap-2 rounded-xl bg-[#F2F2F5] px-4.5 py-2.5 text-[13px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE]"
                       >
                         <Paper set="curved" size={16} primaryColor="#6B6878" />
                         {t('enhance.openProject')}
@@ -328,7 +328,7 @@ export function EnhanceClient({
                   type="button"
                   disabled={working}
                   onClick={resultId ? reset : () => inputRef.current?.click()}
-                  className="inline-flex items-center rounded-full border border-[#ECECF2] bg-white px-4.5 py-2.5 text-[13px] font-semibold text-[#3D3B49] transition-colors hover:border-[#DEDEE8] disabled:opacity-50"
+                  className="inline-flex items-center rounded-xl bg-[#F2F2F5] px-4.5 py-2.5 text-[13px] font-semibold text-[#3D3B49] transition-colors hover:bg-[#E9E9EE] disabled:opacity-50"
                 >
                   {resultId ? t('enhance.again') : t('enhance.change')}
                 </button>
@@ -337,7 +337,7 @@ export function EnhanceClient({
           </section>
 
           {/* Settings. */}
-          <aside className="h-fit rounded-[22px] border border-[#ECECF2] bg-white p-5">
+          <aside className="h-fit rounded-[22px] bg-white p-5">
             <h2 className={HEADING}>{t('enhance.optionsHeading')}</h2>
             <div className="flex flex-col gap-1.5">
               {ENHANCE_OPTION_KEYS.map((key) => {
@@ -350,14 +350,14 @@ export function EnhanceClient({
                     onClick={() => toggleOption(key)}
                     className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors ${
                       on
-                        ? 'border-[#16A34A] bg-[#E8F5EC]'
-                        : 'border-[#ECECF2] bg-white hover:border-[#DEDEE8]'
+                        ? 'border-[#435CFE] bg-[#EEF1FF]'
+                        : 'border-transparent bg-[#F4F4F6] hover:bg-[#ECECF0]'
                     }`}
                   >
                     <span
                       aria-hidden
-                      className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full ${
-                        on ? GRADIENT : 'border border-[#DEDEE8] bg-white'
+                      className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md ${
+                        on ? GRADIENT : 'bg-white'
                       }`}
                     >
                       {on && (
@@ -377,7 +377,7 @@ export function EnhanceClient({
                     </span>
                     <span className="min-w-0">
                       <span
-                        className={`block text-[13.5px] font-semibold ${on ? 'text-[#166534]' : 'text-[#17161F]'}`}
+                        className={`block text-[13.5px] font-semibold ${on ? 'text-[#1E36D6]' : 'text-[#17161F]'}`}
                       >
                         {ENHANCE_OPTIONS[key].label[locale]}
                       </span>
@@ -391,14 +391,14 @@ export function EnhanceClient({
             </div>
 
             <h2 className={`${HEADING} mt-5`}>{t('enhance.strengthHeading')}</h2>
-            <div className="grid grid-cols-2 gap-1 rounded-full border border-[#ECECF2] bg-[#F7F7FA] p-1">
+            <div className="grid grid-cols-2 gap-1 rounded-xl bg-[#F7F7FA] p-1">
               {ENHANCE_STRENGTHS.map((s) => (
                 <button
                   key={s}
                   type="button"
                   aria-pressed={strength === s}
                   onClick={() => setStrength(s)}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-semibold transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold transition-colors ${
                     strength === s
                       ? 'bg-white text-[#17161F] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
                       : 'text-[#6B6878]'
@@ -410,7 +410,7 @@ export function EnhanceClient({
             </div>
 
             <h2 className={`${HEADING} mt-5`}>{t('enhance.engineHeading')}</h2>
-            <div className="grid grid-cols-2 gap-1 rounded-full border border-[#ECECF2] bg-[#F7F7FA] p-1">
+            <div className="grid grid-cols-2 gap-1 rounded-xl bg-[#F7F7FA] p-1">
               {ENGINE_NAMES.map((e) => (
                 <button
                   key={e}
@@ -418,7 +418,7 @@ export function EnhanceClient({
                   aria-pressed={engine === e}
                   title={ENGINE_LABELS[e].description[locale]}
                   onClick={() => setEngine(e)}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-[13px] font-semibold transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13px] font-semibold transition-colors ${
                     engine === e
                       ? 'bg-white text-[#17161F] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
                       : 'text-[#6B6878]'
@@ -440,14 +440,14 @@ export function EnhanceClient({
               maxLength={2000}
               rows={2}
               placeholder={t('enhance.instructionPlaceholder')}
-              className="w-full resize-none rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] focus:border-[#15803D]"
+              className="w-full resize-none rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] focus:border-[#2948FC]"
             />
 
             <button
               type="button"
               onClick={() => void run()}
               disabled={!hasSource || working || options.length === 0}
-              className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full ${GRADIENT} px-5 py-3 text-[14px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50`}
+              className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl ${GRADIENT} px-5 py-3 text-[14px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {working ? t('enhance.working') : resultId ? t('enhance.retry') : t('enhance.submit')}
             </button>

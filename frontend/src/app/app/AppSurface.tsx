@@ -59,7 +59,7 @@ export function AppSurface({
       {/* min-w-0 so this flex child can shrink below its content's intrinsic
           width instead of pushing the page past the viewport. */}
       <main
-        className={`min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#FBFBFD] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
+        className={`min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#EEEEF1] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
       >
         <div className="mx-auto max-w-[1100px]">
           <PageHeader

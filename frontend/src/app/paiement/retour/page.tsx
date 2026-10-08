@@ -110,7 +110,7 @@ export default function PaiementRetourPage() {
         ) : (
           <>
             {watching && (
-              <span className="rb-spin h-7 w-7 rounded-full border-2 border-[#ECECF2] border-t-[#15803D]" />
+              <span className="rb-spin h-7 w-7 rounded-full border-2 border-[#ECECF2] border-t-[#2948FC]" />
             )}
             <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold text-[#17161F]">
               {copy[outcome].title}
@@ -125,7 +125,7 @@ export default function PaiementRetourPage() {
               <button
                 type="button"
                 onClick={() => void checkAgain()}
-                className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-5 py-2.5 text-[13px] font-semibold text-white"
+                className="rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-2.5 text-[13px] font-semibold text-white"
               >
                 {t('paiementRetour.checkAgain')}
               </button>
@@ -134,7 +134,7 @@ export default function PaiementRetourPage() {
         )}
         <Link
           href="/parametres"
-          className="mt-4 rounded-full border border-[#ECECF2] px-5 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+          className="mt-4 rounded-xl px-5 py-2 text-[13px] font-medium text-[#17161F] bg-[#F2F2F5] hover:bg-[#E9E9EE]"
         >
           {t('paiementRetour.backButton')}
         </Link>

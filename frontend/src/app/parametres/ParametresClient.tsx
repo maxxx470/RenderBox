@@ -89,7 +89,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
       subtitle={t('page.settingsSubtitle')}
     >
       <div className="flex max-w-lg flex-col gap-6">
-        <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+        <section className="flex flex-col gap-3 rounded-[14px] bg-white p-5">
           <h2 className="text-[15px] font-semibold text-[#17161F]">
             {t('parametres.accountTitle')}
           </h2>
@@ -108,7 +108,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
             <button
               type="button"
               onClick={() => void logout()}
-              className="self-start rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+              className="self-start rounded-xl px-4 py-2 text-[13px] font-medium text-[#17161F] bg-[#F2F2F5] hover:bg-[#E9E9EE]"
             >
               {t('parametres.logoutButton')}
             </button>
@@ -121,7 +121,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
             Google identity to it — and then sign the next visitor in as them.
             The section returns the day AUTH_DISABLED comes off. */}
         {!isPlaceholderAccount(user.email) && (
-          <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+          <section className="flex flex-col gap-3 rounded-[14px] bg-white p-5">
             <h2 className="text-[15px] font-semibold text-[#17161F]">
               {t('parametres.linkedAccountsTitle')}
             </h2>
@@ -133,13 +133,13 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
                 </span>
               </div>
               {googleLinked ? (
-                <span className="rounded-[20px] border border-[#1E7A3D33] bg-[#1E7A3D14] px-3 py-1 text-[12px] font-medium text-[#1E7A3D]">
+                <span className="rounded-[20px] bg-[#1E7A3D14] px-3 py-1 text-[12px] font-medium text-[#1E7A3D]">
                   {t('parametres.linkedBadge')}
                 </span>
               ) : (
                 <a
                   href="/api/auth/oauth/google/start?next=/parametres"
-                  className="rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA]"
+                  className="rounded-xl px-4 py-2 text-[13px] font-medium text-[#17161F] bg-[#F2F2F5] hover:bg-[#E9E9EE]"
                 >
                   {t('parametres.linkGoogleButton')}
                 </a>
@@ -148,7 +148,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
           </section>
         )}
 
-        <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+        <section className="flex flex-col gap-3 rounded-[14px] bg-white p-5">
           <h2 className="text-[15px] font-semibold text-[#17161F]">
             {t('parametres.engineTitle')}
           </h2>
@@ -174,7 +174,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
           ) : null}
         </section>
 
-        <section className="flex flex-col gap-3 rounded-[14px] border border-[#ECECF2] p-5">
+        <section className="flex flex-col gap-3 rounded-[14px] bg-white p-5">
           <h2 className="text-[15px] font-semibold text-[#17161F]">
             {t('parametres.billingTitle')}
           </h2>
@@ -196,7 +196,7 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
           )}
           <Link
             href="/app/tarifs"
-            className="mt-2 inline-block self-start rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2 text-[13px] font-medium text-white"
+            className="mt-2 inline-block self-start rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-4 py-2 text-[13px] font-medium text-white"
           >
             {t('parametres.buyButton')}
           </Link>

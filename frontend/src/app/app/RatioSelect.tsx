@@ -58,7 +58,7 @@ function RatioGlyph({ ratio }: { ratio: RatioKey }) {
       <span
         aria-hidden
         style={{ width, height }}
-        className={`rounded-[2px] border border-[#15803D] ${
+        className={`rounded-[2px] border border-[#2948FC] ${
           ratio === 'auto' ? 'border-dashed' : ''
         }`}
       />
@@ -138,22 +138,22 @@ export function RatioSelect({
                     }}
                     className={`flex h-[52px] flex-col items-center justify-center gap-1 rounded-[10px] border transition-colors duration-150 ease-out ${
                       !available
-                        ? 'cursor-not-allowed border-[#F1F0F4] opacity-40'
+                        ? 'cursor-not-allowed border-transparent bg-[#F4F4F6] opacity-40'
                         : selected
-                          ? 'border-[#15803D] bg-[#F0FAF3]'
-                          : 'border-[#ECECF2] hover:border-[#DEDEE8] hover:bg-[#FBFBFD]'
+                          ? 'border-[#2948FC] bg-[#F4F6FF]'
+                          : 'border-transparent bg-[#F4F4F6] hover:bg-[#ECECF0]'
                     }`}
                   >
                     <span
                       aria-hidden
                       style={{ width: shape.width, height: shape.height }}
                       className={`rounded-[3px] border ${
-                        selected ? 'border-[#15803D]' : 'border-[#C9C7D1]'
+                        selected ? 'border-[#2948FC]' : 'border-[#C9C7D1]'
                       } ${key === 'auto' ? 'border-dashed' : ''}`}
                     />
                     <span
                       className={`font-[family-name:var(--font-mono)] text-[9.5px] ${
-                        selected ? 'text-[#166534]' : 'text-[#6B6878]'
+                        selected ? 'text-[#1E36D6]' : 'text-[#6B6878]'
                       }`}
                     >
                       {key === 'auto' ? t('app.ratioAuto') : RATIOS[key].label}
@@ -166,13 +166,11 @@ export function RatioSelect({
             {/* The chosen shape at a size you can actually judge, with the
                 thirds guides the reference draws inside it — this is a frame,
                 and a frame is what you compose against. */}
-            <div className="flex w-[112px] flex-shrink-0 items-center justify-center rounded-[12px] border border-[#ECECF2] bg-[#FBFBFD]">
+            <div className="flex w-[112px] flex-shrink-0 items-center justify-center rounded-[12px] bg-[#FBFBFD]">
               <div
                 aria-hidden
                 style={{ width: preview.width, height: preview.height }}
-                className={`relative rounded-[6px] border-[1.5px] border-[#17161F] ${
-                  ratio === 'auto' ? 'border-dashed' : ''
-                }`}
+                className={`relative rounded-[6px] ${ratio === 'auto' ? 'border-dashed' : ''}`}
               >
                 <span className="absolute inset-y-0 left-1/3 w-px bg-[#ECECF2]" />
                 <span className="absolute inset-y-0 left-2/3 w-px bg-[#ECECF2]" />

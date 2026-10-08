@@ -51,15 +51,15 @@ export function buildRenderBoxDoc(): string {
   return `RenderBox transforme une photo ou un croquis de bâtiment en rendu architectural photoréaliste, avec l'IA.
 
 NAVIGATION
-- En haut de chaque page, la barre d'en-tête : le logo et le titre de la page à gauche ; à droite la cloche des notifications (un point rouge signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN, une roue dentée (ouvre Paramètres), le compte (ouvre Paramètres) et la pastille jaune des rendus restants (ouvre Abonnement).
-- Sur ordinateur, une barre latérale à gauche : PRINCIPAL (Accueil, Projets, Image, Enhance, Info), COMPTE (Paramètres, Abonnement). Les icônes sont vertes ; la page ouverte a un fond vert plein. En bas : « Assistant » (vert pâle) puis « Se connecter » (rouge pâle), ou « Se déconnecter » avec un compte. La flèche ronde en haut replie la barre : il ne reste que les icônes, dans des cercles. La barre et l'en-tête restent en place quand on change de page.
-- Sur téléphone, une barre flottante en bas : Accueil, Image, Enhance et « Plus » (Projets, Info, Paramètres, Abonnement, Assistant, Se connecter ou Se déconnecter), et un bouton rond vert « + » pour lancer un nouveau rendu.
+- En haut de chaque page, la barre d'en-tête : le titre de la page à gauche (avec le logo sur téléphone) ; à droite la cloche des notifications (un point rouge signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN et la pastille bleue des rendus restants (ouvre Abonnement). Sur téléphone, le compte y figure aussi (ouvre Paramètres).
+- Sur ordinateur, une barre latérale à gauche, en carte blanche : en haut le logo et le bouton qui replie la barre ; « Général » (Accueil, Projets, Image, Enhance) ; « Aide » (Info, Assistant) ; en bas « Profil » (Paramètres, Abonnement, Se connecter ou Se déconnecter) puis votre compte (ouvre Paramètres). La page ouverte est surlignée en bleu pâle. Repliée, il ne reste que les icônes ; un clic sur le logo la déplie. La barre et l'en-tête restent en place quand on change de page.
+- Sur téléphone, une barre flottante en bas : Accueil, Image, Enhance et « Plus » (Projets, Info, Paramètres, Abonnement, Assistant, Se connecter ou Se déconnecter), et un bouton bleu « + » pour lancer un nouveau rendu.
 - Le bouton « Assistant » ouvre ce chat. Le sélecteur FR / EN change la langue de l'interface.
 
 ACCUEIL (tableau de bord)
 - En haut, un court film montre les 3 étapes (photo ou croquis, ambiance, rendu) avec le bouton « Générer un rendu ».
 - Chaque page commence par un petit sur-titre, son titre en gras et une phrase. Sur l’Accueil, le bouton « Demander à l’assistant » est à droite du titre.
-- Juste sous le titre, quatre cartes : total des projets (bleu), rendus générés (rouge), dernière activité (jaune), rendus restants et fin de période (ambre, ouvre Abonnement). En 2 × 2 sur téléphone. Puis les projets récents (8 au plus) et le lien « Voir tous les projets ».
+- Juste sous le titre, quatre cartes : total des projets (rouge, ouvre Projets), rendus générés (blanche, lance un nouveau rendu), dernière activité (blanche), rendus restants et fin de période (bleue, ouvre Abonnement). Sur une ligne sur ordinateur, en 2 × 2 sur téléphone. Puis les projets récents (8 au plus) et le lien « Voir tous les projets ».
 
 PROJETS (page Projets)
 - Tous les projets du compte : un bandeau avec la recherche par nom et « Filtre : » suivi des catégories (avec leur nombre) : Extérieur, Intérieur, Jour, Nuit, Esquisse, Enhance, Modifiés (Commenter ou Ajouter), Sans rendu. Un projet est rangé dans toutes les catégories de ses rendus. On peut renommer ou supprimer un projet. Il n'y a pas de bouton de création : un projet naît d'un rendu lancé depuis Image. La page sert d'archives, pour retrouver et reprendre un ancien projet.
@@ -69,7 +69,7 @@ IMAGE (générer un rendu)
 2. Choisissez une ambiance : ${presets}. « Esquisse » donne volontairement un rendu dessiné, pas photoréaliste.
 3. Décrivez éventuellement ce que vous voulez dans la barre de commande, puis « Générer ».
 - Commenter et Ajouter marchent aussi depuis Image, sur l'image épinglée : en Commenter, elle s'affiche en grand et on clique dessus pour poser les commentaires ; en Ajouter, on décrit l'élément et on joint sa photo avec le trombone. À l'envoi, un projet est créé et s'ouvre sur le résultat.
-- LA BARRE DE COMMANDE, en trois bandes. En haut : les actions côte à côte (Générer, Commenter, Ajouter, Enhance) et les deux moteurs toujours visibles (${m1.name.fr} rouge, ${m2.name.fr} jaune) : un clic suffit pour changer. Au milieu : les images épinglées en miniature (l'image de départ « Source », la photo ou la référence) puis la consigne, qui s'agrandit avec le texte (Entrée envoie, Maj+Entrée va à la ligne). En bas : le trombone pour joindre une image, les réglages et le bouton d'envoi. Sur téléphone, les deux moteurs passent dans cette rangée et les réglages se déplient avec le bouton « Réglages » (roue dentée).
+- LA BARRE DE COMMANDE, un cadre blanc. À gauche, la zone de saisie : les images épinglées en miniature (l'image de départ « Source », la photo ou la référence), la consigne en grand, qui s'agrandit avec le texte (Entrée envoie, Maj+Entrée va à la ligne), puis le trombone pour joindre une image et les deux moteurs toujours visibles (${m1.name.fr} rouge, ${m2.name.fr} jaune) : un clic suffit pour changer. À droite, le grand bouton carré d'envoi. En dessous, les actions en pastilles (Générer, Commenter, Ajouter, Enhance) puis les réglages. Sur téléphone, le bouton d'envoi est dans la zone de saisie et les réglages se déplient avec le bouton « Réglages » (roue dentée).
 - Réglages de la barre de commande : ambiance (chaque ambiance est montrée par une miniature d'un vrai rendu), format (${ratios('nanobanana')} pour ${m1.name.fr} ; ${ratios('gpt_image')} pour ${m2.name.fr}), résolution (${res('nanobanana')} aujourd'hui ; 2K et 4K sont affichés mais pas encore disponibles).
 - Réglages aussi dans la barre : Contexte (ce que le moteur a retenu du projet), @ Éléments (réutiliser une image du projet comme référence), et en mode Commenter ou Ajouter le nombre de Variantes (1 à 4).
 
@@ -99,7 +99,7 @@ ENHANCE (améliorer un rendu existant)
 
 ABONNEMENTS ET QUOTA
 - ${tiers}.
-- Chaque rendu, modification ou Enhance consomme une génération. Le solde est visible dans la pastille jaune de l'en-tête et sur l'Accueil.
+- Chaque rendu, modification ou Enhance consomme une génération. Le solde est visible dans la pastille bleue de l'en-tête et sur l'Accueil.
 - Une formule dure 30 jours à partir du paiement, sans prélèvement automatique ensuite. Choisir une formule (ou renouveler la sienne) démarre une nouvelle période de 30 jours avec tout son quota.
 - Page Abonnement : le « Solde actuel » (rendus restants, formule et date de fin), un avertissement quand il ne reste aucun rendu, les trois formules (rendus par mois, prix en FCFA, équivalent en dollars indicatif) puis l’« Historique » des paiements.
 - Une limite quotidienne anti-abus existe aussi ; si elle est atteinte, réessayer le lendemain.
@@ -126,7 +126,7 @@ Règles :
 1. Cite tes sources (nom du site).
 2. Indique quand une information est approximative ou datée.
 3. Sois concis et concret.
-4. Ne cite jamais de fournisseur d'IA ; les moteurs de RenderBox s'appellent Moteur 1 et Moteur 2.
+4. Ne cite jamais de fournisseur d'IA ; les moteurs de RenderBox s'appellent Visio et Pixel IA.
 5. ${lang}`;
   }
   return `Tu es l'assistant intégré à RenderBox. Voici la documentation complète et à jour de l'application :
@@ -137,7 +137,7 @@ Règles :
 1. Réponds uniquement à partir de cette documentation ; si une fonction n'y est pas, dis-le simplement au lieu d'inventer.
 2. Sois concis, concret, étape par étape, avec le nom exact des boutons.
 3. Si la question sort de l'utilisation de RenderBox, propose le mode « Recherche » de l'assistant.
-4. Ne cite jamais de fournisseur ou de marque d'IA : les moteurs s'appellent Moteur 1 et Moteur 2.
+4. Ne cite jamais de fournisseur ou de marque d'IA : les moteurs s'appellent Visio et Pixel IA.
 5. ${lang}`;
 }
 

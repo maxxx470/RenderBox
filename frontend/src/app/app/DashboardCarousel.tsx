@@ -22,7 +22,7 @@ import { SHOWCASE_SLIDES, SHOWCASE_INTERVAL_MS } from './dashboard-media';
 // the same frame language as the cards below them. On a wide screen it takes
 // the height of the film card beside it (the grid row stretches both).
 const FRAME =
-  'relative aspect-[16/9] overflow-hidden rounded-2xl border border-[#DEDEE8] min-[900px]:aspect-auto min-[900px]:h-full min-[900px]:min-h-[210px]';
+  'relative aspect-[16/9] overflow-hidden rounded-2xl min-[900px]:aspect-auto min-[900px]:h-full min-[900px]:min-h-[210px]';
 
 export function DashboardCarousel() {
   const { locale } = useLocale();

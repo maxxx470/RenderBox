@@ -51,10 +51,7 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
           </h2>
           <div className="flex flex-col gap-5">
             {FILMS.map((f) => (
-              <article
-                key={f.id}
-                className="rounded-[20px] border border-[#ECECF2] bg-[#F7F7FA] p-3 min-[640px]:p-4"
-              >
+              <article key={f.id} className="rounded-[20px] bg-[#F7F7FA] p-3 min-[640px]:p-4">
                 <div className="mb-3 px-1">
                   <h3 className="font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
                     {t(f.title)}

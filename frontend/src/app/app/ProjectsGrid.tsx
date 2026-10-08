@@ -24,11 +24,11 @@ import { CATEGORY_LABELS, PROJECT_CATEGORIES, type ProjectCategory } from './pro
 // Full literal class strings — Tailwind's scanner cannot see a class built
 // from an interpolated value (see the JIT note in CLAUDE.md).
 // Metrio's filter pills: white with a hairline and bold grey text, the chosen
-// one filled with the brand colour (#15803D carries white 11.5px bold at 5:1).
+// one filled with the brand colour (#2948FC carries white 11.5px bold at 5:1).
 const FILTER_PILL =
-  'inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-[#ECECF2] bg-white px-3 py-1 text-[11.5px] font-bold text-[#4B4A57] transition-colors hover:border-[#DEDEE8] hover:text-[#17161F]';
+  'inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#F2F2F5] px-3 py-1 text-[11.5px] font-bold text-[#4B4A57] transition-colors hover:bg-[#E9E9EE] hover:text-[#17161F]';
 const FILTER_PILL_ACTIVE =
-  'inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-[#15803D] bg-[#15803D] px-3 py-1 text-[11.5px] font-bold text-white';
+  'inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#2948FC] bg-[#2948FC] px-3 py-1 text-[11.5px] font-bold text-white';
 const COUNT = 'font-[family-name:var(--font-mono)] text-[11px] opacity-70';
 
 /** How many projects the dashboard shows before "Voir tous les projets". */
@@ -70,7 +70,7 @@ function ProjectCard({
     // exists to show got two thirds. The latest render of a project is the
     // best available answer to "which project is this", so it fills the card
     // and the name sits on it.
-    <div className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#F7F7FA] transition-[transform,translate,scale,box-shadow,border-color] duration-[220ms] ease-out hover:border-[#DEDEE8] hover:shadow-[0_18px_34px_-18px_rgba(23,22,31,0.35)] motion-safe:hover:-translate-y-0.5">
+    <div className="group relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#F7F7FA] transition-[transform,translate,scale,box-shadow,border-color] duration-[220ms] ease-out hover:shadow-[0_18px_34px_-18px_rgba(23,22,31,0.35)] motion-safe:hover:-translate-y-0.5">
       <Link href={`/app/${project.id}`} className="absolute inset-0 block">
         {project.thumbnailNodeId ? (
           <img
@@ -87,7 +87,7 @@ function ProjectCard({
           // pb-10 lifts it clear of the name that now sits at the bottom
           // of the same card.
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-[#F7F7FA] pb-10">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#DEDEE8] bg-white">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F2F2F5]">
               <ImageIcon set="curved" size={18} primaryColor="#8A8896" />
             </span>
             <span className="text-[11px] text-[#6B6878]">{t('projects.cardEmpty')}</span>
@@ -147,7 +147,7 @@ function ProjectCard({
           onClick={onRename}
           aria-label={t('projects.renameAction')}
           title={t('projects.renameAction')}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#DEDEE8]"
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:bg-[#E9E9EE]"
         >
           <Edit set="curved" size={14} primaryColor="#17161F" />
         </button>
@@ -156,7 +156,7 @@ function ProjectCard({
           onClick={onDelete}
           aria-label={t('projects.deleteAction')}
           title={t('projects.deleteAction')}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-[#ECECF2] bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:border-[#E5484D]"
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-white shadow-[0_2px_8px_-4px_rgba(23,22,31,0.3)] hover:bg-[#FDEEEE]"
         >
           <Delete set="curved" size={14} primaryColor="#E5484D" />
         </button>
@@ -169,7 +169,7 @@ function Modal({ children, onClose }: { children: React.ReactNode; onClose: () =
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative w-full max-w-[380px] rounded-2xl border border-[#ECECF2] bg-white p-5 shadow-[0_24px_48px_-20px_rgba(23,22,31,0.35)]">
+      <div className="relative w-full max-w-[380px] rounded-2xl bg-white p-5 shadow-[0_24px_48px_-20px_rgba(23,22,31,0.35)]">
         {children}
       </div>
     </div>
@@ -280,7 +280,7 @@ export function ProjectsGrid({
           content's intrinsic width, and a single long unwrapped string would
           stretch the page past the viewport. */}
       <main
-        className={`min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#FBFBFD] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
+        className={`min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#EEEEF1] px-4 py-6 min-[640px]:px-6 min-[640px]:py-8 ${MOBILE_NAV_PAD}`}
       >
         <div className="mx-auto max-w-[1100px]">
           {/* The page head, as on every Metrio page: eyebrow, bold title, one
@@ -294,7 +294,7 @@ export function ProjectsGrid({
                 <button
                   type="button"
                   onClick={openAssistant}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#15803D33] bg-[#E8F5EC] px-4 py-2 text-[12.5px] font-semibold text-[#15803D] transition-[background-color,color,translate] duration-200 hover:-translate-y-0.5 hover:bg-[#15803D] hover:text-white"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#EEF1FF] px-4 py-2 text-[12.5px] font-semibold text-[#2948FC] transition-[background-color,color,translate] duration-200 hover:-translate-y-0.5 hover:bg-[#2948FC] hover:text-white"
                 >
                   <Chat set="curved" size={16} primaryColor="currentColor" />
                   {t('page.askAssistant')}
@@ -323,10 +323,10 @@ export function ProjectsGrid({
               </h2>
               <Link
                 href="/app/projets"
-                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#15803D] underline-offset-4 hover:underline"
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#2948FC] underline-offset-4 hover:underline"
               >
                 {t('projects.seeAll')}
-                <ArrowRight set="curved" size={15} primaryColor="#15803D" />
+                <ArrowRight set="curved" size={15} primaryColor="#2948FC" />
               </Link>
             </div>
           )}
@@ -335,9 +335,9 @@ export function ProjectsGrid({
               field, then "FILTRE :" and the categories as pills — the chosen
               one solid green, as Metrio fills its own in blue. */}
           {!isDashboard && (
-            <div className="mb-6 flex flex-col items-stretch gap-3 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] p-2.5 min-[900px]:flex-row min-[900px]:items-center">
-              <div className="flex flex-1 items-center gap-2 rounded-lg border border-[#ECECF2] bg-white px-3 py-2 focus-within:border-[#16A34A]">
-                <Search set="curved" size={15} primaryColor="#15803D" />
+            <div className="mb-6 flex flex-col items-stretch gap-3 rounded-xl bg-[#F7F7FA] p-2.5 min-[900px]:flex-row min-[900px]:items-center">
+              <div className="flex flex-1 items-center gap-2 rounded-lg border border-[#ECECF2] bg-white px-3 py-2 focus-within:border-[#435CFE]">
+                <Search set="curved" size={15} primaryColor="#2948FC" />
                 <input
                   type="search"
                   value={query}
@@ -386,7 +386,7 @@ export function ProjectsGrid({
             // line, one sentence and an underlined link.
             <div className="rounded-2xl border border-dashed border-[#DEDEE8] bg-[#F7F7FA] p-10 text-center">
               <div className="mb-2 flex justify-center">
-                <Folder set="curved" size={32} primaryColor="#15803D" />
+                <Folder set="curved" size={32} primaryColor="#2948FC" />
               </div>
               <h3 className="font-[family-name:var(--font-display)] text-[14px] font-bold text-[#17161F]">
                 {t('projects.emptyTitle')}
@@ -396,7 +396,7 @@ export function ProjectsGrid({
               </p>
               <Link
                 href="/app/generer"
-                className="mt-3 inline-block text-[13px] font-medium text-[#15803D] underline underline-offset-4 hover:opacity-70"
+                className="mt-3 inline-block text-[13px] font-medium text-[#2948FC] underline underline-offset-4 hover:opacity-70"
               >
                 {t('projects.startCta')}
               </Link>
@@ -436,13 +436,13 @@ export function ProjectsGrid({
                 if (e.key !== 'Enter' || busy || !draftName.trim()) return;
                 void handleRename(dialog.project);
               }}
-              className="mb-4 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none focus:border-[#16A34A]"
+              className="mb-4 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-2.5 text-[13px] text-[#17161F] outline-none focus:border-[#435CFE]"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setDialog(null)}
-                className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+                className="rounded-xl px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
               >
                 {t('projects.dialogCancel')}
               </button>
@@ -450,7 +450,7 @@ export function ProjectsGrid({
                 type="button"
                 disabled={busy || !draftName.trim()}
                 onClick={() => void handleRename(dialog.project)}
-                className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
               >
                 {t('projects.renameConfirm')}
               </button>
@@ -470,7 +470,7 @@ export function ProjectsGrid({
               <button
                 type="button"
                 onClick={() => setDialog(null)}
-                className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+                className="rounded-xl px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
               >
                 {t('projects.dialogCancel')}
               </button>
@@ -478,7 +478,7 @@ export function ProjectsGrid({
                 type="button"
                 disabled={busy}
                 onClick={() => void handleDelete(dialog.project)}
-                className="rounded-full bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="rounded-xl bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
               >
                 {t('projects.deleteConfirm')}
               </button>

@@ -28,8 +28,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'edit',
       'pin ',
     ],
-    fr: `Pour modifier une partie d'un rendu : ouvrez le projet, choisissez le mode « Commenter », cliquez sur le rendu à l'endroit à changer et écrivez le changement dans la bulle (Entrée pour valider). Jusqu'à ${MAX_ANNOTATIONS} commentaires, puis « Appliquer ». Ce mode utilise toujours le Moteur 2, et le résultat devient une nouvelle branche de l'arbre : l'original reste disponible.`,
-    en: `To change part of a render: open the project, pick the "Comment" mode, click the render where it should change and type the change in the bubble (Enter to save). Up to ${MAX_ANNOTATIONS} comments, then "Apply". This mode always uses Engine 2, and the result becomes a new branch of the tree: the original stays available.`,
+    fr: `Pour modifier une partie d'un rendu : ouvrez le projet, choisissez le mode « Commenter », cliquez sur le rendu à l'endroit à changer et écrivez le changement dans la bulle (Entrée pour valider). Jusqu'à ${MAX_ANNOTATIONS} commentaires, puis « Appliquer ». Ce mode utilise toujours Pixel IA, et le résultat devient une nouvelle branche de l'arbre : l'original reste disponible.`,
+    en: `To change part of a render: open the project, pick the "Comment" mode, click the render where it should change and type the change in the bubble (Enter to save). Up to ${MAX_ANNOTATIONS} comments, then "Apply". This mode always uses Pixel AI, and the result becomes a new branch of the tree: the original stays available.`,
   },
   {
     keys: [
@@ -49,8 +49,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
   },
   {
     keys: ['moteur', 'engine', 'rouge', 'jaune', 'red', 'yellow'],
-    fr: "RenderBox a deux moteurs. Moteur 1 (pastille rouge) : rapide, bon rapport qualité/coût. Moteur 2 (pastille jaune) : meilleur suivi d'instructions précises. Vous choisissez le moteur à chaque rendu dans la barre de commande ; le moteur par défaut se règle dans Paramètres. Les deux partagent les matériaux et l'historique du projet.",
-    en: 'RenderBox has two engines. Engine 1 (red dot): fast, good price/quality ratio. Engine 2 (yellow dot): best at following precise instructions. Pick the engine for each render in the command bar; set the default one in Settings. Both share the project’s materials and history.',
+    fr: "RenderBox a deux moteurs. Visio (pastille rouge) : rapide, bon rapport qualité/coût. Pixel IA (pastille jaune) : meilleur suivi d'instructions précises. Vous choisissez le moteur à chaque rendu dans la barre de commande ; le moteur par défaut se règle dans Paramètres. Les deux partagent les matériaux et l'historique du projet.",
+    en: 'RenderBox has two engines. Visio (red dot): fast, good price/quality ratio. Pixel AI (yellow dot): best at following precise instructions. Pick the engine for each render in the command bar; set the default one in Settings. Both share the project’s materials and history.',
   },
   {
     keys: [
@@ -87,8 +87,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'subscription',
       'pay',
     ],
-    fr: `Trois formules : Découverte, Standard et Pro (${quotas} générations par mois). Chaque rendu, modification ou Enhance consomme une génération. Votre solde est dans la pastille verte de la barre latérale et sur l'Accueil ; changez de formule depuis la page Abonnement.`,
-    en: `Three plans: Découverte, Standard and Pro (${quotas} generations a month). Every render, edit or Enhance uses one generation. Your balance is in the green pill of the sidebar and on Home; change plan from the Subscription page.`,
+    fr: `Trois formules : Découverte, Standard et Pro (${quotas} générations par mois). Chaque rendu, modification ou Enhance consomme une génération. Votre solde est dans la pastille bleue de l'en-tête et sur l'Accueil ; changez de formule depuis la page Abonnement.`,
+    en: `Three plans: Découverte, Standard and Pro (${quotas} generations a month). Every render, edit or Enhance uses one generation. Your balance is in the blue pill of the header and on Home; change plan from the Subscription page.`,
   },
   {
     keys: ['ajout', 'ajouter', 'personnage', 'mobilier', 'add', 'person', 'furniture'],

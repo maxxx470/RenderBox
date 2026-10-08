@@ -595,7 +595,7 @@ export function AppShell({
             <button
               type="button"
               onClick={() => setMobileTreeOpen(true)}
-              className="rounded-full border border-[#ECECF2] p-1.5 min-[900px]:hidden"
+              className="rounded-xl p-1.5 min-[900px]:hidden"
               // Below 900px the app's navigation is the bottom bar; this
               // drawer is only kept for what the bar cannot hold: the tree.
               aria-label={t('app.treeTitle')}
@@ -608,7 +608,7 @@ export function AppShell({
             <button
               type="button"
               onClick={() => setMobilePanelOpen(true)}
-              className="rounded-full border border-[#ECECF2] p-1.5 min-[900px]:hidden"
+              className="rounded-xl p-1.5 min-[900px]:hidden"
               aria-label={mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')}
             >
               <Filter2 set="curved" size={16} primaryColor="#8A8896" />
@@ -649,15 +649,15 @@ export function AppShell({
                   onDragOver={handleCanvasDragOver}
                   onDragLeave={handleCanvasDragLeave}
                   onDrop={handleCanvasDrop}
-                  className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-[#E8F5EC] to-[#F7F7FA] transition-colors duration-150 ease-out ${
+                  className={`relative flex flex-1 items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-[#EEF1FF] to-[#F7F7FA] transition-colors duration-150 ease-out ${
                     // Same outline tone as the rails and the command bar, so the
                     // three panels read as one family.
-                    fileDragOver ? 'border-[#15803D]' : 'border-[#DEDEE8]'
+                    fileDragOver ? 'border-[#2948FC]' : 'border-[#DEDEE8]'
                   } ${mode === 'retouch' ? 'select-none' : ''}`}
                 >
                   {selectedId && (
                     <>
-                      <span className="absolute left-3.5 top-3.5 rounded-2xl border border-[#ECECF2] bg-white px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
+                      <span className="absolute left-3.5 top-3.5 rounded-2xl bg-white px-2.5 py-1 font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
                         {selectedNode?.preset
                           ? t('app.canvasPresetBadge', {
                               preset: PRESETS[selectedNode.preset as PresetKey].label[locale],
@@ -668,8 +668,8 @@ export function AppShell({
                           : t('app.engineTag')}
                       </span>
                       {selectedNode?.kind === 'GENERATED' && materials.length > 0 && (
-                        <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#1E7A3D14] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] text-[#1E7A3D]">
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#1E7A3D]" />
+                        <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#EEF1FF] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] text-[#1E36D6]">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#2948FC]" />
                           {t('app.scanBadge', { n: materials.length })}
                         </span>
                       )}
@@ -734,8 +734,8 @@ export function AppShell({
                             className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]"
                             style={{ left: `${comparePos}%` }}
                           >
-                            <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_10px_26px_-6px_rgba(22,163,74,0.6)]">
-                              <Swap set="curved" size={15} primaryColor="#15803D" />
+                            <div className="absolute left-1/2 top-1/2 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-lg bg-white shadow-[0_10px_26px_-6px_rgba(67,92,254,0.6)]">
+                              <Swap set="curved" size={15} primaryColor="#2948FC" />
                             </div>
                           </div>
                         </>
@@ -752,10 +752,10 @@ export function AppShell({
                             aria-pressed={comparing}
                             aria-label={t('app.compareToggle')}
                             title={t('app.compareToggle')}
-                            className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95] ${
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg border shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95] ${
                               comparing
-                                ? 'border-transparent bg-[#15803D]'
-                                : 'border-[#ECECF2] bg-white'
+                                ? 'border-transparent bg-[#2948FC]'
+                                : 'border-transparent bg-white'
                             }`}
                           >
                             <Swap
@@ -771,7 +771,7 @@ export function AppShell({
                           onMouseDown={(e) => e.stopPropagation()}
                           aria-label={t('app.downloadButton')}
                           title={t('app.downloadButton')}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ECECF2] bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.95]"
                         >
                           <Download set="curved" size={15} primaryColor="#17161F" />
                         </a>
@@ -781,8 +781,8 @@ export function AppShell({
                   {/* pointer-events-none so the overlay never becomes the drag
                     target itself, which would unbalance the enter/leave count. */}
                   {fileDragOver && (
-                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#15803D] bg-[#E8F5ECF2] px-6">
-                      <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
+                    <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[#2948FC] bg-[#EEF1FFF2] px-6">
+                      <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]">
                         <Upload set="curved" size={24} primaryColor="#ffffff" />
                       </div>
                       <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
@@ -795,14 +795,14 @@ export function AppShell({
                   )}
                   {uploading && (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-[#FFFFFFD9]">
-                      <span className="rounded-2xl border border-[#ECECF2] bg-white px-4 py-2 font-[family-name:var(--font-mono)] text-[12px] text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)]">
+                      <span className="rounded-2xl bg-white px-4 py-2 font-[family-name:var(--font-mono)] text-[12px] text-[#17161F] shadow-[0_4px_14px_-6px_rgba(23,22,31,0.25)]">
                         {t('app.uploading')}
                       </span>
                     </div>
                   )}
                   {busy && (
                     <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#FFFFFFD9]">
-                      <span className="rb-spin h-8 w-8 rounded-full border-2 border-[#ECECF2] border-t-[#15803D]" />
+                      <span className="rb-spin h-8 w-8 rounded-full border-2 border-[#ECECF2] border-t-[#2948FC]" />
                       <span className="font-[family-name:var(--font-display)] text-[13.5px] font-semibold text-[#17161F]">
                         {t('app.generatingOverlay')}
                       </span>
@@ -836,7 +836,7 @@ export function AppShell({
           </div>
         </div>
 
-        {/* Semantic error colour, never the green brand accent. The inputs are
+        {/* Semantic error colour, never the blue brand accent. The inputs are
           already preserved on failure — this just says so, and offers the
           second attempt the toast could not. */}
         {retryable && !busy && (
@@ -846,7 +846,7 @@ export function AppShell({
               <button
                 type="button"
                 onClick={() => setRetryable(false)}
-                className="rounded-full px-2.5 py-1.5 text-[12.5px] text-[#8A8896] hover:text-[#17161F]"
+                className="rounded-lg px-2.5 py-1.5 text-[12.5px] text-[#8A8896] hover:text-[#17161F]"
               >
                 {t('app.retryDismiss')}
               </button>
@@ -854,7 +854,7 @@ export function AppShell({
                 type="button"
                 disabled={sendDisabled}
                 onClick={handleSubmit}
-                className="rounded-full bg-[#E5484D] px-3 py-1.5 text-[12.5px] font-semibold text-white disabled:opacity-50"
+                className="rounded-lg bg-[#E5484D] px-3 py-1.5 text-[12.5px] font-semibold text-white disabled:opacity-50"
               >
                 {t('app.retryButton')}
               </button>
@@ -894,7 +894,7 @@ export function AppShell({
                 : t('app.modeAdd')
           }
           generating={generating || submittingEdit}
-          // "Commenter" always runs on Moteur 2 — the chip says so and is locked.
+          // "Commenter" always runs on Pixel IA — the chip says so and is locked.
           engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
           onEngineChange={handleEngineChange}
           engineLocked={mode === 'retouch'}
@@ -917,7 +917,7 @@ export function AppShell({
       {pendingDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/30" onClick={() => setPendingDelete(null)} />
-          <div className="relative w-full max-w-[380px] rounded-2xl border border-[#ECECF2] bg-white p-5 shadow-[0_24px_48px_-20px_rgba(23,22,31,0.35)]">
+          <div className="relative w-full max-w-[380px] rounded-2xl bg-white p-5 shadow-[0_24px_48px_-20px_rgba(23,22,31,0.35)]">
             <h2 className="mb-2 font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
               {t('app.treeDeleteTitle', { name: nodeLabel(pendingDelete) })}
             </h2>
@@ -933,7 +933,7 @@ export function AppShell({
               <button
                 type="button"
                 onClick={() => setPendingDelete(null)}
-                className="rounded-full px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
+                className="rounded-xl px-3.5 py-2 text-[13px] text-[#8A8896] hover:text-[#17161F]"
               >
                 {t('projects.dialogCancel')}
               </button>
@@ -941,7 +941,7 @@ export function AppShell({
                 type="button"
                 disabled={deleting}
                 onClick={() => void handleDeleteNode(pendingDelete)}
-                className="rounded-full bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
+                className="rounded-xl bg-[#E5484D] px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-50"
               >
                 {t('projects.deleteConfirm')}
               </button>

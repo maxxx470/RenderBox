@@ -84,13 +84,13 @@ function TreeLevel({
                     <ImageIcon
                       set="curved"
                       size={13}
-                      primaryColor={selected ? '#15803D' : '#8A8896'}
+                      primaryColor={selected ? '#2948FC' : '#8A8896'}
                     />
                   ) : (
                     <Upload
                       set="curved"
                       size={13}
-                      primaryColor={selected ? '#15803D' : '#8A8896'}
+                      primaryColor={selected ? '#2948FC' : '#8A8896'}
                     />
                   )}
                 </span>
@@ -101,7 +101,7 @@ function TreeLevel({
                 onClick={() => onDelete(node)}
                 aria-label={t('app.treeDeleteNode')}
                 title={t('app.treeDeleteNode')}
-                className="mr-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-opacity hover:bg-[#E5484D14] min-[900px]:opacity-0 min-[900px]:group-hover/row:opacity-100 min-[900px]:group-focus-within/row:opacity-100"
+                className="mr-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg transition-opacity hover:bg-[#E5484D14] min-[900px]:opacity-0 min-[900px]:group-hover/row:opacity-100 min-[900px]:group-focus-within/row:opacity-100"
               >
                 <Delete set="curved" size={13} primaryColor="#E5484D" />
               </button>
@@ -142,7 +142,7 @@ export function ProjectTree({
   if (tree.length === 0) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-[#8A8896]">
-        <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full border-[1.5px] border-dashed border-[#ECECF2]">
+        <div className="flex h-[34px] w-[34px] items-center justify-center rounded-lg border-[1.5px] border-dashed border-[#ECECF2]">
           <ImageIcon set="curved" size={16} primaryColor="#8A8896" />
         </div>
         <p className="max-w-[150px] text-xs leading-relaxed">{t('app.treeEmpty')}</p>

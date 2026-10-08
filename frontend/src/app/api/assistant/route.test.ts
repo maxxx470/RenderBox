@@ -127,7 +127,7 @@ describe('POST /api/assistant', () => {
     const json = await res.json();
     expect(res.status).toBe(200);
     expect(json.fallback).toBe(true);
-    expect(json.reply).toContain('Moteur 1');
+    expect(json.reply).toContain('Visio');
   });
 
   it('falls back without calling anything when there is no key, in the asked language', async () => {

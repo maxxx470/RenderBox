@@ -18,8 +18,8 @@ interface EngineLabel {
 
 // Each engine's own colour (owner's choice, 2026-10-06: bright red and
 // yellow), used wherever an engine is marked — the model chip, the Enhance
-// toggle, the landing film. Red goes to Moteur 1 and yellow to Moteur 2 on
-// purpose: a yellow Moteur 1 would point straight at the banana it runs on.
+// toggle, the landing film. Red goes to Visio and yellow to Pixel IA on
+// purpose: a yellow Visio would point straight at the banana it runs on.
 // The red is #DC2626, deliberately NOT the error red #E5484D (reserved for
 // errors and destructive actions by the charter). Every value is a complete
 // literal class name so Tailwind's scanner sees it.
@@ -45,11 +45,11 @@ export const ENGINE_COLORS: Record<
 
 export const ENGINE_LABELS: Record<EngineName, EngineLabel> = {
   nanobanana: {
-    name: { fr: 'Moteur 1', en: 'Engine 1' },
+    name: { fr: 'Visio', en: 'Visio' },
     description: { fr: 'Rapide, bon rapport qualité/coût', en: 'Fast, good price/quality ratio' },
   },
   gpt_image: {
-    name: { fr: 'Moteur 2', en: 'Engine 2' },
+    name: { fr: 'Pixel IA', en: 'Pixel AI' },
     description: {
       fr: "Meilleur suivi d'instructions précises",
       en: 'Best at following precise instructions',

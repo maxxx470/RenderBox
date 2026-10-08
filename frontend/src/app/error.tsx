@@ -16,7 +16,7 @@ export default function ErrorBoundary({
       <button
         type="button"
         onClick={reset}
-        className="rounded-full bg-[#17161F] px-5 py-2.5 text-sm font-medium text-white transition-transform duration-150 ease-out active:scale-[0.97] hover:bg-[#3D3B49]"
+        className="rounded-xl bg-[#17161F] px-5 py-2.5 text-sm font-medium text-white transition-transform duration-150 ease-out active:scale-[0.97] hover:bg-[#3D3B49]"
       >
         Try again
       </button>

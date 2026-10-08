@@ -21,7 +21,7 @@ export function FaqAccordion({
         return (
           <div
             key={item.q}
-            className="rounded-2xl border border-[#ECECF2] bg-white shadow-[0_8px_24px_-18px_rgba(23,22,31,0.25)] transition-colors hover:border-[#DEDEE8]"
+            className="rounded-2xl bg-white shadow-[0_8px_24px_-18px_rgba(23,22,31,0.25)] transition-colors"
           >
             <button
               type="button"

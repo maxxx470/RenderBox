@@ -49,7 +49,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-[#EEEEF1]">
       <AdminNav role={admin.role} />
       <main className="min-w-0 flex-1 overflow-y-auto px-4 pb-[calc(104px+env(safe-area-inset-bottom))] pt-5 min-[640px]:px-8 min-[640px]:pt-6.5 min-[900px]:pb-6.5">
         {children}

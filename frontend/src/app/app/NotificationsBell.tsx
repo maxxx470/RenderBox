@@ -101,11 +101,11 @@ export function NotificationsBell() {
         aria-expanded={open}
         aria-label={label}
         title={label}
-        className={`relative flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-[#F7F7FA] ${
+        className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-[#F7F7FA] ${
           open ? 'bg-[#F7F7FA]' : ''
         }`}
       >
-        <Notification set="curved" size={20} primaryColor="#15803D" />
+        <Notification set="curved" size={20} primaryColor="#2948FC" />
         {unread > 0 && (
           <span
             aria-hidden
@@ -120,7 +120,7 @@ export function NotificationsBell() {
           aria-label={t('app.notifications')}
           // Fixed under the header on a phone (full width, 12px gutters),
           // hung from the bell from 640px.
-          className="rb-pop-up fixed inset-x-3 top-[64px] z-[70] overflow-hidden rounded-2xl border border-[#ECECF2] bg-white shadow-[0_18px_44px_-14px_rgba(23,22,31,0.28)] min-[640px]:absolute min-[640px]:inset-x-auto min-[640px]:right-0 min-[640px]:top-[calc(100%+10px)] min-[640px]:w-[360px]"
+          className="rb-pop-up fixed inset-x-3 top-[64px] z-[70] overflow-hidden rounded-2xl bg-white shadow-[0_18px_44px_-14px_rgba(23,22,31,0.28)] min-[640px]:absolute min-[640px]:inset-x-auto min-[640px]:right-0 min-[640px]:top-[calc(100%+10px)] min-[640px]:w-[360px]"
         >
           <div className="flex items-center justify-between gap-3 border-b border-[#ECECF2] px-4 py-3">
             <span className="font-[family-name:var(--font-display)] text-[14.5px] font-semibold text-[#17161F]">
@@ -130,7 +130,7 @@ export function NotificationsBell() {
               <button
                 type="button"
                 onClick={() => void markAllRead()}
-                className="rounded-full px-2 py-1 text-[12px] font-semibold text-[#166534] hover:bg-[#E8F5EC]"
+                className="rounded-lg px-2 py-1 text-[12px] font-semibold text-[#1E36D6] hover:bg-[#EEF1FF]"
               >
                 {t('app.notificationsMarkAll')}
               </button>
@@ -140,7 +140,7 @@ export function NotificationsBell() {
           <div className="max-h-[min(420px,60vh)] overflow-y-auto">
             {items === null && !failed ? (
               <div className="flex justify-center py-8">
-                <span className="rb-spin h-5 w-5 rounded-full border-2 border-[#CDEBD6] border-t-[#15803D]" />
+                <span className="rb-spin h-5 w-5 rounded-full border-2 border-[#D5DCFF] border-t-[#2948FC]" />
               </div>
             ) : failed ? (
               <p className="px-4 py-8 text-center text-[13px] text-[#6B6878]">
@@ -148,8 +148,8 @@ export function NotificationsBell() {
               </p>
             ) : items && items.length === 0 ? (
               <div className="flex flex-col items-center gap-2 px-6 py-8 text-center">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E8F5EC]">
-                  <Notification set="curved" size={20} primaryColor="#15803D" />
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF1FF]">
+                  <Notification set="curved" size={20} primaryColor="#2948FC" />
                 </span>
                 <p className="text-[13.5px] font-medium text-[#17161F]">
                   {t('app.notificationsEmpty')}
@@ -164,7 +164,7 @@ export function NotificationsBell() {
                   <li
                     key={n.id}
                     className={`flex gap-3 border-b border-[#F2F2F6] px-4 py-3 last:border-b-0 ${
-                      n.readAt ? '' : 'bg-[#F0FAF3]'
+                      n.readAt ? '' : 'bg-[#F4F6FF]'
                     }`}
                   >
                     <span
@@ -190,7 +190,7 @@ export function NotificationsBell() {
           <Link
             href="/app/info"
             onClick={() => setOpen(false)}
-            className="block border-t border-[#ECECF2] px-4 py-3 text-center text-[12.5px] font-semibold text-[#166534] hover:bg-[#F0FAF3]"
+            className="block border-t border-[#ECECF2] px-4 py-3 text-center text-[12.5px] font-semibold text-[#1E36D6] hover:bg-[#F4F6FF]"
           >
             {t('app.notificationsNews')}
           </Link>

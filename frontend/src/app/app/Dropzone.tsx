@@ -37,7 +37,7 @@ export function Dropzone({
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
       className={`flex flex-1 cursor-pointer flex-col items-center justify-center gap-3.5 rounded-2xl border-2 border-dashed ${
-        dragOver ? 'border-[#15803D] bg-[#E8F5EC]' : 'border-[#ECECF2] bg-[#F7F7FA]'
+        dragOver ? 'border-[#2948FC] bg-[#EEF1FF]' : 'border-[#ECECF2] bg-[#F7F7FA]'
       }`}
     >
       <input
@@ -51,7 +51,7 @@ export function Dropzone({
           e.target.value = '';
         }}
       />
-      <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]">
+      <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]">
         <Upload set="curved" size={24} primaryColor="#ffffff" />
       </div>
       <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
@@ -63,7 +63,7 @@ export function Dropzone({
       <button
         type="button"
         disabled={uploading}
-        className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-5 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+        className="rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
       >
         {uploading ? t('app.uploading') : t('app.dropzoneButton')}
       </button>

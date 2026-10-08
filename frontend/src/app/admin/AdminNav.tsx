@@ -28,7 +28,7 @@ export function AdminNav({ role }: { role: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-[210px] shrink-0 flex-col border-r border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-5 min-[900px]:flex">
+    <aside className="hidden w-[210px] shrink-0 flex-col bg-white px-3.5 py-5 min-[900px]:flex">
       <div className="mb-6.5 flex items-center gap-2.5 px-1.5">
         <BrandMark />
         <span className="font-[family-name:var(--font-display)] text-sm font-semibold text-[#17161F]">
@@ -50,7 +50,7 @@ export function AdminNav({ role }: { role: string }) {
                   : 'text-[#8A8896] hover:text-[#17161F]'
               }`}
             >
-              <Icon set="curved" size={16} primaryColor={active ? '#16A34A' : 'currentColor'} />
+              <Icon set="curved" size={16} primaryColor={active ? '#435CFE' : 'currentColor'} />
               {t(LABEL_KEY[href])}
             </Link>
           );
@@ -70,7 +70,7 @@ export function AdminNav({ role }: { role: string }) {
 /**
  * Below 900px the side column gives way to a floating pill at the bottom of
  * the screen, the same shape as the app's MobileNav: the four sections, the
- * current one on the green tint.
+ * current one on the blue tint.
  */
 export function AdminMobileNav() {
   const t = useTranslations();
@@ -79,7 +79,7 @@ export function AdminMobileNav() {
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 min-[900px]:hidden">
       <div className="pointer-events-auto flex justify-center px-4 pb-[calc(20px+env(safe-area-inset-bottom))] pt-3">
-        <div className="flex items-center gap-1 rounded-full border border-[#ECECF2] bg-white/95 p-1.5 shadow-[0_8px_30px_rgba(23,22,31,0.10)] backdrop-blur-md">
+        <div className="flex items-center gap-1 rounded-2xl bg-white/95 p-1.5 shadow-[0_8px_30px_rgba(23,22,31,0.10)] backdrop-blur-md">
           {NAV.map(({ href, icon: Icon }) => {
             const active =
               pathname === href || (href !== '/admin' && pathname?.startsWith(href + '/'));
@@ -88,11 +88,11 @@ export function AdminMobileNav() {
                 key={href}
                 href={href}
                 {...(active ? { 'aria-current': 'page' as const } : {})}
-                className={`flex h-[52px] w-[68px] flex-col items-center justify-center gap-0.5 rounded-full text-[10.5px] font-medium ${
-                  active ? 'bg-[#E8F5EC] text-[#166534]' : 'text-[#3D3B49]'
+                className={`flex h-[52px] w-[68px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-medium ${
+                  active ? 'bg-[#EEF1FF] text-[#1E36D6]' : 'text-[#3D3B49]'
                 }`}
               >
-                <Icon set="curved" size={19} primaryColor="#15803D" />
+                <Icon set="curved" size={19} primaryColor="#2948FC" />
                 <span className="max-w-full truncate px-1">{t(LABEL_KEY[href])}</span>
               </Link>
             );

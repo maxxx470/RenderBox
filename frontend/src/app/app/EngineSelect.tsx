@@ -48,10 +48,10 @@ export function EngineSelect({
         onClick={toggle}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex flex-shrink-0 items-center gap-2 rounded-full border border-[#ECECF2] bg-white py-1.5 pl-1.5 pr-3 transition-colors hover:border-[#DEDEE8] disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex flex-shrink-0 items-center gap-2 rounded-lg bg-[#F2F2F5] py-1.5 pl-1.5 pr-3 transition-colors hover:bg-[#E9E9EE] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span
-          className={`flex h-[22px] w-[22px] items-center justify-center rounded-full ${ENGINE_COLORS[engine].mark}`}
+          className={`flex h-[22px] w-[22px] items-center justify-center rounded-md ${ENGINE_COLORS[engine].mark}`}
         >
           <Image set="curved" size={12} primaryColor={ENGINE_COLORS[engine].glyph} />
         </span>
@@ -86,7 +86,7 @@ export function EngineSelect({
               >
                 <Radio checked={selected} />
                 <span
-                  className={`flex h-[28px] w-[28px] flex-shrink-0 items-center justify-center rounded-full ${ENGINE_COLORS[key].mark}`}
+                  className={`flex h-[28px] w-[28px] flex-shrink-0 items-center justify-center rounded-lg ${ENGINE_COLORS[key].mark}`}
                 >
                   <Image set="curved" size={14} primaryColor={ENGINE_COLORS[key].glyph} />
                 </span>

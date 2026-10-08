@@ -27,8 +27,8 @@ export const TIKTOK_PATH =
 function CommunityBadge() {
   const t = useTranslations();
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white px-3.5 py-1.5 shadow-[0_2px_10px_-4px_rgba(23,22,31,0.18)]">
-      <User set="curved" size={15} primaryColor="#15803D" />
+    <span className="inline-flex items-center gap-2 rounded-lg bg-white px-3.5 py-1.5 shadow-[0_2px_10px_-4px_rgba(23,22,31,0.18)]">
+      <User set="curved" size={15} primaryColor="#2948FC" />
       <span className="text-[14px] font-semibold text-[#17161F]">{t('landing.proofUsers')}</span>
     </span>
   );
@@ -41,7 +41,7 @@ function ToolPill({ logo }: { logo: (typeof TOOL_LOGOS)[number] }) {
       // styles: a Tailwind class built from `logo.hex` at runtime would never
       // be seen by the scanner and would silently generate no CSS.
       style={{ backgroundColor: `${logo.hex}14`, borderColor: `${logo.hex}33` }}
-      className="inline-flex items-center gap-2 rounded-full border px-3.5 py-2"
+      className="inline-flex items-center gap-2 rounded-xl border px-3.5 py-2"
     >
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden focusable="false">
         <path d={logo.path} fill={logo.hex} />

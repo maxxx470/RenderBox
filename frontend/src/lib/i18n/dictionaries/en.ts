@@ -59,8 +59,6 @@ const en: Record<keyof typeof fr, string> = {
   'app.railProjects': 'Projects',
   'app.railInfo': 'Info',
   'app.railNavigation': 'Navigation',
-  'app.railGroupMain': 'Main',
-  'app.railGroupAccount': 'Account',
   'app.railPricing': 'Subscription',
   'app.railEnhance': 'Enhance',
   'enhance.title': 'Enhance',
@@ -100,7 +98,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.treeEmpty': 'Your first upload will appear here',
   'app.viewerTitle': 'Start your first render',
   'app.viewerSubtitle':
-    'Upload a photo of your building — RenderBox generates a first version with Engine 1.',
+    'Upload a photo of your building — RenderBox generates a first version with Visio.',
   'app.dropzoneTitle': 'Drag an image here',
   'app.dropzoneHint': 'or click to browse your files — JPG, PNG, up to 15MB',
   'app.dropzoneButton': 'Choose an image',
@@ -165,7 +163,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.scanBadge': '{n} materials auto-detected',
   'app.cmdbarPlaceholder': 'Add an optional detail for this render',
   'app.canvasPresetBadge': 'Preset: {preset} · {engine}',
-  'app.engineTag': 'Engine 1',
+  'app.engineTag': 'Visio',
   'app.engineDropdownNote':
     'The materials sheet and active preset apply the same way regardless of the engine chosen.',
   'app.uploading': 'Uploading…',
@@ -217,8 +215,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.genHomeInputPlaceholder': 'Describe the render to generate, or drop a reference image…',
   'app.genHomeQuickStartError': 'Quick start failed. Try again.',
   'app.genHomeNoTierTitle': 'No active plan',
-  'app.genHomeNoTierBody':
-    'Choose a plan to unlock your monthly generations (Engine 1 + Engine 2).',
+  'app.genHomeNoTierBody': 'Choose a plan to unlock your monthly generations (Visio + Pixel AI).',
   'app.genHomeChooseTier': 'View pricing',
   'app.genHomeExampleTag': 'Example',
   'app.genHomeCardPlaceholder':
@@ -242,8 +239,8 @@ const en: Record<keyof typeof fr, string> = {
   'annotate.remove': 'Remove',
   'annotate.listTitle': 'Comments',
   'annotate.max': 'At most {n} comments per pass.',
-  'annotate.engineNote': 'Comments are always handled by Engine 2.',
-  'annotate.engineLocked': 'Comment mode always uses Engine 2',
+  'annotate.engineNote': 'Comments are always handled by Pixel AI.',
+  'annotate.engineLocked': 'Comment mode always uses Pixel AI',
   'annotate.pinLabel': 'Comment {n}',
   'edit.enterButton': 'Edit',
   'edit.closeButton': 'Close edit mode',
@@ -298,9 +295,7 @@ const en: Record<keyof typeof fr, string> = {
   'page.settingsSubtitle': 'Your account, your default engine and your billing.',
   'page.pricingSubtitle':
     'A plan lasts 30 days, with no automatic charge: each render you generate is counted.',
-  'dashboard.quotaOf': 'of {max}',
-  'dashboard.renewsOn': 'until {date}',
-  'dashboard.noTierTitle': 'No active plan',
+  'dashboard.noTierTitle': 'No plan',
   'dashboard.videoTitle': 'Discover RenderBox in 2 minutes',
   'dashboard.videoPlay': 'Play the video',
   'dashboard.howTitle': 'From photo to render, in 3 steps',
@@ -309,14 +304,21 @@ const en: Record<keyof typeof fr, string> = {
     'Film: a photo or a sketch, an ambiance picked (day, night, interior, exterior), then the render.',
   'dashboard.showcaseLabel': 'Showcase renders',
   'dashboard.showcaseGoTo': 'Go to slide {n}',
-  'dashboard.statRenders': 'Renders generated',
-  'dashboard.statLastActivity': 'Last activity',
-  'dashboard.cardProjectsLabel': 'Total projects',
-  'dashboard.cardProjectsSub': 'All your projects',
-  'dashboard.cardRendersSub': 'in total',
-  'dashboard.cardActivitySub': 'latest render',
-  'dashboard.cardActivityNone': 'no render yet',
-  'dashboard.cardQuotaLabel': 'Renders left',
+  'dashboard.cardProjectsSub': 'in total',
+  'dashboard.cardProjectsTitle': '{count} projects',
+  'dashboard.cardProjectsLink': 'See my projects',
+  'dashboard.cardRendersSub': 'generated',
+  'dashboard.cardRendersTitle': '{count} renders',
+  'dashboard.cardRendersLink': 'New render',
+  'dashboard.cardActivitySub': 'last activity',
+  'dashboard.cardActivityNoneTitle': 'No render',
+  'dashboard.cardActivityNone': 'yet',
+  'dashboard.cardActivityLink': 'Pick up',
+  'dashboard.cardQuotaTitle': '{count} renders',
+  'dashboard.cardQuotaSub': 'left',
+  'dashboard.cardQuotaSubDate': 'left · {date}',
+  'dashboard.cardQuotaNone': 'to activate',
+  'dashboard.cardQuotaLink': 'My plan',
   'projects.filterAll': 'All',
   'projects.filterLabel': 'Filter:',
   'projects.renderCount': '{n} renders',
@@ -512,8 +514,8 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroCtaPrimary': 'Generate my first render',
   'landing.heroCtaSecondary': 'See an example',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
-  'landing.heroPreviewEngine': 'Engine 1',
-  'landing.heroPreviewCaption': 'Exterior day · Engine 1',
+  'landing.heroPreviewEngine': 'Visio',
+  'landing.heroPreviewCaption': 'Exterior day · Visio',
   'landing.heroChipMaterials': 'Materials remembered: 12/12',
   'landing.heroChipFacade': 'North façade → white render',
 
@@ -548,17 +550,9 @@ const en: Record<keyof typeof fr, string> = {
 
   'landing.audienceTitle': 'Built for building professionals',
   'landing.audience1Title': 'More variants, without redoing your renders',
-  'landing.audience1Body':
-    'Try another facade, another ambiance or another material at every revision: the project’s materials stay the same from one view to the next.',
   'landing.audience2Title': 'Technical projects everyone understands',
-  'landing.audience2Body':
-    'A view of your model becomes an image a client, a site meeting or a submission can read.',
   'landing.audience3Title': 'From drawing to presentation visual',
-  'landing.audience3Body':
-    'A sketch or an export becomes a presentable render in minutes, then gets corrected with simple comments.',
   'landing.audience4Title': 'The project shown before the first stone',
-  'landing.audience4Body':
-    'A day render, a night render, a furnished interior for your buyers, without endless back-and-forths with a visualiser.',
 
   'landing.checklistTitle':
     'Consistent renders. A memory that never betrays you. Fewer back-and-forths.',
@@ -640,7 +634,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faq2A': 'Yes. Every render you generate is yours, with no commercial-use limit.',
   'landing.faq3Q': "What's the difference between the two AI engines?",
   'landing.faq3A':
-    'Engine 1 (red) is fast and economical, Engine 2 (yellow) follows precise instructions more closely — you pick whichever fits each render best, any time. Edits by comment always use Engine 2.',
+    'Visio (red) is fast and economical, Pixel AI (yellow) follows precise instructions more closely — you pick whichever fits each render best, any time. Edits by comment always use Pixel AI.',
   'landing.faq4Q': 'What happens when I hit my monthly quota?',
   'landing.faq4A':
     'Generations are blocked until renewal or until you switch tiers — never a surprise charge.',
@@ -710,7 +704,11 @@ const en: Record<keyof typeof fr, string> = {
   'landing.enginesSubtitle':
     'Compare both engines on the same request and keep the one that fits: materials and history stay shared.',
   'landing.enginesAlt':
-    'Demo film: the same request rendered by Engine 1 then Engine 2, for a dining room (left) and a mountain pavilion (right), then the four renders side by side.',
+    'Demo film: the same request rendered by Visio then Pixel AI, for a dining room (left) and a mountain pavilion (right), then the four renders side by side.',
+  'app.railGroupGeneral': 'General',
+  'app.railGroupHelp': 'Help',
+  'app.railGroupProfile': 'Profile',
+  'app.railAccountSub': 'My account',
 };
 
 export default en;

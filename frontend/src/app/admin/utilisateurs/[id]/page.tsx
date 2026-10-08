@@ -87,7 +87,7 @@ export default function AdminUserDetailPage() {
       </Link>
 
       <div className="mt-3 mb-6 flex items-center gap-3.5">
-        <div className="h-11 w-11 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] opacity-85" />
+        <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] opacity-85" />
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-[18px] font-semibold text-[#17161F]">
             {user.name || user.email}
@@ -101,7 +101,7 @@ export default function AdminUserDetailPage() {
       </div>
 
       {user.deletedAt ? (
-        <div className="mb-5 rounded-[14px] border border-[#B8710B33] bg-[#B8710B14] px-4 py-3 text-[13px] text-[#B8710B]">
+        <div className="mb-5 rounded-[14px] bg-[#B8710B14] px-4 py-3 text-[13px] text-[#B8710B]">
           {t('admin.userDetail.deletedBanner', {
             date: new Date(user.deletedAt).toLocaleDateString('fr-FR'),
             days: '30',
@@ -112,7 +112,7 @@ export default function AdminUserDetailPage() {
       {actionError ? <p className="mb-4 text-sm text-[#B8710B]">{actionError}</p> : null}
 
       <div className="mb-8 grid grid-cols-1 gap-3.5 md:grid-cols-2">
-        <section className="rounded-[14px] border border-[#ECECF2] p-4.5">
+        <section className="rounded-[14px] bg-white p-4.5">
           <h2 className="mb-3 text-[13px] font-semibold text-[#17161F]">
             {t('admin.userDetail.projectsTitle')}
           </h2>
@@ -132,7 +132,7 @@ export default function AdminUserDetailPage() {
           )}
         </section>
 
-        <section className="rounded-[14px] border border-[#ECECF2] p-4.5">
+        <section className="rounded-[14px] bg-white p-4.5">
           <h2 className="mb-3 text-[13px] font-semibold text-[#17161F]">
             {t('admin.userDetail.ordersTitle')}
           </h2>
@@ -155,7 +155,7 @@ export default function AdminUserDetailPage() {
         </section>
       </div>
 
-      <section className="rounded-[14px] border border-[#ECECF2] p-4.5">
+      <section className="rounded-[14px] bg-white p-4.5">
         <h2 className="mb-3.5 text-[13px] font-semibold text-[#17161F]">
           {t('admin.userDetail.actionsTitle')}
         </h2>
@@ -175,7 +175,7 @@ export default function AdminUserDetailPage() {
                 }),
               )
             }
-            className="rounded-[10px] border border-[#ECECF2] bg-[#F7F7FA] px-3 py-1.5 text-[13px] text-[#17161F] outline-none"
+            className="rounded-[10px] bg-[#F7F7FA] px-3 py-1.5 text-[13px] text-[#17161F] outline-none"
           >
             {ROLES.map((r) => (
               <option key={r} value={r}>
@@ -198,7 +198,7 @@ export default function AdminUserDetailPage() {
                   }),
                 )
               }
-              className="rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
+              className="rounded-xl px-4 py-2 text-[13px] font-medium text-[#17161F] bg-[#F2F2F5] hover:bg-[#E9E9EE] disabled:opacity-50"
             >
               {t('admin.userDetail.restoreButton')}
             </button>
@@ -215,7 +215,7 @@ export default function AdminUserDetailPage() {
                   }),
                 );
               }}
-              className="rounded-full border border-[#ECECF2] px-4 py-2 text-[13px] font-medium text-[#17161F] hover:bg-[#F7F7FA] disabled:opacity-50"
+              className="rounded-xl px-4 py-2 text-[13px] font-medium text-[#17161F] bg-[#F2F2F5] hover:bg-[#E9E9EE] disabled:opacity-50"
             >
               {t('admin.userDetail.suspendButton')}
             </button>
@@ -228,7 +228,7 @@ export default function AdminUserDetailPage() {
               onClick={() =>
                 void runAction(() => api(`/api/admin/users/${user.id}/restore`, { method: 'POST' }))
               }
-              className="rounded-full bg-[#1E7A3D14] px-4 py-2 text-[13px] font-medium text-[#1E7A3D] hover:bg-[#1E7A3D22] disabled:opacity-50"
+              className="rounded-xl bg-[#1E7A3D14] px-4 py-2 text-[13px] font-medium text-[#1E7A3D] hover:bg-[#1E7A3D22] disabled:opacity-50"
             >
               {t('admin.userDetail.restoreDeletedButton')}
             </button>
@@ -240,7 +240,7 @@ export default function AdminUserDetailPage() {
                 if (!confirm(t('admin.userDetail.confirmDelete'))) return;
                 void runAction(() => api(`/api/admin/users/${user.id}`, { method: 'DELETE' }));
               }}
-              className="rounded-full bg-[#E5484D12] px-4 py-2 text-[13px] font-medium text-[#E5484D] hover:bg-[#E5484D22] disabled:opacity-50"
+              className="rounded-xl bg-[#E5484D12] px-4 py-2 text-[13px] font-medium text-[#E5484D] hover:bg-[#E5484D22] disabled:opacity-50"
             >
               {t('admin.userDetail.deleteButton')}
             </button>

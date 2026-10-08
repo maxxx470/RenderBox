@@ -12,9 +12,9 @@
 // Tokens (extracted from the reference site's shipped CSS, kept exact):
 //   ink #17161F · ink-2 #3D3B49 · muted #8A8896
 //   line #ECECF2 · line-strong #DEDEE8 · band #F7F7FA · surface-2 #FBFBFD
-//   green #16A34A (icons, large surfaces) · green-deep #15803D (text on white,
-//   5.0:1) · green-ink #166534 (text on the #E8F5EC tint, 6.35:1)
-//   signature gradient: linear-gradient(135deg,#16A34A 0%,#15803D 48%,#166534 100%)
+//   blue #435CFE (icons, large surfaces) · blue-deep #2948FC (text on white,
+//   6.1:1) · blue-ink #1E36D6 (text on the #EEF1FF tint, 7.3:1)
+//   signature gradient: linear-gradient(135deg,#435CFE 0%,#2948FC 48%,#1E36D6 100%)
 //   error/danger (semantic, NOT brand): #E5484D — used only for error text
 //   and destructive actions, never for accents
 // Fonts: Inter (text), Poppins (titles), IBM Plex Mono (tags/technical
@@ -28,17 +28,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  Category,
-  ChevronRight,
-  Document,
-  Edit,
-  Home,
-  Image as ImageIcon,
-  Location,
-  Swap,
-  Work,
-} from 'react-iconly';
+import { Category, ChevronRight, Document, Image as ImageIcon, Swap } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
 import { BEFORE_AFTER_PAIRS } from './before-after';
@@ -66,7 +56,7 @@ import { BrandMark } from '@/components/BrandMark';
 // CSS-value constant interpolated into `bg-[${x}]`. Defining the full class
 // name itself here (not just the CSS value) keeps every usage below a
 // single, complete token the scanner can find, exactly like MONO already is.
-const GRADIENT = 'bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)]';
+const GRADIENT = 'bg-[linear-gradient(135deg,#435CFE_0%,#2948FC_48%,#1E36D6_100%)]';
 const MONO = 'font-[family-name:var(--font-mono)]';
 
 // Hero headline, revealed word by word.
@@ -142,7 +132,7 @@ function SectionHeader({
         >
           <span
             aria-hidden
-            className={`h-1.5 w-1.5 rounded-full ${light ? 'bg-[#FACC15]' : 'bg-[#EAB308]'}`}
+            className={`h-1.5 w-1.5 rounded-full ${light ? 'bg-[#FF9AA6]' : 'bg-[#F34857]'}`}
           />
           {eyebrow}
         </p>
@@ -220,7 +210,7 @@ function PresetCard({
   alt: string;
 }) {
   return (
-    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#ECECF2] bg-[#FBFBFD] transition-colors hover:border-[#DEDEE8]">
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl bg-[#FBFBFD] transition-colors">
       <div className="aspect-[3/2] w-full overflow-hidden bg-[#F1F0F4]">
         <img
           src={AMBIANCE_IMAGE[ambiance]}
@@ -275,12 +265,12 @@ function HeroPresetTags() {
         <span
           key={preset}
           style={{ animationDelay: `${400 + i * 140}ms` }}
-          className={`rb-card-in absolute ${className} inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold shadow-[0_10px_24px_-12px_rgba(23,22,31,0.35)] ${
+          className={`rb-card-in absolute ${className} inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold shadow-[0_10px_24px_-12px_rgba(23,22,31,0.35)] ${
             style === 'gradient'
               ? `${GRADIENT} text-white`
               : style === 'ink'
                 ? 'bg-[#17161F] text-white'
-                : 'bg-[#FEF3C7] text-[#92400E]'
+                : 'bg-[#FFE4E7] text-[#C21F33]'
           }`}
         >
           {PRESETS[preset].label[locale]}
@@ -364,7 +354,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
     a: t(`landing.faq${n}A` as 'landing.faq1A'),
   }));
 
-  const NAV_LINK = 'rounded-full px-3 py-1.5 transition-colors hover:text-[#17161F]';
+  const NAV_LINK = 'rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]';
 
   return (
     // pb-14 clears the 56px sticky bar: without it the bar parks on top of
@@ -373,10 +363,10 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
       {/* HERO BAND — nav and hero share the reference's dotted ground, which
           ends in a large rounded bottom edge. The dots fade in from the top so
           the nav sits on clean white. */}
-      <div className="relative overflow-hidden rounded-b-[40px] bg-[linear-gradient(180deg,#FFFFFF_0%,#F1F7F2_100%)] min-[860px]:rounded-b-[56px]">
+      <div className="relative overflow-hidden rounded-b-[40px] bg-[linear-gradient(180deg,#FFFFFF_0%,#F1F3FA_100%)] min-[860px]:rounded-b-[56px]">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,#C9D9CE_1px,transparent_1.3px)] bg-[length:18px_18px] [mask-image:linear-gradient(180deg,transparent_0%,#000_28%,#000_100%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,#C9CFE0_1px,transparent_1.3px)] bg-[length:18px_18px] [mask-image:linear-gradient(180deg,transparent_0%,#000_28%,#000_100%)]"
         />
 
         <nav className="relative mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-4 min-[640px]:px-6 min-[640px]:py-5">
@@ -414,7 +404,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Link>
             <Link
               href={ctaHref}
-              className={`inline-flex items-center rounded-full ${GRADIENT} px-5 py-2.5 text-[13.5px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
+              className={`inline-flex items-center rounded-xl ${GRADIENT} px-5 py-2.5 text-[13.5px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
             >
               {t('landing.navStart')}
             </Link>
@@ -440,10 +430,10 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 showing what they make. */}
             <Link
               href="/exemple"
-              className="rb-card-in mb-6 inline-flex items-center gap-2 rounded-full border border-[#ECECF2] bg-white py-1 pl-1 pr-3 text-[12.5px] font-medium text-[#17161F] shadow-[0_8px_20px_-14px_rgba(23,22,31,0.35)] transition-colors hover:border-[#DEDEE8]"
+              className="rb-card-in mb-6 inline-flex items-center gap-2 rounded-lg bg-white py-1 pl-1 pr-3 text-[12.5px] font-medium text-[#17161F] shadow-[0_8px_20px_-14px_rgba(23,22,31,0.35)] transition-colors hover:bg-[#E9E9EE]"
             >
               <span
-                className={`rounded-full ${GRADIENT} px-2.5 py-0.5 text-[11px] font-semibold text-white`}
+                className={`rounded-md ${GRADIENT} px-2.5 py-0.5 text-[11px] font-semibold text-white`}
               >
                 {t('landing.heroBadgeNew')}
               </span>
@@ -475,11 +465,11 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <Reveal delayMs={120} className="relative mx-auto mt-12 max-w-[760px]">
               <Link
                 href={ctaHref}
-                className={`mb-10 inline-flex items-center rounded-full ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
+                className={`mb-10 inline-flex items-center rounded-xl ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
               >
                 {t('landing.heroCtaPrimary')}
               </Link>
-              <div className="relative rounded-[28px] border border-[#ECECF2] bg-white p-4 shadow-[0_30px_60px_-28px_rgba(22,101,52,0.45)] min-[640px]:p-6">
+              <div className="relative rounded-[28px] bg-white p-4 shadow-[0_30px_60px_-28px_rgba(30,54,214,0.45)] min-[640px]:p-6">
                 <div className="mb-3.5 flex items-center justify-between">
                   <span className={`text-[11px] text-[#8A8896] ${MONO}`}>
                     {t('landing.heroPreviewProject')}
@@ -491,18 +481,18 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 <div className="relative h-[220px] overflow-hidden rounded-2xl min-[640px]:h-[320px]">
                   <RenderVisual />
                   <span
-                    className={`absolute bottom-3 left-3 rounded-full bg-black/40 px-2.5 py-1 text-[10px] text-white ${MONO}`}
+                    className={`absolute bottom-3 left-3 rounded-lg bg-black/40 px-2.5 py-1 text-[10px] text-white ${MONO}`}
                   >
                     {t('landing.heroPreviewCaption')}
                   </span>
                 </div>
               </div>
-              <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
-                <ImageIcon set="curved" size={14} primaryColor="#D97706" />
+              <div className="absolute -bottom-5 left-6 flex items-center gap-1.5 rounded-xl bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)]">
+                <ImageIcon set="curved" size={14} primaryColor="#F34857" />
                 {t('landing.heroChipFacade')}
               </div>
               <div
-                className={`absolute -bottom-5 right-6 rounded-full border border-[#ECECF2] bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)] ${MONO}`}
+                className={`absolute -bottom-5 right-6 rounded-xl bg-white px-3.5 py-2.5 text-xs shadow-[0_14px_30px_-12px_rgba(23,22,31,0.2)] ${MONO}`}
               >
                 {t('landing.heroChipMaterials')}
               </div>
@@ -538,7 +528,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               return (
                 <Reveal key={pair.kind} delayMs={100 + i * 120}>
                   <p className="mb-3 flex items-center gap-2 text-[15px] font-semibold text-[#17161F]">
-                    <span aria-hidden className="h-2 w-2 rounded-full bg-[#EAB308]" />
+                    <span aria-hidden className="h-2 w-2 rounded-full bg-[#F34857]" />
                     {t(exterior ? 'landing.beforeAfterExterior' : 'landing.beforeAfterInterior')}
                   </p>
                   <BeforeAfterSlider
@@ -587,8 +577,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </div>
         </section>
 
-        {/* KEY FEATURES — one card per audience, the middle one in the
-            gradient, then a single CTA under the row, as in the reference. */}
+        {/* KEY FEATURES — one card per audience (the trade, a title, a picture),
+            the second one in the brand red, then a single CTA under the row. */}
         <section id="fonctionnalites" className="scroll-mt-6 py-14 min-[860px]:py-20">
           <SectionHeader
             eyebrow={t('landing.eyebrowFeatures')}
@@ -598,28 +588,24 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             cards={
               [
                 {
-                  icon: (c) => <Home set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience1Tab'),
                   title: t('landing.audience1Title'),
-                  body: t('landing.audience1Body'),
+                  image: '/metiers/architectes.webp',
                 },
                 {
-                  icon: (c) => <Work set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience2Tab'),
                   title: t('landing.audience2Title'),
-                  body: t('landing.audience2Body'),
+                  image: '/metiers/ingenieurs.webp',
                 },
                 {
-                  icon: (c) => <Edit set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience3Tab'),
                   title: t('landing.audience3Title'),
-                  body: t('landing.audience3Body'),
+                  image: '/metiers/dessinateurs.webp',
                 },
                 {
-                  icon: (c) => <Location set="curved" size={22} primaryColor={c} />,
                   label: t('landing.audience4Tab'),
                   title: t('landing.audience4Title'),
-                  body: t('landing.audience4Body'),
+                  image: '/metiers/promoteurs.webp',
                 },
               ] satisfies AudienceCardData[]
             }
@@ -627,7 +613,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           <Reveal delayMs={200} className="mt-10 flex justify-center">
             <Link
               href={ctaHref}
-              className={`inline-flex items-center rounded-full ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
+              className={`inline-flex items-center rounded-xl ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
             >
               {t('landing.checklistCta')}
             </Link>
@@ -650,8 +636,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 {/* A punchy title and the film — visitors look at the picture,
                     not at a checklist (owner's brief, 2026-10-06). */}
                 <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
-                  <div className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-white min-[640px]:flex">
-                    <Document set="curved" size={22} primaryColor="#D97706" />
+                  <div className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white min-[640px]:flex">
+                    <Document set="curved" size={22} primaryColor="#F34857" />
                   </div>
                   <div>
                     <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
@@ -662,7 +648,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                     </p>
                   </div>
                 </div>
-                <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(10,40,20,0.6)] min-[640px]:p-2">
+                <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(10,18,70,0.6)] min-[640px]:p-2">
                   <MotionFilm
                     src={`/motion/commenter-${locale}.mp4`}
                     poster={`/motion/commenter-${locale}.jpg`}
@@ -674,18 +660,18 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             </Reveal>
 
             <Reveal delayMs={100}>
-              <div className="rounded-[24px] border border-[#ECECF2] bg-[#F7F7FA] p-4 min-[640px]:p-10">
+              <div className="rounded-[24px] bg-[#F7F7FA] p-4 min-[640px]:p-10">
                 {/* Same shape as the card above: a title and the film of the
                     render tree branching (owner's brief, 2026-10-06). */}
                 <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
                   <div
-                    className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${GRADIENT} min-[640px]:flex`}
+                    className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${GRADIENT} min-[640px]:flex`}
                   >
                     <Category set="curved" size={22} primaryColor="#ffffff" />
                   </div>
                   <div>
                     <span
-                      className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#B45309] ${MONO}`}
+                      className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#C21F33] ${MONO}`}
                     >
                       {t('landing.split2Tag')}
                     </span>
@@ -697,7 +683,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                     </p>
                   </div>
                 </div>
-                <div className="overflow-hidden rounded-[20px] border border-[#ECECF2] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
+                <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
                   <MotionFilm
                     src={`/motion/arbre-${locale}.mp4`}
                     poster={`/motion/arbre-${locale}.jpg`}
@@ -710,20 +696,20 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </div>
 
           <Reveal delayMs={150} className="mt-5">
-            <div className="rounded-[24px] border border-[#ECECF2] bg-[#F7F7FA] p-4 min-[640px]:p-10">
+            <div className="rounded-[24px] bg-[#F7F7FA] p-4 min-[640px]:p-10">
               {/* Same shape as the two cards above: the same prompt rendered
                   by each engine, interior on the left, exterior on the right
                   (owner's brief, 2026-10-06). Engines are only ever named
-                  "Moteur 1 / Moteur 2" here, never by provider. */}
+                  "Visio / Pixel IA" here, never by provider. */}
               <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
                 <div
-                  className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-full ${GRADIENT} min-[640px]:flex`}
+                  className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${GRADIENT} min-[640px]:flex`}
                 >
                   <Swap set="curved" size={22} primaryColor="#ffffff" />
                 </div>
                 <div>
                   <span
-                    className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#B45309] ${MONO}`}
+                    className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#C21F33] ${MONO}`}
                   >
                     {t('landing.enginesEyebrow')}
                   </span>
@@ -735,7 +721,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                   </p>
                 </div>
               </div>
-              <div className="overflow-hidden rounded-[20px] border border-[#ECECF2] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
+              <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
                 <MotionFilm
                   src={`/motion/moteurs-${locale}.mp4`}
                   poster={`/motion/moteurs-${locale}.jpg`}
@@ -819,12 +805,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </section>
       </div>
 
-      {/* PRICING — full-bleed green band, as in the reference. The deep end
-          of the gradient carries the white text (#15803D = 5.0:1); the bright
-          #16A34A would fail 4.5:1 for the 14px copy. */}
+      {/* PRICING — full-bleed blue band, as in the reference. The deep end
+          of the gradient carries the white text (#2948FC = 5.0:1); the bright
+          #435CFE would fail 4.5:1 for the 14px copy. */}
       <section
         id="tarifs"
-        className="scroll-mt-0 bg-[linear-gradient(135deg,#15803D_0%,#166534_55%,#14532D_100%)] py-16 min-[860px]:py-24"
+        className="scroll-mt-0 bg-[linear-gradient(135deg,#2948FC_0%,#1E36D6_55%,#1A2BB0_100%)] py-16 min-[860px]:py-24"
       >
         <div className="mx-auto max-w-[1180px] px-6">
           <SectionHeader

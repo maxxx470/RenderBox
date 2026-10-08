@@ -142,7 +142,7 @@ export function popoverPanelClass({
   align = 'start',
 }: { placement?: 'up' | 'down'; align?: 'start' | 'end' } = {}) {
   return [
-    'absolute z-30 rounded-2xl border border-[#ECECF2] bg-white p-2 shadow-[0_20px_44px_-16px_rgba(23,22,31,0.28)]',
+    'absolute z-30 rounded-2xl bg-white p-2 shadow-[0_20px_44px_-16px_rgba(23,22,31,0.28)]',
     align === 'end' ? 'right-0' : 'left-0',
     placement === 'up' ? 'bottom-[calc(100%+10px)]' : 'top-[calc(100%+10px)]',
     placement === 'up' ? 'rb-pop-up' : 'rb-pop-down',

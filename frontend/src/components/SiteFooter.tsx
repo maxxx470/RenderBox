@@ -3,24 +3,24 @@
 // Shared footer for the landing and every public page around it (/info,
 // /legal, /exemple).
 //
-// Green charter (2026-10-05): a rounded block in the brand gradient, inset
+// Charter of 2026-10-05, blue since 2026-10-08: a rounded block in the brand gradient, inset
 // from the page edges, carrying the brand, a small "start" box and the link
 // columns — the reference's footer, which also absorbed the landing's old
-// final CTA band so the page does not end on two green blocks in a row.
+// final CTA band so the page does not end on two blue blocks in a row.
 //
 // Every entry here is live. Placeholder labels for pages that do not exist
 // ("Guide", "Blog", "Contact"…) stay out until the pages do: on screen a grey
 // label beside real links reads as a dead link, not as a page to come.
 //
-// The ground is the DEEP end of the gradient (#15803D → #14532D), not the
-// bright #16A34A: white 13px text needs 4.5:1, which #16A34A (3.3:1) misses.
+// The ground is the DEEP end of the gradient (#2948FC → #1A2BB0), not the
+// bright #435CFE: white 13px text needs 4.5:1, which #435CFE (3.3:1) misses.
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { TikTokMark } from '@/app/HeroProof';
 import { SOCIAL } from '@/app/social';
 import { BrandMark } from '@/components/BrandMark';
 
-const BAND = 'bg-[linear-gradient(135deg,#15803D_0%,#166534_55%,#14532D_100%)]';
+const BAND = 'bg-[linear-gradient(135deg,#2948FC_0%,#1E36D6_55%,#1A2BB0_100%)]';
 const LINK = 'mb-2.5 block text-[13px] text-white/85 transition-colors hover:text-white';
 const HEADING = 'mb-3.5 text-[13px] font-semibold text-white';
 
@@ -48,7 +48,7 @@ export function SiteFooter({ ctaHref = '/app' }: { ctaHref?: string }) {
               <p className="text-[13px] leading-[1.5] text-white">{t('landing.ctaBandTitle')}</p>
               <Link
                 href={ctaHref}
-                className="mt-3.5 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-2.5 text-[13px] font-semibold text-[#166534] transition-transform duration-150 ease-out active:scale-[0.97]"
+                className="mt-3.5 inline-flex w-full items-center justify-center rounded-xl bg-white px-5 py-2.5 text-[13px] font-semibold text-[#1E36D6] transition-transform duration-150 ease-out active:scale-[0.97]"
               >
                 {t('landing.ctaBandButton')}
               </Link>
@@ -99,7 +99,7 @@ export function SiteFooter({ ctaHref = '/app' }: { ctaHref?: string }) {
                 target="_blank"
                 rel="noreferrer noopener"
                 aria-label="TikTok"
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 transition-colors hover:bg-white/25"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 transition-colors hover:bg-white/25"
               >
                 <TikTokMark />
               </a>

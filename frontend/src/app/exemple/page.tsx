@@ -71,7 +71,7 @@ export default function ExemplePage() {
                 {batch.images.map((src) => (
                   <div
                     key={src}
-                    className="relative aspect-[4/3] overflow-hidden rounded-[14px] border border-[#ECECF2] bg-[#F7F7FA]"
+                    className="relative aspect-[4/3] overflow-hidden rounded-[14px] bg-[#F7F7FA]"
                   >
                     <img
                       src={src}
@@ -104,7 +104,7 @@ export default function ExemplePage() {
           <p className="mt-2 max-w-[62ch] text-[14px] leading-[1.55] text-[#6B6878]">
             {t('exemple.materialsIntro')}
           </p>
-          <div className="mt-4 rounded-[16px] border border-[#ECECF2] bg-[#F7F7FA] p-5">
+          <div className="mt-4 rounded-[16px] bg-[#F7F7FA] p-5">
             <dl className="grid grid-cols-1 gap-4 min-[560px]:grid-cols-2">
               {materialRows.map((r) => (
                 <div key={r.label}>
@@ -118,13 +118,13 @@ export default function ExemplePage() {
           </div>
         </section>
 
-        <section className="mt-14 rounded-[20px] bg-[linear-gradient(135deg,#16A34A_0%,#15803D_48%,#166534_100%)] px-6 py-10 text-center">
+        <section className="mt-14 rounded-[20px] bg-[linear-gradient(135deg,#435CFE_0%,#2948FC_48%,#1E36D6_100%)] px-6 py-10 text-center">
           <h2 className="mb-5 font-[family-name:var(--font-display)] text-[20px] font-semibold text-white">
             {t('exemple.ctaTitle')}
           </h2>
           <Link
             href="/connexion"
-            className="inline-block rounded-full bg-white px-6 py-3 text-[13.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+            className="inline-block rounded-xl bg-white px-6 py-3 text-[13.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
           >
             {t('exemple.ctaButton')}
           </Link>

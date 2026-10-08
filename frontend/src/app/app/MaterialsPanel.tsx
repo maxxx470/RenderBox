@@ -31,14 +31,14 @@ function MaterialCard({
 
   if (editing) {
     return (
-      <div className="mb-2.5 rounded-xl border border-[#15803D] bg-white p-3.5">
+      <div className="mb-2.5 rounded-xl border border-[#2948FC] bg-white p-3.5">
         <div className="mb-1 flex items-center justify-between font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
           <span>{faceLabel(material.face)}</span>
         </div>
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          className="mb-2 w-full rounded-lg border border-[#15803D] px-2.5 py-2 text-[13px] outline-none"
+          className="mb-2 w-full rounded-lg border border-[#2948FC] px-2.5 py-2 text-[13px] outline-none"
         />
         {error && <p className="mb-2 text-xs text-[#E5484D]">{error}</p>}
         <div className="flex gap-2">
@@ -57,7 +57,7 @@ function MaterialCard({
                 setSaving(false);
               }
             }}
-            className="rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-3 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60"
+            className="rounded-lg bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-3 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60"
           >
             {t('app.materialsSaveButton')}
           </button>
@@ -68,7 +68,7 @@ function MaterialCard({
               setEditing(false);
               setError(null);
             }}
-            className="rounded-full bg-[#F1F0F4] px-3 py-1.5 text-[11px] font-semibold text-[#8A8896]"
+            className="rounded-lg bg-[#F1F0F4] px-3 py-1.5 text-[11px] font-semibold text-[#8A8896]"
           >
             {t('app.materialsCancelButton')}
           </button>
@@ -78,7 +78,7 @@ function MaterialCard({
   }
 
   return (
-    <div className="mb-2.5 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] p-3.5">
+    <div className="mb-2.5 rounded-xl bg-[#F7F7FA] p-3.5">
       <div className="mb-1 flex items-center justify-between font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
         <span>{faceLabel(material.face)}</span>
         {material.source === 'auto' && material.confidence !== null && (
@@ -90,7 +90,7 @@ function MaterialCard({
       <div className="mb-1.5 text-[13.5px] font-semibold text-[#17161F]">{material.valeur}</div>
       <span
         onClick={() => setEditing(true)}
-        className="cursor-pointer text-[11px] font-medium text-[#15803D]"
+        className="cursor-pointer text-[11px] font-medium text-[#2948FC]"
       >
         {t('app.materialsEditButton')}
       </span>
@@ -111,13 +111,13 @@ export function MaterialsPanel({
     // Same outlined-panel treatment as the left rail — one flush side and one
     // outlined side would read as a layout mistake. bg-white matters on
     // mobile, where this is a fixed drawer over a dimmed backdrop.
-    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border min-[900px]:border-[#DEDEE8]">
+    <aside className="w-[300px] overflow-y-auto border-l border-[#ECECF2] bg-white px-4 py-4.5 min-[900px]:m-2.5 min-[900px]:rounded-2xl min-[900px]:border-l-0">
       <div className="mb-1 flex items-center justify-between">
         <h3 className="font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]">
           {t('app.materialsTitle')}
         </h3>
         {materials.length > 0 && (
-          <span className="rounded-[10px] bg-[#1E7A3D14] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] text-[#1E7A3D]">
+          <span className="rounded-[10px] bg-[#EEF1FF] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] text-[#1E36D6]">
             {materials.length}/{materials.length}
           </span>
         )}

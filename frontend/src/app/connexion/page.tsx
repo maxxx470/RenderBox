@@ -32,7 +32,7 @@ export default async function ConnexionPage({
   return (
     <main className="flex min-h-screen items-center justify-center bg-white">
       <LanguageToggle />
-      <div className="w-[380px] rounded-[18px] border border-[#ECECF2] px-8 py-9">
+      <div className="w-[380px] rounded-[18px] bg-white px-8 py-9">
         <div className="mb-7 flex items-center justify-center gap-2.5">
           <BrandMark size="md" />
           <span className="font-[family-name:var(--font-display)] text-[17px] font-bold text-[#17161F]">

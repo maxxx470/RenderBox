@@ -35,9 +35,9 @@ export function NavPendingIcon({ children }: { children: ReactNode }) {
     <span
       role="status"
       aria-live="polite"
-      className="flex h-6.5 w-6.5 flex-shrink-0 items-center justify-center rounded-full border border-[#ECECF2] bg-white"
+      className="flex h-6.5 w-6.5 flex-shrink-0 items-center justify-center rounded-lg bg-white"
     >
-      <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-[#DEDEE8] border-t-[#15803D]" />
+      <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-[#DEDEE8] border-t-[#2948FC]" />
     </span>
   );
 }

@@ -3,7 +3,7 @@
 // /app/tarifs — "Abonnement", inside the app.
 //
 // 2026-10-07 — rebuilt on Metrio's subscription page, as the owner asked
-// (their screenshot of metrio /dashboard/subscription), green in place of
+// (their screenshot of metrio /dashboard/subscription), blue in place of
 // Metrio's blue:
 //
 //   1. A centred head: a small tinted pill, the title in black, one line.
@@ -11,7 +11,7 @@
 //   3. A warning, Metrio's Alert, when there is nothing left to render with.
 //   4. The three plans: name and volume, the price in FCFA with the dollar
 //      figure under it, two ticks, the button. The featured one is outlined
-//      green with "Le plus choisi" centred on its top edge.
+//      blue with "Le plus choisi" centred on its top edge.
 //   5. The dollar note, then "Historique": the account's paid orders.
 //
 // The dark summary card, the "included in every plan" list and the billing
@@ -40,7 +40,7 @@ const TIER_NAME_KEY: Record<PricingTierId, TranslationKey> = {
   pro: 'landing.pricingTierProName',
 };
 
-const GRADIENT = 'bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]';
+const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
 
 function PlanCard({
   tier,
@@ -63,13 +63,13 @@ function PlanCard({
     <div
       className={`relative flex flex-col justify-between rounded-[14px] p-4 shadow-[0_1px_2px_rgba(23,22,31,0.04)] min-[640px]:p-5 ${
         tier.featured
-          ? 'border-[1.5px] border-[#15803D] bg-white shadow-[0_8px_24px_rgba(21,128,61,0.12)]'
-          : 'border-[1.5px] border-[#ECECF2] bg-[#F7F7FA]'
+          ? 'border-[1.5px] border-[#2948FC] bg-white shadow-[0_8px_24px_rgba(41,72,252,0.12)]'
+          : 'bg-[#F7F7FA]'
       }`}
     >
       {tier.featured && (
         <span
-          className={`absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-[0_1px_2px_rgba(23,22,31,0.12)] ${GRADIENT}`}
+          className={`absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-[0_1px_2px_rgba(23,22,31,0.12)] bg-[linear-gradient(135deg,#F34857_0%,#EF3E50_100%)]`}
         >
           {t('landing.pricingBadgeFeatured')}
         </span>
@@ -78,7 +78,7 @@ function PlanCard({
         <div className="mt-1 flex items-center justify-between gap-2">
           <h3 className="text-[15px] font-extrabold text-[#17161F]">{name}</h3>
           {current && (
-            <span className="rounded-full border border-[#CDEBD6] bg-[#E8F5EC] px-2 py-0.5 text-[10.5px] font-semibold text-[#166534]">
+            <span className="rounded-md bg-[#EEF1FF] px-2 py-0.5 text-[10.5px] font-semibold text-[#1E36D6]">
               {t('tarifs.badgeCurrent')}
             </span>
           )}
@@ -99,7 +99,7 @@ function PlanCard({
         <ul className="mb-4 space-y-2 text-[11px] font-medium text-[#17161F]">
           {(['tarifs.checkEngines', 'tarifs.checkEditing'] as const).map((k) => (
             <li key={k} className="flex items-center gap-2">
-              <TickSquare set="curved" size={14} primaryColor="#1E7A3D" />
+              <TickSquare set="curved" size={14} primaryColor="#2948FC" />
               <span>{t(k)}</span>
             </li>
           ))}
@@ -111,10 +111,10 @@ function PlanCard({
           type="button"
           disabled={loading}
           onClick={onSelect}
-          className={`mt-2 h-[38px] w-full rounded-full text-[12px] font-bold shadow-[0_1px_2px_rgba(23,22,31,0.06)] transition-[opacity,border-color,color] duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`mt-2 h-[38px] w-full rounded-xl text-[12px] font-bold shadow-[0_1px_2px_rgba(23,22,31,0.06)] transition-[opacity,border-color,color] duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
             tier.featured
               ? `${GRADIENT} text-white hover:opacity-95`
-              : 'border border-[#ECECF2] bg-white text-[#17161F] hover:border-[#15803D] hover:text-[#15803D]'
+              : 'bg-white text-[#17161F] hover:bg-[#EEF1FF] hover:text-[#2948FC]'
           }`}
         >
           {loading
@@ -192,25 +192,25 @@ export function TarifsClient({
       subtitle={t('page.pricingSubtitle')}
     >
       {/* Solde actuel. */}
-      <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-[#CDEBD6] bg-[#E8F5EC] p-3.5 min-[640px]:px-5">
+      <div className="mb-5 flex items-center justify-between gap-3 rounded-xl bg-[#EEF1FF] p-3.5 min-[640px]:px-5">
         <div className="min-w-0">
-          <div className="text-[12px] font-semibold text-[#166534]">{t('tarifs.balanceLabel')}</div>
+          <div className="text-[12px] font-semibold text-[#1E36D6]">{t('tarifs.balanceLabel')}</div>
           {tier && endDate && (
-            <div className="mt-0.5 truncate text-[11px] text-[#166534]/80">
+            <div className="mt-0.5 truncate text-[11px] text-[#1E36D6]/80">
               {t('tarifs.balancePlan', { tier: t(TIER_NAME_KEY[tier]), date: endDate })}
             </div>
           )}
         </div>
-        <div className="flex-shrink-0 text-[14px] font-extrabold text-[#15803D]">
+        <div className="flex-shrink-0 text-[14px] font-extrabold text-[#2948FC]">
           {renders(remaining)}
         </div>
       </div>
 
       {/* Metrio's Alert, warning variant. */}
       {remaining === 0 && (
-        <div className="relative mb-6 flex items-start gap-2.5 overflow-hidden rounded-xl border border-[#ECECF2] bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(23,22,31,0.05)]">
+        <div className="relative mb-6 flex items-start gap-2.5 overflow-hidden rounded-xl bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(23,22,31,0.05)]">
           <span aria-hidden className="absolute bottom-0 left-0 top-0 w-[2px] bg-[#B7791F]" />
-          <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[#FDF3E2]">
+          <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-[#FDF3E2]">
             <Danger set="curved" size={13} primaryColor="#B7791F" />
           </span>
           <p className="flex-1 text-[13px] font-medium leading-snug text-[#17161F]">
@@ -235,9 +235,9 @@ export function TarifsClient({
       <p className="mb-6 text-[10.5px] text-[#8A8896]">{t('tarifs.usdNote')}</p>
 
       {/* Historique. */}
-      <section className="mb-4 overflow-hidden rounded-xl border border-[#ECECF2] bg-white shadow-[0_1px_2px_rgba(23,22,31,0.04)]">
+      <section className="mb-4 overflow-hidden rounded-xl bg-white shadow-[0_1px_2px_rgba(23,22,31,0.04)]">
         <h2 className="flex items-center gap-2 border-b border-[#ECECF2] bg-[#F7F7FA] px-4 py-3 text-[13px] font-bold text-[#17161F]">
-          <Wallet set="curved" size={18} primaryColor="#15803D" />
+          <Wallet set="curved" size={18} primaryColor="#2948FC" />
           {t('tarifs.historyTitle')}
         </h2>
         {history.length === 0 ? (
@@ -258,7 +258,7 @@ export function TarifsClient({
                     </div>
                   </div>
                   {plan && (
-                    <div className="flex-shrink-0 text-[12px] font-extrabold text-[#1E7A3D]">
+                    <div className="flex-shrink-0 text-[12px] font-extrabold text-[#2948FC]">
                       +{renders(plan.generationsPerMonth)}
                     </div>
                   )}

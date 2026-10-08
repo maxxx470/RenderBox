@@ -148,31 +148,34 @@ export function AppChrome({
 
   return (
     <Ctx.Provider value={ctx}>
-      <div className="flex h-dvh flex-col overflow-hidden bg-white">
-        <AppTopbar
-          title={title}
-          tier={quota.tier}
-          quotaMax={quota.max}
-          quotaRemaining={quota.remaining}
+      {/* 2026-10-08 — the rail is a floating card running the full height on
+          the grey ground (the owner's sidebar reference); the header and the
+          page sit in the column beside it. */}
+      <div className="flex h-dvh overflow-hidden bg-[#EEEEF1]">
+        <HomeSidebar
+          current={current}
           userEmail={userEmail}
+          collapsed={collapsed}
+          onToggleCollapsed={toggleCollapsed}
+          onNavigateTo={(p) => {
+            if (p !== railPageFor(pathname)) setPendingPage(p);
+          }}
+          mobileOpen={page?.treeOpen ?? false}
+          onMobileClose={() => handlers.current.onTreeClose?.()}
+          {...(page?.hasModeChange
+            ? { onModeChange: (m: AppMode) => handlers.current.onModeChange?.(m) }
+            : {})}
+          treeSlotRef={page?.hasTree ? setTreeSlot : null}
         />
-        <div className="relative flex min-h-0 flex-1">
-          <HomeSidebar
-            current={current}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <AppTopbar
+            title={title}
+            tier={quota.tier}
+            quotaMax={quota.max}
+            quotaRemaining={quota.remaining}
             userEmail={userEmail}
-            collapsed={collapsed}
-            onToggleCollapsed={toggleCollapsed}
-            onNavigateTo={(p) => {
-              if (p !== railPageFor(pathname)) setPendingPage(p);
-            }}
-            mobileOpen={page?.treeOpen ?? false}
-            onMobileClose={() => handlers.current.onTreeClose?.()}
-            {...(page?.hasModeChange
-              ? { onModeChange: (m: AppMode) => handlers.current.onModeChange?.(m) }
-              : {})}
-            treeSlotRef={page?.hasTree ? setTreeSlot : null}
           />
-          {children}
+          <div className="relative flex min-h-0 flex-1">{children}</div>
         </div>
         <MobileNav
           current={current}

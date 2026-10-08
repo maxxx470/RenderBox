@@ -60,8 +60,6 @@ const fr = {
   'app.railProjects': 'Projets',
   'app.railInfo': 'Info',
   'app.railNavigation': 'Navigation',
-  'app.railGroupMain': 'Principal',
-  'app.railGroupAccount': 'Compte',
   'app.railPricing': 'Abonnement',
   'app.railEnhance': 'Enhance',
   'enhance.title': 'Enhance',
@@ -102,7 +100,7 @@ const fr = {
   'app.treeEmpty': 'Votre première image apparaîtra ici',
   'app.viewerTitle': 'Commencez votre premier rendu',
   'app.viewerSubtitle':
-    'Importez une photo de votre bâtiment — RenderBox génère une première version avec le Moteur 1.',
+    'Importez une photo de votre bâtiment — RenderBox génère une première version avec Visio.',
   'app.dropzoneTitle': 'Glissez une image ici',
   'app.dropzoneHint': "ou cliquez pour parcourir vos fichiers — JPG, PNG, jusqu'à 15 Mo",
   'app.dropzoneButton': 'Choisir une image',
@@ -165,9 +163,9 @@ const fr = {
     'Astuce : une correction manuelle est toujours prioritaire sur une nouvelle détection automatique, même avec une confiance élevée.',
   'app.materialsSaveError': "Impossible d'enregistrer la correction. Réessayez.",
   'app.scanBadge': '{n} matériaux détectés automatiquement',
-  'app.cmdbarPlaceholder': 'Précise un détail pour ce rendu (optionnel)',
+  'app.cmdbarPlaceholder': 'Précisez un détail pour ce rendu (facultatif)',
   'app.canvasPresetBadge': 'Preset : {preset} · {engine}',
-  'app.engineTag': 'Moteur 1',
+  'app.engineTag': 'Visio',
   'app.engineDropdownNote':
     "La fiche matériaux et le preset actif s'appliquent de la même façon, quel que soit le moteur choisi.",
   'app.uploading': 'Envoi…',
@@ -220,7 +218,7 @@ const fr = {
   'app.genHomeQuickStartError': 'La création rapide a échoué. Réessayez.',
   'app.genHomeNoTierTitle': 'Aucun palier actif',
   'app.genHomeNoTierBody':
-    'Choisissez un palier pour débloquer vos générations mensuelles (Moteur 1 + Moteur 2).',
+    'Choisissez un palier pour débloquer vos générations mensuelles (Visio + Pixel IA).',
   'app.genHomeChooseTier': 'Voir les tarifs',
   'app.genHomeExampleTag': 'Exemple',
   'app.genHomeCardPlaceholder':
@@ -250,8 +248,8 @@ const fr = {
   'annotate.remove': 'Supprimer',
   'annotate.listTitle': 'Commentaires',
   'annotate.max': 'Maximum {n} commentaires par passage.',
-  'annotate.engineNote': 'Les commentaires sont toujours traités par le Moteur 2.',
-  'annotate.engineLocked': 'Le mode Commenter utilise toujours le Moteur 2',
+  'annotate.engineNote': 'Les commentaires sont toujours traités par Pixel IA.',
+  'annotate.engineLocked': 'Le mode Commenter utilise toujours Pixel IA',
   'annotate.pinLabel': 'Commentaire {n}',
   'edit.enterButton': 'Éditer',
   'edit.closeButton': 'Fermer le mode édition',
@@ -306,9 +304,7 @@ const fr = {
   'page.settingsSubtitle': 'Votre compte, votre moteur par défaut et votre facturation.',
   'page.pricingSubtitle':
     'Une formule dure 30 jours, sans prélèvement automatique : chaque rendu généré est décompté.',
-  'dashboard.quotaOf': 'sur {max}',
-  'dashboard.renewsOn': 'jusqu’au {date}',
-  'dashboard.noTierTitle': 'Aucun palier actif',
+  'dashboard.noTierTitle': 'Aucune formule',
   'dashboard.videoTitle': 'Découvrez RenderBox en 2 minutes',
   'dashboard.videoPlay': 'Lancer la vidéo',
   'dashboard.howTitle': 'De la photo au rendu, en 3 étapes',
@@ -317,14 +313,21 @@ const fr = {
     'Film : une photo ou un croquis, le choix d’une ambiance (jour, nuit, intérieur, extérieur), puis le rendu.',
   'dashboard.showcaseLabel': 'Rendus en vitrine',
   'dashboard.showcaseGoTo': 'Aller au visuel {n}',
-  'dashboard.statRenders': 'Rendus générés',
-  'dashboard.statLastActivity': 'Dernière activité',
-  'dashboard.cardProjectsLabel': 'Total projets',
-  'dashboard.cardProjectsSub': 'Tous vos projets',
-  'dashboard.cardRendersSub': 'au total',
-  'dashboard.cardActivitySub': 'dernier rendu',
-  'dashboard.cardActivityNone': 'pas encore de rendu',
-  'dashboard.cardQuotaLabel': 'Rendus restants',
+  'dashboard.cardProjectsSub': 'au total',
+  'dashboard.cardProjectsTitle': '{count} projets',
+  'dashboard.cardProjectsLink': 'Voir mes projets',
+  'dashboard.cardRendersSub': 'générés',
+  'dashboard.cardRendersTitle': '{count} rendus',
+  'dashboard.cardRendersLink': 'Nouveau rendu',
+  'dashboard.cardActivitySub': 'dernière activité',
+  'dashboard.cardActivityNoneTitle': 'Aucun rendu',
+  'dashboard.cardActivityNone': 'pour l’instant',
+  'dashboard.cardActivityLink': 'Reprendre',
+  'dashboard.cardQuotaTitle': '{count} rendus',
+  'dashboard.cardQuotaSub': 'restants',
+  'dashboard.cardQuotaSubDate': 'restants · {date}',
+  'dashboard.cardQuotaNone': 'à activer',
+  'dashboard.cardQuotaLink': 'Mon abonnement',
   'projects.filterAll': 'Tous',
   'projects.filterLabel': 'Filtre :',
   'projects.renderCount': '{n} rendus',
@@ -525,8 +528,8 @@ const fr = {
   'landing.heroCtaPrimary': 'Générer mon premier rendu',
   'landing.heroCtaSecondary': 'Voir un exemple',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
-  'landing.heroPreviewEngine': 'Moteur 1',
-  'landing.heroPreviewCaption': 'Jour extérieur · Moteur 1',
+  'landing.heroPreviewEngine': 'Visio',
+  'landing.heroPreviewCaption': 'Jour extérieur · Visio',
   'landing.heroChipMaterials': 'Matériaux mémorisés : 12/12',
   'landing.heroChipFacade': 'Façade nord → enduit blanc',
 
@@ -561,17 +564,9 @@ const fr = {
 
   'landing.audienceTitle': 'Pensé pour les professionnels du bâtiment',
   'landing.audience1Title': 'Plus de variantes, sans refaire vos rendus',
-  'landing.audience1Body':
-    "Essayez une autre façade, une autre ambiance ou un autre matériau à chaque révision : les matériaux du projet restent les mêmes d'une vue à l'autre.",
   'landing.audience2Title': 'Des projets techniques que tout le monde comprend',
-  'landing.audience2Body':
-    'Une vue de votre maquette devient une image lisible pour un maître d’ouvrage, une réunion de chantier ou un dossier.',
   'landing.audience3Title': 'Du dessin au visuel de présentation',
-  'landing.audience3Body':
-    'Un croquis ou un export devient un rendu présentable en quelques minutes, puis se corrige par simples commentaires.',
   'landing.audience4Title': 'Le projet montré avant la première pierre',
-  'landing.audience4Body':
-    'Un rendu de jour, un rendu de nuit, un intérieur meublé pour vos acquéreurs, sans multiplier les allers-retours avec un infographiste.',
 
   'landing.checklistTitle':
     "Des rendus cohérents. Une mémoire qui ne vous trahit pas. Moins d'allers-retours.",
@@ -664,7 +659,7 @@ const fr = {
   'landing.faq2A': "Oui. Chaque rendu généré est votre propriété, sans limite d'usage commercial.",
   'landing.faq3Q': 'Quelle est la différence entre les deux moteurs IA ?',
   'landing.faq3A':
-    'Le Moteur 1 (rouge) est rapide et économique, le Moteur 2 (jaune) suit mieux les instructions précises — vous choisissez celui qui convient à chaque rendu, à tout moment. Les modifications par commentaires utilisent toujours le Moteur 2.',
+    'Visio (rouge) est rapide et économique, Pixel IA (jaune) suit mieux les instructions précises — vous choisissez celui qui convient à chaque rendu, à tout moment. Les modifications par commentaires utilisent toujours Pixel IA.',
   'landing.faq4Q': "Que se passe-t-il si j'atteins mon quota mensuel ?",
   'landing.faq4A':
     'Les générations sont bloquées jusqu’au renouvellement ou jusqu’à ce que vous changiez de palier — jamais de facturation surprise.',
@@ -734,7 +729,11 @@ const fr = {
   'landing.enginesSubtitle':
     'Comparez les deux moteurs sur la même demande et gardez celui qui convient : matériaux et historique restent partagés.',
   'landing.enginesAlt':
-    'Film de démonstration : la même demande rendue par le Moteur 1 puis le Moteur 2, pour une salle à manger (à gauche) et un pavillon en montagne (à droite), puis les quatre rendus côte à côte.',
+    'Film de démonstration : la même demande rendue par Visio puis Pixel IA, pour une salle à manger (à gauche) et un pavillon en montagne (à droite), puis les quatre rendus côte à côte.',
+  'app.railGroupGeneral': 'Général',
+  'app.railGroupHelp': 'Aide',
+  'app.railGroupProfile': 'Profil',
+  'app.railAccountSub': 'Mon compte',
 } as const;
 
 export default fr;

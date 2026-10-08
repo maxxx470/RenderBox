@@ -51,7 +51,7 @@ export function PublicMobileMenu({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={t(open ? 'landing.menuClose' : 'app.openMenu')}
-        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#ECECF2] bg-white"
+        className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-[#F2F2F5]"
       >
         <span className={`${bar} ${open ? 'top-1/2 rotate-45' : 'top-[13px]'}`} />
         <span className={`${bar} top-1/2 ${open ? 'opacity-0' : ''}`} />
@@ -65,7 +65,7 @@ export function PublicMobileMenu({
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="rb-pop-down absolute inset-x-3 top-full z-40 mt-1 rounded-[22px] border border-[#ECECF2] bg-white p-3 shadow-[0_24px_48px_-20px_rgba(23,22,31,0.35)]">
+          <div className="rb-pop-down absolute inset-x-3 top-full z-40 mt-1 rounded-[22px] bg-white p-3 shadow-[0_24px_48px_-20px_rgba(23,22,31,0.35)]">
             <nav className="flex flex-col">
               {links.map((l) => (
                 <Link
@@ -79,14 +79,14 @@ export function PublicMobileMenu({
               ))}
             </nav>
             <div className="mt-3 flex flex-col gap-2.5">
-              <div className="flex items-center justify-center rounded-full border border-[#ECECF2] py-3">
+              <div className="flex items-center justify-center rounded-xl bg-[#F2F2F5] py-3">
                 <LanguageInlineSwitch className="text-[13px]" />
               </div>
               {cta && (
                 <Link
                   href={cta.href}
                   onClick={() => setOpen(false)}
-                  className="flex items-center justify-center rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] py-3 text-[14px] font-semibold text-white"
+                  className="flex items-center justify-center rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] py-3 text-[14px] font-semibold text-white"
                 >
                   {cta.label}
                 </Link>

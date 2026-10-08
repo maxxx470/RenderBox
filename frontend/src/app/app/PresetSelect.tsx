@@ -52,7 +52,7 @@ export function PresetSelect({
         <img
           src={PRESET_THUMB[preset]}
           alt=""
-          className="h-5 w-5 flex-shrink-0 rounded-full border border-white object-cover shadow-[0_0_0_1px_#ECECF2]"
+          className="h-5 w-5 flex-shrink-0 rounded-md border border-white object-cover shadow-[0_0_0_1px_#ECECF2]"
         />
         {PRESETS[preset].label[locale]}
         <span className="flex-shrink-0">
@@ -84,7 +84,7 @@ export function PresetSelect({
                     closeNow();
                   }}
                   className={`group relative overflow-hidden rounded-xl border-2 text-left transition-colors duration-150 ease-out ${
-                    selected ? 'border-[#16A34A]' : 'border-transparent hover:border-[#CDEBD6]'
+                    selected ? 'border-[#435CFE]' : 'border-transparent hover:border-[#D5DCFF]'
                   }`}
                 >
                   <img
@@ -96,7 +96,7 @@ export function PresetSelect({
                     {PRESETS[key].label[locale]}
                   </span>
                   {selected && (
-                    <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#15803D]">
+                    <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-md bg-[#2948FC]">
                       <svg
                         viewBox="0 0 24 24"
                         width="12"

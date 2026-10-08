@@ -27,7 +27,7 @@ import { MotionFilm } from '@/app/MotionFilm';
 import { DASHBOARD_VIDEO, toEmbedUrl } from './dashboard-media';
 
 const FRAME =
-  'relative aspect-[16/9] overflow-hidden rounded-2xl border border-[#DEDEE8] min-[900px]:aspect-auto min-[900px]:h-[210px]';
+  'relative aspect-[16/9] overflow-hidden rounded-2xl min-[900px]:aspect-auto min-[900px]:h-[210px]';
 
 function HowItWorks() {
   const t = useTranslations();
@@ -35,7 +35,7 @@ function HowItWorks() {
   return (
     // White, not the green gradient it used to sit on: the film is the
     // content now (owner, 2026-10-06), and it carries its own light ground.
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-[#DEDEE8] bg-white">
+    <div className="flex flex-col overflow-hidden rounded-2xl bg-white">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <h3 className="min-w-0 font-[family-name:var(--font-display)] text-[15px] font-semibold leading-tight text-[#17161F]">
           {t('dashboard.howTitle')}
@@ -44,7 +44,7 @@ function HowItWorks() {
             open was removed on 2026-10-06. */}
         <Link
           href="/app/generer"
-          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534] px-3.5 py-2 text-[12.5px] font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-3.5 py-2 text-[12.5px] font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
         >
           {t('dashboard.howCta')}
           <ArrowRight set="curved" size={14} primaryColor="#ffffff" />
@@ -92,7 +92,7 @@ export function DashboardVideoCard() {
   }
 
   return (
-    <div className={`${FRAME} bg-gradient-to-br from-[#16A34A] via-[#15803D] to-[#166534]`}>
+    <div className={`${FRAME} bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]`}>
       {DASHBOARD_VIDEO.poster && (
         <img src={DASHBOARD_VIDEO.poster} alt="" className="h-full w-full object-cover" />
       )}
@@ -107,9 +107,9 @@ export function DashboardVideoCard() {
           <button
             type="button"
             onClick={() => setPlaying(true)}
-            className="inline-flex items-center gap-2 rounded-full bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+            className="inline-flex items-center gap-2 rounded-xl bg-white/95 px-3.5 py-2 text-[12.5px] font-semibold text-[#17161F] transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
           >
-            <Play set="curved" size={14} primaryColor="#15803D" />
+            <Play set="curved" size={14} primaryColor="#2948FC" />
             {t('dashboard.videoPlay')}
           </button>
         </div>

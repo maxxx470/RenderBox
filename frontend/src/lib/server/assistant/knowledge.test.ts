@@ -45,7 +45,7 @@ describe('assistant fallback', () => {
   });
 
   it('answers in English', () => {
-    expect(fallbackReply('Which engine should I pick?', 'en')).toContain('Engine 2');
+    expect(fallbackReply('Which engine should I pick?', 'en')).toContain('Pixel AI');
   });
 
   it('has a default answer', () => {

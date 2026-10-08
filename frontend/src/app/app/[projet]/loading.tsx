@@ -10,7 +10,7 @@ export default function ProjectLoading() {
           <SkeletonBlock className="mb-3 h-4 w-[240px]" />
           <SkeletonBlock className="flex-1 rounded-2xl" />
         </div>
-        <div className="m-2.5 hidden w-[280px] flex-shrink-0 flex-col rounded-2xl border border-[#ECECF2] bg-white px-4 py-4.5 min-[1100px]:flex">
+        <div className="m-2.5 hidden w-[280px] flex-shrink-0 flex-col rounded-2xl bg-white px-4 py-4.5 min-[1100px]:flex">
           <SkeletonBlock className="mb-4 h-3 w-[110px]" />
           {[0, 1, 2, 3].map((i) => (
             <SkeletonBlock key={i} className="mb-2.5 h-12 w-full rounded-xl" />

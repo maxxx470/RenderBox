@@ -22,7 +22,7 @@ function EntryCard({ entry }: { entry: Announcement }) {
   return (
     <li
       className={`rounded-2xl border p-5 ${
-        planned ? 'border-dashed border-[#DEDEE8] bg-[#FBFBFD]' : 'border-[#ECECF2] bg-white'
+        planned ? 'border-dashed border-[#DEDEE8] bg-[#FBFBFD]' : 'border-transparent bg-white'
       }`}
     >
       <div className="mb-2 flex flex-wrap items-center gap-2.5">
@@ -37,7 +37,7 @@ function EntryCard({ entry }: { entry: Announcement }) {
           })}
         </time>
         {planned && (
-          <span className="rounded-full bg-[#F1F0F4] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wide text-[#8A8896]">
+          <span className="rounded-md bg-[#F1F0F4] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[10px] uppercase tracking-wide text-[#8A8896]">
             {t('info.badgePlanned')}
           </span>
         )}

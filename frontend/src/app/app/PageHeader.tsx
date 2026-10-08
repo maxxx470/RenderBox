@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
  * dashboard). The header bar above still names the page too, as on Metrio.
  *
  * `align="center"` is Metrio's subscription head: the eyebrow becomes a small
- * green-tinted pill and the block is centred over the page.
+ * blue-tinted pill and the block is centred over the page.
  */
 export function PageHeader({
   eyebrow,
@@ -28,7 +28,7 @@ export function PageHeader({
   if (align === 'center') {
     return (
       <div className={`text-center ${className}`}>
-        <span className="mb-1.5 inline-block rounded-full bg-[#E8F5EC] px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-widest text-[#166534]">
+        <span className="mb-1.5 inline-block rounded-md bg-[#EEF1FF] px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-widest text-[#1E36D6]">
           {eyebrow}
         </span>
         <h1 className="font-[family-name:var(--font-display)] text-[24px] font-black leading-tight tracking-tight text-[#17161F] min-[640px]:text-[30px]">
