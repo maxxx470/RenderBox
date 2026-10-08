@@ -10,7 +10,6 @@
 // The pages that mount it reserve the room it takes with MOBILE_NAV_PAD.
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Chat, Logout, MoreCircle, Plus } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
@@ -34,7 +33,6 @@ export function MobileNav({
   onNew?: () => void;
 }) {
   const t = useTranslations();
-  const router = useRouter();
   const { logout, loggingOut } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
@@ -158,7 +156,8 @@ export function MobileNav({
                     onClick={async () => {
                       setMoreOpen(false);
                       await logout();
-                      router.push('/connexion');
+                      // Out of the site, onto the landing (owner, 2026-10-08).
+                      window.location.assign('/');
                     }}
                     className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#C2361F] transition-colors hover:bg-[#FCEDEA] disabled:opacity-60"
                   >

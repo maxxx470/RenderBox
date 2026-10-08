@@ -9,16 +9,17 @@ import { MotionFilm } from '@/app/MotionFilm';
  *  files as the landing: public/motion/<id>-<locale>.mp4. A new film is one
  *  more line here; the grid takes it in, two per row. */
 const FILMS = [
-  { id: 'etapes', alt: 'dashboard.filmAlt' },
-  { id: 'commenter', alt: 'landing.commentAlt' },
-  { id: 'arbre', alt: 'landing.treeAlt' },
-  { id: 'moteurs', alt: 'landing.enginesAlt' },
+  { id: 'etapes', title: 'info.filmEtapesTitle', alt: 'dashboard.filmAlt' },
+  { id: 'commenter', title: 'info.filmCommenterTitle', alt: 'landing.commentAlt' },
+  { id: 'arbre', title: 'info.filmArbreTitle', alt: 'landing.treeAlt' },
+  { id: 'moteurs', title: 'info.filmMoteursTitle', alt: 'landing.enginesAlt' },
 ] as const;
 
 /**
- * 2026-10-08 (owner): only the films, two per row — no caption under them and
- * no written changelog below ("les utilisateurs comprendront mieux que du
- * texte écrit"). The changelog still lives on the public /info page.
+ * 2026-10-08 (owner): the films two per row, each introduced by a short
+ * title saying what it shows — no paragraph under them and no written
+ * changelog below ("les utilisateurs comprendront mieux que du texte
+ * écrit"). The changelog still lives on the public /info page.
  */
 export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
   const { t, locale } = useLocale();
@@ -32,13 +33,17 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
     >
       <div className="grid grid-cols-1 gap-4 min-[900px]:grid-cols-2 min-[900px]:gap-5">
         {FILMS.map((f) => (
-          <MotionFilm
-            key={f.id}
-            src={`/motion/${f.id}-${locale}.mp4`}
-            poster={`/motion/${f.id}-${locale}.jpg`}
-            label={t(f.alt)}
-            className="rounded-[18px]"
-          />
+          <figure key={f.id} className="flex flex-col gap-2.5">
+            <h2 className="px-1 font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
+              {t(f.title)}
+            </h2>
+            <MotionFilm
+              src={`/motion/${f.id}-${locale}.mp4`}
+              poster={`/motion/${f.id}-${locale}.jpg`}
+              label={t(f.alt)}
+              className="rounded-[18px]"
+            />
+          </figure>
         ))}
       </div>
     </AppSurface>

@@ -305,6 +305,15 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
   });
   const heroSentinelRef = useRef<HTMLDivElement>(null);
   const [pastHero, setPastHero] = useState(false);
+  // The header stays at the top (owner, 2026-10-08); once the page has moved
+  // under it, it gains a hairline and a soft shadow so it reads as a layer.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     const el = heroSentinelRef.current;
@@ -360,16 +369,18 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
     // pb-14 clears the 56px sticky bar: without it the bar parks on top of
     // the last rows of the footer for the whole bottom of the page.
     <main className="bg-white pb-14 text-[#17161F]">
-      {/* HERO BAND — nav and hero share the reference's dotted ground, which
-          ends in a large rounded bottom edge. The dots fade in from the top so
-          the nav sits on clean white. */}
-      <div className="relative overflow-hidden rounded-b-[40px] bg-[linear-gradient(180deg,#FFFFFF_0%,#F1F3FA_100%)] min-[860px]:rounded-b-[56px]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,#C9CFE0_1px,transparent_1.3px)] bg-[length:18px_18px] [mask-image:linear-gradient(180deg,transparent_0%,#000_28%,#000_100%)]"
-        />
-
-        <nav className="relative mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-4 min-[640px]:px-6 min-[640px]:py-5">
+      {/* The header stays at the top of the screen while the page scrolls
+          (owner, 2026-10-08), over a translucent white with a background blur.
+          It lives outside the hero band: that band clips its overflow, and a
+          sticky element cannot outlive a clipping parent. */}
+      <header
+        className={`sticky top-0 z-50 border-b bg-white/75 backdrop-blur-md backdrop-saturate-150 transition-[border-color,box-shadow] duration-200 ${
+          scrolled
+            ? 'border-[#ECECF2] shadow-[0_6px_20px_-14px_rgba(23,22,31,0.35)]'
+            : 'border-transparent'
+        }`}
+      >
+        <nav className="mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-3 min-[640px]:px-6 min-[640px]:py-3.5">
           <Link href="/" className="flex items-center gap-2 text-[17px] font-bold text-[#17161F]">
             <BrandMark size="md" />
             RenderBox
@@ -396,9 +407,11 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <span className="hidden min-[920px]:block">
               <LanguageInlineSwitch />
             </span>
+            {/* Outlined, no fill (owner, 2026-10-08: as plain text it was
+                  lost beside "Commencer"); a pale blue fill on hover. */}
             <Link
               href={ctaHref}
-              className="hidden text-[13.5px] font-medium text-[#3D3B49] hover:text-[#17161F] min-[500px]:block"
+              className="hidden rounded-xl border border-[#C9CFE0] px-4 py-[9px] text-[13.5px] font-semibold text-[#17161F] transition-colors duration-150 hover:border-[#2948FC] hover:bg-[#F4F6FF] min-[500px]:block"
             >
               {t('landing.navLogin')}
             </Link>
@@ -421,6 +434,16 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             />
           </div>
         </nav>
+      </header>
+
+      {/* HERO BAND — nav and hero share the reference's dotted ground, which
+          ends in a large rounded bottom edge. The dots fade in from the top so
+          the nav sits on clean white. */}
+      <div className="relative overflow-hidden rounded-b-[40px] bg-[linear-gradient(180deg,#FFFFFF_0%,#F1F3FA_100%)] min-[860px]:rounded-b-[56px]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,#C9CFE0_1px,transparent_1.3px)] bg-[length:18px_18px] [mask-image:linear-gradient(180deg,transparent_0%,#000_28%,#000_100%)]"
+        />
 
         <section className="relative mx-auto max-w-[1180px] px-6 pb-14 pt-10 text-center min-[860px]:pt-14">
           <div className="relative mx-auto flex flex-col items-center">
@@ -579,7 +602,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
 
         {/* KEY FEATURES — one card per audience (the trade, a title, a picture),
             the second one in the brand red, then a single CTA under the row. */}
-        <section id="fonctionnalites" className="scroll-mt-6 py-14 min-[860px]:py-20">
+        <section id="fonctionnalites" className="scroll-mt-20 py-14 min-[860px]:py-20">
           <SectionHeader
             eyebrow={t('landing.eyebrowFeatures')}
             title={t('landing.audienceTitle')}
@@ -624,7 +647,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             brief, 2026-10-06): the gradient one carries the "Commenter" film
             wide enough to read, the grey one the render-tree film.
             The engines sit under them as a third card. */}
-        <section id="comment" className="scroll-mt-6 py-14 min-[860px]:py-20">
+        <section id="comment" className="scroll-mt-20 py-14 min-[860px]:py-20">
           <SectionHeader
             eyebrow={t('landing.eyebrowHow')}
             title={t('landing.howTitle')}
@@ -836,7 +859,10 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
 
       {/* FAQ — two columns: the header on the left, the questions on the
           right, as in the reference. */}
-      <section id="faq" className="mx-auto max-w-[1180px] scroll-mt-6 px-6 py-16 min-[860px]:py-24">
+      <section
+        id="faq"
+        className="mx-auto max-w-[1180px] scroll-mt-20 px-6 py-16 min-[860px]:py-24"
+      >
         <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] min-[960px]:gap-14">
           <SectionHeader
             align="left"

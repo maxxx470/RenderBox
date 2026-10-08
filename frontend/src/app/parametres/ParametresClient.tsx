@@ -107,7 +107,11 @@ export function ParametresClient({ surface }: { surface: AppSurfaceProps }) {
           {!isPlaceholderAccount(user.email) && (
             <button
               type="button"
-              onClick={() => void logout()}
+              onClick={async () => {
+                await logout();
+                // Out of the site, onto the landing (owner, 2026-10-08).
+                window.location.assign('/');
+              }}
               className="self-start rounded-xl px-4 py-2 text-[13px] font-medium text-[#17161F] bg-[#F2F2F5] hover:bg-[#E9E9EE]"
             >
               {t('parametres.logoutButton')}

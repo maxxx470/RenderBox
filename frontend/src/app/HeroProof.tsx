@@ -10,14 +10,15 @@
 //
 // The audience line is the owner's own figure and wording: "Plus de 5 000
 // personnes utilisent RenderBox" (2026-10-08, was "Plus de 5 000
-// utilisateurs"), on a yellow ground so it stands out (owner). It replaced a
-// TikTok follower count the owner found too narrow. It is a claim about the
-// product, so it must stay true — the owner answers for the number.
+// utilisateurs"), underlined in the brand red and led by five overlapping
+// profile circles (owner, same evening — a yellow ground lived a few hours).
+// It replaced a TikTok follower count the owner found too narrow. It is a
+// claim about the product, so it must stay true — the owner answers for the
+// number, and the portraits must be the owner's to use.
 //
 // Still deliberately absent: a star rating. There are no reviews to average.
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { TOOL_LOGOS } from './tool-logos';
-import { User } from 'react-iconly';
 
 // TikTok's own mark (Simple Icons, CC0), inlined like the vendor marks in
 // tool-logos.ts. Kept here rather than in that file: that list means "tools
@@ -25,12 +26,47 @@ import { User } from 'react-iconly';
 export const TIKTOK_PATH =
   'M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z';
 
+/**
+ * Five profile circles, overlapping. A portrait goes in public/communaute/
+ * under its number (1.webp … 5.webp, square, ~96px) and its `src` here; until
+ * then the circle shows initials on a charter colour.
+ */
+const PROFILES: readonly { src: string | null; initials: string; tint: string }[] = [
+  { src: null, initials: 'A', tint: 'bg-[#2948FC] text-white' },
+  { src: null, initials: 'M', tint: 'bg-[#F34857] text-white' },
+  { src: null, initials: 'K', tint: 'bg-[#EEF1FF] text-[#1E36D6]' },
+  { src: null, initials: 'F', tint: 'bg-[#17161F] text-white' },
+  { src: null, initials: 'L', tint: 'bg-[#FFE4E7] text-[#C21F33]' },
+];
+
+function ProfileStack() {
+  return (
+    <span aria-hidden className="flex flex-shrink-0 items-center">
+      {PROFILES.map((p, i) => (
+        <span
+          key={p.initials}
+          className={`relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full text-[12px] font-bold ring-2 ring-white ${p.tint} ${i === 0 ? '' : '-ml-2.5'}`}
+          style={{ zIndex: PROFILES.length - i }}
+        >
+          {p.src ? (
+            <img src={p.src} alt="" className="h-full w-full object-cover" draggable={false} />
+          ) : (
+            p.initials
+          )}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function CommunityBadge() {
   const t = useTranslations();
   return (
-    <span className="inline-flex items-center gap-2 rounded-xl bg-[#FACC15] px-4 py-2 shadow-[0_8px_20px_-10px_rgba(234,179,8,0.7)]">
-      <User set="curved" size={16} primaryColor="#17161F" />
-      <span className="text-[14px] font-semibold text-[#17161F]">{t('landing.proofUsers')}</span>
+    <span className="inline-flex items-center gap-3 rounded-2xl bg-white py-2 pl-2.5 pr-4 shadow-[0_8px_24px_-12px_rgba(23,22,31,0.25)]">
+      <ProfileStack />
+      <span className="text-[14.5px] font-semibold text-[#17161F] underline decoration-[#F34857] decoration-[3px] underline-offset-[6px]">
+        {t('landing.proofUsers')}
+      </span>
     </span>
   );
 }
@@ -68,12 +104,11 @@ export function HeroProof() {
           and a proof line opening on a zero read as an empty counter before it
           read as a promise. What is left is the part that is only true here:
           the audience, and what the tool plugs into. */}
-      {/* The five overlapping gradient discs that used to sit to the left of
-          this badge are gone. Overlapping circles immediately beside a follower
-          count read as one thing and one thing only: an avatar stack, i.e. a
-          claim about users. They were meant to stand for the five ambiances,
-          but the caption that said so was removed with the counters, leaving
-          the shape to speak on its own — and what it said was not true. */}
+      {/* The profile stack before the figure is the owner's call
+          (2026-10-08): it says "people use this", which is the claim the line
+          makes. An earlier stack of gradient discs was removed because it
+          stood for the five ambiances and read as users — here it means
+          users, and the portraits must be real and the owner's to use. */}
       <div className="flex flex-wrap items-center justify-center">
         <CommunityBadge />
       </div>

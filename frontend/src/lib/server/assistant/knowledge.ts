@@ -48,7 +48,8 @@ NAVIGATION
 - En haut de chaque page, la barre d'en-tête : le titre de la page à gauche (avec le logo sur téléphone) ; à droite la cloche des notifications (un point rouge signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN et la pastille bleue des rendus restants (ouvre Abonnement). Sur téléphone, le compte y figure aussi (ouvre Paramètres).
 - Sur ordinateur, une barre latérale à gauche, en carte blanche : en haut le bouton qui replie la barre (une icône de panneau animée) puis le nom RenderBox ; « Général » (Accueil, Mes images, Image, Enhance) ; « Aide » (Info, Assistant) ; en bas « Profil » (Paramètres, Abonnement, Se déconnecter) puis votre compte (ouvre Paramètres). La page ouverte est surlignée en bleu pâle. Repliée, il ne reste que les icônes ; le même bouton la déplie. La barre et l'en-tête restent en place quand on change de page.
 - Sur téléphone, une barre flottante en bas : Accueil, Image, Enhance et « Plus » (Mes images, Info, Paramètres, Abonnement, Assistant, Se déconnecter), et un bouton bleu « + » pour lancer un nouveau rendu.
-- Le bouton « Assistant » ouvre ce chat. Le sélecteur FR / EN change la langue de l'interface.
+- Le bouton « Assistant » ouvre ce chat. Le sélecteur FR / EN change la langue de l'interface. À la première visite, la langue suit le pays : français depuis un pays francophone, anglais ailleurs ; le choix fait avec FR / EN reste ensuite mémorisé.
+- « Se déconnecter » ferme la session et ramène sur la page d'accueil du site.
 
 ACCUEIL (tableau de bord)
 - En haut, un court film montre les 3 étapes (photo ou croquis, ambiance, rendu) avec le bouton « Générer un rendu ».
@@ -103,7 +104,7 @@ PARAMÈTRES
 - Compte connecté, moteur par défaut (pré-sélectionné dans la barre de commande), comptes liés (connexion Google), historique de facturation, déconnexion. La langue se change avec le sélecteur FR / EN en haut des pages.
 
 INFO
-- La page « Info » de l'application : les films qui montrent les fonctions, deux par ligne, sans texte. Les nouveautés datées, elles, sont sur la page Info publique du site.
+- La page « Info » de l'application : les films qui montrent les fonctions, deux par ligne, chacun avec un titre qui dit ce qu'il montre. Les nouveautés datées, elles, sont sur la page Info publique du site.
 
 FORMATS ACCEPTÉS
 - Images JPEG, PNG ou WebP.`;

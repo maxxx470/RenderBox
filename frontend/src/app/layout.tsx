@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, Inter, Poppins } from 'next/font/google';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocaleProvider } from '@/lib/i18n/LocaleContext';
 import type { Locale } from '@/lib/i18n/dictionaries';
+import { resolveLocale } from '@/lib/i18n/geo-locale';
 import { COOKIE_PREFIX } from '@/lib/constants';
 
 // Site-wide type (2026-10-06, owner: "la même police que sur Metrio"):
@@ -42,9 +43,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const store = await cookies();
-  const cookieLocale = store.get(`${COOKIE_PREFIX}-locale`)?.value;
-  const locale: Locale = cookieLocale === 'en' ? 'en' : 'fr';
+  // The visitor's own FR / EN choice first; otherwise the language of the
+  // country their IP is in (French-speaking → fr, anything else → en).
+  const [store, head] = await Promise.all([cookies(), headers()]);
+  const locale: Locale = resolveLocale({
+    cookie: store.get(`${COOKIE_PREFIX}-locale`)?.value,
+    country: head.get('x-vercel-ip-country'),
+    region: head.get('x-vercel-ip-country-region'),
+  });
 
   return (
     // suppressHydrationWarning: browser extensions inject attributes on <html>

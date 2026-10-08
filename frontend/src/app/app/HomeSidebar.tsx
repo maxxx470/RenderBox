@@ -19,7 +19,6 @@
 // the plan and renders left are in the header pill and on Abonnement.) Folded (76px),
 // the captions stay, centred, and every entry is a 44px rounded square.
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ChevronDown } from 'react-iconly';
 import { PanelToggleIcon } from './PanelToggleIcon';
 import { openAssistant } from './AssistantWidget';
@@ -156,7 +155,6 @@ export function HomeSidebar({
   treeSlotRef: ((el: HTMLElement | null) => void) | null;
 }) {
   const t = useTranslations();
-  const router = useRouter();
   const { logout, loggingOut } = useAuth();
 
   // No account (free-access mode) shows a neutral label. See lib/account-label.ts.
@@ -200,7 +198,9 @@ export function HomeSidebar({
 
   async function handleLogout() {
     await logout();
-    router.push('/connexion');
+    // Out of the site entirely, onto the landing (owner, 2026-10-08): a full
+    // page load, not a client navigation, so nothing of the app survives.
+    window.location.assign('/');
   }
 
   return (
@@ -304,7 +304,7 @@ export function HomeSidebar({
             {link('/app/tarifs', t('app.railPricing'), 'pricing', 'pricing')}
             {/* Always Se déconnecter (owner, 2026-10-08: inside the app you
                 are signed in). In free access there is no session to end:
-                logout() clears nothing and the click lands on /connexion. */}
+                logout() clears nothing and the click lands on the landing. */}
             <button
               type="button"
               disabled={loggingOut}
