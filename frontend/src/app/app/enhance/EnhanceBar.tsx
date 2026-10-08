@@ -12,7 +12,7 @@ import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import type { RatioKey } from '@/lib/server/generation/ratios';
 import type { ResolutionKey } from '@/lib/server/generation/resolutions';
-import { GLOW, Pinned, ROUND, SendTile, type PinnedImage } from '../CommandBar';
+import { GLOW, Pinned, ROUND, SendButton, type PinnedImage } from '../CommandBar';
 import { Glyph } from '../RailIcon';
 import { RatioSelect } from '../RatioSelect';
 import { ResolutionSelect } from '../ResolutionSelect';
@@ -63,27 +63,13 @@ export function EnhanceBar({
   }, [instruction]);
 
   const send = (big: boolean) => (
-    <button
-      type="button"
-      disabled={sendDisabled || working}
+    <SendButton
+      big={big}
+      label={t('enhance.submit')}
+      disabled={sendDisabled}
+      busy={working}
       onClick={onSubmit}
-      aria-label={t('enhance.submit')}
-      title={t('enhance.submit')}
-      className={
-        big
-          ? 'group hidden w-[104px] flex-shrink-0 flex-col items-center justify-center gap-2 rounded-[18px] bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] text-[12px] font-semibold text-white shadow-[0_10px_22px_-10px_rgba(41,72,252,0.8)] transition-[filter,transform] duration-150 ease-out enabled:hover:brightness-110 enabled:active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none min-[640px]:flex'
-          : 'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] transition-[filter] enabled:hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40 min-[640px]:hidden'
-      }
-    >
-      {working ? (
-        <span className="rb-spin h-5 w-5 rounded-full border-2 border-white/40 border-t-white" />
-      ) : (
-        <span className="transition-transform duration-150 ease-out group-enabled:group-hover:-translate-y-0.5">
-          <SendTile big={big} />
-        </span>
-      )}
-      {big && <span className="px-1 text-center leading-tight">{t('enhance.submit')}</span>}
-    </button>
+    />
   );
 
   return (
