@@ -30,15 +30,16 @@ export const TIKTOK_PATH =
 /**
  * Five profile circles, overlapping, on their own beside the red rectangle.
  * A portrait goes in public/communaute/ under its number (1.webp … 5.webp,
- * square, 120px) and its `src` here; until then the circle shows an initial
- * on a charter colour.
+ * square, 120px) and its `src` here; without one the circle shows the
+ * initial on a charter colour. The five portraits (2026-10-08) were generated
+ * by the owner for this purpose — they are illustrations, not customers.
  */
 const PROFILES: readonly { src: string | null; initials: string; tint: string }[] = [
-  { src: null, initials: 'A', tint: 'bg-[#2948FC] text-white' },
-  { src: null, initials: 'M', tint: 'bg-[#F34857] text-white' },
-  { src: null, initials: 'K', tint: 'bg-[#EEF1FF] text-[#1E36D6]' },
-  { src: null, initials: 'F', tint: 'bg-[#17161F] text-white' },
-  { src: null, initials: 'L', tint: 'bg-[#FFE4E7] text-[#C21F33]' },
+  { src: '/communaute/1.webp', initials: 'A', tint: 'bg-[#2948FC] text-white' },
+  { src: '/communaute/2.webp', initials: 'M', tint: 'bg-[#F34857] text-white' },
+  { src: '/communaute/3.webp', initials: 'K', tint: 'bg-[#EEF1FF] text-[#1E36D6]' },
+  { src: '/communaute/4.webp', initials: 'F', tint: 'bg-[#17161F] text-white' },
+  { src: '/communaute/5.webp', initials: 'L', tint: 'bg-[#FFE4E7] text-[#C21F33]' },
 ];
 
 function ProfileStack() {
