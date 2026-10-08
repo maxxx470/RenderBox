@@ -212,7 +212,6 @@ const en: Record<keyof typeof fr, string> = {
   'app.genHomeNoTierTitle': 'No active plan',
   'app.genHomeNoTierBody': 'Choose a plan to unlock your monthly generations (Visio + Pixel AI).',
   'app.genHomeChooseTier': 'View pricing',
-  'app.genHomeExampleTag': 'Example',
   'app.genHomeCardPlaceholder':
     'Upload a photo, a sketch or an image export of your project to start',
   'app.genHomeAddHint': 'Describe the element to add, and attach a photo of it with the paperclip.',

@@ -215,7 +215,6 @@ const fr = {
   'app.genHomeNoTierBody':
     'Choisissez un palier pour débloquer vos générations mensuelles (Visio + Pixel IA).',
   'app.genHomeChooseTier': 'Voir les tarifs',
-  'app.genHomeExampleTag': 'Exemple',
   'app.genHomeCardPlaceholder':
     'Importez une photo, un croquis ou l’export image de votre projet pour commencer',
   'app.genHomeAddHint': 'Décrivez l’élément à ajouter, et joignez sa photo avec le trombone.',

@@ -184,7 +184,6 @@ export function AppChrome({
         </div>
         <MobileNav
           current={current}
-          userEmail={userEmail}
           {...(page?.hasNew ? { onNew: () => handlers.current.onNew?.() } : {})}
         />
       </div>

@@ -11,10 +11,9 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Chat, Login, Logout, MoreCircle, Plus } from 'react-iconly';
+import { Chat, Logout, MoreCircle, Plus } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
-import { isPlaceholderAccount } from '@/lib/account-label';
 import { RailIcon, type RailIconName } from './RailIcon';
 import type { RailPage } from './HomeSidebar';
 import { AssistantWidget, openAssistant } from './AssistantWidget';
@@ -27,11 +26,9 @@ const MORE_PAGES: RailPage[] = ['images', 'info', 'settings', 'pricing'];
 
 export function MobileNav({
   current,
-  userEmail,
   onNew,
 }: {
   current: RailPage;
-  userEmail: string;
   /** What "+" does. On the generation space it opens the photo picker
       directly; everywhere else it is a link to that space. */
   onNew?: () => void;
@@ -41,7 +38,6 @@ export function MobileNav({
   const { logout, loggingOut } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
-  const placeholder = isPlaceholderAccount(userEmail);
 
   useEffect(() => {
     if (!moreOpen) return;
@@ -154,38 +150,21 @@ export function MobileNav({
                     <Chat set="curved" size={18} primaryColor="#2948FC" />
                     {t('app.assistant')}
                   </button>
-                  {placeholder ? (
-                    <>
-                      <div className="my-1 h-px bg-[#ECECF2]" />
-                      <Link
-                        href="/connexion"
-                        role="menuitem"
-                        onClick={() => setMoreOpen(false)}
-                        className="flex w-full items-center gap-3 rounded-xl bg-[#FCEDEA]/80 px-3 py-2.5 text-[14px] font-semibold text-[#C2361F] transition-colors hover:bg-[#FCEDEA]"
-                      >
-                        <Login set="curved" size={18} primaryColor="#D6432A" />
-                        {t('landing.navLogin')}
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      <div className="my-1 h-px bg-[#ECECF2]" />
-                      <button
-                        type="button"
-                        role="menuitem"
-                        disabled={loggingOut}
-                        onClick={async () => {
-                          setMoreOpen(false);
-                          await logout();
-                          router.push('/connexion');
-                        }}
-                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#C2361F] transition-colors hover:bg-[#FCEDEA] disabled:opacity-60"
-                      >
-                        <Logout set="curved" size={18} primaryColor="#D6432A" />
-                        {t('parametres.logoutButton')}
-                      </button>
-                    </>
-                  )}
+                  <div className="my-1 h-px bg-[#ECECF2]" />
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={loggingOut}
+                    onClick={async () => {
+                      setMoreOpen(false);
+                      await logout();
+                      router.push('/connexion');
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium text-[#C2361F] transition-colors hover:bg-[#FCEDEA] disabled:opacity-60"
+                  >
+                    <Logout set="curved" size={18} primaryColor="#D6432A" />
+                    {t('parametres.logoutButton')}
+                  </button>
                 </div>
               )}
             </div>

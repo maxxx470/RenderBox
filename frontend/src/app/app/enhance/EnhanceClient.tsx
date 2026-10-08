@@ -34,6 +34,7 @@ import {
   ENHANCE_OPTIONS,
   ENHANCE_OPTION_KEYS,
   ENHANCE_STRENGTHS,
+  ENHANCE_STRENGTH_HINTS,
   ENHANCE_STRENGTH_LABELS,
   type EnhanceOptionKey,
   type EnhanceStrength,
@@ -586,13 +587,16 @@ export function EnhanceClient({
                   aria-pressed={strength === s}
                   disabled={working}
                   onClick={() => setStrength(s)}
-                  className={`${SEGMENT_ITEM} ${
+                  className={`${SEGMENT_ITEM} flex-col gap-0.5 text-center ${
                     strength === s
                       ? 'bg-white text-[#17161F] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
                       : 'text-[#6B6878]'
                   }`}
                 >
-                  {ENHANCE_STRENGTH_LABELS[s][locale]}
+                  <span>{ENHANCE_STRENGTH_LABELS[s][locale]}</span>
+                  <span className="text-[10.5px] font-medium leading-tight text-[#8A8896] [@media(max-height:700px)]:hidden">
+                    {ENHANCE_STRENGTH_HINTS[s][locale]}
+                  </span>
                 </button>
               ))}
             </div>
@@ -609,11 +613,16 @@ export function EnhanceClient({
                   onClick={() => handleEngineChange(e)}
                   className={`${SEGMENT_ITEM} ${
                     engine === e
-                      ? 'bg-white text-[#17161F] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
-                      : 'text-[#6B6878]'
+                      ? `${ENGINE_COLORS[e].chip} shadow-[0_4px_10px_-6px_rgba(23,22,31,0.45)]`
+                      : 'text-[#3D3B49] hover:bg-white'
                   }`}
                 >
-                  <span className={`h-2 w-2 rounded-full ${ENGINE_COLORS[e].dot}`} aria-hidden />
+                  <span
+                    aria-hidden
+                    className={`h-2 w-2 rounded-full ${
+                      engine === e ? 'bg-current opacity-80' : ENGINE_COLORS[e].dot
+                    }`}
+                  />
                   {ENGINE_LABELS[e].name[locale]}
                 </button>
               ))}

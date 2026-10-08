@@ -8,12 +8,11 @@
 // column with the improvements. One height whatever is pinned, as the
 // CommandBar: the thumbnail sits beside the paperclip.
 import { useEffect, useRef } from 'react';
-import { Send } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import type { RatioKey } from '@/lib/server/generation/ratios';
 import type { ResolutionKey } from '@/lib/server/generation/resolutions';
-import { GLOW, Pinned, ROUND, type PinnedImage } from '../CommandBar';
+import { GLOW, Pinned, ROUND, SendTile, type PinnedImage } from '../CommandBar';
 import { Glyph } from '../RailIcon';
 import { RatioSelect } from '../RatioSelect';
 import { ResolutionSelect } from '../ResolutionSelect';
@@ -80,7 +79,7 @@ export function EnhanceBar({
         <span className="rb-spin h-5 w-5 rounded-full border-2 border-white/40 border-t-white" />
       ) : (
         <span className="transition-transform duration-150 ease-out group-enabled:group-hover:-translate-y-0.5">
-          <Send set="curved" size={big ? 26 : 18} primaryColor="#ffffff" />
+          <SendTile big={big} />
         </span>
       )}
       {big && <span className="px-1 text-center leading-tight">{t('enhance.submit')}</span>}

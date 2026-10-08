@@ -52,8 +52,8 @@ export function buildRenderBoxDoc(): string {
 
 NAVIGATION
 - En haut de chaque page, la barre d'en-tête : le titre de la page à gauche (avec le logo sur téléphone) ; à droite la cloche des notifications (un point rouge signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN et la pastille bleue des rendus restants (ouvre Abonnement). Sur téléphone, le compte y figure aussi (ouvre Paramètres).
-- Sur ordinateur, une barre latérale à gauche, en carte blanche : en haut le logo et le bouton qui replie la barre (une icône de panneau animée) ; « Général » (Accueil, Mes images, Image, Enhance) ; « Aide » (Info, Assistant) ; en bas « Profil » (Paramètres, Abonnement, Se connecter ou Se déconnecter) puis votre compte (ouvre Paramètres). La page ouverte est surlignée en bleu pâle. Repliée, il ne reste que les icônes ; un clic sur le logo la déplie. La barre et l'en-tête restent en place quand on change de page.
-- Sur téléphone, une barre flottante en bas : Accueil, Image, Enhance et « Plus » (Mes images, Info, Paramètres, Abonnement, Assistant, Se connecter ou Se déconnecter), et un bouton bleu « + » pour lancer un nouveau rendu.
+- Sur ordinateur, une barre latérale à gauche, en carte blanche : en haut le bouton qui replie la barre (une icône de panneau animée) puis le nom RenderBox ; « Général » (Accueil, Mes images, Image, Enhance) ; « Aide » (Info, Assistant) ; en bas « Profil » (Paramètres, Abonnement, Se déconnecter) puis votre compte (ouvre Paramètres). La page ouverte est surlignée en bleu pâle. Repliée, il ne reste que les icônes ; le même bouton la déplie. La barre et l'en-tête restent en place quand on change de page.
+- Sur téléphone, une barre flottante en bas : Accueil, Image, Enhance et « Plus » (Mes images, Info, Paramètres, Abonnement, Assistant, Se déconnecter), et un bouton bleu « + » pour lancer un nouveau rendu.
 - Le bouton « Assistant » ouvre ce chat. Le sélecteur FR / EN change la langue de l'interface.
 
 ACCUEIL (tableau de bord)

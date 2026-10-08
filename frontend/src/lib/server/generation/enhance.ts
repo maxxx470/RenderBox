@@ -101,6 +101,13 @@ export const ENHANCE_STRENGTH_LABELS: Record<EnhanceStrength, { fr: string; en: 
   strong: { fr: 'Marqué', en: 'Strong' },
 };
 
+/** One line under each intensity, so the choice is made by what the user
+    wants, not by a percentage (owner, 2026-10-08: no 0–100 % slider). */
+export const ENHANCE_STRENGTH_HINTS: Record<EnhanceStrength, { fr: string; en: string }> = {
+  subtle: { fr: 'Même image, plus propre', en: 'Same image, cleaner' },
+  strong: { fr: 'Rendu photo haut de gamme', en: 'High-end photo finish' },
+};
+
 const PRESERVE =
   'Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.';
 
