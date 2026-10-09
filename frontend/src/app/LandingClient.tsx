@@ -28,7 +28,7 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Category, ChevronRight, Document, Image as ImageIcon, Swap } from 'react-iconly';
+import { Category, ChevronRight, Document, Image as ImageIcon, Plus, Swap } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
 import { BEFORE_AFTER_PAIRS } from './before-after';
@@ -724,6 +724,42 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               </div>
             </Reveal>
           </div>
+
+          <Reveal delayMs={120} className="mt-5">
+            <div className="rounded-[24px] bg-[#F7F7FA] p-4 min-[640px]:p-10">
+              {/* "Ajouter" (2026-10-09, owner): its film shows the real
+                  workspace adding furniture from a moodboard, two people, two
+                  trees and a seated person, each from its photo. */}
+              <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
+                <div
+                  className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${GRADIENT} min-[640px]:flex`}
+                >
+                  <Plus set="curved" size={22} primaryColor="#ffffff" />
+                </div>
+                <div>
+                  <span
+                    className={`mb-1.5 block text-[11px] uppercase tracking-wide text-[#C21F33] ${MONO}`}
+                  >
+                    {t('landing.addEyebrow')}
+                  </span>
+                  <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
+                    {t('landing.addTitle')}
+                  </h3>
+                  <p className="max-w-[680px] text-[14px] leading-[1.55] text-[#6B6878] min-[640px]:text-[15px]">
+                    {t('landing.addSubtitle')}
+                  </p>
+                </div>
+              </div>
+              <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
+                <MotionFilm
+                  src={`/motion/ajouter-${locale}.mp4`}
+                  poster={`/motion/ajouter-${locale}.jpg`}
+                  label={t('landing.addAlt')}
+                  className="rounded-[14px]"
+                />
+              </div>
+            </div>
+          </Reveal>
 
           <Reveal delayMs={150} className="mt-5">
             <div className="rounded-[24px] bg-[#F7F7FA] p-4 min-[640px]:p-10">

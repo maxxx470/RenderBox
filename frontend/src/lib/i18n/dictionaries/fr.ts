@@ -275,6 +275,7 @@ const fr = {
   'info.filmCommenterTitle': 'Modifier une image en la commentant',
   'info.filmArbreTitle': "Explorer plusieurs pistes avec l'arbre du projet",
   'info.filmMoteursTitle': 'Comparer les deux moteurs, Visio et Pixel IA',
+  'info.filmAjouterTitle': 'Ajouter un élément à partir de sa photo',
   'info.plannedHeading': 'À venir',
   'info.shippedHeading': 'Mises à jour',
   'info.badgePlanned': 'à venir',
@@ -581,6 +582,12 @@ const fr = {
     "Repartez de n'importe quel rendu pour tenter une nouvelle direction. Rien ne se perd.",
   'landing.treeAlt':
     "Film de démonstration : depuis un rendu de base, trois variantes sont générées (nuit extérieur, jour intérieur, ajout d'un personnage), chacune devient une branche de l'arbre du projet.",
+  'landing.addEyebrow': 'Ajouter',
+  'landing.addTitle': 'Ajoutez ce qui manque.',
+  'landing.addSubtitle':
+    "Joignez la photo d'un meuble, d'une personne ou d'un arbre et dites où le placer : RenderBox l'intègre au rendu, le reste de l'image gardé comme référence. Une planche d'ambiance suffit pour meubler une pièce vide.",
+  'landing.addAlt':
+    "Film : une pièce vide meublée d'après une planche d'ambiance, deux personnes puis deux arbres ajoutés devant une villa, une personne assise sur une terrasse.",
   'landing.split2Tag': 'Galerie en arbre',
   // Ce que la tuile EST dans l'arbre, pas quel moteur l'a produite. Les
   // sous-libellés portaient les noms des fournisseurs : des noms de moteurs

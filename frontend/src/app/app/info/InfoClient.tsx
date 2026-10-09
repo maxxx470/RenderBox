@@ -13,6 +13,7 @@ const FILMS = [
   { id: 'commenter', title: 'info.filmCommenterTitle', alt: 'landing.commentAlt' },
   { id: 'arbre', title: 'info.filmArbreTitle', alt: 'landing.treeAlt' },
   { id: 'moteurs', title: 'info.filmMoteursTitle', alt: 'landing.enginesAlt' },
+  { id: 'ajouter', title: 'info.filmAjouterTitle', alt: 'landing.addAlt' },
 ] as const;
 
 /**

@@ -266,6 +266,7 @@ const en: Record<keyof typeof fr, string> = {
   'info.filmCommenterTitle': 'Edit an image by commenting on it',
   'info.filmArbreTitle': 'Explore several directions with the project tree',
   'info.filmMoteursTitle': 'Compare the two engines, Visio and Pixel AI',
+  'info.filmAjouterTitle': 'Add an element from its photo',
   'info.plannedHeading': 'Coming up',
   'info.shippedHeading': 'Updates',
   'info.badgePlanned': 'planned',
@@ -565,6 +566,12 @@ const en: Record<keyof typeof fr, string> = {
   'landing.treeSubtitle': 'Start again from any render to try a new direction. Nothing gets lost.',
   'landing.treeAlt':
     'Demo film: from a base render, three variants are generated (exterior night, interior day, an added character), each becoming a branch of the project tree.',
+  'landing.addEyebrow': 'Add',
+  'landing.addTitle': "Add what's missing.",
+  'landing.addSubtitle':
+    'Attach the photo of a piece of furniture, a person or a tree and say where it goes: RenderBox works it into the render, keeping the rest of the image as the reference. A moodboard is enough to furnish an empty room.',
+  'landing.addAlt':
+    'Film: an empty room furnished from a moodboard, two people then two trees added in front of a villa, a person seated on a terrace.',
   'landing.split2Tag': 'Tree gallery',
 
   'landing.presetsTitlePrefix': 'A preset for ',
