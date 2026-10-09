@@ -4,14 +4,33 @@ import { useState } from 'react';
 import { ChevronDown } from 'react-iconly';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
+export interface FaqItem {
+  q: string;
+  a: string;
+  /** An illustration of the answer (2026-10-08, owner). Shown inside the
+      open answer only below 960px — wider, the landing shows it in its own
+      column (see FaqSection). */
+  image?: string;
+}
+
 export function FaqAccordion({
   items,
   className = 'mx-auto max-w-[720px]',
+  openIndex: controlledIndex,
+  onOpenChange,
 }: {
-  items: { q: string; a: string }[];
+  items: FaqItem[];
   className?: string;
+  /** Controlled mode — when the open question also drives something else. */
+  openIndex?: number | null;
+  onOpenChange?: (index: number | null) => void;
 }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [ownIndex, setOwnIndex] = useState<number | null>(0);
+  const openIndex = controlledIndex !== undefined ? controlledIndex : ownIndex;
+  const setOpenIndex = (next: number | null) => {
+    if (controlledIndex === undefined) setOwnIndex(next);
+    onOpenChange?.(next);
+  };
   const reducedMotion = usePrefersReducedMotion();
 
   return (
@@ -43,6 +62,15 @@ export function FaqAccordion({
             >
               <div className="overflow-hidden">
                 <p className="px-5 pb-4 text-[13.5px] leading-[1.6] text-[#6B6878]">{item.a}</p>
+                {item.image && (
+                  <img
+                    src={item.image}
+                    alt=""
+                    loading="lazy"
+                    draggable={false}
+                    className="mx-5 mb-5 aspect-square w-[calc(100%-2.5rem)] max-w-[360px] rounded-[18px] object-cover min-[960px]:hidden"
+                  />
+                )}
               </div>
             </div>
           </div>

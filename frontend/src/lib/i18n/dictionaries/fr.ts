@@ -648,7 +648,7 @@ const fr = {
   'landing.faq2A': "Oui. Chaque rendu généré est votre propriété, sans limite d'usage commercial.",
   'landing.faq3Q': 'Quelle est la différence entre les deux moteurs IA ?',
   'landing.faq3A':
-    'Visio (rouge) est rapide et économique, Pixel IA (jaune) suit mieux les instructions précises — vous choisissez celui qui convient à chaque rendu, à tout moment. Les modifications par commentaires utilisent toujours Pixel IA.',
+    'Visio (rouge) rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail ; Pixel IA (jaune) suit mieux les instructions précises. Vous choisissez celui qui convient à chaque rendu, à tout moment. Les modifications par commentaires utilisent toujours Pixel IA.',
   'landing.faq4Q': "Que se passe-t-il si j'atteins mon quota mensuel ?",
   'landing.faq4A':
     'Les générations sont bloquées jusqu’au renouvellement ou jusqu’à ce que vous changiez de palier — jamais de facturation surprise.',
@@ -666,7 +666,7 @@ const fr = {
     'Des images : JPG, PNG, WebP ou HEIC, jusqu’à 15 Mo — une photo, un croquis scanné, une capture ou l’export image d’une vue de votre logiciel (SketchUp, Revit, AutoCAD, Archicad, Rhino). Les fichiers de projet (.skp, .rvt, .dwg, .pln, .3dm) ne sont pas lus directement : exportez d’abord la vue en image.',
   'landing.faq9Q': 'Puis-je améliorer un rendu fait avec un autre logiciel ?',
   'landing.faq9A':
-    'Oui, avec Enhance : déposez le rendu, cochez ce qu’il faut améliorer (netteté, lumière, matériaux, ciel et végétation, vie et ambiance) et choisissez l’intensité. Le cadrage est conservé.',
+    'Oui, avec Enhance : joignez le rendu avec le trombone, cochez ce qu’il faut améliorer (netteté, détail, lumière, matériaux, ciel, végétation, vie et ambiance) — ou décrivez-le vous-même — et choisissez l’intensité. Chaque élément peut recevoir une image de référence. Le cadrage est conservé.',
   'landing.faq10Q': 'RenderBox modifie-t-il mon architecture ?',
   'landing.faq10A':
     'RenderBox part de votre image et demande aux moteurs de garder le cadrage, les volumes et les ouvertures. Le résultat reste une génération par IA : vérifiez les détails, et corrigez ce qui doit l’être avec Commenter.',

@@ -42,6 +42,7 @@ import { Reveal } from './Reveal';
 import { PresentationVideo } from './PresentationVideo';
 import { BeforeAfterSlider } from './BeforeAfterSlider';
 import { FaqAccordion } from './FaqAccordion';
+import { FaqIllustration } from './FaqIllustration';
 import { HeroProof } from './HeroProof';
 import { SiteFooter } from '@/components/SiteFooter';
 import { AudienceCards, type AudienceCardData } from './AudienceCards';
@@ -361,7 +362,13 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
   const faqItems = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
     q: t(`landing.faq${n}Q` as 'landing.faq1Q'),
     a: t(`landing.faq${n}A` as 'landing.faq1A'),
+    // One illustration per answer, in the questions' order (FaqIllustration).
+    image: `/faq/${n}.webp`,
   }));
+  // The open question drives the illustration column; closing it keeps the
+  // last picture rather than emptying the column.
+  const [faqOpen, setFaqOpen] = useState<number | null>(0);
+  const [faqShown, setFaqShown] = useState(0);
 
   const NAV_LINK = 'rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]';
 
@@ -864,14 +871,25 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         className="mx-auto max-w-[1180px] scroll-mt-20 px-6 py-16 min-[860px]:py-24"
       >
         <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] min-[960px]:gap-14">
-          <SectionHeader
-            align="left"
-            eyebrow={t('landing.eyebrowFaq')}
-            title={t('landing.faqTitle')}
-            subtitle={t('landing.faqSubtitle')}
-          />
+          <div>
+            <SectionHeader
+              align="left"
+              eyebrow={t('landing.eyebrowFaq')}
+              title={t('landing.faqTitle')}
+              subtitle={t('landing.faqSubtitle')}
+            />
+            <FaqIllustration images={faqItems.map((f) => f.image)} shown={faqShown} />
+          </div>
           <Reveal delayMs={80}>
-            <FaqAccordion items={faqItems} className="" />
+            <FaqAccordion
+              items={faqItems}
+              className=""
+              openIndex={faqOpen}
+              onOpenChange={(i) => {
+                setFaqOpen(i);
+                if (i !== null) setFaqShown(i);
+              }}
+            />
           </Reveal>
         </div>
       </section>

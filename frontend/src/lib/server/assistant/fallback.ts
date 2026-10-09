@@ -49,8 +49,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
   },
   {
     keys: ['moteur', 'engine', 'rouge', 'jaune', 'red', 'yellow'],
-    fr: "RenderBox a deux moteurs. Visio (pastille rouge) : rapide, bon rapport qualité/coût. Pixel IA (pastille jaune) : meilleur suivi d'instructions précises. Vous choisissez le moteur à chaque rendu dans la barre de commande ; le moteur par défaut se règle dans Paramètres. Les deux partagent les matériaux et l'historique du projet.",
-    en: 'RenderBox has two engines. Visio (red dot): fast, good price/quality ratio. Pixel AI (yellow dot): best at following precise instructions. Pick the engine for each render in the command bar; set the default one in Settings. Both share the project’s materials and history.',
+    fr: "RenderBox a deux moteurs. Visio (pastille rouge) : rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail. Pixel IA (pastille jaune) : meilleur suivi d'instructions précises. Vous choisissez le moteur à chaque rendu dans la barre de commande ; le moteur par défaut se règle dans Paramètres. Les deux partagent les matériaux et l'historique du projet.",
+    en: 'RenderBox has two engines. Visio (red dot): renders straight at the chosen size, up to 4K, with the most detail. Pixel AI (yellow dot): best at following precise instructions. Pick the engine for each render in the command bar; set the default one in Settings. Both share the project’s materials and history.',
   },
   {
     keys: [

@@ -622,7 +622,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faq2A': 'Yes. Every render you generate is yours, with no commercial-use limit.',
   'landing.faq3Q': "What's the difference between the two AI engines?",
   'landing.faq3A':
-    'Visio (red) is fast and economical, Pixel AI (yellow) follows precise instructions more closely — you pick whichever fits each render best, any time. Edits by comment always use Pixel AI.',
+    'Visio (red) renders straight at the chosen size, up to 4K, with the most detail; Pixel AI (yellow) follows precise instructions more closely. You pick whichever fits each render best, any time. Edits by comment always use Pixel AI.',
   'landing.faq4Q': 'What happens when I hit my monthly quota?',
   'landing.faq4A':
     'Generations are blocked until renewal or until you switch tiers — never a surprise charge.',
@@ -640,7 +640,7 @@ const en: Record<keyof typeof fr, string> = {
     'Images: JPG, PNG, WebP or HEIC, up to 15 MB — a photo, a scanned sketch, a screenshot or an image export of a view from your software (SketchUp, Revit, AutoCAD, Archicad, Rhino). Project files (.skp, .rvt, .dwg, .pln, .3dm) are not read directly: export the view as an image first.',
   'landing.faq9Q': 'Can I improve a render made with other software?',
   'landing.faq9A':
-    'Yes, with Enhance: drop the render, tick what should improve (sharpness, light, materials, sky and planting, life and atmosphere) and pick the strength. The framing is kept.',
+    'Yes, with Enhance: attach the render with the paperclip, tick what should improve (sharpness, detail, light, materials, sky, planting, life and atmosphere) — or describe it yourself — and pick the strength. Each item can take a reference image. The framing is kept.',
   'landing.faq10Q': 'Does RenderBox change my architecture?',
   'landing.faq10A':
     'RenderBox starts from your image and asks the engines to keep the framing, the volumes and the openings. The result is still AI generation: check the details, and fix what needs fixing with Comment.',

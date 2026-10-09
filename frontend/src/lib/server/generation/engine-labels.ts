@@ -46,7 +46,7 @@ export const ENGINE_COLORS: Record<
 export const ENGINE_LABELS: Record<EngineName, EngineLabel> = {
   nanobanana: {
     name: { fr: 'Visio', en: 'Visio' },
-    description: { fr: 'Rapide, bon rapport qualité/coût', en: 'Fast, good price/quality ratio' },
+    description: { fr: 'Haute définition, jusqu’en 4K', en: 'High definition, up to 4K' },
   },
   gpt_image: {
     name: { fr: 'Pixel IA', en: 'Pixel AI' },
