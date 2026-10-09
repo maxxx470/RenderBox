@@ -525,17 +525,17 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterBody':
     "Drag to compare. Every material, every opening, every proportion kept — RenderBox doesn't reinvent your project, it reveals it.",
   'landing.beforeAfterAltBefore':
-    'Pencil sketch of a stone house: a tower with one large window, linked to a timber pavilion.',
+    'Freehand sketch of a contemporary villa: a cantilevered upper floor, a pergola and a pool.',
   'landing.beforeAfterAltAfter':
-    'The same house as a photorealistic render: exposed stone, timber cladding, late-afternoon sky.',
+    'The same villa as a photorealistic render: white render, oak cladding, pool, golden-hour light.',
   'landing.beforeAfterLabelBefore': 'Sketch',
   'landing.beforeAfterLabelAfter': 'RenderBox render',
   'landing.beforeAfterExterior': 'Exterior',
   'landing.beforeAfterInterior': 'Interior',
   'landing.beforeAfterAltBeforeInterior':
-    'Pencil sketch of a living room, a large picture window opening onto a garden.',
+    'Freehand sketch of a living room: exposed beams, shelving, a large window onto the garden.',
   'landing.beforeAfterAltAfterInterior':
-    'The same living room as a photorealistic render: timber panelling, linen sofa, garden in daylight.',
+    'The same living room as a photorealistic render: oak beams, bouclé sofa, leather armchair, daylight.',
 
   'landing.audienceTitle': 'Built for building professionals',
   'landing.audience1Title': 'More variants, without redoing your renders',

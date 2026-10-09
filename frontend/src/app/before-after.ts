@@ -27,13 +27,14 @@
 // drawn SketchVisual / RenderVisual placeholders — no other change needed.
 
 //
-// 2026-10-05 — the section shows TWO pairs side by side, exterior on the left,
-// interior on the right (owner's request). The interior pair is a stand-in:
-// its "croquis" was derived from the render by image processing (pencil-sketch
-// filter over the same 16:10 crop of galerie/jour-int-1.jpg), so the two
-// frames share every pixel of camera — but it runs render → sketch, the
-// reverse of the product. Replace it with a real sketch → RenderBox render
-// pair as soon as one exists; same two files, same 16:10 ratio.
+// 2026-10-09 — both pairs replaced by real sketch → render pairs the owner
+// generated in the product order (the hand-drawn sketch first, then the render
+// made from it as the reference): a contemporary villa with pergola and pool,
+// and a living room with oak beams, shelves and a kitchen island. Each pair was
+// checked by overlay (same camera, nothing to realign) and cropped identically
+// to 16:10 from the 2752×1536 originals — the interior a little tighter to drop
+// the sketchbook binding — then exported at 1440×900. The 2026-10-05 stand-ins
+// (sketches derived from renders by a pencil filter) are gone.
 
 export type BeforeAfterKind = 'exterior' | 'interior';
 
@@ -46,8 +47,6 @@ export interface BeforeAfterPair {
 
 /** Left to right, as laid out on the landing. */
 export const BEFORE_AFTER_PAIRS: BeforeAfterPair[] = [
-  // Provisional stand-in built like the interior one (from exemples/maison-pierre.jpg).
-  // The authentic sketch → render pair is still on disk: croquis.jpg / rendu.jpg.
   {
     kind: 'exterior',
     before: '/avant-apres/exterieur-croquis.jpg',

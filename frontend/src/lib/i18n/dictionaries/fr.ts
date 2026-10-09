@@ -540,17 +540,17 @@ const fr = {
   'landing.beforeAfterBody':
     'Glissez pour comparer. Chaque matériau, chaque ouverture, chaque proportion conservée — RenderBox ne réinvente pas votre projet, il le révèle.',
   'landing.beforeAfterAltBefore':
-    "Croquis au crayon d'une maison en pierre : une tour percée d'une grande fenêtre, reliée à un pavillon en bois.",
+    "Croquis à main levée d'une villa contemporaine : un étage en porte-à-faux, une pergola et une piscine.",
   'landing.beforeAfterAltAfter':
-    'La même maison en rendu photoréaliste : pierre apparente, bardage bois, ciel de fin de journée.',
+    'La même villa en rendu photoréaliste : enduit blanc, bardage en chêne, piscine, lumière de fin de journée.',
   'landing.beforeAfterLabelBefore': 'Esquisse',
   'landing.beforeAfterLabelAfter': 'Rendu RenderBox',
   'landing.beforeAfterExterior': 'Extérieur',
   'landing.beforeAfterInterior': 'Intérieur',
   'landing.beforeAfterAltBeforeInterior':
-    "Croquis au crayon d'un salon, grande baie vitrée ouverte sur un jardin.",
+    "Croquis à main levée d'un salon : poutres apparentes, bibliothèque, grande baie vitrée sur le jardin.",
   'landing.beforeAfterAltAfterInterior':
-    'Le même salon en rendu photoréaliste : boiseries, canapé en lin, jardin en lumière du jour.',
+    'Le même salon en rendu photoréaliste : poutres en chêne, canapé bouclé, fauteuil en cuir, lumière du jour.',
 
   'landing.audienceTitle': 'Pensé pour les professionnels du bâtiment',
   'landing.audience1Title': 'Plus de variantes, sans refaire vos rendus',
