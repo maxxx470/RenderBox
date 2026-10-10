@@ -575,7 +575,9 @@ export function AppShell({
                           })
                         : t('app.engineTag')}
                     </span>
-                    {selectedNode?.kind === 'GENERATED' && materials.length > 0 && (
+                    {/* Hidden while comparing: the two image labels take that
+                        corner then. */}
+                    {selectedNode?.kind === 'GENERATED' && materials.length > 0 && !comparing && (
                       <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#EEF1FF] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] text-[#1E36D6]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#2948FC]" />
                         {t('app.scanBadge', { n: materials.length })}
