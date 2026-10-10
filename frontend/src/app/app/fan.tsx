@@ -20,6 +20,16 @@ export const FAN_SLOTS = CARD_TRANSFORM.length;
 export const CARD_SHAPE =
   'group relative h-[300px] w-[220px] flex-shrink-0 overflow-hidden rounded-[18px] shadow-[0_20px_40px_-20px_#17161F30] transition-transform hover:z-10 hover:-translate-y-2 hover:rotate-0';
 
+// A fine outline drawn over the picture (owner, 2026-10-10), so a light image
+// keeps its edge on the grey ground. Over the image, not a border: the picture
+// is absolutely positioned and would cover one.
+const OUTLINE = (
+  <span
+    aria-hidden
+    className="pointer-events-none absolute inset-0 rounded-[18px] ring-1 ring-inset ring-[#D8D8E0]"
+  />
+);
+
 // An example render: a picture, nothing over it (owner, 2026-10-08: no
 // "exemple" badge, no ambiance caption — the four images on their own). Same
 // geometry as the render cards so the fan never shifts; not a link.
@@ -32,6 +42,7 @@ export function ExampleFanCard({ example, index }: { example: ExampleRender; ind
       } ${CARD_TRANSFORM[index] ?? ''}`}
     >
       <img src={example.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      {OUTLINE}
     </div>
   );
 }
@@ -77,6 +88,7 @@ export function TemplateFanCard({
           {action}
         </span>
       </span>
+      {OUTLINE}
     </button>
   );
 }
