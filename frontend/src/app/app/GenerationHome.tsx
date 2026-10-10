@@ -22,8 +22,8 @@ import { RequestError, readErrorCode, isServiceNotConfigured } from './request-e
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
-import { EXAMPLE_RENDERS } from './generer-examples';
-import { CARD_SHAPE, CARD_TRANSFORM, ExampleFanCard, FAN_SLOTS } from './fan';
+import { TEMPLATE_KEYS, TEMPLATES, type TemplateKey } from '@/lib/server/generation/templates';
+import { CARD_SHAPE, CARD_TRANSFORM, FAN_SLOTS, TemplateFanCard } from './fan';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
 import type { RatioKey } from '@/lib/server/generation/ratios';
@@ -162,6 +162,9 @@ export function GenerationHome({
   }
   const [prompt, setPrompt] = useState('');
   const [preset, setPreset] = useState<PresetKey>('jour_ext');
+  // A template picked in the fan (owner, 2026-10-10): its prompt is in the
+  // bar, and the render is asked for without an ambiance.
+  const [template, setTemplate] = useState<TemplateKey | null>(null);
   // The image every action starts from, pinned in the bar.
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   // Ajouter only: a photo of the element to add.
@@ -194,6 +197,21 @@ export function GenerationHome({
     setPrompt('');
     setPins([]);
     setReferenceFile(null);
+    setTemplate(null);
+  }
+
+  // "Utiliser ce modèle": the template's prompt goes in the bar, then the
+  // paperclip asks for the plan or photo it will work on (unless one is
+  // already pinned).
+  function applyTemplate(key: TemplateKey) {
+    if (mode !== 'generate') {
+      setMode('generate');
+      setPins([]);
+      setReferenceFile(null);
+    }
+    setTemplate(key);
+    setPrompt(TEMPLATES[key].prompt[locale]);
+    if (!photoFile) fileInputRef.current?.click();
   }
 
   function pinPhoto(file: File) {
@@ -259,6 +277,7 @@ export function GenerationHome({
       const params = new URLSearchParams();
       if (prompt.trim()) params.set('prompt', prompt.trim());
       params.set('preset', preset);
+      if (template) params.set('template', template);
       params.set('engine', engine);
       // 'auto' is the default on the other side — no need to spell it out.
       if (ratio !== 'auto') params.set('ratio', ratio);
@@ -321,9 +340,10 @@ export function GenerationHome({
     }
   }
 
-  // Examples are an empty-state device, not decoration: the moment the user
-  // has anything of their own, the fan belongs to them.
-  const showExamples = recentRenders.length === 0 && EXAMPLE_RENDERS.length > 0;
+  // The templates are an empty-state device, like the examples they replaced
+  // (2026-10-10): the moment the user has anything of their own, the fan
+  // belongs to them.
+  const showTemplates = recentRenders.length === 0;
 
   const hasComments = pins.some((p) => p.comment.trim());
   const sendDisabled =
@@ -333,7 +353,7 @@ export function GenerationHome({
     (mode === 'add' && (!referenceFile || !prompt.trim()));
   const sendHint = !photoFile
     ? mode === 'generate'
-      ? t('app.genHomeCardPlaceholder')
+      ? t(template ? 'app.templateHint' : 'app.genHomeCardPlaceholder')
       : t('app.genHomeNeedPhoto')
     : mode === 'retouch' && !hasComments
       ? t('edit.zoneRequired')
@@ -510,11 +530,20 @@ export function GenerationHome({
                   {Array.from({ length: FAN_SLOTS }, (_, i) => {
                     const render = recentRenders[i];
                     if (render) return <RenderFanCard key={render.id} render={render} index={i} />;
-                    // All or nothing: examples show only while the account has
-                    // no render of its own.
-                    const example = showExamples ? EXAMPLE_RENDERS[i] : undefined;
-                    if (example)
-                      return <ExampleFanCard key={`example-${i}`} example={example} index={i} />;
+                    // All or nothing: the templates show only while the account
+                    // has no render of its own.
+                    const key = showTemplates ? TEMPLATE_KEYS[i] : undefined;
+                    if (key)
+                      return (
+                        <TemplateFanCard
+                          key={key}
+                          src={TEMPLATES[key].image}
+                          label={TEMPLATES[key].label[locale]}
+                          action={t('app.templateUse')}
+                          index={i}
+                          onUse={() => applyTemplate(key)}
+                        />
+                      );
                     return (
                       <EmptyFanCard key={`slot-${i}`} index={i} lead={i === recentRenders.length} />
                     );
@@ -563,6 +592,18 @@ export function GenerationHome({
             elementNodes={[]}
             onPickElement={() => {}}
             pickingElement={false}
+            template={
+              template
+                ? {
+                    label: TEMPLATES[template].label[locale],
+                    image: TEMPLATES[template].image,
+                    onClear: () => {
+                      setTemplate(null);
+                      setPrompt('');
+                    },
+                  }
+                : null
+            }
             onSubmit={() => {
               if (!photoFile || sendDisabled) return;
               if (mode === 'generate') void quickStart(photoFile);

@@ -53,9 +53,23 @@ export function MobileNav({
     };
   }, [moreOpen]);
 
-  const main: { page: RailPage; href: string; label: string; icon: RailIconName }[] = [
+  // `short` is what fits under the glyph (56px); the full name stays the
+  // accessible one ("Générateur d'images" does not fit, owner 2026-10-10).
+  const main: {
+    page: RailPage;
+    href: string;
+    label: string;
+    short?: string;
+    icon: RailIconName;
+  }[] = [
     { page: 'dashboard', href: '/app', label: t('app.railHome'), icon: 'dashboard' },
-    { page: 'generate', href: '/app/generer', label: t('app.modeGenerate'), icon: 'image' },
+    {
+      page: 'generate',
+      href: '/app/generer',
+      label: t('app.modeGenerate'),
+      short: t('app.navGenerateShort'),
+      icon: 'image',
+    },
     { page: 'enhance', href: '/app/enhance', label: t('app.railEnhance'), icon: 'enhance' },
   ];
   const more: { page: RailPage; href: string; label: string; icon: RailIconName }[] = [
@@ -94,7 +108,7 @@ export function MobileNav({
                   className={item(active)}
                 >
                   <RailIcon name={m.icon} />
-                  <span>{m.label}</span>
+                  <span>{m.short ?? m.label}</span>
                 </Link>
               );
             })}

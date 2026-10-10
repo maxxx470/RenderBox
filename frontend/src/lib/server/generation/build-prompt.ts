@@ -1,6 +1,8 @@
 // Assembles the final prompt sent to the AI engine, in a fixed order:
 // 1) the project's materials sheet (Phase 2) — consistency constraints
-// 2) the preset's ambiance/style modifier (Phase 3)
+// 2) the preset's ambiance/style modifier (Phase 3) — none for a template
+//    (templates.ts): its prompt already says what the image is, and an
+//    ambiance ("exterior viewpoint") would fight a top-down plan
 // 3) the user's optional free-text detail
 //
 // The materials section is ALWAYS included, even for the "esquisse" preset —
@@ -18,7 +20,8 @@ export interface MaterialSnapshotEntry {
 
 export function buildGenerationPrompt(input: {
   materialsSnapshot: MaterialSnapshotEntry[];
-  preset: PresetKey;
+  /** null for a generation started from a template. */
+  preset: PresetKey | null;
   customPrompt?: string | undefined;
 }): string {
   const parts: string[] = [];
@@ -30,7 +33,7 @@ export function buildGenerationPrompt(input: {
     );
   }
 
-  parts.push(PRESETS[input.preset].promptModifier);
+  if (input.preset) parts.push(PRESETS[input.preset].promptModifier);
 
   if (input.customPrompt?.trim()) {
     parts.push(input.customPrompt.trim());

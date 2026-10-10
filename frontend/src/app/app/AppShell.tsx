@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { collectBranch, type RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
+import { TEMPLATES, isTemplateKey, type TemplateKey } from '@/lib/server/generation/templates';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { isRatioKey, type RatioKey } from '@/lib/server/generation/ratios';
 import {
@@ -114,6 +115,12 @@ export function AppShell({
     const p = searchParams.get('preset');
     return p && isPresetKey(p) ? p : 'jour_ext';
   });
+  // A template from the image generator page (?template=), sent with the
+  // first render and then dropped, like the prompt it filled.
+  const [template, setTemplate] = useState<TemplateKey | null>(() => {
+    const p = searchParams.get('template');
+    return p && isTemplateKey(p) ? p : null;
+  });
   const [engine, setEngine] = useState<EngineName>('nanobanana');
   const [mode, setMode] = useState<AppMode>('generate');
   // Carried over from the /app quick-start bar (?ratio=), like prompt/preset.
@@ -182,6 +189,7 @@ export function AppShell({
     setPins([]);
     setReferenceFile(null);
     setComparing(false);
+    setTemplate(null);
   }
 
   const refreshMaterials = useCallback(async (id: string) => {
@@ -304,6 +312,7 @@ export function AppShell({
           preset,
           engine,
           customPrompt: prompt.trim() || undefined,
+          template: template ?? undefined,
           // 'auto' is the absence of a request, so it is not sent at all.
           ratio: ratio === 'auto' ? undefined : ratio,
           resolution,
@@ -312,6 +321,7 @@ export function AppShell({
       setTree(res.tree);
       setSelectedId(res.nodeId);
       setPrompt('');
+      setTemplate(null);
       setRemaining(res.quotaRemaining);
       if (res.materialsDetected) void refreshMaterials(projectId);
     } catch (err) {
@@ -573,7 +583,11 @@ export function AppShell({
                               ENGINE_LABELS[(selectedNode.engine as EngineName) || 'nanobanana']
                                 .name[locale],
                           })
-                        : t('app.engineTag')}
+                        : // No preset: a source photo, or a render made from a
+                          // template — name the engine that made it, if any.
+                          ENGINE_LABELS[(selectedNode?.engine as EngineName) || 'nanobanana'].name[
+                            locale
+                          ]}
                     </span>
                     {/* Hidden while comparing: the two image labels take that
                         corner then. */}
@@ -780,6 +794,18 @@ export function AppShell({
           elementNodes={flattenTree(tree)}
           onPickElement={handlePickElement}
           pickingElement={pickingElement}
+          template={
+            template
+              ? {
+                  label: TEMPLATES[template].label[locale],
+                  image: TEMPLATES[template].image,
+                  onClear: () => {
+                    setTemplate(null);
+                    setPrompt('');
+                  },
+                }
+              : null
+          }
           fill
         />
       </div>

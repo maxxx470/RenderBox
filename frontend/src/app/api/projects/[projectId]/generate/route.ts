@@ -24,6 +24,7 @@ import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/ver
 import { buildRenderTree } from '@/lib/server/render-tree';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
 import { PRESET_KEYS } from '@/lib/server/generation/presets';
+import { TEMPLATE_KEYS } from '@/lib/server/generation/templates';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
@@ -34,6 +35,9 @@ const Body = z.object({
   preset: z.enum(PRESET_KEYS),
   engine: z.enum(ENGINE_NAMES),
   customPrompt: z.string().trim().max(2000).optional(),
+  // Started from a template (the image generator page): the prompt is the
+  // template's, sent without the ambiance, and the node keeps no preset.
+  template: z.enum(TEMPLATE_KEYS).optional(),
   ratio: z.enum(RATIO_KEYS).optional(),
   resolution: z.enum(RESOLUTION_KEYS).optional(),
 });
@@ -89,7 +93,8 @@ export async function POST(
       );
     }
     // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
-    const { sourceNodeId, preset, engine, customPrompt, ratio, resolution } = parsed.data;
+    const { sourceNodeId, engine, customPrompt, ratio, resolution, template } = parsed.data;
+    const preset = template ? null : parsed.data.preset;
 
     const sourceNode = await prisma.renderNode.findUnique({
       where: { id: sourceNodeId },

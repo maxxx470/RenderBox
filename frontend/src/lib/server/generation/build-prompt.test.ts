@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildGenerationPrompt } from './build-prompt';
 import { PRESETS, PRESET_KEYS } from './presets';
+import { TEMPLATES } from './templates';
 
 const materials = [
   { face: 'facade_principale', valeur: 'Enduit blanc taloché', source: 'auto', confidence: 90 },
@@ -48,5 +49,16 @@ describe('buildGenerationPrompt', () => {
       customPrompt: '   ',
     });
     expect(prompt.trim().endsWith(PRESETS.jour_ext.promptModifier)).toBe(true);
+  });
+
+  it("sends a template's prompt without any ambiance modifier", () => {
+    const prompt = buildGenerationPrompt({
+      materialsSnapshot: materials,
+      preset: null,
+      customPrompt: TEMPLATES.eclate.prompt.en,
+    });
+    for (const key of PRESET_KEYS) expect(prompt).not.toContain(PRESETS[key].promptModifier);
+    expect(prompt).toContain('Enduit blanc taloché');
+    expect(prompt.trim().endsWith(TEMPLATES.eclate.prompt.en)).toBe(true);
   });
 });

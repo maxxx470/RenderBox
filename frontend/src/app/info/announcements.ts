@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'templates-gallery',
+    date: '2026-10-10',
+    kind: 'shipped',
+    title: {
+      fr: 'Quatre modèles prêts à l’emploi, et la Galerie',
+      en: 'Four ready-made templates, and the Gallery',
+    },
+    body: {
+      fr: 'Le Générateur d’images propose quatre modèles : plan 3D aménagé, axonométrie éclatée, planche d’analyse et maquette isométrique. Survolez-en un, cliquez sur « Utiliser ce modèle », joignez votre plan ou votre photo et lancez. « Mes images » s’appelle désormais la Galerie, et Enhance s’appelle Améliorer en français.',
+      en: 'The Image generator offers four templates: furnished 3D plan, exploded axonometric, concept board and isometric model. Hover one, click "Use this template", attach your plan or photo and go. "My images" is now the Gallery.',
+    },
+  },
+  {
     id: 'all-formats-sizes',
     date: '2026-10-08',
     kind: 'shipped',

@@ -228,6 +228,7 @@ export function CommandBar({
   elementNodes,
   onPickElement,
   pickingElement,
+  template = null,
   fill = false,
 }: {
   mode: AppMode;
@@ -276,6 +277,12 @@ export function CommandBar({
   elementNodes: RenderTreeNode[];
   onPickElement: (nodeId: string) => void;
   pickingElement: boolean;
+  /**
+   * A template of the image generator page is on (owner, 2026-10-10): its
+   * chip takes the ambiance's place — the template's prompt already says
+   * what the image is, and no ambiance is sent with it.
+   */
+  template?: { label: string; image: string; onClear: () => void } | null;
   /**
    * Take the column's full width instead of the centred 920px — the project
    * editor lines the bar up with the canvas above it (owner, 2026-10-08).
@@ -359,7 +366,38 @@ export function CommandBar({
   );
 
   const settings: ReactNode[] = [];
-  if (mode === 'generate') {
+  if (mode === 'generate' && template) {
+    settings.push(
+      <span key="template" className={`${CHIP_BASE} pl-1`} title={t('app.templateChip')}>
+        <img
+          src={template.image}
+          alt=""
+          className="h-5 w-5 flex-shrink-0 rounded-md border border-white object-cover shadow-[0_0_0_1px_#ECECF2]"
+        />
+        {template.label}
+        <button
+          type="button"
+          onClick={template.onClear}
+          disabled={inputDisabled}
+          aria-label={t('app.templateRemove')}
+          title={t('app.templateRemove')}
+          className="-mr-1 flex h-5 w-5 items-center justify-center rounded-md text-[#8A8896] hover:bg-[#E9E9EE] hover:text-[#17161F]"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="10"
+            height="10"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+          >
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </span>,
+    );
+  } else if (mode === 'generate') {
     settings.push(
       <PresetSelect
         key="preset"

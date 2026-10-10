@@ -97,7 +97,7 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
   },
   {
     keys: ['télécharg', 'telecharg', 'export', 'download'],
-    fr: 'Pour télécharger un rendu : dans Mes images, survolez l’image et utilisez le bouton de téléchargement ; ou ouvrez-la, sélectionnez-la dans l’arbre et utilisez le bouton de téléchargement.',
+    fr: 'Pour télécharger un rendu : dans la Galerie, survolez l’image et utilisez le bouton de téléchargement ; ou ouvrez-la, sélectionnez-la dans l’arbre et utilisez le bouton de téléchargement.',
     en: 'To download a render: open the project, select the render in the tree and use the download button.',
   },
   {
