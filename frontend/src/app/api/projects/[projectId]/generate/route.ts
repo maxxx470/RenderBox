@@ -32,11 +32,13 @@ import { log } from '@/lib/server/observability/log';
 
 const Body = z.object({
   sourceNodeId: z.string().min(1),
-  preset: z.enum(PRESET_KEYS),
+  // Null or absent: no ambiance — a faithful photo render (PHOTO_RENDER_MODIFIER).
+  preset: z.enum(PRESET_KEYS).nullish(),
   engine: z.enum(ENGINE_NAMES),
   customPrompt: z.string().trim().max(2000).optional(),
   // Started from a template (the image generator page): the prompt is the
-  // template's, sent without the ambiance, and the node keeps no preset.
+  // template's, sent without any ambiance, and the node keeps the template's
+  // key as its preset (the four lights, named in the tree).
   template: z.enum(TEMPLATE_KEYS).optional(),
   ratio: z.enum(RATIO_KEYS).optional(),
   resolution: z.enum(RESOLUTION_KEYS).optional(),
@@ -94,7 +96,10 @@ export async function POST(
     }
     // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
     const { sourceNodeId, engine, customPrompt, ratio, resolution, template } = parsed.data;
-    const preset = template ? null : parsed.data.preset;
+    // The ambiance whose modifier goes into the prompt — none for a template.
+    const promptPreset = template ? null : (parsed.data.preset ?? null);
+    // What the node records: the template's key or the ambiance.
+    const preset = template ?? promptPreset;
 
     const sourceNode = await prisma.renderNode.findUnique({
       where: { id: sourceNodeId },
@@ -137,8 +142,9 @@ export async function POST(
 
     const assembledPrompt = buildGenerationPrompt({
       materialsSnapshot: materials,
-      preset,
+      preset: promptPreset,
       customPrompt,
+      photoRender: !template && !promptPreset,
     });
 
     let result;

@@ -41,7 +41,7 @@ import { buildRenderTree } from '@/lib/server/render-tree';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
 import { describeZone, ZoneSchema } from '@/lib/server/generation/describe-zone';
 import { log } from '@/lib/server/observability/log';
-import type { PresetKey } from '@/lib/server/generation/presets';
+import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
 import {
   ANNOTATE_ENGINE,
   AnnotationsSchema,
@@ -257,8 +257,16 @@ export async function POST(
     //
     // A render carries the ambiance it was made with; an uploaded photo has
     // none, and relighting it as "jour_ext" would change far more than the
-    // one thing asked for — so no preset at all.
-    const preset = (sourceNode.preset as PresetKey | null) ?? null;
+    // one thing asked for — so no preset at all. Nor for a transformation
+    // (a 3D plan, an exploded view…, reapplyOnEdit false): run again on its
+    // own result it would transform the picture a second time.
+    const sourcePreset =
+      sourceNode.preset && isPresetKey(sourceNode.preset) ? sourceNode.preset : null;
+    const promptPreset: PresetKey | null =
+      sourcePreset && PRESETS[sourcePreset].reapplyOnEdit ? sourcePreset : null;
+    // The result still is what its source was (a 3D plan stays a 3D plan):
+    // the node keeps the source's ambiance, so the tree names it.
+    const preset = sourcePreset;
     let assembledPrompt: string;
     if (editType === 'annotate') {
       // Neither the materials sheet ("keep these materials") nor the preset
@@ -274,10 +282,10 @@ export async function POST(
         editType === 'add_element'
           ? `Add the following element into the scene, using the attached reference image for its appearance: ${instruction}`
           : `${describeZone(zone!)} Requested change: ${instruction}`;
-      assembledPrompt = preset
+      assembledPrompt = promptPreset
         ? buildGenerationPrompt({
             materialsSnapshot: materials,
-            preset,
+            preset: promptPreset,
             customPrompt: editInstruction,
           })
         : `${editInstruction}\nKeep everything else in the image exactly as it is: framing, light, materials.`;

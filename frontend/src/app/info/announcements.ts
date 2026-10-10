@@ -43,12 +43,12 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     date: '2026-10-10',
     kind: 'shipped',
     title: {
-      fr: 'Quatre modèles prêts à l’emploi, et la Galerie',
-      en: 'Four ready-made templates, and the Gallery',
+      fr: 'Nouvelles ambiances, quatre modèles prêts à l’emploi, et la Galerie',
+      en: 'New ambiances, four ready-made templates, and the Gallery',
     },
     body: {
-      fr: 'Le Générateur d’images propose quatre modèles : plan 3D aménagé, axonométrie éclatée, planche d’analyse et maquette isométrique. Survolez-en un, cliquez sur « Utiliser ce modèle », joignez votre plan ou votre photo et lancez. « Mes images » s’appelle désormais la Galerie, et Enhance s’appelle Améliorer en français.',
-      en: 'The Image generator offers four templates: furnished 3D plan, exploded axonometric, concept board and isometric model. Hover one, click "Use this template", attach your plan or photo and go. "My images" is now the Gallery.',
+      fr: 'Le menu Ambiance de la barre de commande propose désormais plan 3D aménagé, axonométrie éclatée légendée, planche d’analyse, maquette isométrique et esquisse ; sans ambiance, vous obtenez un rendu photo fidèle à votre image. Les lumières jour et nuit, extérieur et intérieur, deviennent quatre modèles du Générateur d’images : survolez-en un, cliquez sur « Utiliser ce modèle », joignez votre image et lancez. « Mes images » s’appelle désormais la Galerie, et Enhance s’appelle Améliorer en français.',
+      en: 'The Ambiance menu of the command bar now offers furnished 3D plan, labelled exploded axonometric, concept board, isometric model and sketch; with no ambiance you get a faithful photo render of your image. The day and night lights, exterior and interior, become four templates on the Image generator: hover one, click "Use this template", attach your image and go. "My images" is now the Gallery.',
     },
   },
   {

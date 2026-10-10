@@ -25,9 +25,15 @@
 // other change needed anywhere.
 import type { PresetKey } from '@/lib/server/generation/presets';
 
+/** The ambiances the landing's hero shows — the lights and the sketch. */
+type HeroPreset = Extract<
+  PresetKey,
+  'jour_ext' | 'jour_int' | 'nuit_ext' | 'nuit_int' | 'esquisse'
+>;
+
 export interface HeroCard {
   /** Drives the label and the fallback gradient. */
-  preset: PresetKey;
+  preset: HeroPreset;
   /** Path under /public once a real render exists, null until then. */
   src: string | null;
 }
@@ -40,7 +46,7 @@ export interface HeroCard {
  * Complete literal class strings: Tailwind's scanner never sees a class
  * assembled from a bare colour value (see the JIT note in CLAUDE.md).
  */
-export const HERO_CARD_GRADIENT: Record<PresetKey, string> = {
+export const HERO_CARD_GRADIENT: Record<HeroPreset, string> = {
   jour_ext: 'bg-gradient-to-br from-[#8FA6FF] via-[#2948FC] to-[#1E36D6]',
   jour_int: 'bg-gradient-to-br from-[#1E36D6] via-[#2948FC] to-[#435CFE]',
   nuit_ext: 'bg-gradient-to-br from-[#1E36D6] via-[#1A2BB0] to-[#0E1866]',

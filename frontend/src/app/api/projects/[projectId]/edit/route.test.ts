@@ -220,6 +220,40 @@ describe('POST /api/projects/[projectId]/edit — validation', () => {
   });
 });
 
+describe('POST /api/projects/[projectId]/edit — ambiance of the source', () => {
+  it('does not run a transformation ambiance again on its own result, but keeps its name', async () => {
+    prismaMock.renderNode.findUnique.mockResolvedValue({
+      id: SOURCE_NODE_ID,
+      projectId: PROJECT_ID,
+      blobUrl: 'https://blob.test/source.png',
+      mimeType: 'image/png',
+      kind: 'GENERATED',
+      preset: 'plan_3d',
+    } as never);
+    const res = await POST(
+      makeReq(baseFields({ editType: 'add_element', zone: '' }), pngFile()),
+      ctx(),
+    );
+    expect(res.status).toBe(201);
+    const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
+    expect(input.prompt).not.toContain('2D floor plan');
+    expect(input.prompt).toContain('Keep everything else in the image exactly as it is');
+    expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({
+      preset: 'plan_3d',
+    });
+  });
+
+  it('relights an edit of a day render the same way', async () => {
+    const res = await POST(
+      makeReq(baseFields({ editType: 'add_element', zone: '' }), pngFile()),
+      ctx(),
+    );
+    expect(res.status).toBe(201);
+    const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
+    expect(input.prompt).toContain('full daylight');
+  });
+});
+
 describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
   it('creates N RenderNodes with the same parentId, charges the rate limit N units, and records N units of tier usage', async () => {
     const res = await POST(makeReq(baseFields({ variantCount: '3' })), ctx());

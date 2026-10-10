@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildGenerationPrompt } from './build-prompt';
-import { PRESETS, PRESET_KEYS } from './presets';
+import { PHOTO_RENDER_MODIFIER, PRESETS, PRESET_KEYS } from './presets';
 import { TEMPLATES } from './templates';
 
 const materials = [
@@ -55,10 +55,32 @@ describe('buildGenerationPrompt', () => {
     const prompt = buildGenerationPrompt({
       materialsSnapshot: materials,
       preset: null,
-      customPrompt: TEMPLATES.eclate.prompt.en,
+      customPrompt: TEMPLATES.nuit_ext.prompt.en,
     });
     for (const key of PRESET_KEYS) expect(prompt).not.toContain(PRESETS[key].promptModifier);
+    expect(prompt).not.toContain(PHOTO_RENDER_MODIFIER);
     expect(prompt).toContain('Enduit blanc taloché');
-    expect(prompt.trim().endsWith(TEMPLATES.eclate.prompt.en)).toBe(true);
+    expect(prompt.trim().endsWith(TEMPLATES.nuit_ext.prompt.en)).toBe(true);
+  });
+
+  it('asks for a faithful photo render when there is no ambiance and no template', () => {
+    const prompt = buildGenerationPrompt({
+      materialsSnapshot: [],
+      preset: null,
+      customPrompt: 'façade en bois',
+      photoRender: true,
+    });
+    expect(prompt).toContain(PHOTO_RENDER_MODIFIER);
+    expect(prompt.indexOf(PHOTO_RENDER_MODIFIER)).toBeLessThan(prompt.indexOf('façade en bois'));
+  });
+
+  it('never adds the photo render on top of an ambiance', () => {
+    const prompt = buildGenerationPrompt({
+      materialsSnapshot: [],
+      preset: 'eclate',
+      photoRender: true,
+    });
+    expect(prompt).toContain(PRESETS.eclate.promptModifier);
+    expect(prompt).not.toContain(PHOTO_RENDER_MODIFIER);
   });
 });

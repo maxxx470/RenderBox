@@ -1,62 +1,64 @@
-// The four templates of the image generator page (owner, 2026-10-10: "un peu
-// comme des templates concrets"). Each is a picture in the page's fan and a
-// prompt: "Utiliser ce modèle" puts that prompt in the command bar, then opens
-// the paperclip for the user's own plan or photo.
+// The four templates of the image generator page's fan (owner, 2026-10-10:
+// "un peu comme des templates concrets"). Each is a picture and a prompt:
+// "Utiliser ce modèle" puts that prompt in the command bar, then opens the
+// paperclip for the user's own photo, sketch or 3D view.
 //
-// A template is not an ambiance. Its prompt says everything about the result
-// (a top-down plan, an exploded view, a board…), so the generation sends it
-// WITHOUT the ambiance modifier ("full daylight, exterior viewpoint" would
-// fight a top-down plan) and stores no preset on the node (see build-prompt.ts
-// and the generate route).
+// Since 2026-10-10 evening (owner) they are the four lights — day and night,
+// exterior and interior — which were the first four ambiances of the command
+// bar; the plan, exploded view, board and isometric model took their place in
+// the ambiance menu (presets.ts). The keys are the old ambiance keys on
+// purpose: the node keeps the template's key as its preset, so the tree and
+// the gallery name it ("Jour extérieur") and an edit relights it the same way.
 //
-// The example pictures in public/modeles/<key>.webp (portrait 3:4) were made
-// by the owner from one-shot prompts describing the same kind of result; the
-// prompts here work on the user's own image, in the interface's language —
-// labels included, since an exploded view or a board without its labels says
-// little (owner). The engines read both languages. Client-safe: no I/O, no
-// `server-only`.
-export const TEMPLATE_KEYS = ['plan_3d', 'eclate', 'analyse', 'isometrie'] as const;
+// A template's prompt says everything about the result, so the generation
+// sends it WITHOUT any ambiance modifier (see build-prompt.ts and the generate
+// route). The prompts borrow from the prompts the owner pointed at
+// (aifordesigners.online): keep the exact point of view, proportions and
+// materials — the geometry is right, the engine adds light and life — and
+// add a few objects so a space feels lived-in. The engines read both
+// languages. Client-safe: no I/O, no `server-only`.
+export const TEMPLATE_KEYS = ['jour_ext', 'jour_int', 'nuit_ext', 'nuit_int'] as const;
 
 export type TemplateKey = (typeof TEMPLATE_KEYS)[number];
 
 interface TemplateDef {
   label: { fr: string; en: string };
-  /** The example picture, under /public. */
+  /** The example picture, under /public (portrait 3:4). */
   image: string;
   prompt: { fr: string; en: string };
 }
 
 export const TEMPLATES: Record<TemplateKey, TemplateDef> = {
-  plan_3d: {
-    label: { fr: 'Plan 3D aménagé', en: 'Furnished 3D plan' },
-    image: '/modeles/plan-3d.webp',
+  jour_ext: {
+    label: { fr: 'Jour extérieur', en: 'Exterior day' },
+    image: '/modeles/jour-ext.webp',
     prompt: {
-      en: 'Turn the attached 2D floor plan into a photorealistic top-down 3D render of the furnished home, seen from directly above with the roof removed. Keep exactly the walls, doors, windows and room layout of the plan. Furnish every room in a warm, premium contemporary style: herringbone oak floors, a bedroom with a made bed and bedside lamps, a bathroom with a walk-in shower and a vanity, a kitchen with worktops, a dining table, a living room with a sofa, an armchair and a rug. Soft natural light with gentle shadows and warm accent lighting. Add three or four people seen from above, to scale and naturally placed (someone on the sofa, someone cooking, someone walking). Walls cut and shown in solid black. No text, no labels, no dimensions, no room names.',
-      fr: 'Transformez le plan 2D joint en rendu 3D photoréaliste du logement meublé, vu exactement du dessus, toiture retirée. Gardez exactement les murs, les portes, les fenêtres et la distribution des pièces du plan. Meublez chaque pièce dans un style contemporain chaleureux et haut de gamme : parquet en chêne à bâtons rompus, une chambre avec un lit fait et des lampes de chevet, une salle de bains avec une douche à l’italienne et un meuble vasque, une cuisine avec ses plans de travail, une table à manger, un séjour avec un canapé, un fauteuil et un tapis. Lumière naturelle douce, ombres légères et éclairages d’appoint chaleureux. Ajoutez trois ou quatre personnes vues du dessus, à l’échelle et placées naturellement (quelqu’un sur le canapé, quelqu’un qui cuisine, quelqu’un qui marche). Murs coupés en noir plein. Aucun texte, aucune étiquette, aucune cote, aucun nom de pièce.',
+      en: 'Create a photorealistic exterior photograph of the building in the attached image, in full daylight: natural sunlight, crisp cast shadows, clear blue sky. Keep the exact point of view and the exact proportions. Do not alter the building shape, openings, architectural details or materials; match every material exactly. Bring the site to life: mature trees and planting, a few people walking, to scale, soft reflections in the glazing. High-end architectural photography.',
+      fr: 'Créez une photographie extérieure photoréaliste du bâtiment de l’image jointe, en plein jour : soleil naturel, ombres portées nettes, ciel bleu dégagé. Gardez exactement le point de vue et les proportions. Ne modifiez ni la forme du bâtiment, ni ses ouvertures, ni ses détails d’architecture, ni ses matériaux ; respectez chaque matériau à l’identique. Donnez vie au site : arbres et plantations, quelques personnes qui marchent, à l’échelle, de légers reflets dans les vitrages. Photographie d’architecture haut de gamme.',
     },
   },
-  eclate: {
-    label: { fr: 'Axonométrie éclatée', en: 'Exploded axonometric' },
-    image: '/modeles/eclate.webp',
+  jour_int: {
+    label: { fr: 'Jour intérieur', en: 'Interior day' },
+    image: '/modeles/jour-int.webp',
     prompt: {
-      en: 'Turn the building in the attached image into a highly detailed exploded axonometric 3D illustration: a realistic 3D model, not a flat drawing, seen from a high 30-degree angle on a clean white background. Pull the building apart vertically into its construction layers, stacked one above another with even gaps and thin dashed alignment lines between them, from bottom to top: foundations and ground slab, structural frame (columns and beams), each floor slab with its interior walls, stairs and furniture, insulation, facade cladding, windows and glazing, roof structure, roof covering. Keep the building’s real shape, proportions, materials and colours, rendered realistically with soft shadows and ambient occlusion. Add clean architectural labels: thin black leader lines from each layer to a short uppercase label in a clean sans-serif font, aligned in a neat column on the right (for example ROOF, ROOF STRUCTURE, GLAZING, CLADDING, INSULATION, FIRST FLOOR, GROUND FLOOR, STRUCTURAL FRAME, FOUNDATIONS). Every label crisp, legible and correctly spelled. High-end technical cutaway illustration style.',
-      fr: 'Transformez le bâtiment de l’image jointe en axonométrie éclatée 3D très détaillée : un vrai modèle 3D réaliste, pas un dessin à plat, vu en plongée à 30 degrés sur fond blanc. Écartez le bâtiment verticalement couche par couche, empilées les unes au-dessus des autres avec des écarts réguliers et de fines lignes pointillées d’alignement, de bas en haut : fondations et dallage, ossature (poteaux et poutres), chaque plancher avec ses cloisons, son escalier et son mobilier, isolation, bardage de façade, menuiseries et vitrages, charpente, couverture. Gardez la vraie forme, les proportions, les matériaux et les couleurs du bâtiment, rendus de façon réaliste avec des ombres douces. Ajoutez des étiquettes d’architecture nettes : de fines lignes de rappel noires de chaque couche vers une courte étiquette en majuscules, police sans empattement, alignées en colonne à droite (par exemple TOITURE, CHARPENTE, VITRAGES, BARDAGE, ISOLATION, ÉTAGE, REZ-DE-CHAUSSÉE, OSSATURE, FONDATIONS). Chaque étiquette nette, lisible et sans faute. Style d’écorché technique haut de gamme.',
+      en: 'Create a photorealistic interior photograph of the space in the attached image, lit by natural daylight through the windows: soft ambient light, gentle shadows, no artificial lighting. Keep the exact point of view, the proportions, the walls, the openings and the materials. Keep the existing furniture; if the room is empty, furnish it in a warm contemporary style. Add a few objects so the space feels lived-in: a throw on the sofa, books, a plant, a vase. High-end interior photography.',
+      fr: 'Créez une photographie intérieure photoréaliste de l’espace de l’image jointe, éclairé par la lumière du jour qui entre par les fenêtres : lumière douce, ombres légères, aucun éclairage artificiel. Gardez exactement le point de vue, les proportions, les murs, les ouvertures et les matériaux. Gardez le mobilier existant ; si la pièce est vide, meublez-la dans un style contemporain chaleureux. Ajoutez quelques objets pour que l’espace paraisse habité : un plaid sur le canapé, des livres, une plante, un vase. Photographie d’intérieur haut de gamme.',
     },
   },
-  analyse: {
-    label: { fr: 'Planche d’analyse', en: 'Concept board' },
-    image: '/modeles/analyse.webp',
+  nuit_ext: {
+    label: { fr: 'Nuit extérieur', en: 'Exterior night' },
+    image: '/modeles/nuit-ext.webp',
     prompt: {
-      en: 'Create an architecture concept analysis board of the building in the attached image, on a clean white background, in the style of an international architecture competition presentation. Precise grid layout with generous white space: a bold title CONCEPT ANALYSIS with the project’s name under it; a large realistic 3D axonometric view of the building; its characteristic floor plan in fine black linework labelled FLOOR PLAN; a long section through the building and the ground labelled SECTION; a row of five small white 3D massing models showing step by step how the form evolved, each numbered with a one-word caption; a strip of five square samples of the building’s real materials, each with a small label. Thin hairline dividers, small annotations with arrows, a north arrow and a scale bar. All text crisp, legible and correctly spelled in a clean sans-serif font. Muted palette: white, light grey, concrete, warm wood, one soft accent colour. Professional, print-ready.',
-      fr: 'Créez une planche d’analyse conceptuelle du bâtiment de l’image jointe, sur fond blanc, dans le style d’une planche de concours d’architecture international. Mise en page en grille précise et aérée : un titre fort ANALYSE CONCEPTUELLE avec le nom du projet dessous ; une grande vue axonométrique 3D réaliste du bâtiment ; son plan caractéristique au trait noir fin, titré PLAN ; une coupe longitudinale du bâtiment et du terrain, titrée COUPE ; une ligne de cinq petites maquettes de volumes blanches en 3D qui montrent étape par étape l’évolution de la forme, chacune numérotée avec une légende d’un mot ; une bande de cinq échantillons carrés des vrais matériaux du bâtiment, chacun avec une petite étiquette. Fins filets de séparation, petites annotations avec flèches, une flèche du nord et une échelle graphique. Tous les textes nets, lisibles et sans faute, police sans empattement. Palette sobre : blanc, gris clair, béton, bois chaud, une seule couleur d’accent douce. Rendu professionnel, prêt à imprimer.',
+      en: 'Create a photorealistic exterior photograph of the building in the attached image at night: deep blue night sky, no sunlight, warm light glowing from every window, controlled architectural lighting with facade uplights and soft path lights, warm reflections on the ground. Keep the exact point of view and the exact proportions. Do not alter the building shape, openings, architectural details or materials. A few people to scale, planting softly lit. High-end architectural night photography.',
+      fr: 'Créez une photographie extérieure photoréaliste du bâtiment de l’image jointe, de nuit : ciel bleu nuit profond, aucun soleil, lumière chaude à chaque fenêtre, éclairage architectural maîtrisé avec des projecteurs en pied de façade et de petites bornes le long des allées, reflets chauds au sol. Gardez exactement le point de vue et les proportions. Ne modifiez ni la forme du bâtiment, ni ses ouvertures, ni ses détails d’architecture, ni ses matériaux. Quelques personnes à l’échelle, une végétation doucement éclairée. Photographie d’architecture de nuit haut de gamme.',
     },
   },
-  isometrie: {
-    label: { fr: 'Maquette isométrique', en: 'Isometric model' },
-    image: '/modeles/isometrie.webp',
+  nuit_int: {
+    label: { fr: 'Nuit intérieur', en: 'Interior night' },
+    image: '/modeles/nuit-int.webp',
     prompt: {
-      en: 'Turn the project in the attached image into a clean isometric 3D architectural model, seen from a high 30-degree isometric angle on a very light grey ground crossed by subtle dotted halftone bands. Keep the building’s real volumes, layout, stairs and terraces. Render it like a high-end physical competition model: light birch and pine timber for the structure and slats, smooth pale grey concrete for plinths, walkways and stairs, frosted white glass for roofs and glazing, crisp edges. About fifteen tiny white abstract human figures walking and standing, to scale. Soft even daylight from the top left, gentle ambient occlusion and soft shadows. Muted palette of warm wood, white and light grey only. No trees, no background scenery, no text.',
-      fr: 'Transformez le projet de l’image jointe en maquette d’architecture isométrique 3D, vue en plongée isométrique à 30 degrés sur un sol gris très clair traversé de fines bandes de trame pointillée. Gardez les vrais volumes, l’organisation, les escaliers et les terrasses du bâtiment. Rendu de maquette de concours haut de gamme : bois clair (bouleau, pin) pour la structure et les lames, béton gris pâle lisse pour les socles, passerelles et escaliers, verre blanc dépoli pour les toitures et les vitrages, arêtes nettes. Une quinzaine de minuscules personnages blancs abstraits qui marchent ou se tiennent debout, à l’échelle. Lumière du jour douce et homogène venant du haut à gauche, ombres légères. Palette sobre de bois chaud, de blanc et de gris clair uniquement. Pas d’arbres, pas de décor, aucun texte.',
+      en: 'Create a photorealistic interior photograph of the space in the attached image at night: warm artificial lighting only (pendant lights, lamps, concealed LED strips), soft pools of light and deep shadows, dark windows with the night outside, no daylight. Keep the exact point of view, the proportions, the walls, the openings and the materials. Keep the existing furniture; if the room is empty, furnish it in a warm contemporary style, with a few objects so it feels lived-in. Cosy, high-end interior photography.',
+      fr: 'Créez une photographie intérieure photoréaliste de l’espace de l’image jointe, de nuit : uniquement un éclairage artificiel chaud (suspensions, lampes, rubans LED dissimulés), des halos de lumière doux et des ombres profondes, des fenêtres sombres sur la nuit, aucune lumière du jour. Gardez exactement le point de vue, les proportions, les murs, les ouvertures et les matériaux. Gardez le mobilier existant ; si la pièce est vide, meublez-la dans un style contemporain chaleureux, avec quelques objets pour qu’elle paraisse habitée. Photographie d’intérieur chaleureuse et haut de gamme.',
     },
   },
 };

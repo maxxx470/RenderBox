@@ -111,9 +111,10 @@ export function AppShell({
   // only on the very first render, so this never re-applies on a later
   // client-side navigation within the same mounted instance.
   const [prompt, setPrompt] = useState(() => searchParams.get('prompt') ?? '');
-  const [preset, setPreset] = useState<PresetKey>(() => {
+  // No ambiance by default (2026-10-10): a faithful photo render.
+  const [preset, setPreset] = useState<PresetKey | null>(() => {
     const p = searchParams.get('preset');
-    return p && isPresetKey(p) ? p : 'jour_ext';
+    return p && isPresetKey(p) ? p : null;
   });
   // A template from the image generator page (?template=), sent with the
   // first render and then dropped, like the prompt it filled.

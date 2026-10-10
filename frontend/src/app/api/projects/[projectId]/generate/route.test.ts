@@ -185,7 +185,30 @@ describe('POST /api/projects/[projectId]/generate — presets', () => {
 
     const call = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
     expect(call.prompt).toContain('Tuile terre cuite');
-    expect(call.prompt.toLowerCase()).toContain('sketch');
+    expect(call.prompt.toLowerCase()).toContain('diagram');
+  });
+
+  it('asks for a faithful photo render when no ambiance is chosen', async () => {
+    const res = await POST(makeReq(validBody({ preset: null })), ctx());
+    expect(res.status).toBe(201);
+    const call = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
+    expect(call.prompt).toContain('Keep the exact point of view');
+    expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({ preset: null });
+  });
+
+  it("sends a template's prompt alone and records the template on the node", async () => {
+    const res = await POST(
+      makeReq(validBody({ preset: 'esquisse', template: 'nuit_ext', customPrompt: 'de nuit' })),
+      ctx(),
+    );
+    expect(res.status).toBe(201);
+    const call = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
+    expect(call.prompt.toLowerCase()).not.toContain('diagram');
+    expect(call.prompt).not.toContain('photorealistic architectural photograph of the attached');
+    expect(call.prompt).toContain('de nuit');
+    expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({
+      preset: 'nuit_ext',
+    });
   });
 });
 

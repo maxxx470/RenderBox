@@ -161,7 +161,7 @@ export function GenerationHome({
     setEngine(next);
   }
   const [prompt, setPrompt] = useState('');
-  const [preset, setPreset] = useState<PresetKey>('jour_ext');
+  const [preset, setPreset] = useState<PresetKey | null>(null);
   // A template picked in the fan (owner, 2026-10-10): its prompt is in the
   // bar, and the render is asked for without an ambiance.
   const [template, setTemplate] = useState<TemplateKey | null>(null);
@@ -276,7 +276,7 @@ export function GenerationHome({
       const { projectId } = await createProjectWithPhoto(file);
       const params = new URLSearchParams();
       if (prompt.trim()) params.set('prompt', prompt.trim());
-      params.set('preset', preset);
+      if (preset) params.set('preset', preset);
       if (template) params.set('template', template);
       params.set('engine', engine);
       // 'auto' is the default on the other side — no need to spell it out.

@@ -245,8 +245,9 @@ export function CommandBar({
   onPromptChange: (v: string) => void;
   /** Overrides the per-mode placeholder. */
   placeholder?: string | undefined;
-  preset: PresetKey;
-  onPresetChange: (v: PresetKey) => void;
+  /** null: no ambiance (a faithful photo render). */
+  preset: PresetKey | null;
+  onPresetChange: (v: PresetKey | null) => void;
   zoneSelected: boolean;
   referenceAdded: boolean;
   onSubmit: () => void;

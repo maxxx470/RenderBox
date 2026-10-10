@@ -113,9 +113,13 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'sketch',
       'interior',
       'preset',
+      'axonométrie',
+      'maquette',
+      'planche',
+      'isométrique',
     ],
-    fr: 'Cinq ambiances : Jour extérieur, Jour intérieur, Nuit extérieur, Nuit intérieur et Esquisse (un rendu dessiné, volontairement pas photoréaliste). Choisissez-la dans la barre de commande avant de générer.',
-    en: 'Five ambiances: Exterior day, Interior day, Exterior night, Interior night and Sketch (a drawn render, deliberately not photoreal). Pick it in the command bar before generating.',
+    fr: 'Dans la barre de commande, le menu Ambiance propose Plan 3D aménagé, Axonométrie éclatée, Planche d’analyse, Maquette isométrique et Esquisse (un schéma blanc légendé) ; par défaut, « Sans ambiance » donne un rendu photo fidèle à votre image. Les lumières Jour extérieur, Jour intérieur, Nuit extérieur et Nuit intérieur sont des modèles de la page Générateur d’images : survolez-en un et cliquez sur « Utiliser ce modèle ».',
+    en: 'In the command bar, the Ambiance menu offers Furnished 3D plan, Exploded axonometric, Concept board, Isometric model and Sketch (a labelled white diagram); by default, "No ambiance" gives a faithful photo render of your image. The Exterior day, Interior day, Exterior night and Interior night lights are templates on the Image generator page: hover one and click "Use this template".',
   },
   {
     keys: [
