@@ -3,10 +3,11 @@
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { AppSurface, type AppSurfaceProps } from '../AppSurface';
 import { MotionFilm } from '@/app/MotionFilm';
+import { motionFilm } from '@/app/motion-media';
 
 /** The landing's feature films, shown here too so the features are explained
  *  inside the app, not only to visitors (owner's brief, 2026-10-06). Same
- *  files as the landing: public/motion/<id>-<locale>.mp4. A new film is one
+ *  files as the landing (see motion-media.ts). A new film is one
  *  more line here; the grid takes it in, two per row. */
 const FILMS = [
   { id: 'etapes', title: 'info.filmEtapesTitle', alt: 'dashboard.filmAlt' },
@@ -38,12 +39,7 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
             <h2 className="px-1 font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
               {t(f.title)}
             </h2>
-            <MotionFilm
-              src={`/motion/${f.id}-${locale}.mp4`}
-              poster={`/motion/${f.id}-${locale}.jpg`}
-              label={t(f.alt)}
-              className="rounded-[18px]"
-            />
+            <MotionFilm {...motionFilm(f.id, locale)} label={t(f.alt)} className="rounded-[18px]" />
           </figure>
         ))}
       </div>

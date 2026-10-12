@@ -24,6 +24,7 @@ import Link from 'next/link';
 import { Play, ArrowRight } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { MotionFilm } from '@/app/MotionFilm';
+import { motionFilm } from '@/app/motion-media';
 import { DASHBOARD_VIDEO, toEmbedUrl } from './dashboard-media';
 
 const FRAME =
@@ -54,8 +55,7 @@ function HowItWorks() {
           ambiance (day, night, interior, exterior), the render. Rendered
           with HyperFrames like the landing films. */}
       <MotionFilm
-        src={`/motion/etapes-${locale}.mp4`}
-        poster={`/motion/etapes-${locale}.jpg`}
+        {...motionFilm('etapes', locale)}
         label={t('dashboard.filmAlt')}
         className="border-t border-[#ECECF2]"
       />

@@ -10,6 +10,8 @@
 // anything, so it buys real-world evidence at zero risk. Flip
 // `CSP_ENFORCE=true` once the reports come back clean.
 
+import { MEDIA_ORIGIN } from '@/app/motion-media';
+
 export interface CspResult {
   nonce: string;
   policy: string;
@@ -45,7 +47,11 @@ export function buildCsp(options: {
     // mechanism for attributes, only for <style> elements.
     `style-src 'self' 'unsafe-inline'`,
     // blob: covers the reference-image preview built with createObjectURL.
-    `img-src 'self' data: blob:`,
+    // MEDIA_ORIGIN: the motion films' posters, served from Cloudflare R2.
+    `img-src 'self' data: blob: ${MEDIA_ORIGIN}`,
+    // The motion films themselves (motion-media.ts). Without this, media-src
+    // falls back to default-src 'self' and would block them once enforced.
+    `media-src 'self' ${MEDIA_ORIGIN}`,
     // next/font self-hosts its files at build time — no external font origin.
     `font-src 'self'`,
     `connect-src ${connectSources(sentryDsn).join(' ')}`,

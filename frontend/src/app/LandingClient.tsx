@@ -47,6 +47,7 @@ import { HeroProof } from './HeroProof';
 import { SiteFooter } from '@/components/SiteFooter';
 import { AudienceCards, type AudienceCardData } from './AudienceCards';
 import { MotionFilm } from './MotionFilm';
+import { motionFilm } from './motion-media';
 import { StickyBar } from './StickyBar';
 import { HeroFan } from './HeroFan';
 import { HERO_CARDS } from './hero-cards';
@@ -688,8 +689,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               </div>
               <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
                 <MotionFilm
-                  src={`/motion/ajouter-${locale}.mp4`}
-                  poster={`/motion/ajouter-${locale}.jpg`}
+                  {...motionFilm('ajouter', locale)}
                   label={t('landing.addAlt')}
                   className="rounded-[14px]"
                 />
@@ -716,8 +716,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 </div>
                 <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(10,18,70,0.6)] min-[640px]:p-2">
                   <MotionFilm
-                    src={`/motion/commenter-${locale}.mp4`}
-                    poster={`/motion/commenter-${locale}.jpg`}
+                    {...motionFilm('commenter', locale)}
                     label={t('landing.commentAlt')}
                     className="rounded-[14px]"
                   />
@@ -751,8 +750,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 </div>
                 <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
                   <MotionFilm
-                    src={`/motion/arbre-${locale}.mp4`}
-                    poster={`/motion/arbre-${locale}.jpg`}
+                    {...motionFilm('arbre', locale)}
                     label={t('landing.treeAlt')}
                     className="rounded-[14px]"
                   />
@@ -789,8 +787,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               </div>
               <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
                 <MotionFilm
-                  src={`/motion/moteurs-${locale}.mp4`}
-                  poster={`/motion/moteurs-${locale}.jpg`}
+                  {...motionFilm('moteurs', locale)}
                   label={t('landing.enginesAlt')}
                   className="rounded-[14px]"
                 />

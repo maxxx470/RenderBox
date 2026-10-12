@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildCsp } from './csp';
+import { MEDIA_ORIGIN } from '@/app/motion-media';
 
 const base = { nonce: 'test-nonce', isProduction: true, enforce: false } as const;
 
@@ -40,6 +41,14 @@ describe('buildCsp', () => {
     const policy = buildCsp({ ...base, isProduction: false }).policy;
     expect(policy).toContain("'unsafe-eval'");
     expect(policy).not.toContain('upgrade-insecure-requests');
+  });
+
+  it('allows the motion films and their posters from the media origin only', () => {
+    const policy = buildCsp({ ...base }).policy;
+    expect(MEDIA_ORIGIN).toMatch(/^https:\/\/[a-z0-9.-]+$/);
+    expect(policy).toContain(`media-src 'self' ${MEDIA_ORIGIN};`);
+    expect(policy).toMatch(new RegExp(`img-src [^;]*${MEDIA_ORIGIN.replace(/\./g, '\\.')}`));
+    expect(policy).not.toMatch(/media-src[^;]*\*/);
   });
 
   it('points violations at the collector route', () => {

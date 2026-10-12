@@ -7,8 +7,9 @@
 //
 // The films are rendered outside the app with HyperFrames (the owner's
 // motion-design workspace, ~/motion-design-claude-code/<film>/), then encoded
-// for the web into public/motion/: H.264, faststart, no audio track, one file
-// per language (commenter-fr.mp4 / commenter-en.mp4) plus a poster each.
+// for the web: H.264, faststart, no audio track, one file per language
+// (commenter-fr.mp4 / commenter-en.mp4) plus a poster each. They are served
+// from Cloudflare R2, not from the site: see motion-media.ts.
 import { useEffect } from 'react';
 import { useInView } from './hooks/useInView';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';

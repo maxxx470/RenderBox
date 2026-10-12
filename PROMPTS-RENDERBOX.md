@@ -56,6 +56,158 @@ A clean architectural presentation diagram of a contemporary three-storey house 
 
 ---
 
+## A bis. Toutes les autres images du site, à recréer nous-mêmes
+
+Ajouté le 12 octobre 2026. Ces images venaient d'Internet : on les remplace par des images générées par nous, pour ne rien utiliser qui appartienne à quelqu'un d'autre.
+
+**Réglages communs :** une seule image à la fois, aucune image jointe (sauf indication), la plus grande taille possible (2K ou 4K). Le format est donné pour chaque image. Si le moteur ajoute du texte, un logo ou un filigrane, regénère.
+
+**Une image en sert plusieurs.** Les images A1 à A5 (au-dessus) remplacent aussi des images de la galerie et de la page d'accueil : inutile de les faire deux fois. Le tableau dit où chaque image apparaît.
+
+**Chaque prompt est indépendant :** il se suffit à lui-même, sans aucune image jointe, et décrit une image du même type que celle qu'elle remplace (extérieur de nuit pour un extérieur de nuit, etc.).
+
+**Comment me les envoyer :** dépose toutes les images, **telles quelles, sans les renommer**, dans un dossier `nouvelles-images` à la racine de RenderBox. Je reconnais chacune à son contenu, puis je la renomme, la recadre, la compresse et la place moi-même.
+
+| Repère | Ce que c'est | Où on la voit | Format |
+|---|---|---|---|
+| A1 | Immeuble aux balcons courbes, jour | Éventail + galerie `jour-ext-1` + accueil | 3:4 |
+| A2 | Alcôve méditerranéenne, femme endormie | Éventail + galerie `jour-int-2` + accueil | 3:4 |
+| A3 | Maisons dans la roche, nuit | Éventail + galerie `nuit-ext-1` + accueil | 3:4 |
+| A4 | Hall d'hôtel, nuit | Éventail + galerie `nuit-int-3` + accueil | 3:4 |
+| A5 | Schéma blanc légendé (Esquisse) | Accueil (éventail du haut) + galerie | 3:4 |
+| H1 à H4 | Les 4 grandes cartes du haut de l'accueil | Accueil | 4:5 |
+| G2 à G14 | La galerie de la page `/exemple` | Page Exemple, tableau de bord | 4:5 |
+| E1 à E4 | L'éventail d'un projet vide et d'Améliorer | Application | 3:4 |
+| AV1 à AV4 | Les deux avant/après (croquis → rendu) | Accueil | 16:9 |
+
+### H. Les 4 grandes cartes de l'accueil (format 4:5)
+
+**H1 — Jour extérieur** (aussi `hero/jour-exterieur`)
+```
+A photorealistic architectural photograph of a contemporary two-storey house: a long horizontal upper volume in smooth light board-formed concrete with a wide band of vertical warm timber slats, cantilevering over a fully glazed ground floor with two terracotta-orange lounge chairs on the terrace. On the left, a tall dark ribbed metal boundary wall running into the distance. A single young tree with light green foliage stands on the lawn in front of the house. In the foreground, a large still swimming pool with dark water reflecting the house and the tree. Deep clear blue sky taking the upper half of the frame, soft late-morning sun. Symmetrical, calm, eye-level composition. High-end architectural photography, sharp, natural colours, no people, no text, no watermark. Portrait 4:5.
+```
+
+**H2 — Jour intérieur** (aussi `hero/jour-interieur`)
+```
+A photorealistic interior photograph of a serene minimalist bedroom: a low walnut platform bed with crumpled white linen bedding and pillows, a full-width headboard wall of vertical light oak panels, a soft grey wool rug on a pale stone floor. Above the bed, a large framed abstract painting in warm beige, ochre and black brush strokes (no figure). Warm late-afternoon sunlight enters from the right and casts long window-shaped light patches across the wall and the bed. A concealed warm LED cove along the ceiling edge and a slim black track light. On the right, a window seat with cushions in a recessed niche. Three-quarter view from the doorway, calm and luxurious. High-end interior photography, realistic textures, no people, no text, no watermark. Portrait 4:5.
+```
+
+**H3 — Nuit extérieur** (aussi la galerie `nuit-ext-4`)
+```
+A photorealistic architectural photograph at blue hour of a narrow six-storey contemporary apartment building squeezed between two older plastered apartment blocks with small iron balconies and tiled roofs. The new building's facade is a grid of sage-green perforated metal mesh panels, semi-transparent, with recessed balconies behind it full of potted plants and warm golden light glowing from every window. Exposed concrete side walls, a tall oak front door and a green garage door at street level, concrete planters with shrubs. A tree-lined pavement with a lit street lamp, two pedestrians walking, to scale, seen from behind or in profile. Deep blue evening sky with a few stars. Frontal, symmetrical street-level view. High-end architectural night photography, realistic materials, no text, no signs, no watermark. Portrait 4:5.
+```
+
+**H4 — Nuit intérieur** (aussi la galerie `nuit-int-4`)
+```
+A photorealistic interior photograph of a dark, moody minimalist bedroom at night: a low upholstered bed in grey bouclé fabric floating above a dark striped rug, grey linen bedding and two pillows, a long low headboard ledge in warm sand-coloured plaster lit from above by a hidden warm LED strip. On the right, a frosted glass pendant lamp on a thin arched black arm, glowing softly; a ceramic vase with a bare branch at the end of the ledge. Behind, dark wood wall panels and floor-to-ceiling windows with closed horizontal blinds, two slim black pendant spotlights hanging on the left. Almost everything in shadow except the warm light on the bed. Frontal symmetrical view. High-end interior photography, no people, no text, no watermark. Portrait 4:5.
+```
+
+### G. La galerie (page Exemple et tableau de bord, format 4:5)
+
+**G2 — Jour extérieur** (`jour-ext-2`)
+```
+A photorealistic aerial drone photograph of a restored old stone farmhouse on a Mediterranean hillside, extended with a bold contemporary wing in red-painted steel and a sharp red metal roof, and a long rectangular swimming pool with a red rim in front. All around, terraces of olive trees in neat rows, dry-stone walls, a few cypress trees along a gravel lane. Beyond, a calm blue sea, a rocky headland and distant cliffs under a soft hazy sky. Midday summer light. High-end architectural photography, realistic, no people, no text, no watermark. Portrait 4:5.
+```
+
+**G3 — Jour extérieur** (`jour-ext-3`)
+```
+A photorealistic aerial drone photograph looking down on a small cluster of rounded lime-plastered houses in warm sand colour, built into a rocky Mediterranean cove, with planted roof gardens of agave and wild grasses, stone stairs climbing between them and a sunken outdoor lounge with cushions on a stone terrace. A narrow wooden jetty leads to the water, where a classic varnished wooden motorboat is moored. Crystal-clear turquoise water, two tiny swimmers floating, pine and olive trees on the cliffs above. Bright summer sun. High-end architectural photography, realistic, no text, no watermark. Portrait 4:5.
+```
+
+**G4 — Jour extérieur** (`jour-ext-4`)
+```
+A photorealistic architectural photograph of the covered veranda of a contemporary pavilion in a forest clearing: a deep flat roof with a soffit of weathered, rough-sawn oak planks, a row of slender dark brown timber columns, a large glass wall on the right reflecting the garden. A wide deck of warm hardwood boards runs into the distance, beside a rectangular swimming pool with dark green water and a pale stone coping; old red brick paving in the foreground. Behind, a dense wall of tall deciduous trees and conifers, lush lawn and shrubs. Soft overcast daylight, quiet and peaceful. Perspective view along the deck. High-end architectural photography, no people, no text, no watermark. Portrait 4:5.
+```
+
+**G5 — Jour intérieur** (`jour-int-1`)
+```
+A photorealistic interior photograph of a calm contemporary living room: a large frameless opening fills the back wall and frames a lush green garden with a swimming pool and two outdoor lounge chairs. Inside, a long low sofa in olive velvet with a few cushions, two rectangular upholstered ottomans in khaki fabric on a large cream wool rug, warm oak wall panelling on the right, wide-plank oak floor, a small round black side table. Soft natural daylight from the garden, gentle shadows. Eye-level view, centred on the opening. High-end interior photography, realistic textures, no people, no text, no watermark. Portrait 4:5.
+```
+
+**G7 — Jour intérieur** (`jour-int-3`)
+```
+A photorealistic interior photograph of the bright central atrium of a contemporary white public building: three levels of open galleries with white balustrades around a tall void, a glass roof with a fine white steel grid letting in sunlight that draws sharp patterns on the pale travertine floor. In the middle, a sculptural flowering tree with pale pink blossom in a large round white planter with a bench around it. A few people walking and talking, to scale, a sweeping white staircase in the background. Fresh, airy, optimistic. Eye-level wide view. High-end architectural photography, no text, no signs, no watermark. Portrait 4:5.
+```
+
+**G8 — Jour intérieur** (`jour-int-4`)
+```
+A photorealistic interior photograph of a contemporary glass pavilion with a thin red-painted steel frame and a glossy deep red resin floor. In the middle of the room, a large circular sunken seating ring upholstered in dark green velvet, with a throw draped over it. Through the floor-to-ceiling glass, the ruins of an ancient stone aqueduct with three tall arches stand in front of a calm blue sea and a pale sky. Bright, even daylight. Frontal symmetrical view. Bold, graphic, high-end architectural photography, no people, no text, no watermark. Portrait 4:5.
+```
+
+**G10 — Nuit extérieur** (`nuit-ext-2`)
+```
+A photorealistic architectural photograph at dusk of a row of three rounded lime-plastered Mediterranean houses in warm sand colour, set above a rocky limestone shore on dry-stone terraces, with agave and pine trees around. Deep blue twilight sky, the last light fading. Warm golden light glows from the deep doorways and windows; one person stands in a lit doorway, small, in silhouette. Large pale boulders and a stone terrace with low cushions in the foreground. Calm, intimate, slightly low viewpoint from the rocks. High-end architectural photography, realistic materials, no text, no watermark. Portrait 4:5.
+```
+
+**G11 — Nuit extérieur** (`nuit-ext-3`)
+```
+A photorealistic architectural photograph at dusk of a coastal resort pavilion: tall walls of warm travertine stone under a huge, very thin cantilevered roof with a curved underside, wall-washer lights glowing warm between the pillars. In front, a very long narrow infinity pool runs towards the ocean, its edge lit by a row of small warm underwater lights, wooden sun loungers on the stone deck. On the right, a desert garden of tall palm trees, cacti and silver shrubs, softly uplit. Pastel sky from pale blue to peach above a calm sea horizon. Strong one-point perspective along the pool. High-end architectural photography, no people, no text, no watermark. Portrait 4:5.
+```
+
+**G13 — Nuit intérieur** (`nuit-int-1`)
+```
+A photorealistic interior photograph of a luxurious hotel lounge bar at night: a long bar with a backlit niche of bottle shelves glowing warm amber, a row of leather bar stools, a black grand piano on the right, low round coffee tables with candles, round upholstered pouffes and curved sofas in warm beige fabric. A dark timber slatted ceiling, tall windows on the side showing palm trees at night. Lit only by warm artificial light: candle glow, small globe lamps, concealed LED strips; soft pools of light and deep shadows. Eye-level view, intimate and elegant. High-end interior photography, no people, no text, no bottle labels, no watermark. Portrait 4:5.
+```
+
+**G14 — Nuit intérieur** (`nuit-int-2`)
+```
+A photorealistic interior photograph of a double-height hotel lounge at dusk: tall cylindrical columns in warm limestone plaster, a dark timber ceiling, a central wall in pale stone flanked by vertical wooden slats, tall windows on the right with the last blue light over the sea. Low curved sofas in cream bouclé, round coffee tables, several glowing white globe lamps on the floor and on the tables, candles in glass holders. Warm, cosy, cinematic lighting with soft shadows. Symmetrical eye-level view. High-end interior photography, no people, no text, no watermark. Portrait 4:5.
+```
+
+### E. L'éventail d'un projet vide et de la page Améliorer (format 3:4)
+
+**E1 — Immeuble à terrasses** (`exemples/terrasses`)
+```
+A photorealistic architectural photograph of a contemporary eight-storey white residential building with long, thin cantilevered concrete slabs forming deep wraparound terraces with rounded corners and frameless glass balustrades, planters with greenery on several levels, a fully glazed double-height ground floor. Seen from a low angle at a street corner, a dark car parked by the kerb, landscaped verges with grasses and young trees. Clear blue sky, bright afternoon sun, crisp shadows. High-end architectural photography, no people, no text, no logos, no watermark. Portrait 3:4.
+```
+
+**E2 — Maison dans la forêt** (`exemples/maison-foret`)
+```
+A photorealistic architectural photograph of a minimalist black timber-clad house with a flat roof, set into a grassy slope at the end of a winding wet asphalt driveway in a dense deciduous forest. A dark car parked in front of the house, concrete steps climbing the slope beside it. Fallen autumn leaves scattered on the shiny wet asphalt in the foreground, tall trees framing the view. Soft overcast light after rain, moody and quiet. Low eye-level view along the driveway. High-end architectural photography, no people, no text, no logos, no watermark. Portrait 3:4.
+```
+
+**E3 — Maison en pierre** (`exemples/maison-pierre`)
+```
+A photorealistic architectural photograph of a contemporary country house: a tall square tower of rough grey fieldstone with a single deep square window, connected by a long low volume in light timber and white render with a wooden pergola. A gentle grassy slope with flat stepping stones leads to it; an olive branch frames the top left of the picture. A small child runs up the slope, seen from behind, far away and to scale. Soft warm late-afternoon light, light clouds. Low eye-level view. High-end architectural photography, no text, no watermark. Portrait 3:4.
+```
+
+**E4 — Villa aux palmiers** (`exemples/villa-palmiers`)
+```
+A photorealistic architectural photograph of a contemporary single-storey villa on a corner plot of a quiet residential street: white rendered volumes, a feature wall in natural stone, tall panels of warm wood cladding, large glazed openings, a flat roof with a thin overhang. Two tall palm trees in front, a lush tropical garden with grasses and shrubs, a covered carport with two parked cars on the right. The curving street and pavement in the foreground. Golden late-afternoon light, blue sky with light clouds. Wide eye-level view from across the street. High-end architectural photography, no people, no house number, no text, no logos, no watermark. Portrait 3:4.
+```
+
+### AV. Les deux avant/après de l'accueil (format 16:9)
+
+Quatre prompts indépendants : deux croquis et deux rendus, qui décrivent la même maison et le même salon, vus du même point de vue. Sur l'accueil, un curseur fait glisser l'un sur l'autre : s'ils ne se superposent pas assez bien, je redessine moi-même le croquis à partir du rendu, pour que les lignes tombent exactement au même endroit.
+
+**AV1 — Croquis extérieur** (`avant-apres/exterieur-croquis`)
+```
+A hand-drawn architectural perspective sketch in graphite pencil on white paper of a contemporary two-storey house: a long upper volume with vertical slats cantilevering over a glazed ground floor, a thin flat pergola extending to the right, a rectangular swimming pool with stepping stones in front, a low garden wall. Two-point perspective with light construction lines and vanishing lines left visible, loose confident strokes, light hatching for shadows, lots of white paper. No colour, no text, no signature. Landscape 16:9.
+```
+
+**AV2 — Rendu extérieur** (`avant-apres/exterieur-rendu`)
+```
+A photorealistic architectural photograph of a contemporary two-storey house in two-point perspective, seen from the garden corner: a long upper volume in smooth white render clad on its main face with warm vertical timber slats and a glass balcony, cantilevering over a fully glazed ground floor with warm interior light. A thin flat black steel pergola extends from the house to the right. In front, a rectangular swimming pool with clear turquoise water and flat stone stepping pads crossing it, a green lawn around it and a low white garden wall with a few plants along it. Late-afternoon golden light, soft clear blue sky. High-end architectural photography, realistic materials, no people, no text, no watermark. Landscape 16:9.
+```
+
+**AV3 — Croquis intérieur** (`avant-apres/interieur-croquis`)
+```
+A hand-drawn interior perspective sketch in black ink and pencil on white paper of a bright living room: exposed ceiling beams, a full wall of built-in bookshelves on the left, a large window wall onto a garden in the back, a three-seat sofa, a round coffee table on a rug, an armchair, a tripod floor lamp, a potted olive tree, and a kitchen counter with bar stools on the right. One-point perspective, clean confident lines, light hatching, lots of white paper. No colour, no text, no signature. Landscape 16:9.
+```
+
+**AV4 — Rendu intérieur** (`avant-apres/interieur-rendu`)
+```
+A photorealistic interior photograph of a bright living room in one-point perspective: exposed light oak ceiling beams, a full wall of built-in light oak bookshelves filled with books and objects on the left, a large window wall onto a green garden in the back, a three-seat sofa in beige linen facing the camera, a round light-wood coffee table on a jute rug, a cognac leather armchair on the right, a tripod floor lamp, a potted olive tree by the window, and a kitchen counter with wooden bar stools on the far right. Warm white walls, light oak floor. Soft natural daylight from the window, gentle shadows. High-end interior photography, no people, no text, no watermark. Landscape 16:9.
+```
+
+### Ce qui n'a pas besoin d'être refait
+
+- Déjà générées par toi : les portraits de la communauté, les cartes du tableau de bord, les métiers, les illustrations de la FAQ, les tuiles du menu, les miniatures des ambiances et les modèles de l'éventail (`modeles/`).
+- Les petites miniatures `presets/*.jpg` de l'accueil sont des recadrages des images A1 à A5 : je les refais moi-même à partir de tes nouvelles images.
+- Les fichiers `arbre/*`, `avant-apres/croquis.jpg` et `avant-apres/rendu.jpg` ne sont plus utilisés par le site : je les supprimerai.
+
+---
+
 ## B. Comment un prompt est assemblé
 
 Quand l'utilisateur clique sur Générer, le moteur reçoit **un seul texte**, construit dans cet ordre (`frontend/src/lib/server/generation/build-prompt.ts`) :
