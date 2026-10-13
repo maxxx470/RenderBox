@@ -46,7 +46,7 @@ import { AppFrame } from '../AppFrame';
 import type { AppSurfaceProps } from '../AppSurface';
 import { useObjectUrl } from '../CommandBar';
 import { CARD_TRANSFORM, ExampleFanCard } from '../fan';
-import { EXAMPLE_RENDERS } from '../generer-examples';
+import { ENHANCE_EXAMPLES } from '../generer-examples';
 import { MOBILE_NAV_PAD } from '../MobileNav';
 import { RequestError, readErrorCode, isServiceNotConfigured } from '../request-error';
 import { EnhanceBar } from './EnhanceBar';
@@ -430,10 +430,11 @@ export function EnhanceClient({
               </Link>
             </div>
           ) : !hasSource ? (
-            // Nothing attached yet: the example renders, as on the Image page.
+            // Nothing attached yet: four blurry/sharp examples, each one picture
+            // split in two with both resolutions on it (owner, 2026-10-13).
             // The render comes in through the bar's paperclip.
             <div className="flex flex-1 items-center justify-center overflow-hidden pb-5">
-              {EXAMPLE_RENDERS.slice(0, CARD_TRANSFORM.length).map((example, i) => (
+              {ENHANCE_EXAMPLES.slice(0, CARD_TRANSFORM.length).map((example, i) => (
                 <ExampleFanCard key={example.src} example={example} index={i} />
               ))}
             </div>

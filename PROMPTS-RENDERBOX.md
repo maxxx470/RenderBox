@@ -231,7 +231,7 @@ Le moteur reçoit aussi l'image de l'utilisateur, le format (ratio) et la taille
 
 Fichier : `frontend/src/lib/server/generation/presets.ts`. Ces prompts sont invisibles pour l'utilisateur : il choisit une image dans le menu, le prompt part avec sa demande.
 
-### C0. Sans ambiance (choix par défaut)
+### C0. Sans ambiance (par défaut : aucune ambiance choisie)
 
 Un rendu photo fidèle à l'image envoyée. Repris du prompt « rendu depuis un logiciel 3D » de l'article aifordesigners : la géométrie est déjà juste, le moteur ajoute la lumière et la matière, pas ses idées.
 
@@ -260,7 +260,7 @@ Turn the building in the attached image into a highly detailed exploded axonomet
 Une planche de concours complète à partir du bâtiment de l'utilisateur.
 
 ```
-Create an architecture concept analysis board of the building in the attached image, on a clean white background, in the style of an international architecture competition presentation. Precise grid layout with generous white space: a bold title CONCEPT ANALYSIS with the project's name under it; a large realistic 3D view of the building; its characteristic floor plan in fine black linework labelled FLOOR PLAN, with a north arrow and a scale bar; a long section through the building and the ground labelled SECTION; a row of five small white 3D massing models showing step by step how the form evolved, each numbered with a one-word caption; a strip of five square samples of the building's real materials, each with a small label. Thin hairline dividers and a few small annotations with arrows. All text crisp, legible and spelled correctly in a clean sans-serif font. Muted palette: white, light grey, concrete, warm wood, one soft accent colour. Professional, print-ready.
+Create an architecture concept analysis board of the building in the attached image, on a clean white background, in the style of an international architecture competition presentation. Precise grid layout with generous white space: a bold title CONCEPT ANALYSIS with the project's name under it; a large realistic 3D view of the building; its characteristic floor plan in fine black linework labelled FLOOR PLAN, with a north arrow and a scale bar; a long section through the building and the ground labelled SECTION; a row of five small white 3D massing models showing step by step how the form evolved, each numbered with a one-word caption; a strip of five square samples of the building's real materials, each with a small label. Thin hairline dividers and no other text: no small annotations, no dimensions. All text crisp, legible and spelled correctly in a clean sans-serif font, each word written once. Muted palette: white, light grey, concrete, warm wood, one soft accent colour. Professional, print-ready.
 ```
 
 ### C4. Maquette isométrique
@@ -277,6 +277,32 @@ Le schéma blanc légendé que montre sa miniature (avant le 10 octobre, c'étai
 
 ```
 Render the building in the attached image as a clean architectural presentation diagram: an all-white matte 3D massing model seen from a high axonometric angle, crisp edges, soft ambient-occlusion shadows, on a very light grey ground. Keep the building's real shape, openings, terraces and roof. Show the site in the same white and light grey: the street, the plot, a few simple trees and tiny white human figures to scale. Add thin black arrows with short labels in a clean sans-serif font pointing to the entrances and the main outdoor spaces (for example MAIN ENTRANCE, CAR ENTRANCE, BACK YARD, ROOF GARDEN), and STREET ACCESS written along the street. No photorealistic materials or textures, no colours except a touch of warm wood or terracotta on the ground floor. Every label crisp, legible and spelled correctly.
+```
+
+### C5 bis. Les miniatures du menu Ambiance
+
+Chaque miniature montre ce que son ambiance produit : son prompt est **le même texte que celui de l'ambiance** (C1 à C5), appliqué à un bâtiment précis au lieu de « l'image jointe ». Ainsi, l'image affichée dans le menu est celle que l'ambiance sait faire. Format portrait **3:4** (réglé dans le générateur), aucune image jointe. Fichiers : `frontend/public/presets/thumb/` (`plan-3d.webp`, `eclate.webp`, `analyse.webp`, `isometrie.webp`, `esquisse.webp`).
+
+Le 13 octobre 2026, la miniature **Esquisse** a été remplacée par le schéma vertical généré avec le prompt A5, qui correspond au prompt C5.
+
+**Plan 3D aménagé**
+```
+Create a photorealistic top-down 3D render of a furnished two-bedroom home, seen from directly above with the roof removed. Furnish every room in a warm, premium contemporary style: herringbone oak floors, a bedroom with a made bed and bedside lamps, a bathroom with a walk-in shower and a vanity, a kitchen with worktops, a dining table, a living room with a sofa, an armchair and a rug. Soft natural light with gentle shadows and warm accent lighting. Add three or four people seen from above, to scale and naturally placed. Walls cut and shown in solid black. The whole plan fills the frame on a white background. No text, no labels, no dimensions, no room names. Portrait 3:4.
+```
+
+**Axonométrie éclatée**
+```
+Create a highly detailed exploded axonometric 3D illustration of a contemporary three-storey house with white render, warm timber cladding and large windows: a realistic 3D model, not a flat drawing, seen from a high 30-degree angle on a clean white background. Pull the building apart vertically into its construction layers, stacked one above another with even gaps and thin dashed alignment lines between them, from bottom to top: foundations and ground slab, structural frame (columns and beams), each floor slab with its interior walls, stairs and furniture, insulation, facade cladding, windows and glazing, roof structure, roof covering. Realistic materials and colours, soft shadows and ambient occlusion. Add clean architectural labels: thin black leader lines from each layer to a short uppercase label in a clean sans-serif font, aligned in a neat column on the right: ROOF, ROOF STRUCTURE, GLAZING, CLADDING, INSULATION, FIRST FLOOR, GROUND FLOOR, STRUCTURAL FRAME, FOUNDATIONS. Every label crisp, legible and spelled correctly, each word written once. High-end technical cutaway illustration style. Portrait 3:4.
+```
+
+**Planche d'analyse**
+```
+Create an architecture concept analysis board of a contemporary hillside house in board-formed concrete and warm timber, on a clean white background, in the style of an international architecture competition presentation. Precise grid layout with generous white space: a bold title CONCEPT ANALYSIS with HILLSIDE HOUSE under it; a large realistic 3D view of the house on its slope; its floor plan in fine black linework labelled FLOOR PLAN, with a north arrow and a scale bar; a long section through the house and the ground labelled SECTION; a row of five small white 3D massing models showing step by step how the form evolved, numbered 1 to 5 with the one-word captions VOLUME, SPLIT, SHIFT, OPEN, TERRACE; a strip of five square samples of its materials labelled CONCRETE, OAK, GLASS, STONE, LINEN. Thin hairline dividers and no other text: no small annotations, no dimensions. All text crisp, legible and spelled correctly in a clean sans-serif font, each word written once. Muted palette: white, light grey, concrete, warm wood, one soft accent colour. Professional, print-ready. Portrait 3:4.
+```
+
+**Maquette isométrique**
+```
+Create a clean isometric 3D architectural model of a small group of three linked contemporary houses with roof terraces, pergolas and an outdoor staircase, seen from a high 30-degree isometric angle on a very light grey ground crossed by subtle dotted halftone bands. Render it like a high-end physical competition model: light birch and pine timber for the structure and slats, smooth pale grey concrete for plinths, walkways and stairs, frosted white glass for roofs and glazing, crisp edges. About fifteen tiny white abstract human figures walking and standing, to scale. Soft even daylight from the top left, gentle ambient occlusion and soft shadows. Muted palette of warm wood, white and light grey only. No trees, no background scenery, no text. Portrait 3:4.
 ```
 
 ### C6. Les 4 anciennes ambiances (gardées en coulisses)

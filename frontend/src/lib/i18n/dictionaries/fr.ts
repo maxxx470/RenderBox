@@ -382,6 +382,7 @@ const fr = {
   'admin.users.filterDeleted': 'Supprimés',
   'admin.users.colUser': 'Utilisateur',
   'admin.users.colRole': 'Rôle',
+  'info.filmAmeliorerTitle': 'Rendre nette une image floue',
   'admin.users.colStatus': 'Statut',
   'admin.users.colJoined': 'Inscrit',
   'admin.users.colActions': '',
@@ -452,7 +453,7 @@ const fr = {
   // projet unique : le titre aurait démenti la galerie dès la première section.
   'exemple.title': 'Exemples de rendus',
   'exemple.subtitle':
-    'Chaque preset donne une lumière différente. Voici à quoi ressemble chacun, sur plusieurs projets.',
+    'Tout ce que RenderBox sait faire, sur plusieurs projets : plans aménagés, axonométries éclatées, planches d’analyse, maquettes, esquisses, le passage du croquis au rendu et les quatre lumières.',
   'exemple.batchCountOne': '1 rendu',
   'exemple.batchCount': '{n} rendus',
   'exemple.esquisseNote':
@@ -645,6 +646,12 @@ const fr = {
     "Importez une photo, un croquis ou l'export image de vos plans : RenderBox génère des rendus cohérents d'une vue à l'autre, matériaux compris.",
   'landing.eyebrowResult': 'Le résultat',
   'landing.eyebrowFeatures': 'Fonctionnalités clés',
+  'landing.enhanceEyebrow': 'Améliorer',
+  'landing.enhanceTitle': 'Une image floue devient nette.',
+  'landing.enhanceBody':
+    'Envoyez un rendu faible ou une photo en basse résolution : Améliorer la rend nette, détaillée et lumineuse, sans changer la composition.',
+  'landing.enhanceAlt':
+    'Film : sur la page Améliorer, une image floue est jointe, les améliorations choisies, puis le rendu devient net, de 384 × 214 à 2752 × 1536 pixels.',
   'landing.eyebrowHow': 'Comment ça marche',
   'landing.howTitle': 'Simple, cohérent et automatisé',
   'landing.howSubtitle':

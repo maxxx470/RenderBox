@@ -15,6 +15,7 @@ const FILMS = [
   { id: 'arbre', title: 'info.filmArbreTitle', alt: 'landing.treeAlt' },
   { id: 'moteurs', title: 'info.filmMoteursTitle', alt: 'landing.enginesAlt' },
   { id: 'ajouter', title: 'info.filmAjouterTitle', alt: 'landing.addAlt' },
+  { id: 'ameliorer', title: 'info.filmAmeliorerTitle', alt: 'landing.enhanceAlt' },
 ] as const;
 
 /**

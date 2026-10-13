@@ -11,8 +11,13 @@
 // 2026-10-10 (owner) — the menu offers the four kinds of picture (3D plan,
 // exploded view, board, isometric model) and Esquisse, portrait pictures in
 // three columns; the four lights became the image generator page's
-// templates. Nothing is chosen by default: "Sans ambiance" asks for a
-// faithful photo render of the user's image.
+// templates. Nothing is chosen by default, which asks for a faithful photo
+// render of the user's image.
+//
+// 2026-10-13 (owner) — the menu no longer has a "Sans ambiance" row: no
+// ambiance is already the default, so the row only repeated it. Clicking the
+// chosen ambiance again removes it (its tick turns into a cross on hover), and
+// the chip then just reads "Ambiance".
 import { Camera, ChevronUp, ChevronDown } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { AMBIANCE_KEYS, PRESETS, type PresetKey } from '@/lib/server/generation/presets';
@@ -75,7 +80,7 @@ export function PresetSelect({
         ) : (
           NO_AMBIANCE_TILE
         )}
-        {preset ? PRESETS[preset].label[locale] : t('app.presetNone')}
+        {preset ? PRESETS[preset].label[locale] : t('app.presetLabel')}
         <span className="flex-shrink-0">
           {open ? (
             <ChevronUp set="curved" size={12} primaryColor="#8A8896" />
@@ -91,28 +96,6 @@ export function PresetSelect({
           role="menu"
         >
           <p className={POPOVER_HEADING}>{t('app.presetLabel')}</p>
-          <button
-            type="button"
-            role="menuitemradio"
-            aria-checked={preset === null}
-            onClick={() => {
-              onChange(null);
-              closeNow();
-            }}
-            className={`mx-1 mb-1 flex w-[calc(100%-8px)] items-center gap-2 rounded-xl border-2 px-2 py-1.5 text-left transition-colors duration-150 ease-out ${
-              preset === null
-                ? 'border-[#435CFE] bg-[#F4F6FF]'
-                : 'border-transparent bg-[#F2F2F5] hover:bg-[#E9E9EE]'
-            }`}
-          >
-            {NO_AMBIANCE_TILE}
-            <span className="min-w-0">
-              <span className="block text-[12px] font-semibold text-[#17161F]">
-                {t('app.presetNone')}
-              </span>
-              <span className="block text-[11px] text-[#6B6878]">{t('app.presetNoneHint')}</span>
-            </span>
-          </button>
           <div className="grid grid-cols-3 gap-1.5 p-1">
             {AMBIANCE_KEYS.map((key) => {
               const selected = key === preset;
@@ -122,8 +105,10 @@ export function PresetSelect({
                   type="button"
                   role="menuitemradio"
                   aria-checked={selected}
+                  // A second click on the chosen one takes it off: back to
+                  // no ambiance, the faithful photo render.
                   onClick={() => {
-                    onChange(key);
+                    onChange(selected ? null : key);
                     closeNow();
                   }}
                   className={`group relative overflow-hidden rounded-xl border-2 text-left transition-colors duration-150 ease-out ${
@@ -151,7 +136,10 @@ export function PresetSelect({
                         strokeLinejoin="round"
                         aria-hidden
                       >
-                        <path d="m5 12.5 4.5 4.5L19 7.5" />
+                        {/* The tick, and on hover the cross that says a click
+                            removes it. */}
+                        <path d="m5 12.5 4.5 4.5L19 7.5" className="group-hover:hidden" />
+                        <path d="M7 7l10 10M17 7 7 17" className="hidden group-hover:block" />
                       </svg>
                     </span>
                   )}

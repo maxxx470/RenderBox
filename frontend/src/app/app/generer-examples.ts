@@ -48,3 +48,17 @@ export const EXAMPLE_RENDERS: readonly ExampleRender[] = [
   { src: '/exemples/maison-pierre.jpg' },
   { src: '/exemples/villa-palmiers.jpg' },
 ];
+
+/**
+ * The Améliorer page's fan (owner, 2026-10-13): each card is one picture cut
+ * in two by a white bar — on the left the image as a weak render, with its
+ * resolution, on the right the same image sharp, with its own. Built from the
+ * owner's generated images (the four above), the left half really brought down
+ * to the resolution it prints. Files in public/ameliorer/.
+ */
+export const ENHANCE_EXAMPLES: readonly ExampleRender[] = [
+  { src: '/ameliorer/immeuble-blanc.jpg' },
+  { src: '/ameliorer/maison-foret.jpg' },
+  { src: '/ameliorer/tour-en-pierre.jpg' },
+  { src: '/ameliorer/villa-palmiers.jpg' },
+];

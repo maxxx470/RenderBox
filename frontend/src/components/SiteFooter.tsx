@@ -58,11 +58,11 @@ export function SiteFooter({ ctaHref = '/app' }: { ctaHref?: string }) {
           <div className="flex flex-wrap gap-14">
             <div>
               <h2 className={HEADING}>{t('landing.footerProductHeading')}</h2>
-              <Link href="/#fonctionnalites" className={LINK}>
-                {t('landing.navFeatures')}
-              </Link>
               <Link href="/#comment" className={LINK}>
                 {t('landing.navHow')}
+              </Link>
+              <Link href="/#fonctionnalites" className={LINK}>
+                {t('landing.navFeatures')}
               </Link>
               <Link href="/#tarifs" className={LINK}>
                 {t('landing.navPricing')}

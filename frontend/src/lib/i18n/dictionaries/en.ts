@@ -368,6 +368,7 @@ const en: Record<keyof typeof fr, string> = {
   'admin.users.searchPlaceholder': 'Search by email or name…',
   'admin.users.filterAll': 'All',
   'admin.users.filterActive': 'Active',
+  'info.filmAmeliorerTitle': 'Turn a blurry image sharp',
   'admin.users.filterSuspended': 'Suspended',
   'admin.users.filterDeleted': 'Deleted',
   'admin.users.colUser': 'User',
@@ -437,7 +438,7 @@ const en: Record<keyof typeof fr, string> = {
 
   'exemple.title': 'Render examples',
   'exemple.subtitle':
-    'Each preset gives a different light. Here is what each one looks like, across several projects.',
+    'Everything RenderBox can do, across several projects: furnished plans, exploded axonometrics, concept boards, models, sketches, from sketch to render, and the four lights.',
   'exemple.batchCountOne': '1 render',
   'exemple.batchCount': '{n} renders',
   'exemple.esquisseNote':
@@ -625,6 +626,12 @@ const en: Record<keyof typeof fr, string> = {
     'Upload an image: RenderBox detects the materials, remembers them and reuses them in every new render of the project.',
   'landing.eyebrowPresets': 'Ambiances',
   'landing.eyebrowPricing': 'Pricing',
+  'landing.enhanceEyebrow': 'Enhance',
+  'landing.enhanceTitle': 'A blurry image turns sharp.',
+  'landing.enhanceBody':
+    'Send a weak render or a low-resolution photo: Enhance makes it sharp, detailed and bright, without changing the composition.',
+  'landing.enhanceAlt':
+    'Film: on the Enhance page, a blurry image is attached, the improvements chosen, then the render turns sharp, from 384 × 214 to 2752 × 1536 pixels.',
   'landing.eyebrowFaq': 'FAQ',
   'landing.faqSubtitle': 'Answers to the questions we hear most about RenderBox.',
 

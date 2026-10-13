@@ -52,16 +52,16 @@ export function SiteHeader({
         {links && (
           <nav className="hidden items-center gap-1 text-[13.5px] font-medium text-[#3D3B49] min-[860px]:flex">
             <Link
-              href="/#fonctionnalites"
-              className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
-            >
-              {t('landing.navFeatures')}
-            </Link>
-            <Link
               href="/#comment"
               className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
               {t('landing.navHow')}
+            </Link>
+            <Link
+              href="/#fonctionnalites"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
+            >
+              {t('landing.navFeatures')}
             </Link>
             <Link
               href="/#tarifs"
@@ -101,8 +101,8 @@ export function SiteHeader({
             <PublicMobileMenu
               className="min-[860px]:hidden"
               links={[
-                { href: '/#fonctionnalites', label: t('landing.navFeatures') },
                 { href: '/#comment', label: t('landing.navHow') },
+                { href: '/#fonctionnalites', label: t('landing.navFeatures') },
                 { href: '/#tarifs', label: t('landing.navPricing') },
                 { href: '/exemple', label: t('landing.navExamples') },
                 { href: '/info', label: t('info.navLabel') },

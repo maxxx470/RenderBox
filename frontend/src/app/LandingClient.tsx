@@ -394,11 +394,11 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             RenderBox
           </Link>
           <div className="hidden items-center gap-1 text-[13.5px] font-medium text-[#3D3B49] min-[920px]:flex">
-            <a href="#fonctionnalites" className={NAV_LINK}>
-              {t('landing.navFeatures')}
-            </a>
             <a href="#comment" className={NAV_LINK}>
               {t('landing.navHow')}
+            </a>
+            <a href="#fonctionnalites" className={NAV_LINK}>
+              {t('landing.navFeatures')}
             </a>
             <a href="#tarifs" className={NAV_LINK}>
               {t('landing.navPricing')}
@@ -432,8 +432,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <PublicMobileMenu
               className="min-[920px]:hidden"
               links={[
-                { href: '#fonctionnalites', label: t('landing.navFeatures') },
                 { href: '#comment', label: t('landing.navHow') },
+                { href: '#fonctionnalites', label: t('landing.navFeatures') },
                 { href: '#tarifs', label: t('landing.navPricing') },
                 { href: '/exemple', label: t('landing.navExamples') },
                 { href: '#faq', label: t('landing.navFaq') },
@@ -608,49 +608,6 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </div>
         </section>
 
-        {/* KEY FEATURES — one card per audience (the trade, a title, a picture),
-            the second one in the brand red, then a single CTA under the row. */}
-        <section id="fonctionnalites" className="scroll-mt-20 py-14 min-[860px]:py-20">
-          <SectionHeader
-            eyebrow={t('landing.eyebrowFeatures')}
-            title={t('landing.audienceTitle')}
-          />
-          <AudienceCards
-            cards={
-              [
-                {
-                  label: t('landing.audience1Tab'),
-                  title: t('landing.audience1Title'),
-                  image: '/metiers/architectes.webp',
-                },
-                {
-                  label: t('landing.audience2Tab'),
-                  title: t('landing.audience2Title'),
-                  image: '/metiers/ingenieurs.webp',
-                },
-                {
-                  label: t('landing.audience3Tab'),
-                  title: t('landing.audience3Title'),
-                  image: '/metiers/dessinateurs.webp',
-                },
-                {
-                  label: t('landing.audience4Tab'),
-                  title: t('landing.audience4Title'),
-                  image: '/metiers/promoteurs.webp',
-                },
-              ] satisfies AudienceCardData[]
-            }
-          />
-          <Reveal delayMs={200} className="mt-10 flex justify-center">
-            <Link
-              href={ctaHref}
-              className={`inline-flex items-center rounded-xl ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
-            >
-              {t('landing.checklistCta')}
-            </Link>
-          </Reveal>
-        </section>
-
         {/* HOW IT WORKS — full-width cards, one above the other (owner's
             brief, 2026-10-06): "Ajouter" first (owner, 2026-10-10), then the
             gradient one with the "Commenter" film, the grey one with the
@@ -793,6 +750,70 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 />
               </div>
             </div>
+          </Reveal>
+        </section>
+
+        {/* AMÉLIORER — the "ameliorer" film (owner, 2026-10-13), built on the
+            real /app/enhance page like the other films: a blurry render is
+            attached, the improvements ticked, a sky reference added, then the
+            slider sweeps from blurry to sharp, each side with its resolution. */}
+        <section className="pb-14 min-[860px]:pb-20">
+          <SectionHeader
+            eyebrow={t('landing.enhanceEyebrow')}
+            title={t('landing.enhanceTitle')}
+            subtitle={t('landing.enhanceBody')}
+          />
+          <Reveal delayMs={100}>
+            <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(23,22,31,0.3)] min-[640px]:p-2">
+              <MotionFilm
+                {...motionFilm('ameliorer', locale)}
+                label={t('landing.enhanceAlt')}
+                className="rounded-[14px]"
+              />
+            </div>
+          </Reveal>
+        </section>
+
+        {/* KEY FEATURES — one card per audience (the trade, a title, a picture),
+            the second one in the brand red, then a single CTA under the row. */}
+        <section id="fonctionnalites" className="scroll-mt-20 py-14 min-[860px]:py-20">
+          <SectionHeader
+            eyebrow={t('landing.eyebrowFeatures')}
+            title={t('landing.audienceTitle')}
+          />
+          <AudienceCards
+            cards={
+              [
+                {
+                  label: t('landing.audience1Tab'),
+                  title: t('landing.audience1Title'),
+                  image: '/metiers/architectes.webp',
+                },
+                {
+                  label: t('landing.audience2Tab'),
+                  title: t('landing.audience2Title'),
+                  image: '/metiers/ingenieurs.webp',
+                },
+                {
+                  label: t('landing.audience3Tab'),
+                  title: t('landing.audience3Title'),
+                  image: '/metiers/dessinateurs.webp',
+                },
+                {
+                  label: t('landing.audience4Tab'),
+                  title: t('landing.audience4Title'),
+                  image: '/metiers/promoteurs.webp',
+                },
+              ] satisfies AudienceCardData[]
+            }
+          />
+          <Reveal delayMs={200} className="mt-10 flex justify-center">
+            <Link
+              href={ctaHref}
+              className={`inline-flex items-center rounded-xl ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
+            >
+              {t('landing.checklistCta')}
+            </Link>
           </Reveal>
         </section>
 
