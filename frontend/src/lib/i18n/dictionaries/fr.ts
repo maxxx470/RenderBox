@@ -283,6 +283,7 @@ const fr = {
   'info.filmArbreTitle': "Explorer plusieurs pistes avec l'arbre du projet",
   'info.filmMoteursTitle': 'Comparer les deux moteurs, Visio et Pixel IA',
   'info.filmAjouterTitle': 'Ajouter un élément à partir de sa photo',
+  'info.filmAmeliorerTitle': 'Rendre nette une image floue',
   'info.plannedHeading': 'À venir',
   'info.shippedHeading': 'Mises à jour',
   'info.badgePlanned': 'à venir',
@@ -382,7 +383,6 @@ const fr = {
   'admin.users.filterDeleted': 'Supprimés',
   'admin.users.colUser': 'Utilisateur',
   'admin.users.colRole': 'Rôle',
-  'info.filmAmeliorerTitle': 'Rendre nette une image floue',
   'admin.users.colStatus': 'Statut',
   'admin.users.colJoined': 'Inscrit',
   'admin.users.colActions': '',
@@ -547,6 +547,12 @@ const fr = {
   'landing.beforeAfterTitleAccent': 'rendu photoréaliste',
   'landing.beforeAfterBody':
     'Glissez pour comparer. Chaque matériau, chaque ouverture, chaque proportion conservée — RenderBox ne réinvente pas votre projet, il le révèle.',
+  'landing.enhanceEyebrow': 'Améliorer',
+  'landing.enhanceTitle': 'Une image floue devient nette.',
+  'landing.enhanceBody':
+    'Envoyez un rendu faible ou une photo en basse résolution : Améliorer la rend nette, détaillée et lumineuse, sans changer la composition.',
+  'landing.enhanceAlt':
+    'Film : sur la page Améliorer, une image floue est jointe, les améliorations choisies, puis le rendu devient net, de 384 × 214 à 2752 × 1536 pixels.',
   'landing.beforeAfterAltBefore':
     "Croquis à main levée d'une villa contemporaine : un étage en porte-à-faux, une pergola et une piscine.",
   'landing.beforeAfterAltAfter':
@@ -646,12 +652,6 @@ const fr = {
     "Importez une photo, un croquis ou l'export image de vos plans : RenderBox génère des rendus cohérents d'une vue à l'autre, matériaux compris.",
   'landing.eyebrowResult': 'Le résultat',
   'landing.eyebrowFeatures': 'Fonctionnalités clés',
-  'landing.enhanceEyebrow': 'Améliorer',
-  'landing.enhanceTitle': 'Une image floue devient nette.',
-  'landing.enhanceBody':
-    'Envoyez un rendu faible ou une photo en basse résolution : Améliorer la rend nette, détaillée et lumineuse, sans changer la composition.',
-  'landing.enhanceAlt':
-    'Film : sur la page Améliorer, une image floue est jointe, les améliorations choisies, puis le rendu devient net, de 384 × 214 à 2752 × 1536 pixels.',
   'landing.eyebrowHow': 'Comment ça marche',
   'landing.howTitle': 'Simple, cohérent et automatisé',
   'landing.howSubtitle':

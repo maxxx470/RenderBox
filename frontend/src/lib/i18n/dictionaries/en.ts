@@ -274,6 +274,7 @@ const en: Record<keyof typeof fr, string> = {
   'info.filmArbreTitle': 'Explore several directions with the project tree',
   'info.filmMoteursTitle': 'Compare the two engines, Visio and Pixel AI',
   'info.filmAjouterTitle': 'Add an element from its photo',
+  'info.filmAmeliorerTitle': 'Turn a blurry image sharp',
   'info.plannedHeading': 'Coming up',
   'info.shippedHeading': 'Updates',
   'info.badgePlanned': 'planned',
@@ -368,7 +369,6 @@ const en: Record<keyof typeof fr, string> = {
   'admin.users.searchPlaceholder': 'Search by email or name…',
   'admin.users.filterAll': 'All',
   'admin.users.filterActive': 'Active',
-  'info.filmAmeliorerTitle': 'Turn a blurry image sharp',
   'admin.users.filterSuspended': 'Suspended',
   'admin.users.filterDeleted': 'Deleted',
   'admin.users.colUser': 'User',
@@ -532,6 +532,12 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterTitleAccent': 'photorealistic render',
   'landing.beforeAfterBody':
     "Drag to compare. Every material, every opening, every proportion kept — RenderBox doesn't reinvent your project, it reveals it.",
+  'landing.enhanceEyebrow': 'Enhance',
+  'landing.enhanceTitle': 'A blurry image turns sharp.',
+  'landing.enhanceBody':
+    'Send a weak render or a low-resolution photo: Enhance makes it sharp, detailed and bright, without changing the composition.',
+  'landing.enhanceAlt':
+    'Film: on the Enhance page, a blurry image is attached, the improvements chosen, then the render turns sharp, from 384 × 214 to 2752 × 1536 pixels.',
   'landing.beforeAfterAltBefore':
     'Freehand sketch of a contemporary villa: a cantilevered upper floor, a pergola and a pool.',
   'landing.beforeAfterAltAfter':
@@ -626,12 +632,6 @@ const en: Record<keyof typeof fr, string> = {
     'Upload an image: RenderBox detects the materials, remembers them and reuses them in every new render of the project.',
   'landing.eyebrowPresets': 'Ambiances',
   'landing.eyebrowPricing': 'Pricing',
-  'landing.enhanceEyebrow': 'Enhance',
-  'landing.enhanceTitle': 'A blurry image turns sharp.',
-  'landing.enhanceBody':
-    'Send a weak render or a low-resolution photo: Enhance makes it sharp, detailed and bright, without changing the composition.',
-  'landing.enhanceAlt':
-    'Film: on the Enhance page, a blurry image is attached, the improvements chosen, then the render turns sharp, from 384 × 214 to 2752 × 1536 pixels.',
   'landing.eyebrowFaq': 'FAQ',
   'landing.faqSubtitle': 'Answers to the questions we hear most about RenderBox.',
 
