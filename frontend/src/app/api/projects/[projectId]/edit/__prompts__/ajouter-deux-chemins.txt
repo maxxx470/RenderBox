@@ -1,0 +1,9 @@
+--- sans ambiance réappliquée ---
+Add the following element into the scene, using the attached reference image for its appearance: Un banc en bois
+Keep everything else in the image exactly as it is: framing, light, materials.
+
+--- avec ambiance réappliquée (jour_ext) ---
+Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:
+- facade_principale: Enduit blanc taloché
+Render in full daylight: natural sunlight, crisp cast shadows, clear sky, exterior viewpoint.
+Add the following element into the scene, using the attached reference image for its appearance: Un banc en bois

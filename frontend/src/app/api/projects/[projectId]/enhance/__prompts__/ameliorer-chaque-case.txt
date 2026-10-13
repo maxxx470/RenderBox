@@ -1,0 +1,34 @@
+--- sharpness ---
+Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.
+Increase sharpness: crisp edges and clean lines, remove noise, blur and compression artefacts.
+Apply the improvements subtly: the result must read as the same image, only cleaner.
+
+--- detail ---
+Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.
+Add fine detail: high-resolution textures and legible small elements (joints, frames, fixtures), without inventing new building elements.
+Apply the improvements subtly: the result must read as the same image, only cleaner.
+
+--- lighting ---
+Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.
+Improve the lighting while keeping its direction and time of day: physically plausible shadows, soft global illumination, natural reflections and balanced exposure.
+Apply the improvements subtly: the result must read as the same image, only cleaner.
+
+--- materials ---
+Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.
+Make every material more photorealistic without changing what it is: believable texture, grain, roughness and reflectivity for each surface.
+Apply the improvements subtly: the result must read as the same image, only cleaner.
+
+--- sky ---
+Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.
+Replace a flat or empty sky with a natural, realistic one matching the existing light.
+Apply the improvements subtly: the result must read as the same image, only cleaner.
+
+--- vegetation ---
+Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.
+Make the existing vegetation lush and realistic — plants, trees, lawns — without hiding the architecture.
+Apply the improvements subtly: the result must read as the same image, only cleaner.
+
+--- life ---
+Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.
+Add subtle signs of life at a believable scale — a few discreet people, small everyday details — without hiding the architecture.
+Apply the improvements subtly: the result must read as the same image, only cleaner.

@@ -26,6 +26,29 @@ export async function readErrorCode(res: Response): Promise<string> {
   return '';
 }
 
+/**
+ * True when a generation ran out of time (the 504 GENERATION_TIMEOUT of the
+ * generate / edit / enhance routes). Only that exact code counts: a 502, or
+ * a 504 without it (e.g. the platform's own page), stays a general failure.
+ */
+export function isGenerationTimeout(err: unknown): boolean {
+  if (err instanceof RequestError) return err.code === 'GENERATION_TIMEOUT';
+  if (err instanceof ApiError) return err.body.code === 'GENERATION_TIMEOUT';
+  return false;
+}
+
+/**
+ * True when a generation or an edit stopped because the source image's
+ * materials could not be read (503 MATERIALS_UNAVAILABLE, étapes 3C.3 and
+ * 3C.3-R2): the engine was not called and nothing was counted. Distinct from
+ * a timeout and from a service that is not configured.
+ */
+export function isMaterialsUnavailable(err: unknown): boolean {
+  if (err instanceof RequestError) return err.code === 'MATERIALS_UNAVAILABLE';
+  if (err instanceof ApiError) return err.code === 'MATERIALS_UNAVAILABLE';
+  return false;
+}
+
 /** True when the failure is a missing server-side provider, not a flake. */
 export function isServiceNotConfigured(err: unknown): boolean {
   if (err instanceof RequestError) return NOT_CONFIGURED.has(err.code);

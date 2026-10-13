@@ -2,22 +2,22 @@
 
 // The right column of the image workspace (owner, 2026-10-08) — the same on
 // a project (/app/[projet]) and on the Image page (/app/generer): one
-// vertical white card the full height, the materials sheet on top (the edit
-// panel while Commenter / Ajouter is on), the project tree under it. A drawer
-// from the right below 900px, opened by the page's own button.
+// vertical white card the full height, the selected image's materials on top
+// (NodeMaterialsPanel, given ready-made by the page; the edit panel while
+// Commenter / Ajouter is on), the project tree under it. A drawer from the
+// right below 900px, opened by the page's own button.
+import type { ReactNode } from 'react';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { AppMode } from './CommandBar';
 import type { Pin } from './AnnotationLayer';
 import { EditPanel } from './EditPanel';
-import { MaterialsPanel, type MaterialRow } from './MaterialsPanel';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { ProjectTree } from './ProjectTree';
 
 export function SideColumn({
   mode,
-  materials,
-  onSaveMaterial,
+  materialsPanel,
   canEdit,
   lockedHint,
   referenceFile,
@@ -32,8 +32,8 @@ export function SideColumn({
   onMobileClose,
 }: {
   mode: AppMode;
-  materials: MaterialRow[];
-  onSaveMaterial: (id: string, valeur: string) => Promise<void>;
+  /** The materials panel of the selected image, shown in Générer mode. */
+  materialsPanel: ReactNode;
   canEdit: boolean;
   /** Why the edit panel is locked, while canEdit is false. */
   lockedHint: string;
@@ -76,7 +76,7 @@ export function SideColumn({
               onPinsChange={onPinsChange}
             />
           ) : (
-            <MaterialsPanel materials={materials} onSave={onSaveMaterial} />
+            materialsPanel
           )}
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto border-t border-[#ECECF2] px-4 py-4.5">

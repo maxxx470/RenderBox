@@ -18,7 +18,13 @@ import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
-import { RequestError, readErrorCode, isServiceNotConfigured } from './request-error';
+import {
+  RequestError,
+  readErrorCode,
+  isGenerationTimeout,
+  isMaterialsUnavailable,
+  isServiceNotConfigured,
+} from './request-error';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
@@ -31,6 +37,7 @@ import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/
 import { AppFrame } from './AppFrame';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { SideColumn } from './SideColumn';
+import { NodeMaterialsPanel } from './NodeMaterialsPanel';
 import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
@@ -264,8 +271,12 @@ export function GenerationHome({
       toast(t('app.noActiveTierError'), 'error');
     } else if (err instanceof RequestError && err.code === 'QUOTA_EXCEEDED') {
       toast(t('app.quotaExceededError'), 'error');
+    } else if (isServiceNotConfigured(err)) {
+      toast(t('app.serviceNotConfigured'), 'error');
+    } else if (isMaterialsUnavailable(err)) {
+      toast(t('app.materialsUnavailableError'), 'error');
     } else {
-      toast(t(isServiceNotConfigured(err) ? 'app.serviceNotConfigured' : fallback), 'error');
+      toast(t(isGenerationTimeout(err) ? 'app.generationTimeout' : fallback), 'error');
     }
   }
 
@@ -627,8 +638,10 @@ export function GenerationHome({
 
       <SideColumn
         mode={mode}
-        materials={[]}
-        onSaveMaterial={async () => {}}
+        // No project yet: the panel says where an image's materials will show.
+        materialsPanel={
+          <NodeMaterialsPanel state={null} controller={null} nodeName={null} legacy={[]} />
+        }
         canEdit={Boolean(photoFile)}
         lockedHint={t('app.genHomeNeedPhoto')}
         referenceFile={referenceFile}

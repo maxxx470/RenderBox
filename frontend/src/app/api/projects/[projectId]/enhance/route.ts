@@ -17,6 +17,10 @@
 // default, keeps the framing). References go through the same gate as the
 // edit route's (size, MIME, magic bytes, moderation) — check-image-file.ts.
 export const runtime = 'nodejs';
+// The engine call may take up to ENGINE_DEADLINE_MS (180 s); the rest of the
+// request fits in what is left. 300 s is the ceiling on Vercel Hobby with
+// Fluid compute (checked 2026-10-11).
+export const maxDuration = 300;
 
 import { randomUUID } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -32,6 +36,7 @@ import {
   generateRender,
   isEngineConfigured,
   EngineNotConfiguredError,
+  EngineTimeoutError,
   ENGINE_NAMES,
 } from '@/lib/server/generation/engines';
 import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
@@ -210,6 +215,12 @@ export async function POST(
         return NextResponse.json(
           { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
           { status: 503, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      if (e instanceof EngineTimeoutError) {
+        return NextResponse.json(
+          { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
+          { status: 504, headers: { 'x-request-id': ctx.requestId } },
         );
       }
       return NextResponse.json(

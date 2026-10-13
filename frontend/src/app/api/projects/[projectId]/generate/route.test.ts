@@ -4,6 +4,9 @@
 // Phase 4 — engine selection: invalid engine rejected, per-engine 503 when
 // not configured, engine persisted on RenderNode + Generation, and the
 // generation rate limit is enforced BEFORE any engine call.
+// Étape 3C.3 — the prompt lists the materials of the source image only, and
+// Generation.promptMaterials keeps exactly that list.
+// Étape 3C.3-R2 — the daily limit runs after every precondition.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { prismaMock } from '@/test-utils/prisma-mock';
@@ -59,7 +62,10 @@ vi.mock('@/lib/server/materials/detect-and-merge', () => ({
 }));
 
 import { verifyToken } from '@/lib/server/auth';
-import { POST } from './route';
+import { POST, maxDuration } from './route';
+import { EngineTimeoutError } from '@/lib/server/generation/engines';
+import { PHOTO_RENDER_MODIFIER, PRESETS } from '@/lib/server/generation/presets';
+import { TEMPLATES } from '@/lib/server/generation/templates';
 
 const USER_ID = 'user-1';
 const PROJECT_ID = 'project-1';
@@ -84,6 +90,51 @@ function ctx() {
 
 function validBody(overrides: Record<string, unknown> = {}) {
   return { sourceNodeId: SOURCE_NODE_ID, preset: 'jour_ext', engine: 'nanobanana', ...overrides };
+}
+
+const T0 = new Date('2026-10-12T10:00:00Z');
+
+interface DetectionRow {
+  nodeId: string;
+  face: string;
+  valeur: string;
+  confidence: number;
+  position: number;
+}
+interface CorrectionRow {
+  id: string;
+  nodeId: string;
+  face: string;
+  faceLabel: string | null;
+  valeur: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+const detection = (
+  nodeId: string,
+  face: string,
+  valeur: string,
+  position = 0,
+  confidence = 80,
+): DetectionRow => ({ nodeId, face, valeur, confidence, position });
+const correction = (nodeId: string, face: string, valeur: string | null): CorrectionRow => ({
+  id: `c-${nodeId}-${face}`,
+  nodeId,
+  face,
+  faceLabel: null,
+  valeur,
+  createdAt: T0,
+  updatedAt: T0,
+});
+
+/** The Phase 7 tables, answered as the database would: only the asked node's rows. */
+function imageMaterials(detections: DetectionRow[] = [], corrections: CorrectionRow[] = []) {
+  prismaMock.materialDetection.findMany.mockImplementation((async (args: {
+    where: { nodeId: string };
+  }) => detections.filter((d) => d.nodeId === args.where.nodeId)) as never);
+  prismaMock.materialCorrection.findMany.mockImplementation((async (args: {
+    where: { nodeId: string };
+  }) => corrections.filter((c) => c.nodeId === args.where.nodeId)) as never);
 }
 
 beforeEach(() => {
@@ -117,6 +168,7 @@ beforeEach(() => {
     mimeType: 'image/png',
   } as never);
   prismaMock.material.findMany.mockResolvedValue([]);
+  imageMaterials();
   prismaMock.$transaction.mockImplementation((cb: unknown) => {
     if (typeof cb === 'function') {
       return (cb as (tx: typeof prismaMock) => unknown)(prismaMock) as Promise<unknown>;
@@ -176,10 +228,8 @@ describe('POST /api/projects/[projectId]/generate — presets', () => {
     expect(mockDetectAndMerge).toHaveBeenCalledTimes(1);
   });
 
-  it('assembles the prompt sent to the engine with the materials sheet + preset modifier', async () => {
-    prismaMock.material.findMany.mockResolvedValue([
-      { face: 'toiture', valeur: 'Tuile terre cuite', source: 'manuel', confidence: null },
-    ] as never);
+  it('assembles the prompt sent to the engine with the source image materials + preset modifier', async () => {
+    imageMaterials([], [correction(SOURCE_NODE_ID, 'toiture', 'Tuile terre cuite')]);
 
     await POST(makeReq(validBody({ preset: 'esquisse' })), ctx());
 
@@ -252,13 +302,15 @@ describe('POST /api/projects/[projectId]/generate — engines (Phase 4)', () => 
     const res = await POST(makeReq(validBody()), ctx());
     expect(res.status).toBe(429);
     expect(mockGenerate).not.toHaveBeenCalled();
-    expect(mockIsEngineConfigured).not.toHaveBeenCalled();
+    // Since étape 3C.3-R2 the limit comes after the preconditions: the engine
+    // configuration is checked first, the engine itself never called.
+    expect(mockIsEngineConfigured).toHaveBeenCalledTimes(1);
     expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
   });
 });
 
 describe('POST /api/projects/[projectId]/generate — monthly tier quota', () => {
-  it('403s with NO_ACTIVE_TIER before any engine call, distinct from the hourly rate limit', async () => {
+  it('403s with NO_ACTIVE_TIER before any engine call, distinct from the daily rate limit', async () => {
     mockCheckTierQuota.mockResolvedValue({
       allowed: false,
       reason: 'NO_ACTIVE_TIER',
@@ -273,7 +325,8 @@ describe('POST /api/projects/[projectId]/generate — monthly tier quota', () =>
     expect(body.error).toBe('NO_ACTIVE_TIER');
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
-    expect(mockEnforceGenerationRateLimit).toHaveBeenCalled(); // rate limit still runs first
+    // Since étape 3C.3-R2 a refused quota takes no daily unit.
+    expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
   });
 
   it('402s with QUOTA_EXCEEDED when the monthly quota is exhausted', async () => {
@@ -306,5 +359,681 @@ describe('POST /api/projects/[projectId]/generate — monthly tier quota', () =>
     const res = await POST(makeReq(validBody()), ctx());
     expect(res.status).toBe(502);
     expect(mockRecordTierUsage).not.toHaveBeenCalled();
+  });
+});
+
+// Étape 2B (non-regression): what the engine actually receives from this
+// route — exact prompt, engine, source, ratio and size — and the empty
+// template text, documented as it is (not fixed). The project-wide materials
+// documented here before (audit F3) gave way to the source image's own in
+// étape 3C.3.
+describe('POST /api/projects/[projectId]/generate — what reaches the engine', () => {
+  // A row of the project's old sheet, typed by the user (étape 3D sent it).
+  const MATERIAL_ROWS = [
+    {
+      face: 'facade_principale',
+      valeur: 'Enduit blanc taloché',
+      source: 'manuel',
+      confidence: null,
+    },
+  ];
+  const MATERIAL_LINES = [
+    "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:",
+    '- facade_principale: Enduit blanc taloché',
+  ];
+
+  function engineInput() {
+    return mockGenerate.mock.calls[0]?.[1] as Record<string, unknown> & {
+      prompt: string;
+      sourceImageBuffer: Buffer;
+    };
+  }
+
+  it('sends C0 then the free text when no ambiance is chosen, with no materials yet', async () => {
+    const res = await POST(
+      makeReq(validBody({ preset: null, customPrompt: '  façade en bois  ' })),
+      ctx(),
+    );
+    expect(res.status).toBe(201);
+    expect(engineInput().prompt).toBe([PHOTO_RENDER_MODIFIER, 'façade en bois'].join('\n'));
+  });
+
+  it('sends C0 when the preset field is left out entirely', async () => {
+    const body = validBody();
+    delete (body as Record<string, unknown>).preset;
+    await POST(makeReq(body), ctx());
+    expect(engineInput().prompt).toBe(PHOTO_RENDER_MODIFIER);
+  });
+
+  it('sends materials, ambiance and free text in that order', async () => {
+    imageMaterials([], [correction(SOURCE_NODE_ID, 'facade_principale', 'Enduit blanc taloché')]);
+    await POST(makeReq(validBody({ preset: 'isometrie', customPrompt: 'vue aérienne' })), ctx());
+    expect(engineInput().prompt).toBe(
+      [...MATERIAL_LINES, PRESETS.isometrie.promptModifier, 'vue aérienne'].join('\n'),
+    );
+  });
+
+  it('passes the chosen engine to the dispatcher', async () => {
+    await POST(makeReq(validBody({ engine: 'gpt_image' })), ctx());
+    expect(mockGenerate.mock.calls[0]?.[0]).toBe('gpt_image');
+  });
+
+  it('passes an explicit ratio and size on', async () => {
+    await POST(makeReq(validBody({ ratio: '16:9', resolution: '4k' })), ctx());
+    expect(engineInput()).toMatchObject({ aspectRatio: '16:9', resolution: '4k' });
+  });
+
+  it("sends no ratio for 'auto' and no size when none is given", async () => {
+    await POST(makeReq(validBody({ ratio: 'auto' })), ctx());
+    expect(engineInput()).not.toHaveProperty('aspectRatio');
+    expect(engineInput()).not.toHaveProperty('resolution');
+  });
+
+  it("reads the selected node's own image and hands its bytes and MIME type to the engine", async () => {
+    prismaMock.renderNode.findUnique.mockResolvedValue({
+      id: SOURCE_NODE_ID,
+      projectId: PROJECT_ID,
+      blobUrl: 'https://blob.test/selected-node.jpg',
+      mimeType: 'image/jpeg',
+    } as never);
+    const bytes = Buffer.from('selected-node-bytes');
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      arrayBuffer: () =>
+        Promise.resolve(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length)),
+    }) as unknown as typeof fetch;
+
+    await POST(makeReq(validBody()), ctx());
+
+    expect(global.fetch).toHaveBeenCalledWith('https://blob.test/selected-node.jpg');
+    expect(engineInput().sourceImageBuffer.equals(bytes)).toBe(true);
+    expect(engineInput().sourceMimeType).toBe('image/jpeg');
+  });
+
+  it('sends no reference image on a generation', async () => {
+    await POST(makeReq(validBody()), ctx());
+    expect(engineInput()).not.toHaveProperty('referenceImages');
+  });
+
+  it("sends a template's text as the client typed it, with no ambiance and no C0", async () => {
+    const text = TEMPLATES.jour_int.prompt.fr;
+    await POST(
+      makeReq(validBody({ preset: 'plan_3d', template: 'jour_int', customPrompt: text })),
+      ctx(),
+    );
+    expect(engineInput().prompt).toBe(text);
+  });
+
+  it('documents an emptied template: the engine receives an empty prompt (audit F7, not fixed)', async () => {
+    const res = await POST(
+      makeReq(validBody({ preset: null, template: 'nuit_ext', customPrompt: '' })),
+      ctx(),
+    );
+    expect(res.status).toBe(201);
+    expect(engineInput().prompt).toBe('');
+  });
+
+  it('scopes the materials to the source image: the project sheet is read for the snapshot only (audit F3, étape 3C.3)', async () => {
+    prismaMock.material.findMany.mockResolvedValue(MATERIAL_ROWS as never);
+    await POST(makeReq(validBody({ preset: null })), ctx());
+    expect(prismaMock.material.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { projectId: PROJECT_ID } }),
+    );
+    expect(prismaMock.materialCorrection.findMany.mock.calls[0]?.[0]?.where).toEqual({
+      nodeId: SOURCE_NODE_ID,
+    });
+    expect(prismaMock.materialDetection.findMany.mock.calls[0]?.[0]?.where).toEqual({
+      nodeId: SOURCE_NODE_ID,
+    });
+    expect(engineInput().prompt).toBe(PHOTO_RENDER_MODIFIER);
+
+    imageMaterials([], [correction(SOURCE_NODE_ID, 'facade_principale', 'Enduit blanc taloché')]);
+    mockGenerate.mockClear();
+    await POST(makeReq(validBody({ preset: null })), ctx());
+    expect(engineInput().prompt).toBe([...MATERIAL_LINES, PHOTO_RENDER_MODIFIER].join('\n'));
+  });
+
+  it('re-reads the materials from the GENERATED image, not from the source', async () => {
+    mockGenerate.mockResolvedValue({
+      imageBuffer: Buffer.from('result-bytes'),
+      mimeType: 'image/jpeg',
+    });
+    await POST(makeReq(validBody()), ctx());
+    expect(mockDetectAndMerge).toHaveBeenCalledTimes(1);
+    const [projectId, buffer, mimeType] = mockDetectAndMerge.mock.calls[0] as [
+      string,
+      Buffer,
+      string,
+    ];
+    expect(projectId).toBe(PROJECT_ID);
+    expect(buffer.equals(Buffer.from('result-bytes'))).toBe(true);
+    expect(mimeType).toBe('image/jpeg');
+  });
+
+  it('503s with STORAGE_NOT_CONFIGURED before any engine call when the storage token is missing', async () => {
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(503);
+    expect(((await res.json()) as { code: string }).code).toBe('STORAGE_NOT_CONFIGURED');
+    expect(mockGenerate).not.toHaveBeenCalled();
+  });
+});
+
+// Étape 3C.3: the prompt lists the materials of the SOURCE image — its
+// detections and the user's corrections on it, resolved (resolve.ts) — and
+// Generation.promptMaterials keeps exactly that list. The project's old sheet
+// (étape 3D sent its manual rows) stays whole in materialsSnapshot only: an
+// old project correction counts again only once attached to an image.
+describe('POST /api/projects/[projectId]/generate — materials of the source image (étape 3C.3)', () => {
+  const HEADER =
+    "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:";
+  const OTHER_NODE_ID = 'node-other';
+  const SHEET = [
+    { face: 'toiture', valeur: 'Zinc', source: 'manuel', confidence: null },
+    { face: 'sol', valeur: 'Béton ciré', source: 'auto', confidence: 70 },
+  ];
+
+  const prompt = (i = 0) => (mockGenerate.mock.calls[i]?.[1] as { prompt: string }).prompt;
+  const stored = (i = 0) =>
+    prismaMock.generation.create.mock.calls[i]?.[0]?.data as unknown as {
+      prompt: string;
+      materialsSnapshot: unknown;
+      promptMaterials: { face: string; valeur: string }[];
+    };
+
+  function sourceIs(id: string) {
+    prismaMock.renderNode.findUnique.mockResolvedValue({
+      id,
+      projectId: PROJECT_ID,
+      blobUrl: `https://blob.test/${id}.png`,
+      mimeType: 'image/png',
+    } as never);
+  }
+
+  describe('isolation per image', () => {
+    it('two images of one project: each generation lists its own correction, never the other’s', async () => {
+      imageMaterials(
+        [],
+        [
+          correction(SOURCE_NODE_ID, 'facade_principale', 'Bardage bois'),
+          correction(OTHER_NODE_ID, 'facade_principale', 'Enduit blanc'),
+        ],
+      );
+      await POST(makeReq(validBody({ preset: null })), ctx());
+      sourceIs(OTHER_NODE_ID);
+      await POST(makeReq(validBody({ preset: null, sourceNodeId: OTHER_NODE_ID })), ctx());
+
+      expect(prompt(0)).toBe(
+        [HEADER, '- facade_principale: Bardage bois', PHOTO_RENDER_MODIFIER].join('\n'),
+      );
+      expect(prompt(1)).toBe(
+        [HEADER, '- facade_principale: Enduit blanc', PHOTO_RENDER_MODIFIER].join('\n'),
+      );
+      const asked = (calls: readonly (readonly unknown[])[]) =>
+        calls.map((c) => (c[0] as { where: unknown }).where);
+      expect(asked(prismaMock.materialCorrection.findMany.mock.calls)).toEqual([
+        { nodeId: SOURCE_NODE_ID },
+        { nodeId: OTHER_NODE_ID },
+      ]);
+      expect(asked(prismaMock.materialDetection.findMany.mock.calls)).toEqual([
+        { nodeId: SOURCE_NODE_ID },
+        { nodeId: OTHER_NODE_ID },
+      ]);
+      expect(stored(0).promptMaterials).toEqual([
+        {
+          face: 'facade_principale',
+          valeur: 'Bardage bois',
+          origin: 'correction',
+          nodeId: SOURCE_NODE_ID,
+        },
+      ]);
+      expect(stored(1).promptMaterials).toEqual([
+        {
+          face: 'facade_principale',
+          valeur: 'Enduit blanc',
+          origin: 'correction',
+          nodeId: OTHER_NODE_ID,
+        },
+      ]);
+    });
+
+    it('an image with nothing of its own does not inherit the project’s old manual corrections', async () => {
+      prismaMock.material.findMany.mockResolvedValue(SHEET as never);
+      imageMaterials([], [correction(OTHER_NODE_ID, 'toiture', 'Ardoise')]);
+      const res = await POST(
+        makeReq(validBody({ preset: null, customPrompt: 'vue de face' })),
+        ctx(),
+      );
+      expect(res.status).toBe(201);
+      expect(prompt()).toBe([PHOTO_RENDER_MODIFIER, 'vue de face'].join('\n'));
+      expect(prompt()).not.toContain('Zinc');
+      expect(prompt()).not.toContain('Ardoise');
+      expect(stored().promptMaterials).toEqual([]);
+      // The old sheet is still kept whole in its own column.
+      expect(stored().materialsSnapshot).toEqual(SHEET);
+    });
+  });
+
+  describe('priority', () => {
+    const DETECTED = [
+      detection(SOURCE_NODE_ID, 'facade_principale', 'Enduit blanc', 0, 90),
+      detection(SOURCE_NODE_ID, 'toiture', 'Tuile', 1, 75),
+      detection(SOURCE_NODE_ID, 'sol', 'Parquet', 2, 60),
+    ];
+
+    it('a correction replaces the detection of its face; the other faces stay', async () => {
+      imageMaterials(DETECTED, [correction(SOURCE_NODE_ID, 'toiture', 'Ardoise')]);
+      await POST(makeReq(validBody({ preset: null })), ctx());
+      expect(prompt()).toBe(
+        [
+          HEADER,
+          '- facade_principale: Enduit blanc',
+          '- toiture: Ardoise',
+          '- sol: Parquet',
+          PHOTO_RENDER_MODIFIER,
+        ].join('\n'),
+      );
+      expect(stored().promptMaterials).toEqual([
+        {
+          face: 'facade_principale',
+          valeur: 'Enduit blanc',
+          origin: 'detection',
+          nodeId: SOURCE_NODE_ID,
+          confidence: 90,
+        },
+        { face: 'toiture', valeur: 'Ardoise', origin: 'correction', nodeId: SOURCE_NODE_ID },
+        {
+          face: 'sol',
+          valeur: 'Parquet',
+          origin: 'detection',
+          nodeId: SOURCE_NODE_ID,
+          confidence: 60,
+        },
+      ]);
+    });
+
+    it('a correction with valeur null removes a detected face; the other faces stay', async () => {
+      imageMaterials(DETECTED, [correction(SOURCE_NODE_ID, 'toiture', null)]);
+      await POST(makeReq(validBody({ preset: null })), ctx());
+      expect(prompt()).toBe(
+        [HEADER, '- facade_principale: Enduit blanc', '- sol: Parquet', PHOTO_RENDER_MODIFIER].join(
+          '\n',
+        ),
+      );
+      expect(prompt()).not.toContain('Tuile');
+      expect(stored().promptMaterials.map((m) => m.face)).toEqual(['facade_principale', 'sol']);
+    });
+
+    it('once the correction is cancelled, the detection is listed again', async () => {
+      imageMaterials(DETECTED, [correction(SOURCE_NODE_ID, 'toiture', null)]);
+      await POST(makeReq(validBody({ preset: null })), ctx());
+      imageMaterials(DETECTED, []);
+      await POST(makeReq(validBody({ preset: null })), ctx());
+      expect(prompt(0)).not.toContain('toiture');
+      expect(prompt(1)).toContain('- toiture: Tuile');
+      expect(stored(1).promptMaterials.map((m) => m.face)).toEqual([
+        'facade_principale',
+        'toiture',
+        'sol',
+      ]);
+    });
+  });
+
+  describe('prompt and snapshot', () => {
+    it('Generation.promptMaterials is the list the prompt was built from, and Generation.prompt what the engine got', async () => {
+      imageMaterials(
+        [detection(SOURCE_NODE_ID, 'sol', 'Béton ciré', 0, 70)],
+        [correction(SOURCE_NODE_ID, 'menuiseries', 'Aluminium noir')],
+      );
+      await POST(makeReq(validBody({ preset: 'eclate', customPrompt: 'vue aérienne' })), ctx());
+      const data = stored();
+      expect(data.prompt).toBe(prompt());
+      expect(prompt()).toBe(
+        [
+          HEADER,
+          ...data.promptMaterials.map((m) => `- ${m.face}: ${m.valeur}`),
+          PRESETS.eclate.promptModifier,
+          'vue aérienne',
+        ].join('\n'),
+      );
+      expect(data.promptMaterials.map((m) => m.face)).toEqual(['sol', 'menuiseries']);
+    });
+
+    it('no material at all: no header in the prompt, [] in promptMaterials — never null, never invented', async () => {
+      const res = await POST(makeReq(validBody({ preset: null })), ctx());
+      expect(res.status).toBe(201);
+      expect(prompt()).toBe(PHOTO_RENDER_MODIFIER);
+      expect(stored().promptMaterials).toEqual([]);
+    });
+
+    it('the same list goes with a template of the fan', async () => {
+      imageMaterials([], [correction(SOURCE_NODE_ID, 'toiture', 'Zinc')]);
+      const text = TEMPLATES.nuit_ext.prompt.en;
+      await POST(
+        makeReq(validBody({ preset: null, template: 'nuit_ext', customPrompt: text })),
+        ctx(),
+      );
+      expect(prompt()).toBe([HEADER, '- toiture: Zinc', text].join('\n'));
+      expect(stored().promptMaterials).toEqual([
+        { face: 'toiture', valeur: 'Zinc', origin: 'correction', nodeId: SOURCE_NODE_ID },
+      ]);
+    });
+
+    it('still re-reads the materials from the generated image afterwards (old detector, until 3C.6)', async () => {
+      await POST(makeReq(validBody()), ctx());
+      expect(mockDetectAndMerge).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('when the materials of the image cannot be read', () => {
+    const dbDown = () =>
+      Object.assign(new Error('Can’t reach database server at db.internal:5432'), {
+        code: 'P1001',
+      });
+
+    it.each([
+      ['its corrections', 'materialCorrection'],
+      ['its detections', 'materialDetection'],
+    ] as const)(
+      'a failed read of %s is a 503 MATERIALS_UNAVAILABLE: no engine call, nothing stored, no usage recorded',
+      async (_label, table) => {
+        imageMaterials(
+          [detection(SOURCE_NODE_ID, 'sol', 'Parquet')],
+          [correction(SOURCE_NODE_ID, 'toiture', 'Ardoise')],
+        );
+        prismaMock[table].findMany.mockRejectedValue(dbDown());
+        prismaMock.material.findMany.mockResolvedValue(SHEET as never);
+
+        const res = await POST(makeReq(validBody()), ctx());
+        expect(res.status).toBe(503);
+        const body = (await res.json()) as Record<string, unknown>;
+        expect(body).toEqual({
+          error: 'MATERIALS_UNAVAILABLE',
+          message: 'Materials are unavailable, try again',
+        });
+        expect(JSON.stringify(body)).not.toContain('db.internal');
+        expect(res.headers.get('x-request-id')).toBeTruthy();
+        // Nothing past the read: no partial list, no fallback on the old sheet.
+        expect(mockGenerate).not.toHaveBeenCalled();
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(prismaMock.material.findMany).not.toHaveBeenCalled();
+        expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
+        expect(prismaMock.generation.create).not.toHaveBeenCalled();
+        expect(mockRecordTierUsage).not.toHaveBeenCalled();
+        expect(mockDetectAndMerge).not.toHaveBeenCalled();
+      },
+    );
+
+    it('is not a timeout: no 504, no GENERATION_TIMEOUT code', async () => {
+      prismaMock.materialCorrection.findMany.mockRejectedValue(dbDown());
+      const res = await POST(makeReq(validBody()), ctx());
+      const body = (await res.json()) as Record<string, unknown>;
+      expect(res.status).not.toBe(504);
+      expect(body).not.toHaveProperty('code');
+      expect(body.error).not.toBe('GENERATION_TIMEOUT');
+    });
+
+    it('takes no daily unit and charges no monthly quota: the quota was only checked', async () => {
+      prismaMock.materialCorrection.findMany.mockRejectedValue(dbDown());
+      await POST(makeReq(validBody()), ctx());
+      // Étape 3C.3-R2: the daily limit comes after every precondition, the
+      // materials included — a request that cannot start never reaches it.
+      expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
+      expect(mockCheckTierQuota).toHaveBeenCalledTimes(1);
+      expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    });
+  });
+});
+
+// Étape 3C.3-R2: the daily limit (one immediate INCR per call, rolled back by
+// the limiter itself on a 429) runs once every precondition holds — after
+// session, project, monthly quota, body, source node, services and the
+// materials of the source image. A request that cannot start takes no unit;
+// one that gets past it keeps its unit, even if the engine then fails. The
+// limiter is mocked here; route.daily-limit.test.ts runs the real one on a
+// fake Redis.
+describe('POST /api/projects/[projectId]/generate — daily limit after the preconditions (étape 3C.3-R2)', () => {
+  const at429 = async () => {
+    const { NextResponse } = await import('next/server');
+    return NextResponse.json(
+      {
+        error: 'GENERATION_DAILY_LIMIT_EXCEEDED',
+        message: 'Daily generation limit reached. Try again tomorrow.',
+      },
+      { status: 429 },
+    );
+  };
+  const dbDown = () => Object.assign(new Error('db down'), { code: 'P1001' });
+
+  const EARLY: [string, () => void, Record<string, unknown>, number, Record<string, unknown>][] = [
+    [
+      'an invalid body',
+      () => {},
+      { engine: 'not_a_real_engine' },
+      400,
+      { error: 'VALIDATION_FAILED' },
+    ],
+    [
+      'an unknown source node',
+      () => prismaMock.renderNode.findUnique.mockResolvedValue(null as never),
+      {},
+      404,
+      {
+        error: 'SOURCE_NODE_NOT_FOUND',
+        message: 'Source render node not found in this project',
+      },
+    ],
+    [
+      'an engine not configured',
+      () => mockIsEngineConfigured.mockReturnValue(false),
+      {},
+      503,
+      { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
+    ],
+    [
+      'storage not configured',
+      () => delete process.env.BLOB_READ_WRITE_TOKEN,
+      {},
+      503,
+      { code: 'STORAGE_NOT_CONFIGURED', message: 'Storage not configured' },
+    ],
+    [
+      'unreadable materials',
+      () => prismaMock.materialCorrection.findMany.mockRejectedValue(dbDown()),
+      {},
+      503,
+      { error: 'MATERIALS_UNAVAILABLE', message: 'Materials are unavailable, try again' },
+    ],
+    [
+      'no active tier',
+      () =>
+        mockCheckTierQuota.mockResolvedValue({
+          allowed: false,
+          reason: 'NO_ACTIVE_TIER',
+          tier: null,
+          max: null,
+          remaining: null,
+        }),
+      {},
+      403,
+      { error: 'NO_ACTIVE_TIER', message: 'Monthly generation quota check failed' },
+    ],
+    [
+      'an exhausted monthly quota',
+      () =>
+        mockCheckTierQuota.mockResolvedValue({
+          allowed: false,
+          reason: 'QUOTA_EXCEEDED',
+          tier: 'decouverte',
+          max: 30,
+          remaining: 0,
+        }),
+      {},
+      402,
+      { error: 'QUOTA_EXCEEDED', message: 'Monthly generation quota check failed' },
+    ],
+  ];
+
+  it.each(EARLY)(
+    '%s: same answer as before, before the daily limit, no engine call',
+    async (_label, arrange, overrides, status, body) => {
+      arrange();
+      const res = await POST(makeReq(validBody(overrides)), ctx());
+      expect(res.status).toBe(status);
+      expect(await res.json()).toMatchObject(body);
+      expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
+      expect(mockGenerate).not.toHaveBeenCalled();
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(EARLY)(
+    'a user already at the daily limit with %s gets that answer, not the 429',
+    async (_label, arrange, overrides, status) => {
+      mockEnforceGenerationRateLimit.mockImplementation(at429);
+      arrange();
+      const res = await POST(makeReq(validBody(overrides)), ctx());
+      expect(res.status).toBe(status);
+      expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
+    },
+  );
+
+  it('session, CSRF and project ownership still come first: no daily unit either', async () => {
+    vi.mocked(verifyToken).mockResolvedValue(null as never);
+    expect((await POST(makeReq(validBody()), ctx())).status).toBe(401);
+    prismaMock.project.findUnique.mockResolvedValue({ userId: 'someone-else' } as never);
+    vi.mocked(verifyToken).mockResolvedValue({
+      sub: USER_ID,
+      email: 'owner@test.local',
+      tokenVersion: 0,
+    });
+    expect((await POST(makeReq(validBody()), ctx())).status).toBe(404);
+    const noCsrf = new NextRequest(`https://test/api/projects/${PROJECT_ID}/generate`, {
+      method: 'POST',
+      headers: { authorization: 'Bearer valid-access-token', 'content-type': 'application/json' },
+      body: JSON.stringify(validBody()),
+    });
+    expect((await POST(noCsrf, ctx())).status).toBe(403);
+    expect(mockCheckTierQuota).not.toHaveBeenCalled();
+    expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
+  });
+
+  it('a valid request: one call, after the materials are read, before the image is fetched and the engine called', async () => {
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(201);
+    expect(mockEnforceGenerationRateLimit).toHaveBeenCalledTimes(1);
+    expect(mockEnforceGenerationRateLimit).toHaveBeenCalledWith(USER_ID);
+    const limit = mockEnforceGenerationRateLimit.mock.invocationCallOrder[0]!;
+    expect(prismaMock.materialCorrection.findMany.mock.invocationCallOrder[0]!).toBeLessThan(limit);
+    expect(prismaMock.materialDetection.findMany.mock.invocationCallOrder[0]!).toBeLessThan(limit);
+    expect(mockCheckTierQuota.mock.invocationCallOrder[0]!).toBeLessThan(limit);
+    expect(mockIsEngineConfigured.mock.invocationCallOrder[0]!).toBeLessThan(limit);
+    expect(vi.mocked(global.fetch).mock.invocationCallOrder[0]!).toBeGreaterThan(limit);
+    expect(mockGenerate.mock.invocationCallOrder[0]!).toBeGreaterThan(limit);
+    expect(mockRecordTierUsage.mock.invocationCallOrder[0]!).toBeGreaterThan(
+      mockGenerate.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it.each([
+    ['an engine failure (502)', () => mockGenerate.mockRejectedValueOnce(new Error('down')), 502],
+    [
+      'an engine timeout (504)',
+      () => mockGenerate.mockRejectedValueOnce(new EngineTimeoutError('nanobanana', 180_000)),
+      504,
+    ],
+    [
+      'an unreadable source image (502)',
+      () => vi.mocked(global.fetch).mockResolvedValueOnce({ ok: false } as Response),
+      502,
+    ],
+  ])(
+    'past the daily limit, %s keeps the unit: one call, nothing given back',
+    async (_label, arrange, status) => {
+      arrange();
+      const res = await POST(makeReq(validBody()), ctx());
+      expect(res.status).toBe(status);
+      expect(mockEnforceGenerationRateLimit).toHaveBeenCalledTimes(1);
+      expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    },
+  );
+
+  it('the 429 is passed on as the limiter answers it, after the preconditions, with no engine call', async () => {
+    mockEnforceGenerationRateLimit.mockImplementation(at429);
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({
+      error: 'GENERATION_DAILY_LIMIT_EXCEEDED',
+      message: 'Daily generation limit reached. Try again tomorrow.',
+    });
+    expect(mockEnforceGenerationRateLimit).toHaveBeenCalledTimes(1);
+    expect(prismaMock.materialCorrection.findMany).toHaveBeenCalledTimes(1);
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(mockGenerate).not.toHaveBeenCalled();
+    expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
+    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+  });
+
+  it('two valid requests at once: each calls the limiter once, for its own user unit (mocked, not real Redis)', async () => {
+    let units = 0;
+    mockEnforceGenerationRateLimit.mockImplementation(async () => {
+      units += 1;
+      return null;
+    });
+    const [a, b] = await Promise.all([
+      POST(makeReq(validBody()), ctx()),
+      POST(makeReq(validBody({ preset: null })), ctx()),
+    ]);
+    expect([a.status, b.status]).toEqual([201, 201]);
+    expect(mockEnforceGenerationRateLimit).toHaveBeenCalledTimes(2);
+    expect(units).toBe(2);
+  });
+});
+
+// Étape 3B.4: an engine that ran out of time is a 504 GENERATION_TIMEOUT;
+// every other failure keeps its answer.
+describe('POST /api/projects/[projectId]/generate — engine deadline (étape 3B.4)', () => {
+  it('declares a 300 s maxDuration', () => {
+    expect(maxDuration).toBe(300);
+  });
+
+  it('504s with GENERATION_TIMEOUT when the engine runs out of time, and stores nor charges anything', async () => {
+    mockGenerate.mockRejectedValueOnce(new EngineTimeoutError('nanobanana', 180_000));
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(504);
+    expect(await res.json()).toEqual({
+      code: 'GENERATION_TIMEOUT',
+      message: 'Generation timed out',
+    });
+    expect(res.headers.get('x-request-id')).toBeTruthy();
+    expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
+    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    expect(mockDetectAndMerge).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [
+      'an SDK timeout that is not the engine deadline',
+      Object.assign(new Error('Request timed out.'), { name: 'APIConnectionTimeoutError' }),
+    ],
+    ['an abort error', new DOMException('This operation was aborted', 'AbortError')],
+  ])('keeps 502 GENERATION_FAILED for %s', async (_label, err) => {
+    mockGenerate.mockRejectedValueOnce(err);
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(502);
+    expect(((await res.json()) as { code: string }).code).toBe('GENERATION_FAILED');
+  });
+
+  it('a material detection that runs out of time does not fail the generation', async () => {
+    mockDetectAndMerge.mockRejectedValueOnce(
+      Object.assign(new Error('Claude Vision did not answer within 30 s'), {
+        name: 'VisionTimeoutError',
+      }),
+    );
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { materialsDetected: boolean }).materialsDetected).toBe(false);
+    expect(mockRecordTierUsage).toHaveBeenCalledTimes(1);
   });
 });

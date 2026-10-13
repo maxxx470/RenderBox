@@ -1,0 +1,5 @@
+Edit this architectural render with the following localized changes ONLY.
+The second attached image is the same picture with numbered markers drawn on it: each number shows exactly where the matching change applies. Do not reproduce the markers in the result.
+Keep everything else identical to the first image: composition, camera, framing, geometry, lighting and every material not mentioned.
+1. At 20% from the left, 40% from the top (the middle-left): Façade en bardage bois
+2. At 70% from the left, 85% from the top (the bottom-right): Sol en pierre claire

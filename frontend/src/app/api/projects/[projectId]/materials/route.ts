@@ -1,4 +1,12 @@
 // GET /api/projects/[projectId]/materials — the project's materials sheet.
+//
+// Each row also says whether it is attached to an image (étape 3C.5.3, the
+// explicit attach of étape 3C.5.2): `attached`, and — only when that image is
+// one of THIS project's — `attachedNodeId` and `attachedAt`. A mark pointing
+// anywhere else (an image gone, another project's) still reads as attached,
+// the row cannot be attached again, but names nothing. The fields are added
+// to the existing ones; nothing existing changes. There is no image name in
+// the schema: the client names the image from its own tree.
 export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from 'next/server';
@@ -29,7 +37,7 @@ export async function GET(
       throw e;
     }
 
-    const materials = await prisma.material.findMany({
+    const rows = await prisma.material.findMany({
       where: { projectId },
       orderBy: { face: 'asc' },
       select: {
@@ -39,7 +47,33 @@ export async function GET(
         source: true,
         confidence: true,
         updatedAt: true,
+        attachedNodeId: true,
+        attachedAt: true,
       },
+    });
+
+    // The attached images that belong to this project — the only ones named.
+    const marked = [...new Set(rows.flatMap((r) => (r.attachedNodeId ? [r.attachedNodeId] : [])))];
+    const own =
+      marked.length === 0
+        ? new Set<string>()
+        : new Set(
+            (
+              await prisma.renderNode.findMany({
+                where: { id: { in: marked }, projectId },
+                select: { id: true },
+              })
+            ).map((n) => n.id),
+          );
+
+    const materials = rows.map(({ attachedNodeId, attachedAt, ...row }) => {
+      const visible = attachedNodeId !== null && own.has(attachedNodeId);
+      return {
+        ...row,
+        attached: attachedNodeId !== null,
+        attachedNodeId: visible ? attachedNodeId : null,
+        attachedAt: visible ? attachedAt : null,
+      };
     });
 
     return NextResponse.json({ materials }, { headers: { 'x-request-id': ctx.requestId } });

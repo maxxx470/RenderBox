@@ -44,7 +44,15 @@ export default async function AppProjectPage({ params }: { params: Promise<{ pro
     prisma.material.findMany({
       where: owned,
       orderBy: { face: 'asc' },
-      select: { id: true, face: true, valeur: true, source: true, confidence: true },
+      select: {
+        id: true,
+        face: true,
+        valeur: true,
+        source: true,
+        confidence: true,
+        attachedNodeId: true,
+        attachedAt: true,
+      },
     }),
   ]);
   if (!project) {
@@ -55,6 +63,7 @@ export default async function AppProjectPage({ params }: { params: Promise<{ pro
   // its latest result (owner, 2026-10-08) — whichever link led here, the
   // dashboard, a recent render or an old bookmark.
   const generated = nodes.filter((n) => n.kind === 'GENERATED');
+  const nodeIds = new Set(nodes.map((n) => n.id));
   if (kindOf(generated) === 'enhance') {
     redirect(projectHref(project.id, 'enhance', generated.at(-1)));
   }
@@ -64,10 +73,19 @@ export default async function AppProjectPage({ params }: { params: Promise<{ pro
       initialProjectId={project.id}
       initialProjectName={project.name}
       initialTree={buildRenderTree(nodes)}
-      initialMaterials={materials.map((m) => ({
-        ...m,
-        source: m.source === 'manuel' ? 'manuel' : 'auto',
-      }))}
+      initialMaterials={materials.map(({ attachedNodeId, attachedAt, ...m }) => {
+        // The attach mark as GET .../materials gives it (étape 3C.5.3): the
+        // image and the date only when the image is one of this project's —
+        // the nodes just read are all of them.
+        const visible = attachedNodeId !== null && nodeIds.has(attachedNodeId);
+        return {
+          ...m,
+          source: m.source === 'manuel' ? 'manuel' : 'auto',
+          attached: attachedNodeId !== null,
+          attachedNodeId: visible ? attachedNodeId : null,
+          attachedAt: visible && attachedAt ? attachedAt.toISOString() : null,
+        };
+      })}
       initialTier={quota.tier}
       initialMax={quota.max}
       initialRemaining={quota.remaining}

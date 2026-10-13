@@ -67,7 +67,9 @@ vi.mock('@/lib/server/moderation/moderate-image', async () => {
 });
 
 import { verifyToken } from '@/lib/server/auth';
-import { POST } from './route';
+import { POST, maxDuration } from './route';
+import { EngineTimeoutError } from '@/lib/server/generation/engines';
+import { ENHANCE_OPTION_KEYS } from '@/lib/server/generation/enhance';
 
 const USER_ID = 'user-1';
 const PROJECT_ID = 'project-1';
@@ -221,5 +223,144 @@ describe('POST /api/projects/[projectId]/enhance', () => {
     );
     expect(res.status).toBe(422);
     expect(mockGenerate).not.toHaveBeenCalled();
+  });
+});
+
+// Étape 2B (non-regression): what the engine actually receives from Améliorer —
+// the exact prompt for each improvement, references in their real order,
+// ratio, size and engine. Behaviour frozen as it is, nothing fixed.
+describe('POST /api/projects/[projectId]/enhance — what reaches the engine', () => {
+  const SOURCE_BYTES = Buffer.from('source-node-bytes');
+
+  /** A PNG header (passes the magic-byte check) followed by a marker. */
+  const pngWith = (marker: string) =>
+    new File([Buffer.concat([PNG_BYTES.subarray(0, 8), Buffer.from(marker)])], `${marker}.png`, {
+      type: 'image/png',
+    });
+
+  function engineCall(index = 0) {
+    const [engine, input] = mockGenerate.mock.calls[index] as [
+      string,
+      Record<string, unknown> & {
+        prompt: string;
+        sourceImageBuffer: Buffer;
+        referenceImages?: { buffer: Buffer; mimeType: string }[];
+      },
+    ];
+    return { engine, input };
+  }
+
+  beforeEach(() => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      arrayBuffer: () =>
+        Promise.resolve(
+          SOURCE_BYTES.buffer.slice(
+            SOURCE_BYTES.byteOffset,
+            SOURCE_BYTES.byteOffset + SOURCE_BYTES.length,
+          ),
+        ),
+    }) as unknown as typeof fetch;
+  });
+
+  it('freezes the prompt of each improvement on its own (subtle, no text)', async () => {
+    const blocks: string[] = [];
+    for (const [i, key] of ENHANCE_OPTION_KEYS.entries()) {
+      await POST(makeReq(baseFields({ options: [key] })), ctx());
+      blocks.push(`--- ${key} ---\n${engineCall(i).input.prompt}`);
+    }
+    expect(mockGenerate).toHaveBeenCalledTimes(ENHANCE_OPTION_KEYS.length);
+    await expect(`${blocks.join('\n\n')}\n`).toMatchFileSnapshot(
+      './__prompts__/ameliorer-chaque-case.txt',
+    );
+  });
+
+  it('freezes a full prompt: several boxes, references, strong, and a free text', async () => {
+    await POST(
+      makeReq(
+        baseFields({
+          options: ['sky', 'materials', 'sharpness'],
+          strength: 'strong',
+          instruction: 'Ambiance de fin de journée',
+        }),
+        // Sent sky first on purpose: the route orders them by the boxes' fixed order.
+        { ref_sky: pngWith('SKY'), ref_materials: pngWith('MATERIALS') },
+      ),
+      ctx(),
+    );
+    const { input } = engineCall();
+    await expect(input.prompt).toMatchFileSnapshot('./__prompts__/ameliorer-complet.txt');
+    expect(input.prompt.endsWith('\nAmbiance de fin de journée')).toBe(true);
+  });
+
+  it("sends the source first, then the references in the boxes' order (materials before sky), each named in the prompt", async () => {
+    await POST(
+      makeReq(baseFields({ options: ['sky', 'materials'] }), {
+        ref_sky: pngWith('SKY'),
+        ref_materials: pngWith('MATERIALS'),
+      }),
+      ctx(),
+    );
+    const { input } = engineCall();
+    expect(global.fetch).toHaveBeenCalledWith('https://blob.test/source.png');
+    expect(input.sourceImageBuffer.equals(SOURCE_BYTES)).toBe(true);
+    const markers = (input.referenceImages ?? []).map((r) => r.buffer.subarray(8).toString());
+    expect(markers).toEqual(['MATERIALS', 'SKY']);
+    expect(input.prompt).toContain('Image 2 is a reference for the look of the materials');
+    expect(input.prompt).toContain('Image 3 is a reference for the sky.');
+  });
+
+  it('sends no reference field and no reference sentence when no reference is attached', async () => {
+    await POST(makeReq(baseFields({ options: ['lighting'] })), ctx());
+    const { input } = engineCall();
+    expect(input).not.toHaveProperty('referenceImages');
+    expect(input.prompt).not.toContain('references only');
+  });
+
+  it('passes the engine, an explicit ratio and the size on', async () => {
+    await POST(makeReq(baseFields({ engine: 'gpt_image', ratio: '3:2', resolution: '4k' })), ctx());
+    const { engine, input } = engineCall();
+    expect(engine).toBe('gpt_image');
+    expect(input).toMatchObject({ aspectRatio: '3:2', resolution: '4k' });
+  });
+
+  it("sends the default size (1k) when none is chosen, and no ratio on 'auto'", async () => {
+    await POST(makeReq(baseFields()), ctx());
+    expect(engineCall().input.resolution).toBe('1k');
+    expect(engineCall().input).not.toHaveProperty('aspectRatio');
+  });
+
+  it('never adds the materials sheet nor re-reads the materials', async () => {
+    prismaMock.material.findMany.mockResolvedValue([
+      { face: 'toiture', valeur: 'Tuile', source: 'auto', confidence: 80 },
+    ] as never);
+    await POST(makeReq(baseFields()), ctx());
+    expect(engineCall().input.prompt).not.toContain('Materials recorded for this source image');
+    expect(mockDetectMaterials).not.toHaveBeenCalled();
+  });
+});
+
+// Étape 3B.4: an engine that ran out of time is a 504 GENERATION_TIMEOUT.
+describe('POST /api/projects/[projectId]/enhance — engine deadline (étape 3B.4)', () => {
+  it('declares a 300 s maxDuration', () => {
+    expect(maxDuration).toBe(300);
+  });
+
+  it('504s with GENERATION_TIMEOUT when the engine runs out of time, and charges nothing', async () => {
+    mockGenerate.mockRejectedValueOnce(new EngineTimeoutError('gpt_image', 180_000));
+    const res = await POST(makeReq(baseFields()), ctx());
+    expect(res.status).toBe(504);
+    expect(await res.json()).toEqual({
+      code: 'GENERATION_TIMEOUT',
+      message: 'Generation timed out',
+    });
+    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+  });
+
+  it('keeps 502 GENERATION_FAILED for any other engine error', async () => {
+    mockGenerate.mockRejectedValueOnce(new Error('engine down'));
+    const res = await POST(makeReq(baseFields()), ctx());
+    expect(res.status).toBe(502);
+    expect(((await res.json()) as { code: string }).code).toBe('GENERATION_FAILED');
   });
 });

@@ -27,10 +27,22 @@ import { EXAMPLE_RENDERS } from './generer-examples';
 import { SideColumn } from './SideColumn';
 import { nodeTitle } from './ProjectTree';
 import type { MaterialRow } from './MaterialsPanel';
+import { NodeMaterialsPanel } from './NodeMaterialsPanel';
+import { useNodeMaterials } from './useNodeMaterials';
+import { useLegacyAttach } from './useLegacyAttach';
+import type { SubmitResult } from './legacy-attach-state';
+import { faceDisplayLabel } from './face-labels';
+import type { ContextMaterial } from './ContextChip';
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
 import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
-import { RequestError, readErrorCode, isServiceNotConfigured } from './request-error';
+import {
+  RequestError,
+  readErrorCode,
+  isGenerationTimeout,
+  isMaterialsUnavailable,
+  isServiceNotConfigured,
+} from './request-error';
 
 interface UploadResponse {
   id: string;
@@ -45,6 +57,11 @@ interface GenerateResponse {
   materialsDetected: boolean;
   quotaRemaining: number | null;
 }
+
+// The generate route may run up to its 300 s maxDuration; the browser waits a
+// little longer, so the server's own answer (a render, a 502, a 504
+// GENERATION_TIMEOUT) always arrives first.
+const GENERATE_TIMEOUT_MS = 310_000;
 
 interface EditResponse {
   tree: RenderTreeNode[];
@@ -101,9 +118,17 @@ export function AppShell({
     if (wanted && flattenTree(initialTree).some((n) => n.id === wanted)) return wanted;
     return initialTree[0]?.id ?? null;
   });
-  // Rendered with the page (see [projet]/page.tsx) — fetching them after
-  // hydration added a whole extra round trip before the panel filled in.
+  // The project's OLD materials sheet, rendered with the page (see
+  // [projet]/page.tsx). Since étape 3C.3 it is no longer sent to the engine:
+  // it is only shown, folded and read-only, under the image's own materials.
   const [materials, setMaterials] = useState<MaterialRow[]>(initialMaterials);
+  // The materials of the selected image (étape 3C.4) — what the engine gets
+  // for a render made from it. Read again whenever the selection changes; a
+  // late answer about another image is dropped (node-materials-state.ts).
+  const { state: nodeMaterials, controller: nodeMaterialsCtl } = useNodeMaterials(
+    projectId,
+    selectedId,
+  );
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   // Prefilled once from the /app home quick-start redirect (?prompt=&preset=&engine=),
@@ -193,10 +218,14 @@ export function AppShell({
     setTemplate(null);
   }
 
+  // Reads of the old sheet can overlap (after a generation, after an attach):
+  // only the latest one asked for is shown.
+  const legacyReadSeq = useRef(0);
   const refreshMaterials = useCallback(async (id: string) => {
+    const seq = ++legacyReadSeq.current;
     try {
       const res = await api<{ materials: MaterialRow[] }>(`/api/projects/${id}/materials`);
-      setMaterials(res.materials);
+      if (seq === legacyReadSeq.current) setMaterials(res.materials);
     } catch {
       // Non-fatal — the panel just stays at its previous state.
     }
@@ -308,6 +337,7 @@ export function AppShell({
     try {
       const res = await api<GenerateResponse>(`/api/projects/${projectId}/generate`, {
         method: 'POST',
+        timeoutMs: GENERATE_TIMEOUT_MS,
         body: {
           sourceNodeId: selectedId,
           preset,
@@ -332,6 +362,14 @@ export function AppShell({
         toast(t('app.quotaExceededError'), 'error');
       } else if (isServiceNotConfigured(err)) {
         toast(t('app.serviceNotConfigured'), 'error');
+      } else if (isMaterialsUnavailable(err)) {
+        // The image's materials could not be read: nothing was started.
+        toast(t('app.materialsUnavailableError'), 'error');
+        setRetryable(true);
+      } else if (isGenerationTimeout(err)) {
+        // Still worth a second try — nothing was charged.
+        toast(t('app.generationTimeout'), 'error');
+        setRetryable(true);
       } else {
         toast(t('app.generateError'), 'error');
         setRetryable(true);
@@ -403,6 +441,12 @@ export function AppShell({
         toast(t('app.quotaExceededError'), 'error');
       } else if (isServiceNotConfigured(err)) {
         toast(t('app.serviceNotConfigured'), 'error');
+      } else if (isMaterialsUnavailable(err)) {
+        toast(t('app.materialsUnavailableError'), 'error');
+        setRetryable(true);
+      } else if (isGenerationTimeout(err)) {
+        toast(t('app.generationTimeout'), 'error');
+        setRetryable(true);
       } else {
         toast(t('edit.submitError'), 'error');
         setRetryable(true);
@@ -415,14 +459,6 @@ export function AppShell({
   function handleSubmit() {
     if (mode === 'generate') void handleGenerate();
     else void handleEditSubmit();
-  }
-
-  async function handleSaveMaterial(materialId: string, valeur: string) {
-    const material = await api<{ material: MaterialRow }>(
-      `/api/projects/${projectId}/materials/${materialId}`,
-      { method: 'PATCH', body: { valeur } },
-    );
-    setMaterials((prev) => prev.map((m) => (m.id === materialId ? material.material : m)));
   }
 
   function comparePctFromClientX(clientX: number): number {
@@ -455,6 +491,53 @@ export function AppShell({
   // Any image can be commented on or added to — a render or the photo itself.
   const canEdit = mode !== 'generate' && Boolean(selectedNode);
   const hasComments = pins.some((p) => p.comment.trim());
+  // Attaching rows of the old sheet to the selected image (étape 3C.5.4).
+  // Nothing is sent before the user confirms; the answer is applied as the
+  // server gives it — the image's faces, then the sheet read again (its marks
+  // are project-wide, so it is read again even when the user has moved on).
+  const { state: attachState, controller: attachCtl } = useLegacyAttach(
+    projectId,
+    selectedId,
+    materials,
+  );
+  async function submitAttach(): Promise<SubmitResult> {
+    const result = await attachCtl.submit();
+    if (result.kind === 'success') {
+      nodeMaterialsCtl.replaceItems(result.nodeId, result.materials);
+      void refreshMaterials(projectId);
+      if (!result.stale) {
+        const n = result.attached.length;
+        const m = result.alreadyAttached.length;
+        toast(
+          n === 0
+            ? t('app.legacyAttachAlreadyAll')
+            : m === 0
+              ? t('app.legacyAttachDone', { n })
+              : t('app.legacyAttachDoneWithAlready', { n, m }),
+          'success',
+        );
+      }
+    }
+    return result;
+  }
+  function reloadAfterConflict() {
+    void refreshMaterials(projectId);
+    void nodeMaterialsCtl.reload();
+  }
+
+  // Only what is known for the image on screen: nothing while it loads or
+  // could not be read, never the old project sheet.
+  const nodeMaterialsShown =
+    nodeMaterials.status === 'ready' && nodeMaterials.nodeId === selectedId
+      ? nodeMaterials.items
+      : [];
+  const contextMaterials: ContextMaterial[] = nodeMaterialsShown.flatMap((m) =>
+    m.valeur === null
+      ? []
+      : [{ face: m.face, label: faceDisplayLabel(m.face, m.faceLabel, locale), valeur: m.valeur }],
+  );
+  // Real detections on this image only — a correction is not "detected".
+  const detectedCount = nodeMaterialsShown.filter((m) => m.origin === 'detection').length;
 
   // Same wording as the rail rows — the breadcrumb names the very nodes the
   // tree lists, so the two must not use two vocabularies for one thing.
@@ -592,10 +675,10 @@ export function AppShell({
                     </span>
                     {/* Hidden while comparing: the two image labels take that
                         corner then. */}
-                    {selectedNode?.kind === 'GENERATED' && materials.length > 0 && !comparing && (
+                    {selectedNode && detectedCount > 0 && !comparing && (
                       <span className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 rounded-2xl bg-[#EEF1FF] px-3 py-1.5 font-[family-name:var(--font-mono)] text-[11px] text-[#1E36D6]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#2948FC]" />
-                        {t('app.scanBadge', { n: materials.length })}
+                        {t('app.scanBadge', { n: detectedCount })}
                       </span>
                     )}
                     {/* Served by our own authenticated proxy route, not a static asset. */}
@@ -791,7 +874,7 @@ export function AppShell({
           pinned={pinned}
           variantCount={variantCount}
           onVariantCountChange={setVariantCount}
-          materials={materials}
+          materials={contextMaterials}
           elementNodes={flattenTree(tree)}
           onPickElement={handlePickElement}
           pickingElement={pickingElement}
@@ -813,8 +896,27 @@ export function AppShell({
 
       <SideColumn
         mode={mode}
-        materials={materials}
-        onSaveMaterial={handleSaveMaterial}
+        materialsPanel={
+          <NodeMaterialsPanel
+            state={nodeMaterials}
+            controller={nodeMaterialsCtl}
+            nodeName={selectedNode ? nodeLabel(selectedNode) : null}
+            legacy={materials}
+            hasImages={tree.length > 0}
+            attach={{
+              state: attachState,
+              controller: attachCtl,
+              targetName: selectedNode ? nodeLabel(selectedNode) : null,
+              nameOf: (id) => {
+                const node = flat.find((n) => n.id === id);
+                return node ? nodeLabel(node) : null;
+              },
+              onSubmit: submitAttach,
+              onReload: reloadAfterConflict,
+            }}
+            onLegacyChanged={() => void refreshMaterials(projectId)}
+          />
+        }
         canEdit={canEdit}
         lockedHint={t('app.modeSelectNodeHint')}
         referenceFile={referenceFile}

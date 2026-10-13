@@ -17,6 +17,10 @@
 // may also carry `markedImage`: the render with its numbered markers drawn
 // on, made in the browser, validated and moderated like any upload.
 export const runtime = 'nodejs';
+// The variants run side by side, each engine call within ENGINE_DEADLINE_MS
+// (180 s); the uploads and the rest fit in what is left. 300 s is the
+// ceiling on Vercel Hobby with Fluid compute (checked 2026-10-11).
+export const maxDuration = 300;
 
 import { randomUUID } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -32,6 +36,7 @@ import {
   generateRender,
   isEngineConfigured,
   EngineNotConfiguredError,
+  EngineTimeoutError,
   ENGINE_NAMES,
   type GenerateRenderOutput,
 } from '@/lib/server/generation/engines';
@@ -50,6 +55,8 @@ import {
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
+import { loadPromptMaterials, toPromptEntries } from '@/lib/server/materials/node-materials';
+import type { ResolvedMaterial } from '@/lib/server/materials/resolve';
 
 const FieldsSchema = z
   .object({
@@ -200,6 +207,44 @@ export async function POST(
       );
     }
 
+    // Materials + preset are inherited from the node being edited, not
+    // re-specified by the caller — an edit is a refinement of an already
+    // materials-tagged render, not a new generation.
+    //
+    // A render carries the ambiance it was made with; an uploaded photo has
+    // none, and relighting it as "jour_ext" would change far more than the
+    // one thing asked for — so no preset at all. Nor for a transformation
+    // (a 3D plan, an exploded view…, reapplyOnEdit false): run again on its
+    // own result it would transform the picture a second time.
+    const sourcePreset =
+      sourceNode.preset && isPresetKey(sourceNode.preset) ? sourceNode.preset : null;
+    const promptPreset: PresetKey | null =
+      sourcePreset && PRESETS[sourcePreset].reapplyOnEdit ? sourcePreset : null;
+    // The result still is what its source was (a 3D plan stays a 3D plan):
+    // the node keeps the source's ambiance, so the tree names it.
+    const preset = sourcePreset;
+
+    // The source image's own materials (étape 3C.3) go into the prompt only
+    // where the ambiance is re-applied: an Ajouter or a retouch on a render
+    // whose ambiance comes back. Commenter and the edits that keep the photo's
+    // own light send none, and read none. Every variant starts from this one
+    // source node, so they share this one list. Read before the rate limit,
+    // the quota and the engine; unreadable, the edit stops here rather than
+    // run on a partial list or on the project's old sheet.
+    let promptMaterials: ResolvedMaterial[] = [];
+    if (editType !== 'annotate' && promptPreset) {
+      try {
+        promptMaterials = await loadPromptMaterials(sourceNode.id);
+      } catch (e) {
+        const code = typeof e === 'object' && e !== null && 'code' in e ? String(e.code) : '';
+        log.warn('edit: materials of the source image unavailable', { code });
+        return NextResponse.json(
+          { error: 'MATERIALS_UNAVAILABLE', message: 'Materials are unavailable, try again' },
+          { status: 503, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+    }
+
     // Each variant is a distinct AI call — charge the full count up front,
     // before any engine call, and never partially (see
     // rate-limit-generation.ts's rollback behavior).
@@ -237,6 +282,8 @@ export async function POST(
       referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];
     }
 
+    // The project's old sheet, kept whole in Generation.materialsSnapshot (its
+    // schema contract); it no longer reaches the prompt.
     const materials = await prisma.material.findMany({
       where: { projectId },
       select: { face: true, valeur: true, source: true, confidence: true },
@@ -251,25 +298,9 @@ export async function POST(
     }
     const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
-    // Materials sheet + preset are inherited from the node being edited, not
-    // re-specified by the caller — an edit is a refinement of an already
-    // materials-tagged render, not a new generation.
-    //
-    // A render carries the ambiance it was made with; an uploaded photo has
-    // none, and relighting it as "jour_ext" would change far more than the
-    // one thing asked for — so no preset at all. Nor for a transformation
-    // (a 3D plan, an exploded view…, reapplyOnEdit false): run again on its
-    // own result it would transform the picture a second time.
-    const sourcePreset =
-      sourceNode.preset && isPresetKey(sourceNode.preset) ? sourceNode.preset : null;
-    const promptPreset: PresetKey | null =
-      sourcePreset && PRESETS[sourcePreset].reapplyOnEdit ? sourcePreset : null;
-    // The result still is what its source was (a 3D plan stays a 3D plan):
-    // the node keeps the source's ambiance, so the tree names it.
-    const preset = sourcePreset;
     let assembledPrompt: string;
     if (editType === 'annotate') {
-      // Neither the materials sheet ("keep these materials") nor the preset
+      // Neither the image's materials ("keep these materials") nor the preset
       // (a full relighting) belongs here: a comment typically asks for a
       // material to CHANGE, and everything else is held by the prompt itself.
       assembledPrompt = buildAnnotationPrompt({
@@ -284,7 +315,7 @@ export async function POST(
           : `${describeZone(zone!)} Requested change: ${instruction}`;
       assembledPrompt = promptPreset
         ? buildGenerationPrompt({
-            materialsSnapshot: materials,
+            materialsSnapshot: toPromptEntries(promptMaterials),
             preset: promptPreset,
             customPrompt: editInstruction,
           })
@@ -313,6 +344,14 @@ export async function POST(
     }
 
     if (succeeded.length === 0) {
+      // A timeout only when every variant ran out of time; any other failure
+      // among them keeps the general answer.
+      if (settled.every((r) => r.status === 'rejected' && r.reason instanceof EngineTimeoutError)) {
+        return NextResponse.json(
+          { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
+          { status: 504, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
       return NextResponse.json(
         { code: 'GENERATION_FAILED', message: 'All variant generations failed' },
         { status: 502, headers: { 'x-request-id': ctx.requestId } },
@@ -354,6 +393,8 @@ export async function POST(
             preset,
             prompt: assembledPrompt,
             materialsSnapshot: materials,
+            // Exactly the materials this variant's prompt lists; [] when none.
+            promptMaterials,
           },
         });
         return newNode.id;

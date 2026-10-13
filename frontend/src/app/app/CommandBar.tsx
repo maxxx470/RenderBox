@@ -38,10 +38,9 @@ import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
 import { PresetSelect } from './PresetSelect';
 import { RatioSelect } from './RatioSelect';
 import { ResolutionSelect } from './ResolutionSelect';
-import { ContextChip } from './ContextChip';
+import { ContextChip, type ContextMaterial } from './ContextChip';
 import { ElementsPicker } from './ElementsPicker';
 import { Glyph, type RailIconName } from './RailIcon';
-import type { MaterialRow } from './MaterialsPanel';
 import { CHIP_ACTIVE, CHIP_BASE, CHIP_STATIC } from './chip';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
@@ -273,7 +272,8 @@ export function CommandBar({
   variantCount?: number;
   onVariantCountChange?: (n: number) => void;
   /** What the engine has memorised about this project. */
-  materials: MaterialRow[];
+  /** The selected image's materials as the engine gets them (Contexte). */
+  materials: ContextMaterial[];
   /** Every image in the project, offered as a reusable element reference. */
   elementNodes: RenderTreeNode[];
   onPickElement: (nodeId: string) => void;

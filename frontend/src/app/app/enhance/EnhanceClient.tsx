@@ -48,7 +48,12 @@ import { useObjectUrl } from '../CommandBar';
 import { CARD_TRANSFORM, ExampleFanCard } from '../fan';
 import { ENHANCE_EXAMPLES } from '../generer-examples';
 import { MOBILE_NAV_PAD } from '../MobileNav';
-import { RequestError, readErrorCode, isServiceNotConfigured } from '../request-error';
+import {
+  RequestError,
+  readErrorCode,
+  isGenerationTimeout,
+  isServiceNotConfigured,
+} from '../request-error';
 import { EnhanceBar } from './EnhanceBar';
 
 const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
@@ -341,6 +346,7 @@ export function EnhanceClient({
       else if (code === 'QUOTA_EXCEEDED') toast(t('app.quotaExceededError'), 'error');
       else if (code === 'CONTENT_FLAGGED') toast(t('enhance.refFlagged'), 'error');
       else if (isServiceNotConfigured(err)) toast(t('app.serviceNotConfigured'), 'error');
+      else if (isGenerationTimeout(err)) toast(t('app.generationTimeout'), 'error');
       else toast(t('enhance.error'), 'error');
       // A project that never produced anything would sit empty in Mes images
       // after every failed first try.

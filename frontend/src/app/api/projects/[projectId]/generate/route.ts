@@ -1,8 +1,12 @@
 // POST /api/projects/[projectId]/generate — runs the chosen AI engine
 // (Nanobanana or, since Phase 4, ChatGPT Image) against a source RenderNode +
-// the project's materials sheet, then creates a child RenderNode + a
+// that image's own materials (étape 3C.3), then creates a child RenderNode + a
 // Generation trace row.
 export const runtime = 'nodejs';
+// The engine call may take up to ENGINE_DEADLINE_MS (180 s); the rest of the
+// request fits in what is left. 300 s is the ceiling on Vercel Hobby with
+// Fluid compute (checked 2026-10-11).
+export const maxDuration = 300;
 
 import { randomUUID } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -18,11 +22,14 @@ import {
   generateRender,
   isEngineConfigured,
   EngineNotConfiguredError,
+  EngineTimeoutError,
   ENGINE_NAMES,
 } from '@/lib/server/generation/engines';
 import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
 import { buildRenderTree } from '@/lib/server/render-tree';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
+import { loadPromptMaterials, toPromptEntries } from '@/lib/server/materials/node-materials';
+import type { ResolvedMaterial } from '@/lib/server/materials/resolve';
 import { PRESET_KEYS } from '@/lib/server/generation/presets';
 import { TEMPLATE_KEYS } from '@/lib/server/generation/templates';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
@@ -69,14 +76,11 @@ export async function POST(
       throw e;
     }
 
-    const limited = await enforceGenerationRateLimit(auth.user.sub);
-    if (limited) return limited;
-
     const quota = await checkTierQuota(prisma, auth.user.sub);
     if (!quota.allowed) {
       // `error` (not `code`) is the field lib/api.ts's ApiError.code reads —
       // the frontend switches on err.code to tell "no active tier" apart
-      // from "quota exhausted" apart from the hourly rate limit above.
+      // from "quota exhausted" apart from the daily rate limit further down.
       return NextResponse.json(
         { error: quota.reason, message: 'Monthly generation quota check failed' },
         {
@@ -126,6 +130,35 @@ export async function POST(
       );
     }
 
+    // The materials of the SOURCE image only (étape 3C.3): its detections and
+    // the user's corrections on it, resolved (node-materials.ts). Never another
+    // image's, never the project's old sheet — an old project correction
+    // counts again only once explicitly attached to an image. Read before the
+    // engine call and before any usage is recorded; unreadable, the generation
+    // stops here rather than run on a partial or borrowed list.
+    let promptMaterials: ResolvedMaterial[];
+    try {
+      promptMaterials = await loadPromptMaterials(sourceNode.id);
+    } catch (e) {
+      const code = typeof e === 'object' && e !== null && 'code' in e ? String(e.code) : '';
+      log.warn('generate: materials of the source image unavailable', { code });
+      return NextResponse.json(
+        { error: 'MATERIALS_UNAVAILABLE', message: 'Materials are unavailable, try again' },
+        { status: 503, headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
+    // The daily cap, once every precondition holds (étape 3C.3-R2): a request
+    // that cannot start — invalid body, unknown source, a service not
+    // configured, unreadable materials, no monthly quota — never takes a daily
+    // unit; there is nothing to give back, so no DECR. One call, one unit (an
+    // immediate INCR; on a 429 the limiter rolls its own increment back). A
+    // request that gets past here counts, even if the engine then fails.
+    const limited = await enforceGenerationRateLimit(auth.user.sub);
+    if (limited) return limited;
+
+    // The project's old sheet, kept whole in Generation.materialsSnapshot (its
+    // schema contract); it no longer reaches the prompt.
     const materials = await prisma.material.findMany({
       where: { projectId },
       select: { face: true, valeur: true, source: true, confidence: true },
@@ -141,7 +174,7 @@ export async function POST(
     const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
     const assembledPrompt = buildGenerationPrompt({
-      materialsSnapshot: materials,
+      materialsSnapshot: toPromptEntries(promptMaterials),
       preset: promptPreset,
       customPrompt,
       photoRender: !template && !promptPreset,
@@ -161,6 +194,12 @@ export async function POST(
         return NextResponse.json(
           { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
           { status: 503, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      if (e instanceof EngineTimeoutError) {
+        return NextResponse.json(
+          { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
+          { status: 504, headers: { 'x-request-id': ctx.requestId } },
         );
       }
       return NextResponse.json(
@@ -207,6 +246,8 @@ export async function POST(
           preset,
           prompt: assembledPrompt,
           materialsSnapshot: materials,
+          // Exactly the materials the prompt lists; [] when it lists none.
+          promptMaterials,
         },
       });
       return newNode.id;
