@@ -345,6 +345,13 @@ model RenderNode {
 
   generation Generation?
 
+  // Phase 7 — materials per image (see MaterialDetectionRun below).
+  materialDetectionRun MaterialDetectionRun?
+  materialDetections   MaterialDetection[]
+  materialCorrections  MaterialCorrection[]
+  // Old project-level Material rows explicitly attached to this image.
+  legacyMaterials      Material[]            @relation("LegacyAttachment")
+
   @@index([projectId, createdAt])
   @@index([parentId])
 }
@@ -363,7 +370,82 @@ model Material {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  // Phase 7 — the image this old row was explicitly attached to by the user.
+  // Never filled automatically, even in a project with a single root; the
+  // attach route must check the node and the row share project and owner.
+  attachedNodeId String?
+  attachedNode   RenderNode?         @relation("LegacyAttachment", fields: [attachedNodeId], references: [id], onDelete: SetNull)
+  attachedAt     DateTime?
+  correction     MaterialCorrection?
+
   @@unique([projectId, face])
+  @@index([attachedNodeId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Phase 7 — materials per image. Detections and corrections belong to ONE
+// RenderNode and never leak to another (lib/server/materials/resolve.ts).
+//
+// `face` holds the canonical key: Unicode NFKD, diacritics removed,
+// lowercase, every run of non-alphanumeric characters turned into a single
+// "_", no leading or trailing "_", never empty, at most 64 characters
+// ("Façade principale" → "facade_principale"). The same application
+// function must write every face; a CHECK constraint in the migration
+// (9_phase7_materials_per_node) refuses any other shape.
+// ───────────────────────────────────────────────────────────────────────
+
+// Detection state of one image. "succeeded" with zero MaterialDetection rows
+// = looked at, nothing found; no row at all = never looked at.
+model MaterialDetectionRun {
+  nodeId     String     @id
+  node       RenderNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  status     String // pending | succeeded | failed (CHECK in the migration)
+  attempts   Int        @default(0)
+  // Token of the request holding the current attempt.
+  claimToken String?
+  // Model that ran the detection.
+  detector   String?
+  // Short, non-sensitive code only — never a raw error message.
+  errorCode  String?
+  startedAt  DateTime   @default(now())
+  finishedAt DateTime?
+  updatedAt  DateTime   @updatedAt
+
+  @@index([status, updatedAt])
+}
+
+model MaterialDetection {
+  id         String     @id @default(cuid())
+  nodeId     String
+  node       RenderNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  face       String // canonical key (see above)
+  valeur     String
+  confidence Int // 0-100 (CHECK in the migration)
+  // Order the detector returned this face in.
+  position   Int
+  createdAt  DateTime   @default(now())
+
+  @@unique([nodeId, face])
+}
+
+// A user's correction on one image. valeur = null is an explicit removal:
+// the row stays, and the detection of that face no longer reaches the prompt.
+model MaterialCorrection {
+  id               String     @id @default(cuid())
+  nodeId           String
+  node             RenderNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  face             String // canonical key (see above)
+  // Label as the user typed it, for display.
+  faceLabel        String?
+  valeur           String?
+  origin           String     @default("user") // user | legacy_attach (CHECK in the migration)
+  // The old Material row this correction was attached from (once only).
+  legacyMaterialId String?    @unique
+  legacyMaterial   Material?  @relation(fields: [legacyMaterialId], references: [id], onDelete: SetNull)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@unique([nodeId, face])
 }
 
 model Generation {
@@ -374,6 +456,10 @@ model Generation {
   preset            String? // one of lib/server/generation/presets.ts's PRESET_KEYS
   prompt            String
   materialsSnapshot Json // frozen copy of Material rows at generation time
+  // Phase 7 — the materials resolved for this generation's source image:
+  // [{ face, valeur, origin: "detection" | "correction", nodeId, confidence? }].
+  // Null for every generation made before Phase 7.
+  promptMaterials   Json?
   createdAt         DateTime   @default(now())
 
   @@index([engine, createdAt])
