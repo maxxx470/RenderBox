@@ -114,9 +114,16 @@ export const PRESETS: Record<PresetKey, PresetDef> = {
  * render of their image. From the "render from any 3D software" prompt the
  * owner pointed at (aifordesigners.online, 2026-10-10): the geometry is
  * already right, the engine adds light and texture, not opinions.
+ *
+ * 2026-10-10 (étape 3A): it used to say "do not alter … the materials shown;
+ * match every material exactly", which fought a request such as "façade en
+ * bois" sent right after it. It now says what is kept by default, that an
+ * explicit request wins for the element it names and for that element only,
+ * and that nothing else is redrawn. The user's text follows it in the prompt
+ * (build-prompt.ts), hence "the user's request".
  */
 export const PHOTO_RENDER_MODIFIER =
-  'Create a photorealistic architectural photograph of the attached image. Keep the exact point of view and the exact proportions. Do not alter the building shape, the openings, the architectural details or the materials shown; match every material exactly. Natural, believable light and real-world textures.';
+  "Create a photorealistic architectural photograph of the attached image. Preserve the source by default. Keep the exact point of view and the exact proportions, the composition, the camera angle and the framing, the geometry and volumes, the openings, the position of the building on its site and every existing architectural element. Keep the materials, colours and finishes shown unless the user's request explicitly changes them. If the user's request explicitly asks to change an element — replace a material, change a colour or a finish, modify the geometry, or add or remove an element — apply that change to that element only: for that element, the request takes precedence over these preservation rules. A requested change is not permission to redesign the image: everything the request does not mention stays as faithful to the source as possible. Do not add an ambiance that was not asked for: no cinematic lighting, no sunset, no artistic style or aesthetic transformation. Use natural, believable light consistent with the source and real-world textures.";
 
 export function isPresetKey(value: string): value is PresetKey {
   return (PRESET_KEYS as readonly string[]).includes(value);

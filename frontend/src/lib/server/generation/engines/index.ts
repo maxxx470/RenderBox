@@ -3,11 +3,18 @@
 // isEngineConfigured(); no `if (engine === ...)` branching anywhere else.
 import 'server-only';
 import type { EngineName, GenerateRenderInput, GenerateRenderOutput } from './types';
+import { ENGINE_DEADLINE_MS, EngineTimeoutError } from './types';
 import { generateWithNanobanana } from './nanobanana';
 import { generateWithGptImage } from './gpt-image';
 import { shapeOutput } from '../output-shape';
+import { withDeadline } from '@/lib/server/deadline';
 
-export { EngineNotConfiguredError, ENGINE_NAMES } from './types';
+export {
+  EngineNotConfiguredError,
+  EngineTimeoutError,
+  ENGINE_DEADLINE_MS,
+  ENGINE_NAMES,
+} from './types';
 export type {
   EngineName,
   GenerateRenderInput,
@@ -37,8 +44,15 @@ export async function generateRender(
   engine: EngineName,
   input: GenerateRenderInput,
 ): Promise<GenerateRenderOutput> {
+  // One deadline for the whole engine call (retries and fallback included):
+  // past it the engine's request is aborted and EngineTimeoutError thrown;
+  // any other error comes through unchanged.
+  const output = await withDeadline(
+    ENGINE_DEADLINE_MS,
+    (signal) => GENERATORS[engine]({ ...input, signal }),
+    () => new EngineTimeoutError(engine, ENGINE_DEADLINE_MS),
+  );
   // Every engine's image leaves here at the exact ratio and at least the size
   // asked for (2026-10-08, every option on both engines — see output-shape.ts).
-  const output = await GENERATORS[engine](input);
   return shapeOutput(output, { ratio: input.aspectRatio, resolution: input.resolution });
 }

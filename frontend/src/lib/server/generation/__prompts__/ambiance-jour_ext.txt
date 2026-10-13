@@ -1,0 +1,5 @@
+Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:
+- facade_principale: Enduit blanc taloché
+- toiture: Tuile terre cuite
+Render in full daylight: natural sunlight, crisp cast shadows, clear sky, exterior viewpoint.
+vue depuis la rue

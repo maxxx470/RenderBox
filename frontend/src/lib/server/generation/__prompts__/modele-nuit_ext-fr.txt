@@ -1,0 +1,4 @@
+Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:
+- facade_principale: Enduit blanc taloché
+- toiture: Tuile terre cuite
+Créez une photographie extérieure photoréaliste du bâtiment de l’image jointe, de nuit : ciel bleu nuit profond, aucun soleil, lumière chaude à chaque fenêtre, éclairage architectural maîtrisé avec des projecteurs en pied de façade et de petites bornes le long des allées, reflets chauds au sol. Gardez exactement le point de vue et les proportions. Ne modifiez ni la forme du bâtiment, ni ses ouvertures, ni ses détails d’architecture, ni ses matériaux. Quelques personnes à l’échelle, une végétation doucement éclairée. Photographie d’architecture de nuit haut de gamme.

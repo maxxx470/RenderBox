@@ -69,8 +69,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
   },
   {
     keys: ['matériau', 'materiau', 'material', 'mémoire', 'memoire', 'memory'],
-    fr: 'RenderBox détecte les matériaux de votre projet (façades, sols, menuiseries…) et les réutilise pour que chaque nouveau rendu reste cohérent. Vous les retrouvez dans le panneau Matériaux du projet ; ils sont mis à jour après une modification par commentaire.',
-    en: 'RenderBox detects your project’s materials (façades, floors, joinery…) and reuses them so every new render stays consistent. You find them in the project’s Materials panel; they are updated after an edit by comment.',
+    fr: 'Chaque image a ses propres matériaux (façades, toiture, menuiseries, sol…), en haut de la colonne de droite d’un projet : ce sont eux qui sont transmis au moteur pour un rendu fait à partir de cette image. Ajoutez une face, modifiez-la, masquez-la ou revenez à la détection ; une correction ne change que l’image où elle est faite. L’ancienne fiche du projet n’est plus appliquée automatiquement : pour réutiliser une de ses lignes, rattachez-la explicitement à une image (« Rattacher des lignes à cette image ») ; une ligne ne vaut que pour une seule image.',
+    en: 'Each image has its own materials (façades, roof, joinery, floor…), at the top of a project’s right-hand column: they are what is sent to the engine for a render made from that image. Add a face, edit it, hide it or go back to the detection; a correction only changes the image it is made on. The old project sheet is no longer applied automatically: to reuse one of its rows, attach it explicitly to an image ("Attach rows to this image"); a row applies to one image only.',
   },
   {
     keys: [

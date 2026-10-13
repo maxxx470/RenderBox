@@ -70,8 +70,16 @@ interface ApiOptions {
   body?: unknown;
   headers?: Record<string, string>;
   baseUrl?: string;
+  /**
+   * How long to wait for the response before giving up (default 30 s). Only
+   * for a request the server is known to hold longer — e.g. a generation,
+   * which may take up to the route's 300 s.
+   */
+  timeoutMs?: number;
   _isRetryAfterRefresh?: boolean;
 }
+
+const DEFAULT_TIMEOUT_MS = 30_000;
 
 /**
  * Stable backend error codes — the strings the backend returns in the
@@ -124,7 +132,14 @@ export class ApiError extends Error {
 }
 
 export async function api<T = unknown>(path: string, options: ApiOptions = {}): Promise<T> {
-  const { method = 'GET', body, headers = {}, baseUrl, _isRetryAfterRefresh = false } = options;
+  const {
+    method = 'GET',
+    body,
+    headers = {},
+    baseUrl,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    _isRetryAfterRefresh = false,
+  } = options;
   const effectiveBaseUrl = baseUrl ?? API_URL;
 
   const fetchHeaders: Record<string, string> = {
@@ -149,7 +164,7 @@ export async function api<T = unknown>(path: string, options: ApiOptions = {}): 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30_000);
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       const init: RequestInit = {
         method,

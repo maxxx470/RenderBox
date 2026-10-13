@@ -3,9 +3,9 @@
 //
 // Since 2026-10-08 the Pro image model: it takes `imageSize` (1K / 2K / 4K)
 // alongside the aspect ratio, so every size and ratio the command bar offers
-// is rendered for real. Should that model be unavailable to the key (it is a
-// preview), the call falls back to the Flash model it replaced, and
-// output-shape.ts brings that image to the size asked for.
+// is rendered for real. Should the API not find that model (it is a preview),
+// the call falls back to the Flash model it replaced, and output-shape.ts
+// brings that image to the size asked for. Any other error is thrown as is.
 import 'server-only';
 import { GoogleGenAI } from '@google/genai';
 import type { GenerateRenderInput, GenerateRenderOutput } from './types';
@@ -17,12 +17,26 @@ import { log } from '@/lib/server/observability/log';
 const PRO_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview';
 const FALLBACK_MODEL = 'gemini-2.5-flash-image';
 
-/** An error that says the model itself cannot be used, not the request. */
-function isModelUnavailable(err: unknown): boolean {
-  const status = (err as { status?: number } | null)?.status;
-  if (status === 404 || status === 403) return true;
-  const message = err instanceof Error ? err.message : String(err);
-  return /not found|not supported|permission|does not have access|is not available/i.test(message);
+/**
+ * The API says the Pro model does not exist — the one error the Flash fallback
+ * is for. Read from the SDK's ApiError (@google/genai 1.52): `status` is the
+ * HTTP status and `message` the API's JSON error body,
+ * `{"error":{"code":404,"message":"…","status":"NOT_FOUND"}}`. On
+ * `models/{model}:generateContent` the model is the only resource that can be
+ * missing, so a 404 whose body says NOT_FOUND names it. Nothing is read from
+ * the wording: a key, permission, quota or billing error (400, 401, 403, 429),
+ * a server error (5xx), a network error or an unreadable body is the request's
+ * own error — the Flash model would only hide it — and is thrown as is.
+ */
+function isModelNotFound(err: unknown): boolean {
+  if (!(err instanceof Error) || err.name !== 'ApiError') return false;
+  if ((err as { status?: unknown }).status !== 404) return false;
+  try {
+    const body = JSON.parse(err.message) as { error?: { code?: unknown; status?: unknown } } | null;
+    return body?.error?.code === 404 && body.error.status === 'NOT_FOUND';
+  } catch {
+    return false;
+  }
 }
 
 export async function generateWithNanobanana(
@@ -60,9 +74,16 @@ export async function generateWithNanobanana(
       ...(aspectRatio ? { aspectRatio } : {}),
       ...(withSize && imageSize ? { imageSize } : {}),
     };
+    // The same signal for the Pro call and the Flash fallback: one deadline
+    // covers both. An abort is an AbortError, never an ApiError, so it can
+    // never pass isModelNotFound.
+    const config = {
+      ...(Object.keys(imageConfig).length > 0 ? { imageConfig } : {}),
+      ...(input.signal ? { abortSignal: input.signal } : {}),
+    };
     return client.models.generateContent({
       model,
-      ...(Object.keys(imageConfig).length > 0 ? { config: { imageConfig } } : {}),
+      ...(Object.keys(config).length > 0 ? { config } : {}),
       contents,
     });
   }
@@ -71,7 +92,7 @@ export async function generateWithNanobanana(
   try {
     response = await run(PRO_MODEL, true);
   } catch (err) {
-    if (!isModelUnavailable(err)) throw err;
+    if (!isModelNotFound(err)) throw err;
     log.warn('nanobanana: Pro model unavailable, falling back', {
       model: PRO_MODEL,
       err: String(err),

@@ -4,7 +4,7 @@
 import 'server-only';
 import OpenAI, { toFile } from 'openai';
 import type { GenerateRenderInput, GenerateRenderOutput } from './types';
-import { EngineNotConfiguredError } from './types';
+import { ENGINE_DEADLINE_MS, EngineNotConfiguredError } from './types';
 import { RATIOS } from '../ratios';
 
 const MODEL = 'gpt-image-1';
@@ -41,12 +41,23 @@ export async function generateWithGptImage(
   // afterwards (output-shape.ts, applied by index.ts). Omitted for 'auto'.
   const size = input.aspectRatio ? RATIOS[input.aspectRatio].openai : null;
 
-  const response = await client.images.edit({
-    model: MODEL,
-    image: referenceFiles.length > 0 ? [file, ...referenceFiles] : file,
-    prompt: input.prompt,
-    ...(size ? { size } : {}),
-  });
+  // One retry at most (the SDK retries a 429, a 5xx, a dropped connection),
+  // where the default is two retries of up to 10 minutes each; and never
+  // past the engine deadline: index.ts stops waiting then, the signal closes
+  // the connection and the SDK checks it before any retry.
+  const response = await client.images.edit(
+    {
+      model: MODEL,
+      image: referenceFiles.length > 0 ? [file, ...referenceFiles] : file,
+      prompt: input.prompt,
+      ...(size ? { size } : {}),
+    },
+    {
+      timeout: ENGINE_DEADLINE_MS,
+      maxRetries: 1,
+      ...(input.signal ? { signal: input.signal } : {}),
+    },
+  );
 
   const b64 = response.data?.[0]?.b64_json;
   if (!b64) {

@@ -13,6 +13,11 @@ import { detectMaterials, VisionNotConfiguredError } from '@/lib/server/ai/visio
 import { mergeMaterialDetection, type ExistingMaterial } from './merge';
 import { log } from '@/lib/server/observability/log';
 
+// The detection runs inside the generate / edit request, after the render is
+// stored: it may not hold that request past its 300 s maxDuration. Past this
+// deadline it throws VisionTimeoutError, which the routes log as non-fatal.
+export const LEGACY_DETECTION_DEADLINE_MS = 30_000;
+
 export async function detectAndMergeMaterials(
   projectId: string,
   imageBuffer: Buffer,
@@ -20,7 +25,9 @@ export async function detectAndMergeMaterials(
 ): Promise<void> {
   let detected;
   try {
-    detected = await detectMaterials(imageBuffer, mimeType);
+    detected = await detectMaterials(imageBuffer, mimeType, {
+      deadlineMs: LEGACY_DETECTION_DEADLINE_MS,
+    });
   } catch (e) {
     if (e instanceof VisionNotConfiguredError) {
       log.warn('detectAndMergeMaterials: skipped — Claude Vision not configured');

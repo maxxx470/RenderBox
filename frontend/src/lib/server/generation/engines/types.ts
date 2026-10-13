@@ -39,7 +39,18 @@ export interface GenerateRenderInput {
   // Requested output size (1K / 2K / 4K). Visio renders at it; any engine
   // output smaller than it is enlarged afterwards — see output-shape.ts.
   resolution?: ResolutionKey | undefined;
+  // Set by generateRender (index.ts): aborted once ENGINE_DEADLINE_MS is up.
+  // Each engine hands it to its SDK, so the connection is closed then.
+  signal?: AbortSignal | undefined;
 }
+
+/**
+ * How long one engine call may take — every SDK retry and Visio's Flash
+ * fallback included. Fits the routes' 300 s maxDuration (Vercel Hobby with
+ * Fluid compute, checked 2026-10-11) with the upload, the database writes
+ * and the 30 s material detection after it.
+ */
+export const ENGINE_DEADLINE_MS = 180_000;
 
 export interface GenerateRenderOutput {
   imageBuffer: Buffer;
@@ -50,5 +61,16 @@ export class EngineNotConfiguredError extends Error {
   constructor(public readonly engine: EngineName) {
     super(`Generation engine "${engine}" is not configured (missing API key)`);
     this.name = 'EngineNotConfiguredError';
+  }
+}
+
+/** The engine did not answer within ENGINE_DEADLINE_MS; RenderBox stopped waiting. */
+export class EngineTimeoutError extends Error {
+  constructor(
+    public readonly engine: EngineName,
+    public readonly deadlineMs: number,
+  ) {
+    super(`Generation engine "${engine}" did not answer within ${deadlineMs / 1000} s`);
+    this.name = 'EngineTimeoutError';
   }
 }
