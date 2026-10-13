@@ -13,6 +13,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import { Chat, CloseSquare, Discovery, Send } from 'react-iconly';
 import { api, ApiError } from '@/lib/api';
 import { useLocale } from '@/lib/i18n/LocaleContext';
+import { BrandMark } from '@/components/BrandMark';
 
 const OPEN_EVENT = 'rb:open-assistant';
 
@@ -164,8 +165,8 @@ export function AssistantWidget() {
         {/* Header */}
         <header className="flex flex-shrink-0 items-center justify-between gap-3 border-b border-[#ECECF2] px-4 py-3.5">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]">
-              <Chat set="curved" size={19} primaryColor="#ffffff" />
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-[#F4F6FF]">
+              <BrandMark />
             </span>
             <div className="min-w-0">
               <h2 className="truncate font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
@@ -191,7 +192,7 @@ export function AssistantWidget() {
         <div className="flex flex-shrink-0 gap-2 border-b border-[#ECECF2] px-4 py-2.5">
           {modeButton(
             'renderbox',
-            'RenderBox',
+            'RenderPro',
             <Chat
               set="curved"
               size={14}

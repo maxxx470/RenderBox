@@ -153,9 +153,10 @@ export function AppChrome({
 
   return (
     <Ctx.Provider value={ctx}>
-      {/* 2026-10-08 — the rail is a floating card running the full height on
-          the grey ground (the owner's sidebar reference); the header and the
-          page sit in the column beside it. */}
+      {/* The rail runs the full height against the left edge; the header and
+          the page sit in the column beside it, the header touching the rail,
+          the top and the right edge (owner, 2026-10-13; floating rounded
+          cards on the grey ground from 2026-10-08). */}
       <div className="flex h-dvh overflow-hidden bg-[#EEEEF1]">
         <HomeSidebar
           current={current}

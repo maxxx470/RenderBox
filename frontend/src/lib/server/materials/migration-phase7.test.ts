@@ -17,7 +17,9 @@ const MIGRATIONS = join(ROOT, 'prisma/migrations');
 const NAME = '9_phase7_materials_per_node';
 
 const folders = readdirSync(MIGRATIONS).filter((f) => statSync(join(MIGRATIONS, f)).isDirectory());
-const sql = readFileSync(join(MIGRATIONS, NAME, 'migration.sql'), 'utf8');
+// CRLF on a Windows checkout (core.autocrlf), LF in Git and on Vercel: read
+// it the same either way.
+const sql = readFileSync(join(MIGRATIONS, NAME, 'migration.sql'), 'utf8').replace(/\r\n/g, '\n');
 
 /** Byte order of the folder name, the order Prisma applies migrations in. */
 const byteOrder = (a: string, b: string) => Buffer.compare(Buffer.from(a), Buffer.from(b));

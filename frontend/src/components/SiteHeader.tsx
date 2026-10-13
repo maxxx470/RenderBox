@@ -15,7 +15,7 @@
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
-import { BrandMark } from '@/components/BrandMark';
+import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { PublicMobileMenu } from '@/components/PublicMobileMenu';
 
 export interface SiteHeaderCta {
@@ -41,12 +41,9 @@ export function SiteHeader({
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur">
       <div className="relative mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-4 min-[640px]:px-6">
-        <Link
-          href={homeHref}
-          className="flex flex-shrink-0 items-center gap-2 font-[family-name:var(--font-display)] text-[17px] font-bold text-[#17161F]"
-        >
+        <Link href={homeHref} className="flex flex-shrink-0 items-center gap-2 text-[19px]">
           <BrandMark size="md" />
-          RenderBox
+          <Wordmark />
         </Link>
 
         {links && (

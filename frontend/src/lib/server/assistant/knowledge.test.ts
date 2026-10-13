@@ -49,7 +49,7 @@ describe('assistant fallback', () => {
   });
 
   it('has a default answer', () => {
-    expect(fallbackReply('xyz', 'fr')).toContain('assistant RenderBox');
+    expect(fallbackReply('xyz', 'fr')).toContain('assistant RenderPro');
   });
 });
 

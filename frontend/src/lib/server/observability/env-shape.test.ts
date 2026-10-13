@@ -57,7 +57,7 @@ describe('.env.example shape (OPS-01, OPS-04)', () => {
 // will fail CI here. The wording is the product — the test quotes it
 // character-for-character.
 // ───────────────────────────────────────────────────────────────────────
-describe('.env.example RenderBox additions (upload + storage + AI engine)', () => {
+describe('.env.example RenderPro additions (upload + storage + AI engine)', () => {
   const src = readFileSync(ENV_EXAMPLE, 'utf8');
 
   it('declares the upload allow-list and max-bytes defaults', () => {

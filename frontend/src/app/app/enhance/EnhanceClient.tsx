@@ -557,7 +557,7 @@ export function EnhanceClient({
           <aside
             className={`${
               panelOpen ? 'flex' : 'hidden'
-            } fixed bottom-0 right-0 top-16 z-[35] w-[300px] flex-col overflow-y-auto bg-white px-4 py-4.5 ${MOBILE_NAV_PAD} min-[900px]:static min-[900px]:z-auto min-[900px]:my-3 min-[900px]:mr-3 min-[900px]:flex min-[900px]:flex-shrink-0 min-[900px]:rounded-[20px]`}
+            } fixed bottom-0 right-0 top-16 z-[35] w-[300px] flex-col overflow-y-auto bg-white px-4 py-4.5 ${MOBILE_NAV_PAD} min-[900px]:static min-[900px]:z-auto min-[900px]:flex min-[900px]:flex-shrink-0 min-[900px]:border-l min-[900px]:border-[#ECECF2]`}
           >
             <h3 className={`${HEADING} mb-1`}>{t('enhance.optionsHeading')}</h3>
             <p className="mb-3 text-[11px] leading-relaxed text-[#8A8896]">

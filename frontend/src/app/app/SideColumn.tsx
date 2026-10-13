@@ -2,7 +2,9 @@
 
 // The right column of the image workspace (owner, 2026-10-08) — the same on
 // a project (/app/[projet]) and on the Image page (/app/generer): one
-// vertical white card the full height, the selected image's materials on top
+// vertical white column from the header to the bottom, flush against the
+// right edge, square, a hairline on its left (2026-10-13; a floating rounded
+// card before), the selected image's materials on top
 // (NodeMaterialsPanel, given ready-made by the page; the edit panel while
 // Commenter / Ajouter is on), the project tree under it. A drawer from the
 // right below 900px, opened by the page's own button.
@@ -62,7 +64,7 @@ export function SideColumn({
       <div
         className={`${
           mobileOpen ? 'flex' : 'hidden'
-        } fixed bottom-0 right-0 top-16 z-[35] w-[300px] flex-col overflow-hidden bg-white ${MOBILE_NAV_PAD} min-[900px]:static min-[900px]:z-auto min-[900px]:my-3 min-[900px]:mr-3 min-[900px]:flex min-[900px]:flex-shrink-0 min-[900px]:rounded-[20px]`}
+        } fixed bottom-0 right-0 top-16 z-[35] w-[300px] flex-col overflow-hidden bg-white ${MOBILE_NAV_PAD} min-[900px]:static min-[900px]:z-auto min-[900px]:flex min-[900px]:flex-shrink-0 min-[900px]:border-l min-[900px]:border-[#ECECF2]`}
       >
         <div className="max-h-[55%] flex-shrink-0 overflow-y-auto">
           {mode === 'retouch' || mode === 'add' ? (

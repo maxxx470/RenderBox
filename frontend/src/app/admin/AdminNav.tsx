@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Category, User, Wallet, Document } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
-import { BrandMark } from '@/components/BrandMark';
+import { BrandMark, Wordmark } from '@/components/BrandMark';
 
 const NAV = [
   { href: '/admin', icon: Category },
@@ -31,9 +31,7 @@ export function AdminNav({ role }: { role: string }) {
     <aside className="hidden w-[210px] shrink-0 flex-col bg-white px-3.5 py-5 min-[900px]:flex">
       <div className="mb-6.5 flex items-center gap-2.5 px-1.5">
         <BrandMark />
-        <span className="font-[family-name:var(--font-display)] text-sm font-semibold text-[#17161F]">
-          RenderBox
-        </span>
+        <Wordmark className="text-[16px]" />
       </div>
 
       <nav className="flex flex-col gap-0.5">

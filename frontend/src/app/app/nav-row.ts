@@ -33,6 +33,10 @@ export const ICON_ACTIVE = '#2948FC';
 /** A section's caption ("Général", "Aide"…): small, sentence case, grey, as in the reference. */
 export const RAIL_CAPTION = 'text-[13px] font-medium text-[#8A8896]';
 
-/** The fold toggle: a grey square with rounded corners, as in the reference. */
+/** The fold toggle: a small white square astride the rail's right edge, level
+ *  with the logo (owner, 2026-10-13, from the SPEKTER sidebar reference — its
+ *  hairline outline is part of that look). Positioned against HomeSidebar's
+ *  wrapper; 24px, half of it outside the rail, over the header's left edge
+ *  (z-[60] puts it above the header's z-50), centred on the header's height. */
 export const RAIL_TOGGLE =
-  'hidden h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-[#F2F2F5] transition-colors hover:bg-[#E9E9EE] min-[900px]:flex';
+  'absolute -right-3 top-8 z-[60] hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md border border-[#E4E4EA] bg-white shadow-[0_1px_3px_rgba(23,22,31,0.08)] transition-colors hover:bg-[#F7F7FA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2948FC] min-[900px]:flex';

@@ -89,8 +89,8 @@ export function magicLinkEmail(args: MagicLinkEmailArgs): EmailTemplate {
   const url = htmlEscape(args.url);
   const ttl = ttlWordingFr(args.expiresAt);
   return {
-    subject: 'Ton lien de connexion RenderBox',
-    html: `<p>Bonjour,</p><p>Clique sur le lien ci-dessous pour te connecter à RenderBox :</p><p><a href="${url}">${url}</a></p><p>Ce lien expire ${ttl}. Si tu n'es pas à l'origine de cette demande, ignore cet email.</p>`,
-    text: `Clique sur ce lien pour te connecter à RenderBox : ${args.url}\n\nCe lien expire ${ttl}. Si tu n'es pas à l'origine de cette demande, ignore cet email.`,
+    subject: 'Ton lien de connexion RenderPro',
+    html: `<p>Bonjour,</p><p>Clique sur le lien ci-dessous pour te connecter à RenderPro :</p><p><a href="${url}">${url}</a></p><p>Ce lien expire ${ttl}. Si tu n'es pas à l'origine de cette demande, ignore cet email.</p>`,
+    text: `Clique sur ce lien pour te connecter à RenderPro : ${args.url}\n\nCe lien expire ${ttl}. Si tu n'es pas à l'origine de cette demande, ignore cet email.`,
   };
 }

@@ -42,11 +42,11 @@ export function buildRenderBoxDoc(): string {
   ).join(' ; ');
   const enhanceDefault = DEFAULT_ENHANCE_OPTIONS.map((k) => ENHANCE_OPTIONS[k].label.fr).join(', ');
 
-  return `RenderBox transforme une photo ou un croquis de bâtiment en rendu architectural photoréaliste, avec l'IA.
+  return `RenderPro transforme une photo ou un croquis de bâtiment en rendu architectural photoréaliste, avec l'IA.
 
 NAVIGATION
 - En haut de chaque page, la barre d'en-tête : le titre de la page à gauche (avec le logo sur téléphone) ; à droite la cloche des notifications (un point rouge signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN et la pastille bleue des rendus restants (ouvre Abonnement). Sur téléphone, le compte y figure aussi (ouvre Paramètres).
-- Sur ordinateur, une barre latérale à gauche, en carte blanche : en haut le bouton qui replie la barre (une icône de panneau animée) puis le nom RenderBox ; « Général » (Accueil, Galerie, Générateur d’images, Améliorer — Enhance en anglais) ; « Aide » (Info, Assistant) ; en bas « Profil » (Paramètres, Abonnement, Se déconnecter) puis votre compte (ouvre Paramètres). La page ouverte est surlignée en bleu pâle. Repliée, il ne reste que les icônes ; le même bouton la déplie. La barre et l'en-tête restent en place quand on change de page.
+- Sur ordinateur, une barre latérale à gauche, en carte blanche : en haut le bouton qui replie la barre (une icône de panneau animée) puis le nom RenderPro ; « Général » (Accueil, Galerie, Générateur d’images, Améliorer — Enhance en anglais) ; « Aide » (Info, Assistant) ; en bas « Profil » (Paramètres, Abonnement, Se déconnecter) puis votre compte (ouvre Paramètres). La page ouverte est surlignée en bleu pâle. Repliée, il ne reste que les icônes ; le même bouton la déplie. La barre et l'en-tête restent en place quand on change de page.
 - Sur téléphone, une barre flottante en bas : Accueil, Générer, Améliorer et « Plus » (Galerie, Info, Paramètres, Abonnement, Assistant, Se déconnecter), et un bouton bleu « + » pour lancer un nouveau rendu.
 - Le bouton « Assistant » ouvre ce chat. Le sélecteur FR / EN change la langue de l'interface. À la première visite, la langue suit le pays : français depuis un pays francophone, anglais ailleurs ; le choix fait avec FR / EN reste ensuite mémorisé.
 - « Se déconnecter » ferme la session et ramène sur la page d'accueil du site.
@@ -65,7 +65,7 @@ IMAGE (générer un rendu)
 3. Décrivez éventuellement ce que vous voulez dans la barre de commande, puis « Générer ».
 - Commenter et Ajouter marchent aussi depuis le Générateur d’images, sur l'image épinglée : en Commenter, elle s'affiche en grand et on clique dessus pour poser les commentaires ; en Ajouter, on décrit l'élément et on joint sa photo avec le trombone. À l'envoi, un projet est créé et s'ouvre sur le résultat.
 - LA BARRE DE COMMANDE, un cadre blanc. À gauche, la zone de saisie : les images épinglées en miniature (l'image de départ « Source », la photo ou la référence), la consigne en grand, qui s'agrandit avec le texte (Entrée envoie, Maj+Entrée va à la ligne), puis le trombone pour joindre une image et les deux moteurs toujours visibles (${m1.name.fr} rouge, ${m2.name.fr} jaune) : un clic suffit pour changer. À droite, le grand bouton carré d'envoi. En dessous, les actions en pastilles (Générer, Commenter, Ajouter) puis les réglages. Enhance n'est plus dans la barre : c'est sa propre page, dans la barre latérale. La barre garde toujours la même hauteur : l'image épinglée s'affiche en petit à côté du trombone. Sur téléphone, le bouton d'envoi est dans la zone de saisie et les réglages se déplient avec le bouton « Réglages » (roue dentée).
-- Réglages de la barre de commande : ambiance (chaque ambiance est montrée par une miniature de ce qu'elle produit ; aucune par défaut, et un second clic sur l'ambiance choisie la retire), format (${ratios} — tous disponibles avec les deux moteurs, en génération comme en retouche ; Auto garde le cadrage de l'image), résolution (${res}, avec les deux moteurs). ${m1.name.fr} rend directement au format et à la taille choisis ; ${m2.name.fr} produit son image puis RenderBox la recadre au format exact et l'agrandit à la taille choisie (l'agrandissement ajoute des pixels, pas de détail : pour un vrai 4K détaillé, choisir ${m1.name.fr}).
+- Réglages de la barre de commande : ambiance (chaque ambiance est montrée par une miniature de ce qu'elle produit ; aucune par défaut, et un second clic sur l'ambiance choisie la retire), format (${ratios} — tous disponibles avec les deux moteurs, en génération comme en retouche ; Auto garde le cadrage de l'image), résolution (${res}, avec les deux moteurs). ${m1.name.fr} rend directement au format et à la taille choisis ; ${m2.name.fr} produit son image puis RenderPro la recadre au format exact et l'agrandit à la taille choisie (l'agrandissement ajoute des pixels, pas de détail : pour un vrai 4K détaillé, choisir ${m1.name.fr}).
 - Réglages aussi dans la barre : Contexte (ce que le moteur a retenu du projet), @ Éléments (réutiliser une image du projet comme référence), et en mode Commenter ou Ajouter le nombre de Variantes (1 à 4).
 
 LES DEUX MOTEURS
@@ -116,23 +116,23 @@ export function buildSystemPrompt(mode: AssistantMode, locale: 'fr' | 'en'): str
       ? 'Answer in English unless the user writes in another language.'
       : "Réponds en français en vouvoyant l'utilisateur, sauf s'il écrit dans une autre langue.";
   if (mode === 'search') {
-    return `Tu es l'assistant recherche de RenderBox, un outil de rendus architecturaux par IA. Tu as accès à Internet.
+    return `Tu es l'assistant recherche de RenderPro, un outil de rendus architecturaux par IA. Tu as accès à Internet.
 Tu aides sur : architecture, matériaux et revêtements (aspect, usage, entretien, prix indicatifs), styles architecturaux, éclairage et ambiance, végétation, références de projets.
 Règles :
 1. Cite tes sources (nom du site).
 2. Indique quand une information est approximative ou datée.
 3. Sois concis et concret.
-4. Ne cite jamais de fournisseur d'IA ; les moteurs de RenderBox s'appellent Visio et Pixel IA.
+4. Ne cite jamais de fournisseur d'IA ; les moteurs de RenderPro s'appellent Visio et Pixel IA.
 5. ${lang}`;
   }
-  return `Tu es l'assistant intégré à RenderBox. Voici la documentation complète et à jour de l'application :
+  return `Tu es l'assistant intégré à RenderPro. Voici la documentation complète et à jour de l'application :
 
 ${buildRenderBoxDoc()}
 
 Règles :
 1. Réponds uniquement à partir de cette documentation ; si une fonction n'y est pas, dis-le simplement au lieu d'inventer.
 2. Sois concis, concret, étape par étape, avec le nom exact des boutons.
-3. Si la question sort de l'utilisation de RenderBox, propose le mode « Recherche » de l'assistant.
+3. Si la question sort de l'utilisation de RenderPro, propose le mode « Recherche » de l'assistant.
 4. Ne cite jamais de fournisseur ou de marque d'IA : les moteurs s'appellent Visio et Pixel IA.
 5. ${lang}`;
 }

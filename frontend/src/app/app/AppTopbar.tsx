@@ -9,10 +9,12 @@
 // The quota used to be a pill at the foot of the rail; the owner moved it
 // here (2026-10-06), where Metrio shows its "pages restantes" badge.
 //
-// 2026-10-08 — from 900px the header is a floating white card beside the rail
-// card, and drops what the rail now carries: the logo, the settings gear and
+// 2026-10-08 — from 900px the header sits beside the rail and drops what the
+// rail now carries: the logo, the settings gear and
 // the account. Below 900px (no rail) it keeps the logo and the account.
 import Link from 'next/link';
+// 2026-10-13 (owner): no longer a floating rounded card — it touches the rail,
+// the top and the right edge, square, a hairline under it.
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { BrandMark } from '@/components/BrandMark';
@@ -49,11 +51,11 @@ export function AppTopbar({ title, tier, quotaMax, quotaRemaining, userEmail }: 
     : t('app.genHomeChooseTier');
 
   return (
-    <header className="relative z-50 flex h-16 flex-shrink-0 items-center justify-between gap-2 bg-white px-3 shadow-[0_1px_2px_rgba(23,22,31,0.06)] min-[640px]:px-6 min-[900px]:mx-3 min-[900px]:mt-3 min-[900px]:rounded-[20px] min-[900px]:shadow-[0_1px_2px_rgba(23,22,31,0.04)]">
+    <header className="relative z-50 flex h-16 flex-shrink-0 items-center justify-between gap-2 bg-white px-3 shadow-[0_1px_2px_rgba(23,22,31,0.06)] min-[640px]:px-6 min-[900px]:border-b min-[900px]:border-[#ECECF2] min-[900px]:shadow-none">
       <div className="flex min-w-0 items-center gap-2 min-[480px]:gap-3 min-[640px]:gap-4">
         <Link
           href="/app"
-          aria-label="RenderBox"
+          aria-label="RenderPro"
           className="flex flex-shrink-0 items-center gap-2.5 min-[900px]:hidden"
         >
           <BrandMark size="md" />

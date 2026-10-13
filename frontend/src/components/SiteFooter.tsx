@@ -18,7 +18,7 @@ import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { TikTokMark } from '@/app/HeroProof';
 import { SOCIAL } from '@/app/social';
-import { BrandMark } from '@/components/BrandMark';
+import { BrandMark, Wordmark } from '@/components/BrandMark';
 
 const BAND = 'bg-[linear-gradient(135deg,#2948FC_0%,#1E36D6_55%,#1A2BB0_100%)]';
 const LINK = 'mb-2.5 block text-[13px] text-white/85 transition-colors hover:text-white';
@@ -34,9 +34,9 @@ export function SiteFooter({ ctaHref = '/app' }: { ctaHref?: string }) {
       >
         <div className="flex flex-wrap justify-between gap-10 pb-10">
           <div className="max-w-[320px]">
-            <Link href="/" className="flex items-center gap-2.5 text-[18px] font-bold text-white">
+            <Link href="/" className="flex items-center gap-2.5 text-[20px]">
               <BrandMark size="md" inverse />
-              RenderBox
+              <Wordmark inverse />
             </Link>
             <p className="mt-3 text-[13px] leading-[1.55] text-white/85">
               {t('landing.footerTagline')}

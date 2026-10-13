@@ -49,8 +49,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
   },
   {
     keys: ['moteur', 'engine', 'rouge', 'jaune', 'red', 'yellow'],
-    fr: "RenderBox a deux moteurs. Visio (pastille rouge) : rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail. Pixel IA (pastille jaune) : meilleur suivi d'instructions précises. Vous choisissez le moteur à chaque rendu dans la barre de commande ; le moteur par défaut se règle dans Paramètres. Les deux partagent les matériaux et l'historique du projet.",
-    en: 'RenderBox has two engines. Visio (red dot): renders straight at the chosen size, up to 4K, with the most detail. Pixel AI (yellow dot): best at following precise instructions. Pick the engine for each render in the command bar; set the default one in Settings. Both share the project’s materials and history.',
+    fr: "RenderPro a deux moteurs. Visio (pastille rouge) : rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail. Pixel IA (pastille jaune) : meilleur suivi d'instructions précises. Vous choisissez le moteur à chaque rendu dans la barre de commande ; le moteur par défaut se règle dans Paramètres. Les deux partagent les matériaux et l'historique du projet.",
+    en: 'RenderPro has two engines. Visio (red dot): renders straight at the chosen size, up to 4K, with the most detail. Pixel AI (yellow dot): best at following precise instructions. Pick the engine for each render in the command bar; set the default one in Settings. Both share the project’s materials and history.',
   },
   {
     keys: [
@@ -142,8 +142,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
 ];
 
 const DEFAULT = {
-  fr: "Je suis l'assistant RenderBox. Je peux vous aider à générer un rendu, choisir un moteur ou une ambiance, modifier un rendu en le commentant, utiliser Enhance, naviguer dans l'arbre du projet ou comprendre votre abonnement. Que voulez-vous faire ?",
-  en: 'I am the RenderBox assistant. I can help you generate a render, pick an engine or an ambiance, change a render by commenting on it, use Enhance, find your way in the project tree or understand your plan. What would you like to do?',
+  fr: "Je suis l'assistant RenderPro. Je peux vous aider à générer un rendu, choisir un moteur ou une ambiance, modifier un rendu en le commentant, utiliser Enhance, naviguer dans l'arbre du projet ou comprendre votre abonnement. Que voulez-vous faire ?",
+  en: 'I am the RenderPro assistant. I can help you generate a render, pick an engine or an ambiance, change a render by commenting on it, use Enhance, find your way in the project tree or understand your plan. What would you like to do?',
 };
 
 export function fallbackReply(lastUserMessage: string, locale: Locale): string {

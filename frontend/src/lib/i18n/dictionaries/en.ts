@@ -48,7 +48,7 @@ const en: Record<keyof typeof fr, string> = {
   'tarifs.ctaRenew': 'Renew',
   'tarifs.demoNote': 'Free access: every feature is already open. Payment will come with accounts.',
   'app.railHome': 'Home',
-  'app.notificationsNews': 'See what’s new in RenderBox',
+  'app.notificationsNews': 'See what’s new in RenderPro',
   'app.notificationsEmptyHint': 'Payments and news about your account will show up here.',
   'app.notificationsEmpty': 'No notifications yet',
   'app.notificationsError': 'Could not load notifications. Try again in a moment.',
@@ -71,7 +71,7 @@ const en: Record<keyof typeof fr, string> = {
   'enhance.refAttached': 'Reference image',
   'enhance.refFlagged': 'A reference image was refused by moderation.',
   'enhance.subtitle':
-    'Attach an existing render with the paperclip: RenderBox makes it sharper, better lit and more realistic, keeping your framing and your architecture as the reference.',
+    'Attach an existing render with the paperclip: RenderPro makes it sharper, better lit and more realistic, keeping your framing and your architecture as the reference.',
   'enhance.optionsHeading': 'Improve',
   'enhance.strengthHeading': 'Strength',
   'enhance.engineHeading': 'Engine',
@@ -122,12 +122,12 @@ const en: Record<keyof typeof fr, string> = {
   'app.mobileMore': 'More',
   'app.mobileNew': 'New render',
   'app.assistant': 'Assistant',
-  'assistant.title': 'RenderBox assistant',
+  'assistant.title': 'RenderPro assistant',
   'assistant.status': 'Online · help with the app',
   'assistant.close': 'Close',
   'assistant.modeSearch': 'Search',
   'assistant.welcome':
-    'Hello! I am the RenderBox assistant. I know the whole app: generating a render, picking an engine, changing a render by commenting on it, Enhance, the project tree, your plan. What would you like to do?',
+    'Hello! I am the RenderPro assistant. I know the whole app: generating a render, picking an engine, changing a render by commenting on it, Enhance, the project tree, your plan. What would you like to do?',
   'assistant.welcomeSearch':
     'Search mode: ask about architecture, materials or styles. I search the web and cite my sources.',
   'assistant.suggest1': 'How do I edit part of a render?',
@@ -136,10 +136,10 @@ const en: Record<keyof typeof fr, string> = {
   'assistant.suggest4': 'How does the subscription work?',
   'assistant.sources': 'Sources:',
   'assistant.thinking': 'Thinking…',
-  'assistant.placeholder': 'Ask about RenderBox…',
+  'assistant.placeholder': 'Ask about RenderPro…',
   'assistant.placeholderSearch': 'Search the web…',
   'assistant.send': 'Send',
-  'assistant.foot': 'Based on the RenderBox documentation — AI can make mistakes',
+  'assistant.foot': 'Based on the RenderPro documentation — AI can make mistakes',
   'assistant.footSearch': 'Web search — sources are shown',
   'assistant.limited':
     'You have reached the question limit for this hour. Try again a little later.',
@@ -361,7 +361,7 @@ const en: Record<keyof typeof fr, string> = {
   'edit.partialSuccess': '{created} of {requested} variants generated.',
 
   'info.title': 'Updates',
-  'info.subtitle': 'What changed in RenderBox, newest first.',
+  'info.subtitle': 'What changed in RenderPro, newest first.',
   'info.guideTitle': 'Features in motion',
   'info.filmEtapesTitle': 'Generate a render in 3 steps',
   'info.filmCommenterTitle': 'Edit an image by commenting on it',
@@ -386,7 +386,7 @@ const en: Record<keyof typeof fr, string> = {
   'page.pricingSubtitle':
     'A plan lasts 30 days, with no automatic charge: each render you generate is counted.',
   'dashboard.noTierTitle': 'No plan',
-  'dashboard.videoTitle': 'Discover RenderBox in 2 minutes',
+  'dashboard.videoTitle': 'Discover RenderPro in 2 minutes',
   'dashboard.videoPlay': 'Play the video',
   'dashboard.howTitle': 'From photo to render, in 3 steps',
   'dashboard.howCta': 'Generate a render',
@@ -532,7 +532,7 @@ const en: Record<keyof typeof fr, string> = {
 
   'exemple.title': 'Render examples',
   'exemple.subtitle':
-    'Everything RenderBox can do, across several projects: furnished plans, exploded axonometrics, concept boards, models, sketches, from sketch to render, and the four lights.',
+    'Everything RenderPro can do, across several projects: furnished plans, exploded axonometrics, concept boards, models, sketches, from sketch to render, and the four lights.',
   'exemple.batchCountOne': '1 render',
   'exemple.batchCount': '{n} renders',
   'exemple.esquisseNote':
@@ -589,7 +589,7 @@ const en: Record<keyof typeof fr, string> = {
   'legal.tabTerms': 'Terms of use',
   'legal.tabPrivacy': 'Privacy',
   'legal.termsBody':
-    'RenderBox is an AI-assisted architectural rendering service. By using this service, you agree that images you upload are sent to third-party AI providers (Google, OpenAI) for generation purposes. You are responsible for the images you upload and warrant that you hold the necessary rights to them.',
+    'RenderPro is an AI-assisted architectural rendering service. By using this service, you agree that images you upload are sent to third-party AI providers (Google, OpenAI) for generation purposes. You are responsible for the images you upload and warrant that you hold the necessary rights to them.',
   'legal.privacyBody':
     'We collect your email address for authentication, the images you upload for render generation, and payment metadata tied to your purchases. Your data is never resold. You can request account deletion by contacting support — deletion is reversible for 30 days, then permanent.',
 
@@ -610,14 +610,14 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroChipMaterials': 'Materials remembered: 12/12',
   'landing.heroChipFacade': 'North façade → white render',
 
-  // "your exports", not "works with": RenderBox reads the images these tools
+  // "your exports", not "works with": RenderPro reads the images these tools
   // export, it does not integrate with them. Do not shorten.
   'landing.proofCompatible': 'Import image exports from',
   // The figure and the wording are the founder's (2026-10-08): "More than
-  // 5,000 people use RenderBox". Do not rephrase.
-  'landing.proofUsers': 'More than 5,000 people use RenderBox',
+  // 5,000 people use RenderPro" (RenderBox until the 2026-10-13 rename). Do not rephrase.
+  'landing.proofUsers': 'More than 5,000 people use RenderPro',
   'landing.videoEyebrow': 'Overview',
-  'landing.videoTitle': 'RenderBox on video',
+  'landing.videoTitle': 'RenderPro on video',
   'landing.videoSoon': 'Presentation video coming soon',
   'landing.videoSoonBody':
     'It will be filmed once the platform is complete. Meanwhile, each feature has its own film further down the page.',
@@ -625,7 +625,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterTitlePrefix': 'From sketch to ',
   'landing.beforeAfterTitleAccent': 'photorealistic render',
   'landing.beforeAfterBody':
-    "Drag to compare. Every material, every opening, every proportion kept — RenderBox doesn't reinvent your project, it reveals it.",
+    "Drag to compare. Every material, every opening, every proportion kept — RenderPro doesn't reinvent your project, it reveals it.",
   'landing.enhanceEyebrow': 'Enhance',
   'landing.enhanceTitle': 'A blurry image turns sharp.',
   'landing.enhanceBody':
@@ -637,7 +637,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.beforeAfterAltAfter':
     'The same villa as a photorealistic render: white render, oak cladding, pool, golden-hour light.',
   'landing.beforeAfterLabelBefore': 'Sketch',
-  'landing.beforeAfterLabelAfter': 'RenderBox render',
+  'landing.beforeAfterLabelAfter': 'RenderPro render',
   'landing.beforeAfterExterior': 'Exterior',
   'landing.beforeAfterInterior': 'Interior',
   'landing.beforeAfterAltBeforeInterior':
@@ -677,7 +677,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.addEyebrow': 'Add',
   'landing.addTitle': "Add what's missing.",
   'landing.addSubtitle':
-    'Attach the photo of a piece of furniture, a person or a tree and say where it goes: RenderBox works it into the render, keeping the rest of the image as the reference. A moodboard is enough to furnish an empty room.',
+    'Attach the photo of a piece of furniture, a person or a tree and say where it goes: RenderPro works it into the render, keeping the rest of the image as the reference. A moodboard is enough to furnish an empty room.',
   'landing.addAlt':
     'Film: an empty room furnished from a moodboard, two people then two trees added in front of a villa, a person seated on a terrace.',
   'landing.split2Tag': 'Tree gallery',
@@ -709,7 +709,7 @@ const en: Record<keyof typeof fr, string> = {
 
   'landing.ctaBandTitle': 'Ready to generate your first renders?',
   'landing.ctaBandBody':
-    'Upload a photo, pick a preset, and let RenderBox remember every material for you.',
+    'Upload a photo, pick a preset, and let RenderPro remember every material for you.',
   'landing.ctaBandButton': 'Generate my first render',
   'landing.navHow': 'How it works',
   'landing.navFaq': 'FAQ',
@@ -717,17 +717,17 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroBadgeNew': 'New',
   'landing.heroBadgeText': 'Two AI engines in one project',
   'landing.heroSubtitle':
-    'Upload a photo, a sketch or an image export of your plans: RenderBox generates renders that stay consistent from one view to the next, materials included.',
+    'Upload a photo, a sketch or an image export of your plans: RenderPro generates renders that stay consistent from one view to the next, materials included.',
   'landing.eyebrowResult': 'The result',
   'landing.eyebrowFeatures': 'Key features',
   'landing.eyebrowHow': 'How it works',
   'landing.howTitle': 'Simple, consistent and automated',
   'landing.howSubtitle':
-    'Upload an image: RenderBox detects the materials, remembers them and reuses them in every new render of the project.',
+    'Upload an image: RenderPro detects the materials, remembers them and reuses them in every new render of the project.',
   'landing.eyebrowPresets': 'Ambiances',
   'landing.eyebrowPricing': 'Pricing',
   'landing.eyebrowFaq': 'FAQ',
-  'landing.faqSubtitle': 'Answers to the questions we hear most about RenderBox.',
+  'landing.faqSubtitle': 'Answers to the questions we hear most about RenderPro.',
 
   'landing.faqTitle': 'Everything you need to know before you start',
   'landing.faq1Q': 'What happens if I switch tiers mid-month?',
@@ -745,7 +745,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faq5A':
     'Yes, no commitment. Your access stays active until the already-paid period ends.',
   'landing.faq7A':
-    'The Assistant button opens a chat that knows all of RenderBox and guides you step by step. It also answers your architecture and materials questions.',
+    'The Assistant button opens a chat that knows all of RenderPro and guides you step by step. It also answers your architecture and materials questions.',
   'landing.faq7Q': 'What if I get lost in the app?',
   'landing.faq6A':
     'With the Comment mode: click the render where it should change, write the change (up to 8 comments), then Apply. The rest of the image is kept and the original stays in the project tree.',
@@ -756,16 +756,16 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faq9Q': 'Can I improve a render made with other software?',
   'landing.faq9A':
     'Yes, with Enhance: attach the render with the paperclip, tick what should improve (sharpness, detail, light, materials, sky, planting, life and atmosphere) — or describe it yourself — and pick the strength. Each item can take a reference image. The framing is kept.',
-  'landing.faq10Q': 'Does RenderBox change my architecture?',
+  'landing.faq10Q': 'Does RenderPro change my architecture?',
   'landing.faq10A':
-    'RenderBox starts from your image and asks the engines to keep the framing, the volumes and the openings. The result is still AI generation: check the details, and fix what needs fixing with Comment.',
+    'RenderPro starts from your image and asks the engines to keep the framing, the volumes and the openings. The result is still AI generation: check the details, and fix what needs fixing with Comment.',
   'landing.pricingFeatureAssistant': 'Built-in assistant to guide you',
 
   'landing.footerProductHeading': 'Product',
   'landing.footerTagline':
     'Realistic renders to design, explore and present your projects, with the same materials from one view to the next.',
   'landing.footerResourcesHeading': 'Resources',
-  'landing.footerCopyright': '© {year} RenderBox. All rights reserved.',
+  'landing.footerCopyright': '© {year} RenderPro. All rights reserved.',
   'landing.footerLegalLinks': 'Terms · Privacy',
 
   'landing.pricingTitlePrefix': 'Pick the volume that fits ',

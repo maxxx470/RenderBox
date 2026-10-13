@@ -6,9 +6,10 @@
 // No link to /admin here, ever — the admin back-office is a fully separate
 // space reached by typing the URL directly, never surfaced from this sidebar.
 //
-// 2026-10-08 — rebuilt on the owner's "Shopall" reference: a floating white
-// card on the grey ground, from top to bottom
-//   the fold button, then the RenderBox name (the owner's logo goes there)
+// 2026-10-08 — rebuilt on the owner's "Shopall" reference; since 2026-10-13
+// flush to the left edge, the full height, square, from top to bottom
+//   the logo and the RenderBox name (the fold button sits astride the
+//   right edge, level with them — 2026-10-13, SPEKTER reference)
 //   Général   — Accueil, Mes images, Image, Enhance
 //   Aide      — Info, Assistant
 //   (a project's render tree, when one is open)
@@ -21,6 +22,7 @@
 import Link from 'next/link';
 import { ChevronDown } from 'react-iconly';
 import { PanelToggleIcon } from './PanelToggleIcon';
+import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { openAssistant } from './AssistantWidget';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
@@ -204,149 +206,159 @@ export function HomeSidebar({
   }
 
   return (
-    <aside
-      // Below 900px an overlay drawer (`fixed`, off-canvas until opened);
-      // from 900px a floating card on the grey ground, the full height.
-      className={`${mobileOpen ? 'flex' : 'hidden'} fixed bottom-0 left-0 top-16 z-40 flex-col overflow-hidden bg-white shadow-[0_1px_2px_rgba(23,22,31,0.04)] transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:my-3 min-[900px]:ml-3 min-[900px]:flex min-[900px]:flex-shrink-0 min-[900px]:rounded-[20px] ${
-        folded ? 'w-[76px]' : 'w-[264px]'
-      }`}
-    >
-      {/* The fold button, then the RenderBox name (owner, 2026-10-08: the
-          blue square mark gave way to the button; their own logo will sit
-          beside the name). Folded, only the button is left. */}
-      <div
-        className={`flex h-[72px] flex-shrink-0 items-center ${folded ? 'justify-center' : 'gap-3 pl-4 pr-4'}`}
+    // The wrapper exists so the fold button can sit astride the rail's right
+    // edge: the rail itself clips its overflow (width transition).
+    <div className="relative flex flex-shrink-0">
+      <aside
+        // Below 900px an overlay drawer (`fixed`, off-canvas until opened);
+        // from 900px flush against the left edge, top to bottom, square, with
+        // a hairline on its right (owner, 2026-10-13; a floating rounded card
+        // on the grey ground before).
+        className={`${mobileOpen ? 'flex' : 'hidden'} fixed bottom-0 left-0 top-16 z-40 flex-col overflow-hidden bg-white shadow-[0_1px_2px_rgba(23,22,31,0.04)] transition-[width] duration-200 ease-out min-[900px]:static min-[900px]:z-auto min-[900px]:flex min-[900px]:flex-shrink-0 min-[900px]:border-r min-[900px]:border-[#ECECF2] min-[900px]:shadow-none ${
+          folded ? 'w-[76px]' : 'w-[264px]'
+        }`}
       >
-        <button
-          type="button"
-          onClick={onToggleCollapsed}
-          aria-label={folded ? t('app.sidebarExpand') : t('app.sidebarCollapse')}
-          title={folded ? t('app.sidebarExpand') : t('app.sidebarCollapse')}
-          className={`group ${RAIL_TOGGLE}`}
+        {/* The owner's mark, then the « RenderPro » wordmark; folded, the
+            mark alone (owner, 2026-10-13, from the SPEKTER sidebar
+            reference). */}
+        <Link
+          href="/app"
+          aria-label="RenderPro"
+          className={`flex h-[63px] flex-shrink-0 items-center ${folded ? 'justify-center' : 'gap-2.5 pl-5 pr-6'}`}
         >
-          <PanelToggleIcon open={!folded} size={18} />
-        </button>
-        {!folded && (
-          <Link href="/app" className="min-w-0">
-            <span className="block truncate font-[family-name:var(--font-display)] text-[20px] font-bold text-[#2948FC]">
-              RenderBox
-            </span>
-          </Link>
-        )}
-      </div>
+          <BrandMark size="md" />
+          {!folded && <Wordmark className="min-w-0 text-[21px]" />}
+        </Link>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
-        <div className={`${SECTION} ${sectionPad}`}>
-          {caption(t('app.railGroupGeneral'))}
-          <nav className="flex flex-col gap-1">
-            {link('/app', t('app.railHome'), 'dashboard', 'dashboard')}
-            {link('/app/images', t('app.railImages'), 'projects', 'images')}
-            {/* Where the page owns the generation mode, the Image entry is the
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
+          <div className={`${SECTION} ${sectionPad}`}>
+            {caption(t('app.railGroupGeneral'))}
+            <nav className="flex flex-col gap-1">
+              {link('/app', t('app.railHome'), 'dashboard', 'dashboard')}
+              {link('/app/images', t('app.railImages'), 'projects', 'images')}
+              {/* Where the page owns the generation mode, the Image entry is the
                 switch back to "Générer"; everywhere else a link to that space. */}
-            {onModeChange && current === 'generate' ? (
+              {onModeChange && current === 'generate' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onModeChange('generate');
+                    onMobileClose?.();
+                  }}
+                  {...(folded ? { title: t('app.modeGenerate') } : {})}
+                  aria-label={t('app.modeGenerate')}
+                  aria-current="page"
+                  className={`${ROW} ${folded ? ROW_ROUND : ROW_WIDE} ${ROW_ACTIVE} text-left`}
+                >
+                  <RailTile src="/rail/image.webp" />
+                  {!folded && <span>{t('app.modeGenerate')}</span>}
+                </button>
+              ) : (
+                link('/app/generer', t('app.modeGenerate'), 'image', 'generate')
+              )}
+              {link('/app/enhance', t('app.railEnhance'), 'enhance', 'enhance')}
+            </nav>
+          </div>
+
+          <div className={`${SECTION} ${sectionPad}`}>
+            {caption(t('app.railGroupHelp'))}
+            <nav className="flex flex-col gap-1">
+              {/* /app/info, not /info: the public changelog wears the landing's
+                header, and nothing inside the app may lead back there. */}
+              {link('/app/info', t('app.railInfo'), 'info', 'info')}
               <button
                 type="button"
                 onClick={() => {
-                  onModeChange('generate');
                   onMobileClose?.();
+                  openAssistant();
                 }}
-                {...(folded ? { title: t('app.modeGenerate') } : {})}
-                aria-label={t('app.modeGenerate')}
-                aria-current="page"
-                className={`${ROW} ${folded ? ROW_ROUND : ROW_WIDE} ${ROW_ACTIVE} text-left`}
+                {...(folded ? { title: t('app.assistant') } : {})}
+                aria-label={t('app.assistant')}
+                className={footRow}
               >
-                <RailTile src="/rail/image.webp" />
-                {!folded && <span>{t('app.modeGenerate')}</span>}
+                <RailTile src="/rail/assistant.webp" />
+                {!folded && <span>{t('app.assistant')}</span>}
               </button>
-            ) : (
-              link('/app/generer', t('app.modeGenerate'), 'image', 'generate')
-            )}
-            {link('/app/enhance', t('app.railEnhance'), 'enhance', 'enhance')}
-          </nav>
-        </div>
+            </nav>
+          </div>
 
-        <div className={`${SECTION} ${sectionPad}`}>
-          {caption(t('app.railGroupHelp'))}
-          <nav className="flex flex-col gap-1">
-            {/* /app/info, not /info: the public changelog wears the landing's
-                header, and nothing inside the app may lead back there. */}
-            {link('/app/info', t('app.railInfo'), 'info', 'info')}
-            <button
-              type="button"
-              onClick={() => {
-                onMobileClose?.();
-                openAssistant();
-              }}
-              {...(folded ? { title: t('app.assistant') } : {})}
-              aria-label={t('app.assistant')}
-              className={footRow}
-            >
-              <RailTile src="/rail/assistant.webp" />
-              {!folded && <span>{t('app.assistant')}</span>}
-            </button>
-          </nav>
-        </div>
-
-        {/* A project's render tree, portalled here by AppFrame. Only it
+          {/* A project's render tree, portalled here by AppFrame. Only it
             scrolls, so the groups and the foot stay put. It needs its labels,
             so it goes when folded. */}
-        {treeSlotRef && (
-          <div
-            ref={treeSlotRef}
-            className={`${SECTION} min-h-0 flex-1 overflow-y-auto px-4 py-4 ${folded ? 'hidden' : ''}`}
-          />
-        )}
+          {treeSlotRef && (
+            <div
+              ref={treeSlotRef}
+              className={`${SECTION} min-h-0 flex-1 overflow-y-auto px-4 py-4 ${folded ? 'hidden' : ''}`}
+            />
+          )}
 
-        <div className={`${SECTION} ${sectionPad} mt-auto`}>
-          {caption(t('app.railGroupProfile'))}
-          <nav className="flex flex-col gap-1">
-            {link('/parametres', t('parametres.title'), 'settings', 'settings')}
-            {link('/app/tarifs', t('app.railPricing'), 'pricing', 'pricing')}
-            {/* Always Se déconnecter (owner, 2026-10-08: inside the app you
+          <div className={`${SECTION} ${sectionPad} mt-auto`}>
+            {caption(t('app.railGroupProfile'))}
+            <nav className="flex flex-col gap-1">
+              {link('/parametres', t('parametres.title'), 'settings', 'settings')}
+              {link('/app/tarifs', t('app.railPricing'), 'pricing', 'pricing')}
+              {/* Always Se déconnecter (owner, 2026-10-08: inside the app you
                 are signed in). In free access there is no session to end:
                 logout() clears nothing and the click lands on the landing. */}
-            <button
-              type="button"
-              disabled={loggingOut}
-              onClick={() => void handleLogout()}
-              {...(folded ? { title: t('parametres.logoutButton') } : {})}
-              aria-label={t('parametres.logoutButton')}
-              className={`${footRow} disabled:opacity-60`}
-            >
-              <RailTile src="/rail/deconnexion.webp" />
-              {!folded && <span>{t('parametres.logoutButton')}</span>}
-            </button>
-          </nav>
+              <button
+                type="button"
+                disabled={loggingOut}
+                onClick={() => void handleLogout()}
+                {...(folded ? { title: t('parametres.logoutButton') } : {})}
+                aria-label={t('parametres.logoutButton')}
+                className={`${footRow} disabled:opacity-60`}
+              >
+                <RailTile src="/rail/deconnexion.webp" />
+                {!folded && <span>{t('parametres.logoutButton')}</span>}
+              </button>
+            </nav>
+          </div>
         </div>
-      </div>
 
-      {/* The account, as the reference closes its sidebar: initials, the name,
+        {/* The account, as the reference closes its sidebar: initials, the name,
           a chevron. Opens Paramètres. */}
-      <Link
-        href="/parametres"
-        onClick={() => {
-          onNavigateTo('settings');
-          onMobileClose?.();
-        }}
-        title={accountLabel}
-        aria-label={accountLabel}
-        className={`${SECTION} flex flex-shrink-0 items-center transition-colors hover:bg-[#FBFBFD] ${
-          folded ? 'justify-center gap-0.5 px-2 py-4' : 'gap-3 px-5 py-4'
-        }`}
-      >
-        <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#EEF1FF] text-[14px] font-semibold text-[#2948FC]">
-          {initial}
-        </span>
-        {!folded && (
-          <span className="flex min-w-0 flex-1 flex-col leading-tight">
-            <span className="truncate text-[14px] font-semibold text-[#17161F]">
-              {accountLabel}
-            </span>
-            <span className="truncate text-[12px] text-[#6B6878]">{t('app.railAccountSub')}</span>
+        <Link
+          href="/parametres"
+          onClick={() => {
+            onNavigateTo('settings');
+            onMobileClose?.();
+          }}
+          title={accountLabel}
+          aria-label={accountLabel}
+          className={`${SECTION} flex flex-shrink-0 items-center transition-colors hover:bg-[#FBFBFD] ${
+            folded ? 'justify-center gap-0.5 px-2 py-4' : 'gap-3 px-5 py-4'
+          }`}
+        >
+          <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#EEF1FF] text-[14px] font-semibold text-[#2948FC]">
+            {initial}
           </span>
-        )}
-        <ChevronDown set="curved" size={folded ? 12 : 15} primaryColor="#6B6878" />
-      </Link>
-    </aside>
+          {!folded && (
+            <span className="flex min-w-0 flex-1 flex-col leading-tight">
+              <span className="truncate text-[14px] font-semibold text-[#17161F]">
+                {accountLabel}
+              </span>
+              <span className="truncate text-[12px] text-[#6B6878]">{t('app.railAccountSub')}</span>
+            </span>
+          )}
+          <ChevronDown set="curved" size={folded ? 12 : 15} primaryColor="#6B6878" />
+        </Link>
+      </aside>
+
+      {/* The fold button, astride the rail's right edge level with the logo,
+          in the same place open or folded (owner, 2026-10-13, from the
+          SPEKTER reference). Keyed on the state so the glyph's change plays
+          (`starting:` in PanelToggleIcon). From 900px only: below, the rail is
+          a drawer and never folds. */}
+      <button
+        key={folded ? 'folded' : 'open'}
+        type="button"
+        onClick={onToggleCollapsed}
+        aria-label={folded ? t('app.sidebarExpand') : t('app.sidebarCollapse')}
+        title={folded ? t('app.sidebarExpand') : t('app.sidebarCollapse')}
+        className={`group ${RAIL_TOGGLE}`}
+      >
+        <PanelToggleIcon open={!folded} size={14} color="#6B6878" />
+      </button>
+    </div>
   );
 }

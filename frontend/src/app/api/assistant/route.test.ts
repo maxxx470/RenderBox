@@ -84,7 +84,7 @@ describe('POST /api/assistant', () => {
     expect(res.status).toBe(400);
   });
 
-  it('answers with the model, from the RenderBox documentation', async () => {
+  it('answers with the model, from the RenderPro documentation', async () => {
     mockGenerateContent.mockResolvedValue({
       text: 'Ouvrez le mode **Commenter**.',
       candidates: [],

@@ -51,7 +51,7 @@ import { motionFilm } from './motion-media';
 import { StickyBar } from './StickyBar';
 import { HeroFan } from './HeroFan';
 import { HERO_CARDS } from './hero-cards';
-import { BrandMark } from '@/components/BrandMark';
+import { BrandMark, Wordmark } from '@/components/BrandMark';
 
 // Tailwind's JIT scanner only detects complete, literal class-name tokens in
 // the source text — it can't see a class assembled at runtime from a plain
@@ -389,9 +389,9 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         }`}
       >
         <nav className="mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-4 py-3 min-[640px]:px-6 min-[640px]:py-3.5">
-          <Link href="/" className="flex items-center gap-2 text-[17px] font-bold text-[#17161F]">
+          <Link href="/" className="flex items-center gap-2 text-[19px]">
             <BrandMark size="md" />
-            RenderBox
+            <Wordmark />
           </Link>
           <div className="hidden items-center gap-1 text-[13.5px] font-medium text-[#3D3B49] min-[920px]:flex">
             <a href="#comment" className={NAV_LINK}>

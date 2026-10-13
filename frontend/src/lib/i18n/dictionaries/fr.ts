@@ -49,7 +49,7 @@ const fr = {
   'tarifs.demoNote':
     'Accès libre : toutes les fonctions sont déjà ouvertes. Le paiement arrivera avec les comptes.',
   'app.railHome': 'Accueil',
-  'app.notificationsNews': 'Voir les nouveautés de RenderBox',
+  'app.notificationsNews': 'Voir les nouveautés de RenderPro',
   'app.notificationsEmptyHint': 'Les paiements et les nouvelles de votre compte apparaîtront ici.',
   'app.notificationsEmpty': 'Aucune notification pour l’instant',
   'app.notificationsError': 'Impossible de charger les notifications. Réessayez dans un instant.',
@@ -72,7 +72,7 @@ const fr = {
   'enhance.refAttached': 'Image de référence',
   'enhance.refFlagged': 'Une image de référence a été refusée par la modération.',
   'enhance.subtitle':
-    'Joignez un rendu existant avec le trombone : RenderBox le rend plus net, mieux éclairé et plus réaliste, en gardant votre cadrage et votre architecture comme référence.',
+    'Joignez un rendu existant avec le trombone : RenderPro le rend plus net, mieux éclairé et plus réaliste, en gardant votre cadrage et votre architecture comme référence.',
   'enhance.optionsHeading': 'À améliorer',
   'enhance.strengthHeading': 'Intensité',
   'enhance.engineHeading': 'Moteur',
@@ -124,12 +124,12 @@ const fr = {
   'app.mobileMore': 'Plus',
   'app.mobileNew': 'Nouveau rendu',
   'app.assistant': 'Assistant',
-  'assistant.title': 'Assistant RenderBox',
+  'assistant.title': 'Assistant RenderPro',
   'assistant.status': "En ligne · aide sur l'application",
   'assistant.close': 'Fermer',
   'assistant.modeSearch': 'Recherche',
   'assistant.welcome':
-    "Bonjour ! Je suis l'assistant RenderBox. Je connais toute l'application : générer un rendu, choisir un moteur, modifier un rendu en le commentant, l'amélioration d'un rendu, l'arbre du projet, votre abonnement. Que voulez-vous faire ?",
+    "Bonjour ! Je suis l'assistant RenderPro. Je connais toute l'application : générer un rendu, choisir un moteur, modifier un rendu en le commentant, l'amélioration d'un rendu, l'arbre du projet, votre abonnement. Que voulez-vous faire ?",
   'assistant.welcomeSearch':
     "Mode Recherche : posez vos questions d'architecture, de matériaux ou de styles. Je cherche sur Internet et je cite mes sources.",
   'assistant.suggest1': "Comment modifier une partie d'un rendu ?",
@@ -138,10 +138,10 @@ const fr = {
   'assistant.suggest4': "Comment fonctionne l'abonnement ?",
   'assistant.sources': 'Sources :',
   'assistant.thinking': 'Je réfléchis…',
-  'assistant.placeholder': 'Posez votre question sur RenderBox…',
+  'assistant.placeholder': 'Posez votre question sur RenderPro…',
   'assistant.placeholderSearch': 'Rechercher sur Internet…',
   'assistant.send': 'Envoyer',
-  'assistant.foot': "Basé sur la documentation RenderBox — l'IA peut se tromper",
+  'assistant.foot': "Basé sur la documentation RenderPro — l'IA peut se tromper",
   'assistant.footSearch': 'Recherche web — les sources sont affichées',
   'assistant.limited':
     'Vous avez atteint la limite de questions pour cette heure. Réessayez un peu plus tard.',
@@ -375,7 +375,7 @@ const fr = {
   'edit.partialSuccess': '{created} sur {requested} variantes générées.',
 
   'info.title': 'Informations',
-  'info.subtitle': 'Ce qui a changé dans RenderBox, du plus récent au plus ancien.',
+  'info.subtitle': 'Ce qui a changé dans RenderPro, du plus récent au plus ancien.',
   'info.guideTitle': 'Les fonctionnalités en vidéo',
   'info.filmEtapesTitle': 'Générer un rendu en 3 étapes',
   'info.filmCommenterTitle': 'Modifier une image en la commentant',
@@ -400,7 +400,7 @@ const fr = {
   'page.pricingSubtitle':
     'Une formule dure 30 jours, sans prélèvement automatique : chaque rendu généré est décompté.',
   'dashboard.noTierTitle': 'Aucune formule',
-  'dashboard.videoTitle': 'Découvrez RenderBox en 2 minutes',
+  'dashboard.videoTitle': 'Découvrez RenderPro en 2 minutes',
   'dashboard.videoPlay': 'Lancer la vidéo',
   'dashboard.howTitle': 'De la photo au rendu, en 3 étapes',
   'dashboard.howCta': 'Générer un rendu',
@@ -552,7 +552,7 @@ const fr = {
   // projet unique : le titre aurait démenti la galerie dès la première section.
   'exemple.title': 'Exemples de rendus',
   'exemple.subtitle':
-    'Tout ce que RenderBox sait faire, sur plusieurs projets : plans aménagés, axonométries éclatées, planches d’analyse, maquettes, esquisses, le passage du croquis au rendu et les quatre lumières.',
+    'Tout ce que RenderPro sait faire, sur plusieurs projets : plans aménagés, axonométries éclatées, planches d’analyse, maquettes, esquisses, le passage du croquis au rendu et les quatre lumières.',
   'exemple.batchCountOne': '1 rendu',
   'exemple.batchCount': '{n} rendus',
   'exemple.esquisseNote':
@@ -609,7 +609,7 @@ const fr = {
   'legal.tabTerms': "Conditions d'utilisation",
   'legal.tabPrivacy': 'Confidentialité',
   'legal.termsBody':
-    "RenderBox est un service de génération de rendus architecturaux assistée par IA. En utilisant ce service, vous acceptez que les images que vous téléversez soient transmises à des fournisseurs d'IA tiers (Google, OpenAI) à des fins de génération. Vous êtes responsable des images que vous téléversez et garantissez disposer des droits nécessaires sur celles-ci.",
+    "RenderPro est un service de génération de rendus architecturaux assistée par IA. En utilisant ce service, vous acceptez que les images que vous téléversez soient transmises à des fournisseurs d'IA tiers (Google, OpenAI) à des fins de génération. Vous êtes responsable des images que vous téléversez et garantissez disposer des droits nécessaires sur celles-ci.",
   'legal.privacyBody':
     "Nous collectons votre adresse email pour l'authentification, les images que vous téléversez pour la génération de rendus, et les métadonnées de paiement liées à vos achats. Vos données ne sont jamais revendues. Vous pouvez demander la suppression de votre compte en contactant le support — la suppression est réversible pendant 30 jours puis définitive.",
 
@@ -630,14 +630,14 @@ const fr = {
   'landing.heroChipMaterials': 'Matériaux mémorisés : 12/12',
   'landing.heroChipFacade': 'Façade nord → enduit blanc',
 
-  // « vos exports » et pas « fonctionne avec » : RenderBox lit les images que
+  // « vos exports » et pas « fonctionne avec » : RenderPro lit les images que
   // ces logiciels exportent, il ne s'y branche pas. Ne pas raccourcir.
   'landing.proofCompatible': 'Importez les exports image de',
   // Le chiffre et la formulation sont ceux du fondateur (2026-10-08) : « Plus
-  // de 5 000 personnes utilisent RenderBox », exactement. Ne pas reformuler.
-  'landing.proofUsers': 'Plus de 5 000 personnes utilisent RenderBox',
+  // de 5 000 personnes utilisent RenderPro », exactement. Ne pas reformuler.
+  'landing.proofUsers': 'Plus de 5 000 personnes utilisent RenderPro',
   'landing.videoEyebrow': 'Présentation',
-  'landing.videoTitle': 'RenderBox en vidéo',
+  'landing.videoTitle': 'RenderPro en vidéo',
   'landing.videoSoon': 'Vidéo de présentation bientôt disponible',
   'landing.videoSoonBody':
     'Elle sera tournée dès que la plateforme sera complète. En attendant, chaque fonction a son film plus bas sur la page.',
@@ -645,7 +645,7 @@ const fr = {
   'landing.beforeAfterTitlePrefix': "De l'esquisse au ",
   'landing.beforeAfterTitleAccent': 'rendu photoréaliste',
   'landing.beforeAfterBody':
-    'Glissez pour comparer. Chaque matériau, chaque ouverture, chaque proportion conservée — RenderBox ne réinvente pas votre projet, il le révèle.',
+    'Glissez pour comparer. Chaque matériau, chaque ouverture, chaque proportion conservée — RenderPro ne réinvente pas votre projet, il le révèle.',
   'landing.enhanceEyebrow': 'Améliorer',
   'landing.enhanceTitle': 'Une image floue devient nette.',
   'landing.enhanceBody':
@@ -657,7 +657,7 @@ const fr = {
   'landing.beforeAfterAltAfter':
     'La même villa en rendu photoréaliste : enduit blanc, bardage en chêne, piscine, lumière de fin de journée.',
   'landing.beforeAfterLabelBefore': 'Esquisse',
-  'landing.beforeAfterLabelAfter': 'Rendu RenderBox',
+  'landing.beforeAfterLabelAfter': 'Rendu RenderPro',
   'landing.beforeAfterExterior': 'Extérieur',
   'landing.beforeAfterInterior': 'Intérieur',
   'landing.beforeAfterAltBeforeInterior':
@@ -698,7 +698,7 @@ const fr = {
   'landing.addEyebrow': 'Ajouter',
   'landing.addTitle': 'Ajoutez ce qui manque.',
   'landing.addSubtitle':
-    "Joignez la photo d'un meuble, d'une personne ou d'un arbre et dites où le placer : RenderBox l'intègre au rendu, le reste de l'image gardé comme référence. Une planche d'ambiance suffit pour meubler une pièce vide.",
+    "Joignez la photo d'un meuble, d'une personne ou d'un arbre et dites où le placer : RenderPro l'intègre au rendu, le reste de l'image gardé comme référence. Une planche d'ambiance suffit pour meubler une pièce vide.",
   'landing.addAlt':
     "Film : une pièce vide meublée d'après une planche d'ambiance, deux personnes puis deux arbres ajoutés devant une villa, une personne assise sur une terrasse.",
   'landing.split2Tag': 'Galerie en arbre',
@@ -740,7 +740,7 @@ const fr = {
 
   'landing.ctaBandTitle': 'Prêt à générer vos premiers rendus ?',
   'landing.ctaBandBody':
-    'Importez une photo, choisissez une ambiance, et laissez RenderBox garder la mémoire de chaque matériau pour vous.',
+    'Importez une photo, choisissez une ambiance, et laissez RenderPro garder la mémoire de chaque matériau pour vous.',
   'landing.ctaBandButton': 'Générer mon premier rendu',
   'landing.navHow': 'Comment ça marche',
   'landing.navFaq': 'FAQ',
@@ -748,17 +748,17 @@ const fr = {
   'landing.heroBadgeNew': 'Nouveau',
   'landing.heroBadgeText': 'Deux moteurs IA dans un seul projet',
   'landing.heroSubtitle':
-    "Importez une photo, un croquis ou l'export image de vos plans : RenderBox génère des rendus cohérents d'une vue à l'autre, matériaux compris.",
+    "Importez une photo, un croquis ou l'export image de vos plans : RenderPro génère des rendus cohérents d'une vue à l'autre, matériaux compris.",
   'landing.eyebrowResult': 'Le résultat',
   'landing.eyebrowFeatures': 'Fonctionnalités clés',
   'landing.eyebrowHow': 'Comment ça marche',
   'landing.howTitle': 'Simple, cohérent et automatisé',
   'landing.howSubtitle':
-    "Importez une image, RenderBox détecte les matériaux, les mémorise et s'en sert pour chaque nouveau rendu du projet.",
+    "Importez une image, RenderPro détecte les matériaux, les mémorise et s'en sert pour chaque nouveau rendu du projet.",
   'landing.eyebrowPresets': 'Ambiances',
   'landing.eyebrowPricing': 'Tarifs',
   'landing.eyebrowFaq': 'FAQ',
-  'landing.faqSubtitle': 'Les réponses aux questions les plus fréquentes sur RenderBox.',
+  'landing.faqSubtitle': 'Les réponses aux questions les plus fréquentes sur RenderPro.',
 
   'landing.faqTitle': "Tout ce qu'il faut savoir avant de commencer",
   'landing.faq1Q': 'Que se passe-t-il si je change de palier en cours de mois ?',
@@ -776,7 +776,7 @@ const fr = {
   'landing.faq5A':
     'Oui, aucun engagement. Votre accès reste actif jusqu’à la fin de la période déjà payée.',
   'landing.faq7A':
-    "Le bouton Assistant ouvre un chat qui connaît tout RenderBox et vous guide pas à pas. Il répond aussi à vos questions d'architecture et de matériaux.",
+    "Le bouton Assistant ouvre un chat qui connaît tout RenderPro et vous guide pas à pas. Il répond aussi à vos questions d'architecture et de matériaux.",
   'landing.faq7Q': "Et si je suis perdu dans l'application ?",
   'landing.faq6A':
     "Avec le mode Commenter : cliquez sur le rendu à l'endroit à changer, écrivez la modification (jusqu'à 8 commentaires), puis Appliquer. Le reste de l'image est conservé et l'original reste dans l'arbre du projet.",
@@ -787,16 +787,16 @@ const fr = {
   'landing.faq9Q': 'Puis-je améliorer un rendu fait avec un autre logiciel ?',
   'landing.faq9A':
     'Oui, avec Améliorer : joignez le rendu avec le trombone, cochez ce qu’il faut améliorer (netteté, détail, lumière, matériaux, ciel, végétation, vie et ambiance) — ou décrivez-le vous-même — et choisissez l’intensité. Chaque élément peut recevoir une image de référence. Le cadrage est conservé.',
-  'landing.faq10Q': 'RenderBox modifie-t-il mon architecture ?',
+  'landing.faq10Q': 'RenderPro modifie-t-il mon architecture ?',
   'landing.faq10A':
-    'RenderBox part de votre image et demande aux moteurs de garder le cadrage, les volumes et les ouvertures. Le résultat reste une génération par IA : vérifiez les détails, et corrigez ce qui doit l’être avec Commenter.',
+    'RenderPro part de votre image et demande aux moteurs de garder le cadrage, les volumes et les ouvertures. Le résultat reste une génération par IA : vérifiez les détails, et corrigez ce qui doit l’être avec Commenter.',
   'landing.pricingFeatureAssistant': 'Assistant intégré pour vous guider',
 
   'landing.footerProductHeading': 'Produit',
   'landing.footerTagline':
     "Des rendus réalistes pour concevoir, explorer et présenter vos projets, avec les mêmes matériaux d'une vue à l'autre.",
   'landing.footerResourcesHeading': 'Ressources',
-  'landing.footerCopyright': '© {year} RenderBox. Tous droits réservés.',
+  'landing.footerCopyright': '© {year} RenderPro. Tous droits réservés.',
   'landing.footerLegalLinks': 'Conditions · Confidentialité',
 
   'landing.pricingTitlePrefix': 'Choisissez le volume adapté à ',

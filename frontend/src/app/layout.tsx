@@ -34,7 +34,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'RenderBox',
+  title: 'RenderPro',
   description: 'Rendu architectural par IA — cohérent d’une vue à l’autre.',
 };
 

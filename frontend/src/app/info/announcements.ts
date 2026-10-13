@@ -159,8 +159,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     kind: 'shipped',
     title: { fr: 'Un assistant dans l’application', en: 'An assistant inside the app' },
     body: {
-      fr: 'Le bouton « Assistant » (en bas de la barre latérale, ou dans « Plus » sur téléphone) ouvre un chat qui connaît tout RenderBox : comment générer, commenter un rendu, choisir un moteur, utiliser Enhance ou lire votre abonnement. Son mode « Recherche » répond aussi aux questions d’architecture et de matériaux, sources à l’appui.',
-      en: 'The "Assistant" button (at the bottom of the sidebar, or under "More" on a phone) opens a chat that knows all of RenderBox: how to generate, comment on a render, pick an engine, use Enhance or read your plan. Its "Search" mode also answers architecture and materials questions, with sources.',
+      fr: 'Le bouton « Assistant » (en bas de la barre latérale, ou dans « Plus » sur téléphone) ouvre un chat qui connaît tout RenderPro : comment générer, commenter un rendu, choisir un moteur, utiliser Enhance ou lire votre abonnement. Son mode « Recherche » répond aussi aux questions d’architecture et de matériaux, sources à l’appui.',
+      en: 'The "Assistant" button (at the bottom of the sidebar, or under "More" on a phone) opens a chat that knows all of RenderPro: how to generate, comment on a render, pick an engine, use Enhance or read your plan. Its "Search" mode also answers architecture and materials questions, with sources.',
     },
   },
   {
@@ -193,7 +193,7 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     id: 'mobile',
     date: '2026-10-06',
     kind: 'shipped',
-    title: { fr: 'RenderBox sur téléphone', en: 'RenderBox on your phone' },
+    title: { fr: 'RenderPro sur téléphone', en: 'RenderPro on your phone' },
     body: {
       fr: 'Sur téléphone, la barre latérale laisse place à une barre flottante en bas de l’écran : Accueil, Image, Enhance et « Plus », et un bouton « + » pour lancer un nouveau rendu en un geste.',
       en: 'On a phone, the sidebar gives way to a floating bar at the bottom of the screen: Home, Image, Enhance and "More", plus a "+" button to start a new render in one tap.',
@@ -218,8 +218,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
       en: 'Showcase renders on the dashboard',
     },
     body: {
-      fr: 'Le haut du tableau de bord présente une sélection de rendus RenderBox, une par ambiance, et rappelle les trois étapes d’un rendu — de la photo ou du croquis jusqu’à l’image finale.',
-      en: 'The top of the dashboard now shows a selection of RenderBox renders, one per ambiance, alongside the three steps of a render — from photo or sketch to the finished image.',
+      fr: 'Le haut du tableau de bord présente une sélection de rendus RenderPro, une par ambiance, et rappelle les trois étapes d’un rendu — de la photo ou du croquis jusqu’à l’image finale.',
+      en: 'The top of the dashboard now shows a selection of RenderPro renders, one per ambiance, alongside the three steps of a render — from photo or sketch to the finished image.',
     },
   },
   {
