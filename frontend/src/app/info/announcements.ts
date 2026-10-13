@@ -40,15 +40,15 @@ export interface Announcement {
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
     id: 'materials-per-image',
-    date: '2026-10-12',
-    kind: 'planned',
+    date: '2026-10-13',
+    kind: 'shipped',
     title: {
       fr: 'Des matériaux propres à chaque image',
       en: 'Materials for each image',
     },
     body: {
-      fr: 'Chaque image aura ses propres matériaux, en haut de la colonne de droite : ce sont eux qui guideront le moteur pour les rendus faits à partir de cette image. Vous pourrez ajouter une face et son matériau, le modifier, masquer une face ou revenir à la détection, et une correction ne changera que l’image où elle est faite. L’ancienne fiche du projet restera consultable, repliée, sans être appliquée aux rendus : pour réutiliser une de ses lignes, vous la rattacherez explicitement à une image.',
-      en: 'Each image will have its own materials, at the top of the right-hand column: they will guide the engine for renders made from that image. You will be able to add a face and its material, edit it, hide a face or go back to the detection, and a correction will only change the image it is made on. The old project sheet will stay readable, folded away, without being applied to renders: to reuse one of its rows, you will attach it explicitly to an image.',
+      fr: 'Chaque image a désormais ses propres matériaux, en haut de la colonne de droite d’un projet : ce sont eux qui guident le moteur pour les rendus faits à partir de cette image. Ajoutez une face et son matériau, modifiez-la ou masquez-la : une correction ne change que l’image où elle est faite. L’ancienne fiche du projet reste consultable, repliée, sans être appliquée aux rendus ; pour réutiliser une de ses lignes, rattachez-la explicitement à une image. La détection automatique des matériaux de chaque image arrivera plus tard.',
+      en: 'Each image now has its own materials, at the top of a project’s right-hand column: they guide the engine for renders made from that image. Add a face and its material, edit it or hide it: a correction only changes the image it is made on. The old project sheet stays readable, folded away, without being applied to renders; to reuse one of its rows, attach it explicitly to an image. Automatic detection of each image’s materials will come later.',
     },
   },
   {
