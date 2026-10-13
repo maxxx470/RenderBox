@@ -51,7 +51,15 @@ model User {
   // expiry moves this to now() (extends, not stacks) rather than carrying
   // over unused credits — see tier-quota.ts's activateTier().
   tierPeriodStart         DateTime?
+  // Retired 2026-10-13 (renders became credits); kept, unread, so the
+  // migration stays additive. Its last values were converted into
+  // creditsBalance by 9_phase8_credits.
   generationsUsedInPeriod Int       @default(0)
+  // Credits left in the current period (pricing-tiers.ts). Set to the plan's
+  // credits on activation or renewal, debited before each generation and
+  // refunded on failure, zeroed when the period lapses. Never negative (a
+  // CHECK constraint in the database).
+  creditsBalance          Int       @default(0)
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 
