@@ -28,17 +28,13 @@ const fr = {
   'tarifs.eyebrow': 'Formules',
   'tarifs.headTitle': 'Choisissez votre formule',
   'tarifs.balanceLabel': 'Solde actuel',
-  'tarifs.balancePlan': 'Formule {tier}, jusqu’au {date}',
-  'tarifs.rendersOne': '{count} rendu',
-  'tarifs.rendersMany': '{count} rendus',
+  'tarifs.balancePlan': 'Formule {tier} · crédits valables jusqu’au {date}',
+  'tarifs.creditsOne': '{count} crédit',
+  'tarifs.creditsMany': '{count} crédits',
   'tarifs.alertNone':
-    'Vous n’avez pas de formule active. Choisissez-en une ci-dessous pour lancer vos rendus.',
+    'Vous n’avez pas de formule active. Choisissez-en une ci-dessous pour obtenir vos crédits.',
   'tarifs.alertEmpty':
-    'Votre formule n’a plus de rendus. Choisissez une formule ci-dessous : elle repart sur 30 jours avec tout son quota.',
-  'tarifs.cardVolume': '{count} rendus / mois',
-  'tarifs.checkEngines': 'Les deux moteurs et les 5 ambiances',
-  'tarifs.checkEditing': 'Commenter, Ajouter et Améliorer',
-  'tarifs.ctaChoose': 'Choisir cette formule',
+    'Il ne vous reste plus assez de crédits pour un rendu. Choisissez une formule ci-dessous : elle repart sur 30 jours avec tous ses crédits.',
   'tarifs.usdNote':
     'Équivalence en dollars approximative, donnée à titre indicatif : le paiement se fait en FCFA.',
   'tarifs.historyTitle': 'Historique',
@@ -56,8 +52,11 @@ const fr = {
   'app.notificationsMarkAll': 'Tout marquer comme lu',
   'app.notificationsUnread': 'Notifications ({n} non lues)',
   'app.notifications': 'Notifications',
-  'app.topbarQuota': '{remaining}/{max} rendus',
   'app.railImages': 'Galerie',
+  'app.topbarCredits': '{count} crédits restants',
+  'app.creditsUnit': 'crédits',
+  'app.creditsCount': '{count} crédits',
+  'app.sendWithCost': '{verb} · {cost}',
   'app.railInfo': 'Info',
   'app.railNavigation': 'Navigation',
   'app.railPricing': 'Abonnement',
@@ -330,9 +329,11 @@ const fr = {
   // annoncait « 300 sur 300 » (ce qu'il reste) pendant que la sidebar
   // affichait « 0/300 » (ce qui est consomme).
   'app.quotaLabel': '{remaining}/{max} restantes ce mois-ci',
-  'app.quotaExceededError':
-    'Quota mensuel atteint. Changez de palier ou attendez le renouvellement.',
-  'app.noActiveTierError': 'Aucun palier actif — choisissez un palier pour générer.',
+  'app.noActiveTierError':
+    'Vous n’avez pas de formule active. Choisissez une formule pour générer.',
+  'app.insufficientCreditsError':
+    'Crédits insuffisants pour cette génération. Choisissez ou renouvelez une formule pour continuer.',
+  'app.creditsCta': 'Voir les formules',
   'app.upgradeBannerLabel': 'Passer au palier {tier}',
   'app.tierDecouverte': 'Découverte',
   'app.tierStandard': 'Standard',
@@ -398,7 +399,7 @@ const fr = {
   'page.accountEyebrow': 'Compte',
   'page.settingsSubtitle': 'Votre compte, votre moteur par défaut et votre facturation.',
   'page.pricingSubtitle':
-    'Une formule dure 30 jours, sans prélèvement automatique : chaque rendu généré est décompté.',
+    'Une formule dure 30 jours, sans prélèvement automatique : les crédits non utilisés expirent à la fin de la période.',
   'dashboard.noTierTitle': 'Aucune formule',
   'dashboard.videoTitle': 'Découvrez RenderPro en 2 minutes',
   'dashboard.videoPlay': 'Lancer la vidéo',
@@ -418,7 +419,7 @@ const fr = {
   'dashboard.cardActivityNoneTitle': 'Aucun rendu',
   'dashboard.cardActivityNone': 'pour l’instant',
   'dashboard.cardActivityLink': 'Reprendre',
-  'dashboard.cardQuotaTitle': '{count} rendus',
+  'dashboard.cardQuotaTitle': '{count} crédits',
   'dashboard.cardQuotaSub': 'restants',
   'dashboard.cardQuotaSubDate': 'restants · {date}',
   'dashboard.cardQuotaNone': 'à activer',
@@ -790,7 +791,7 @@ const fr = {
   'landing.faq10Q': 'RenderPro modifie-t-il mon architecture ?',
   'landing.faq10A':
     'RenderPro part de votre image et demande aux moteurs de garder le cadrage, les volumes et les ouvertures. Le résultat reste une génération par IA : vérifiez les détails, et corrigez ce qui doit l’être avec Commenter.',
-  'landing.pricingFeatureAssistant': 'Assistant intégré pour vous guider',
+  'landing.pricingFeatureAssistant': 'Assistant intégré',
 
   'landing.footerProductHeading': 'Produit',
   'landing.footerTagline':
@@ -802,16 +803,17 @@ const fr = {
   'landing.pricingTitlePrefix': 'Choisissez le volume adapté à ',
   'landing.pricingTitleAccent': 'vos projets',
   'landing.pricingSubtitle':
-    'Mêmes moteurs, mêmes ambiances : seul le nombre de rendus par mois change.',
+    'Mêmes moteurs, mêmes ambiances : seul le nombre de crédits par mois change.',
   'landing.pricingPeriod': '/ mois',
+  'landing.pricingUsd': '≈ {amount} $ US',
   'landing.pricingBadgeFeatured': 'Le plus choisi',
   'landing.pricingTierDecouverteName': 'Découverte',
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
-  'landing.pricingFeatureQuota': '{count} générations / mois',
-  'landing.pricingFeatureEngines': 'Accès aux deux moteurs de génération',
-  'landing.pricingFeaturePresets': 'Accès aux 5 presets d’ambiance',
-  'landing.pricingFeatureEditing': "Modifier par commentaires, ajout d'élément et amélioration",
+  'landing.pricingFeatureCredits': '{count} crédits / mois',
+  'landing.pricingFeatureEngines': 'Deux moteurs : Visio et Pixel IA',
+  'landing.pricingFeaturePresets': '5 ambiances de rendu',
+  'landing.pricingFeatureEditing': 'Commenter, Ajouter et Améliorer',
   'landing.pricingCta': 'Choisir {tier}',
   'landing.pricingCtaLoading': 'Redirection…',
   'landing.pricingError': 'Impossible de démarrer le paiement. Réessayez.',

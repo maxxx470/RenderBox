@@ -75,8 +75,8 @@ export async function loadImagesPage(): Promise<{
       // Newest first, so the first node is the latest activity.
       lastActivityAt: nodes[0]?.createdAt.toISOString() ?? null,
       tier: quota.tier,
-      quotaMax: quota.max,
-      quotaRemaining: quota.remaining,
+      creditsMax: quota.max,
+      creditsBalance: quota.remaining,
       periodEndsAt: quota.periodEndsAt?.toISOString() ?? null,
     },
     userEmail: auth.user.email ?? '',

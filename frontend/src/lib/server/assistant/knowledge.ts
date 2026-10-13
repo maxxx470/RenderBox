@@ -1,14 +1,14 @@
 // What the in-app assistant knows about RenderBox (after the owner's Metrio
 // assistant, routes/assistant.ts there).
 //
-// Every figure that can change — ambiances, plans and quotas, ratios,
+// Every figure that can change — ambiances, plans and credits, ratios,
 // resolutions, Enhance options, engine names — is read from the module that
 // owns it, never retyped here, so the assistant cannot drift from the product.
 // The prose around them describes how the app is used today; when a feature
 // ships, add it here in the same breath as its announcement (app/info).
 import 'server-only';
 import { AMBIANCE_KEYS, PRESETS } from '@/lib/server/generation/presets';
-import { PRICING_TIERS } from '@/lib/pricing-tiers';
+import { ASSISTANT_COST, PRICING_TIERS, RENDER_COST, RENDER_COST_4K } from '@/lib/pricing-tiers';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTIONS, RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import {
@@ -31,7 +31,7 @@ export function buildRenderBoxDoc(): string {
   const presets = AMBIANCE_KEYS.map((k) => PRESETS[k].label.fr).join(', ');
   const tiers = PRICING_TIERS.map(
     (t) =>
-      `${TIER_NAME[t.id] ?? t.id} : ${t.generationsPerMonth} générations par mois, ${t.priceXof.toLocaleString('fr-FR')} FCFA (≈ ${t.priceUsdDisplay} $)`,
+      `${TIER_NAME[t.id] ?? t.id} : ${t.creditsPerMonth.toLocaleString('fr-FR')} crédits par mois, ${t.priceXof.toLocaleString('fr-FR')} FCFA (≈ ${t.priceUsdDisplay} $)`,
   ).join(' ; ');
   const m1 = ENGINE_LABELS.nanobanana;
   const m2 = ENGINE_LABELS.gpt_image;
@@ -45,7 +45,7 @@ export function buildRenderBoxDoc(): string {
   return `RenderPro transforme une photo ou un croquis de bâtiment en rendu architectural photoréaliste, avec l'IA.
 
 NAVIGATION
-- En haut de chaque page, la barre d'en-tête : le titre de la page à gauche (avec le logo sur téléphone) ; à droite la cloche des notifications (un point rouge signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN et la pastille bleue des rendus restants (ouvre Abonnement). Sur téléphone, le compte y figure aussi (ouvre Paramètres).
+- En haut de chaque page, la barre d'en-tête : le titre de la page à gauche (avec le logo sur téléphone) ; à droite la cloche des notifications (un point rouge signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN et la pastille bleue des crédits restants (ouvre Abonnement). Sur téléphone, le compte y figure aussi (ouvre Paramètres).
 - Sur ordinateur, une barre latérale à gauche, en carte blanche : en haut le bouton qui replie la barre (une icône de panneau animée) puis le nom RenderPro ; « Général » (Accueil, Galerie, Générateur d’images, Améliorer — Enhance en anglais) ; « Aide » (Info, Assistant) ; en bas « Profil » (Paramètres, Abonnement, Se déconnecter) puis votre compte (ouvre Paramètres). La page ouverte est surlignée en bleu pâle. Repliée, il ne reste que les icônes ; le même bouton la déplie. La barre et l'en-tête restent en place quand on change de page.
 - Sur téléphone, une barre flottante en bas : Accueil, Générer, Améliorer et « Plus » (Galerie, Info, Paramètres, Abonnement, Assistant, Se déconnecter), et un bouton bleu « + » pour lancer un nouveau rendu.
 - Le bouton « Assistant » ouvre ce chat. Le sélecteur FR / EN change la langue de l'interface. À la première visite, la langue suit le pays : français depuis un pays francophone, anglais ailleurs ; le choix fait avec FR / EN reste ensuite mémorisé.
@@ -54,10 +54,10 @@ NAVIGATION
 ACCUEIL (tableau de bord)
 - En haut, un court film montre les 3 étapes (photo ou croquis, ambiance, rendu) avec le bouton « Générer un rendu ».
 - Chaque page commence par un petit sur-titre, son titre en gras et une phrase. Sur l’Accueil, le bouton « Demander à l’assistant » est à droite du titre.
-- Juste sous le titre, quatre cartes : nombre total d’images (rouge, ouvre la Galerie), rendus générés (blanche, lance un nouveau rendu), dernière activité (blanche), rendus restants et fin de période (bleue, ouvre Abonnement). Sur une ligne sur ordinateur, en 2 × 2 sur téléphone. Puis les images récentes (8 au plus) et le lien « Voir toutes mes images ».
+- Juste sous le titre, quatre cartes : nombre total d’images (rouge, ouvre la Galerie), rendus générés (blanche, lance un nouveau rendu), dernière activité (blanche), crédits restants et fin de période (bleue, ouvre Abonnement). Sur une ligne sur ordinateur, en 2 × 2 sur téléphone. Puis les images récentes (8 au plus) et le lien « Voir toutes mes images ».
 
 GALERIE (page Galerie, appelée « Mes images » jusqu’au 2026-10-10, qui a remplacé la page Projets)
-- Toutes les images du compte : celles importées, celles générées et celles améliorées avec Améliorer, les plus récentes d'abord, avec « Filtre : » Tout, Importées, Générées ou Améliorées (avec leur nombre). Un clic ouvre l'image là où on la travaille : dans l'espace de travail sur cette image (la barre latérale marque « Image »), ou sur la page Enhance pour une image faite avec Enhance. Chaque image se télécharge ou se supprime ; « Sélectionner » permet d'en supprimer plusieurs d'un coup. Supprimer une image ne supprime qu'elle : les rendus faits à partir d'elle sont conservés. Les rendus déjà décomptés ne sont pas recrédités.
+- Toutes les images du compte : celles importées, celles générées et celles améliorées avec Améliorer, les plus récentes d'abord, avec « Filtre : » Tout, Importées, Générées ou Améliorées (avec leur nombre). Un clic ouvre l'image là où on la travaille : dans l'espace de travail sur cette image (la barre latérale marque « Image »), ou sur la page Enhance pour une image faite avec Enhance. Chaque image se télécharge ou se supprime ; « Sélectionner » permet d'en supprimer plusieurs d'un coup. Supprimer une image ne supprime qu'elle : les rendus faits à partir d'elle sont conservés. Les crédits déjà dépensés ne sont pas rendus.
 
 IMAGE (générer un rendu)
 1. Joignez une photo ou un croquis (avec le trombone de la barre de commande : c'est le seul moyen d'ajouter une image, il n'y a pas de glisser-déposer dans l'espace de travail) : elle apparaît en miniature dans la barre, avec une croix pour la retirer. Un projet est créé à l'envoi.
@@ -93,11 +93,11 @@ AJOUTER (ajout d'élément)
 ENHANCE (améliorer un rendu existant)
 - Page Améliorer (« Enhance » en anglais), même disposition que l'espace de travail : au centre le rendu (ou les exemples tant qu'il n'y en a pas), dessous une barre de commande simplifiée — le texte libre, le trombone pour joindre le rendu (même fait ailleurs), le ratio et la résolution, puis « Améliorer le rendu ». À droite, la colonne « À améliorer » : ${enhance}. Par défaut : ${enhanceDefault}. Chaque élément a un bouton « + » qui ajoute UNE image de référence (une par élément coché) : l'IA s'en sert comme guide pour cet aspect seulement, par exemple des matériaux ou une lumière à imiter. Dessous, l'intensité Léger ou Marqué et le moteur. On peut aussi ne rien cocher et décrire soi-même l'amélioration dans la barre. Le cadrage et le bâtiment ne changent pas (sauf si l'on choisit un autre ratio que Auto). Le résultat se compare à l'original avec un curseur avant/après, et se télécharge.
 
-ABONNEMENTS ET QUOTA
+ABONNEMENTS ET CRÉDITS
 - ${tiers}.
-- Chaque rendu, modification ou amélioration consomme une génération. Le solde est visible dans la pastille bleue de l'en-tête et sur l'Accueil.
-- Une formule dure 30 jours à partir du paiement, sans prélèvement automatique ensuite. Choisir une formule (ou renouveler la sienne) démarre une nouvelle période de 30 jours avec tout son quota.
-- Page Abonnement : le « Solde actuel » (rendus restants, formule et date de fin), un avertissement quand il ne reste aucun rendu, les trois formules (rendus par mois, prix en FCFA, équivalent en dollars indicatif) puis l’« Historique » des paiements.
+- Chaque image produite coûte des crédits : ${RENDER_COST} en 1K ou 2K, ${RENDER_COST_4K} en 4K — un rendu, Commenter, Ajouter ou Améliorer, selon la taille de l'image produite ; N variantes coûtent N fois ce prix. ${ASSISTANT_COST > 0 ? `Un message à l'assistant coûte ${ASSISTANT_COST} crédits.` : "L'assistant est gratuit."} Le coût s'affiche sur le bouton d'envoi avant le clic. Les crédits sont retirés au lancement et rendus si la génération échoue. Le solde est visible dans la pastille bleue de l'en-tête et sur l'Accueil.
+- Une formule dure 30 jours à partir du paiement, sans prélèvement automatique ensuite. Les crédits non utilisés expirent à la fin de la période, sans report. Choisir une formule (ou renouveler la sienne) démarre une nouvelle période de 30 jours avec tous ses crédits.
+- Page Abonnement : le « Solde actuel » (crédits restants, formule et date d'expiration), un avertissement quand il ne reste plus assez de crédits, les trois formules (crédits par mois, prix en FCFA, équivalent en dollars indicatif, la formule actuelle marquée) puis l’« Historique » des paiements.
 - Une limite quotidienne anti-abus existe aussi ; si elle est atteinte, réessayer le lendemain.
 
 PARAMÈTRES

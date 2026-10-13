@@ -1,12 +1,18 @@
-// Single source of truth for RenderBox's 3 pricing tiers — consumed by the
-// client-side /tarifs pricing cards, the server-side Maketou checkout route,
-// and the tier-quota gate (lib/server/generation/tier-quota.ts), so a future
-// price/quota change is a 3-line edit here, not a page rewrite.
+// Single source of truth for RenderPro's 3 plans and their credits — read by
+// the shared plan card (PricingCard, on the landing AND on /app/tarifs), the
+// server-side Maketou checkout route and the credit gate
+// (lib/server/generation/tier-quota.ts). Prices, credits, the cost scale and
+// the list of what a plan includes live HERE and nowhere else; the
+// dictionaries only hold labels, never a figure (owner, 2026-10-13).
+import type { TranslationKey } from './i18n/dictionaries';
+import { DEFAULT_RESOLUTION, type ResolutionKey } from './server/generation/resolutions';
+
 export type PricingTierId = 'decouverte' | 'standard' | 'pro';
 
 export interface PricingTier {
   id: PricingTierId;
-  generationsPerMonth: number;
+  /** Credits granted at each activation or renewal, for 30 days. */
+  creditsPerMonth: number;
   /** Smallest unit — XOF has no decimals. */
   priceXof: number;
   /** Approximate, display-only — no live FX conversion. */
@@ -15,22 +21,39 @@ export interface PricingTier {
 }
 
 export const PRICING_TIERS: readonly PricingTier[] = [
-  {
-    id: 'decouverte',
-    generationsPerMonth: 30,
-    priceXof: 6000,
-    priceUsdDisplay: 10,
-    featured: false,
-  },
-  {
-    id: 'standard',
-    generationsPerMonth: 100,
-    priceXof: 15000,
-    priceUsdDisplay: 24,
-    featured: true,
-  },
-  { id: 'pro', generationsPerMonth: 300, priceXof: 36000, priceUsdDisplay: 58, featured: false },
+  { id: 'decouverte', creditsPerMonth: 1000, priceXof: 6000, priceUsdDisplay: 10, featured: false },
+  { id: 'standard', creditsPerMonth: 3000, priceXof: 15000, priceUsdDisplay: 24, featured: true },
+  { id: 'pro', creditsPerMonth: 8000, priceXof: 36000, priceUsdDisplay: 58, featured: false },
 ];
+
+/** What every plan includes, under its credits, in this order — the landing
+ *  and the in-app Abonnement page list exactly these. */
+export const PLAN_FEATURES: readonly TranslationKey[] = [
+  'landing.pricingFeatureEngines',
+  'landing.pricingFeaturePresets',
+  'landing.pricingFeatureEditing',
+  'landing.pricingFeatureAssistant',
+];
+
+// ── The cost scale ──────────────────────────────────────────────────────────
+// One image produced at 1K or 2K, whatever made it: a render, Commenter,
+// Ajouter or Améliorer.
+export const RENDER_COST = 50;
+/** One image produced at 4K. */
+export const RENDER_COST_4K = 70;
+/** A message to the built-in assistant. */
+export const ASSISTANT_COST: number = 0;
+
+/** What N images at this size cost. The server computes it from the request
+ *  it validated — never from a figure the client sends. */
+export function renderCost(resolution: ResolutionKey | null | undefined, count = 1): number {
+  const unit = (resolution ?? DEFAULT_RESOLUTION) === '4k' ? RENDER_COST_4K : RENDER_COST;
+  return unit * Math.max(0, count);
+}
+
+// Before credits (until 2026-10-13) a plan gave renders: 30 / 100 / 300. The
+// migration 9_phase8_credits converted what each account had left at 50
+// credits a render; a renewal then grants the plan's credits above.
 
 export function getPricingTier(id: string): PricingTier | undefined {
   return PRICING_TIERS.find((tier) => tier.id === id);

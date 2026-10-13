@@ -6,11 +6,12 @@
 // user message wins. Keep the answers in step with knowledge.ts.
 import 'server-only';
 import { MAX_ANNOTATIONS } from '@/lib/server/generation/annotations';
-import { PRICING_TIERS } from '@/lib/pricing-tiers';
+import { PRICING_TIERS, RENDER_COST, RENDER_COST_4K } from '@/lib/pricing-tiers';
 
 type Locale = 'fr' | 'en';
 
-const quotas = PRICING_TIERS.map((t) => t.generationsPerMonth).join(' / ');
+const creditsFr = PRICING_TIERS.map((t) => t.creditsPerMonth.toLocaleString('fr-FR')).join(' / ');
+const creditsEn = PRICING_TIERS.map((t) => t.creditsPerMonth.toLocaleString('en-US')).join(' / ');
 
 const TOPICS: { keys: string[]; fr: string; en: string }[] = [
   {
@@ -87,8 +88,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'subscription',
       'pay',
     ],
-    fr: `Trois formules : Découverte, Standard et Pro (${quotas} générations par mois). Chaque rendu, modification ou Enhance consomme une génération. Votre solde est dans la pastille bleue de l'en-tête et sur l'Accueil ; changez de formule depuis la page Abonnement.`,
-    en: `Three plans: Découverte, Standard and Pro (${quotas} generations a month). Every render, edit or Enhance uses one generation. Your balance is in the blue pill of the header and on Home; change plan from the Subscription page.`,
+    fr: `Trois formules : Découverte, Standard et Pro (${creditsFr} crédits par mois). Chaque image produite — rendu, Commenter, Ajouter ou Améliorer — coûte ${RENDER_COST} crédits en 1K ou 2K, ${RENDER_COST_4K} en 4K. Votre solde est dans la pastille bleue de l'en-tête et sur l'Accueil ; changez de formule depuis la page Abonnement.`,
+    en: `Three plans: Discovery, Standard and Pro (${creditsEn} credits a month). Every image produced — a render, Comment, Add or Enhance — costs ${RENDER_COST} credits at 1K or 2K, ${RENDER_COST_4K} at 4K. Your balance is in the blue pill of the header and on Home; change plan from the Subscription page.`,
   },
   {
     keys: ['ajout', 'ajouter', 'personnage', 'mobilier', 'add', 'person', 'furniture'],

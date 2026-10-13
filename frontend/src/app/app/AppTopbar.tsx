@@ -4,18 +4,19 @@
 // full width above the rail, 64px, white with a hairline under it.
 //
 //   left   the brand, a divider, the page title (Poppins, like Metrio's)
-//   right  notifications · FR/EN · the account · the renders left
+//   right  notifications · FR/EN · the account · the credits left
 //
-// The quota used to be a pill at the foot of the rail; the owner moved it
-// here (2026-10-06), where Metrio shows its "pages restantes" badge.
+// The balance used to be a pill at the foot of the rail; the owner moved it
+// here (2026-10-06), where Metrio shows its "pages restantes" badge. Renders
+// left until 2026-10-13, credits since (the figure in IBM Plex Mono).
 //
 // 2026-10-08 — from 900px the header sits beside the rail and drops what the
 // rail now carries: the logo, the settings gear and
 // the account. Below 900px (no rail) it keeps the logo and the account.
-import Link from 'next/link';
 // 2026-10-13 (owner): no longer a floating rounded card — it touches the rail,
 // the top and the right edge, square, a hairline under it.
-import { useTranslations } from '@/lib/i18n/LocaleContext';
+import Link from 'next/link';
+import { useLocale } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { BrandMark } from '@/components/BrandMark';
 import { isPlaceholderAccount } from '@/lib/account-label';
@@ -35,19 +36,22 @@ const TIER_LABEL_KEY: Record<
 export interface AppTopbarProps {
   title: string;
   tier: PricingTierId | null;
-  quotaMax: number | null;
-  quotaRemaining: number | null;
+  creditsMax: number | null;
+  creditsBalance: number | null;
   userEmail: string;
 }
 
-export function AppTopbar({ title, tier, quotaMax, quotaRemaining, userEmail }: AppTopbarProps) {
-  const t = useTranslations();
+export function AppTopbar({ title, tier, creditsMax, creditsBalance, userEmail }: AppTopbarProps) {
+  const { t, locale } = useLocale();
   const placeholder = isPlaceholderAccount(userEmail);
   const accountLabel = placeholder ? t('app.freeAccessAccount') : userEmail;
   const initial = (placeholder ? accountLabel : userEmail).trim().charAt(0).toUpperCase() || '?';
-  const hasQuota = tier !== null && quotaMax !== null && quotaRemaining !== null && quotaMax > 0;
-  const quotaLabel = hasQuota
-    ? t('app.topbarQuota', { remaining: String(quotaRemaining), max: String(quotaMax) })
+  const hasCredits = tier !== null && creditsMax !== null && creditsBalance !== null;
+  const figure = hasCredits
+    ? creditsBalance.toLocaleString(locale === 'fr' ? 'fr-FR' : 'en-US')
+    : '';
+  const creditsTitle = hasCredits
+    ? t('app.topbarCredits', { count: figure })
     : t('app.genHomeChooseTier');
 
   return (
@@ -98,22 +102,26 @@ export function AppTopbar({ title, tier, quotaMax, quotaRemaining, userEmail }: 
           </span>
         </Link>
 
-        {/* Renders left this month — Metrio's "pages restantes" badge, now
-            on the blue tint (#EEF1FF / #1E36D6, 7.3:1) since the 2026-10-08 move to
-            blue and red; the account button beside it keeps its pale red. */}
+        {/* Credits left this period — Metrio's "pages restantes" badge, on
+            the blue tint (#EEF1FF / #1E36D6, 7.3:1). */}
         <Link
           href="/app/tarifs"
-          title={quotaLabel}
+          title={creditsTitle}
+          aria-label={creditsTitle}
           className="inline-flex items-center gap-1.5 rounded-lg bg-[#EEF1FF] px-2.5 py-1.5 text-[12px] font-semibold text-[#1E36D6] transition-colors hover:bg-[#E2E7FF] max-[479px]:px-2 min-[640px]:px-3"
         >
           <span className="min-[640px]:hidden">
             <RailIcon name="pricing" color="#2948FC" />
           </span>
-          {/* On a phone, just the number: the bar has no room for the words. */}
-          <span className="whitespace-nowrap min-[640px]:hidden">
-            {hasQuota ? quotaRemaining : quotaLabel}
-          </span>
-          <span className="hidden whitespace-nowrap min-[640px]:inline">{quotaLabel}</span>
+          {hasCredits ? (
+            <span className="whitespace-nowrap">
+              <span className="font-[family-name:var(--font-mono)]">{figure}</span>
+              {/* On a phone, just the number: the bar has no room for the word. */}
+              <span className="hidden min-[640px]:inline"> {t('app.creditsUnit')}</span>
+            </span>
+          ) : (
+            <span className="whitespace-nowrap">{creditsTitle}</span>
+          )}
         </Link>
       </div>
     </header>

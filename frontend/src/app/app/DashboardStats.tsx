@@ -32,9 +32,9 @@ export interface DashboardData {
   lastActivityAt: string | null;
   tier: PricingTierId | null;
   /** Monthly allowance, null when no plan is active. */
-  quotaMax: number | null;
+  creditsMax: number | null;
   /** Generations left in the current period, null when no plan is active. */
-  quotaRemaining: number | null;
+  creditsBalance: number | null;
   /** ISO date the current period ends, null when no plan is active. */
   periodEndsAt: string | null;
 }
@@ -165,7 +165,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
   const shortDate = (iso: string) =>
     new Date(iso).toLocaleDateString(intl, { day: 'numeric', month: 'short' });
 
-  const hasPlan = data.tier !== null && data.quotaMax !== null && data.quotaRemaining !== null;
+  const hasPlan = data.tier !== null && data.creditsMax !== null && data.creditsBalance !== null;
   const n = (v: number) => v.toLocaleString(intl);
 
   return (
@@ -203,7 +203,7 @@ export function DashboardStats({ data }: { data: DashboardData }) {
         tone="blue"
         title={
           hasPlan
-            ? t('dashboard.cardQuotaTitle', { count: n(data.quotaRemaining!) })
+            ? t('dashboard.cardQuotaTitle', { count: n(data.creditsBalance!) })
             : t('dashboard.noTierTitle')
         }
         sub={

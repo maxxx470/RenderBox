@@ -57,3 +57,18 @@ export function isServiceNotConfigured(err: unknown): boolean {
   }
   return false;
 }
+
+/**
+ * The message for a generation the credits refused (generate / edit /
+ * enhance: 403 NO_ACTIVE_TIER or TIER_EXPIRED, 402 INSUFFICIENT_CREDITS), or
+ * null for any other failure. The caller shows it with a button to the
+ * Abonnement page (`app.creditsCta` → /app/tarifs).
+ */
+export function creditErrorKey(
+  err: unknown,
+): 'app.noActiveTierError' | 'app.insufficientCreditsError' | null {
+  const code = err instanceof RequestError || err instanceof ApiError ? err.code : '';
+  if (code === 'NO_ACTIVE_TIER' || code === 'TIER_EXPIRED') return 'app.noActiveTierError';
+  if (code === 'INSUFFICIENT_CREDITS') return 'app.insufficientCreditsError';
+  return null;
+}

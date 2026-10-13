@@ -19,16 +19,16 @@ const {
   mockGenerate,
   mockIsEngineConfigured,
   mockModerateImage,
-  mockCheckTierQuota,
-  mockRecordTierUsage,
+  mockDebitCredits,
+  mockRefundCredits,
   mockDetectMaterials,
 } = vi.hoisted(() => ({
   mockEnforceGenerationRateLimit: vi.fn(),
   mockGenerate: vi.fn(),
   mockIsEngineConfigured: vi.fn(),
   mockModerateImage: vi.fn(),
-  mockCheckTierQuota: vi.fn(),
-  mockRecordTierUsage: vi.fn(),
+  mockDebitCredits: vi.fn(),
+  mockRefundCredits: vi.fn(),
   mockDetectMaterials: vi.fn(),
 }));
 
@@ -40,9 +40,10 @@ vi.mock('@/lib/server/middleware/rate-limit-generation', () => ({
   enforceGenerationRateLimit: mockEnforceGenerationRateLimit,
 }));
 
-vi.mock('@/lib/server/generation/tier-quota', () => ({
-  checkTierQuota: mockCheckTierQuota,
-  recordTierUsage: mockRecordTierUsage,
+vi.mock('@/lib/server/generation/tier-quota', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/server/generation/tier-quota')>()),
+  debitCredits: mockDebitCredits,
+  refundCredits: mockRefundCredits,
 }));
 
 vi.mock('@/lib/server/generation/engines', async () => {
@@ -166,10 +167,8 @@ beforeEach(() => {
   mockGenerate.mockReset();
   mockIsEngineConfigured.mockReset().mockReturnValue(true);
   mockEnforceGenerationRateLimit.mockReset().mockResolvedValue(null);
-  mockCheckTierQuota
-    .mockReset()
-    .mockResolvedValue({ allowed: true, tier: 'standard', max: 100, remaining: 99 });
-  mockRecordTierUsage.mockReset().mockResolvedValue(undefined);
+  mockDebitCredits.mockReset().mockResolvedValue({ ok: true, balance: 2850 });
+  mockRefundCredits.mockReset().mockResolvedValue(undefined);
   mockModerateImage.mockReset().mockResolvedValue({ flagged: false, categories: [] });
   mockDetectMaterials.mockReset().mockResolvedValue(undefined);
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
@@ -303,7 +302,7 @@ describe('POST /api/projects/[projectId]/edit — ambiance of the source', () =>
 });
 
 describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
-  it('creates N RenderNodes with the same parentId, charges the rate limit N units, and records N units of tier usage', async () => {
+  it('creates N RenderNodes with the same parentId, charges the rate limit N units, and debits N × 50 credits up front', async () => {
     const res = await POST(makeReq(baseFields({ variantCount: '3' })), ctx());
     expect(res.status).toBe(201);
     const body = (await res.json()) as { createdCount: number; requestedCount: number };
@@ -311,8 +310,11 @@ describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
     expect(body.createdCount).toBe(3);
     expect(mockGenerate).toHaveBeenCalledTimes(3);
     expect(mockEnforceGenerationRateLimit).toHaveBeenCalledWith(USER_ID, 3);
-    expect(mockCheckTierQuota).toHaveBeenCalledWith(prismaMock, USER_ID, 3);
-    expect(mockRecordTierUsage).toHaveBeenCalledWith(prismaMock, USER_ID, 3);
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 150);
+    expect(mockDebitCredits.mock.invocationCallOrder[0]).toBeLessThan(
+      mockGenerate.mock.invocationCallOrder[0]!,
+    );
+    expect(mockRefundCredits).not.toHaveBeenCalled();
     expect(prismaMock.renderNode.create).toHaveBeenCalledTimes(3);
     for (const call of prismaMock.renderNode.create.mock.calls) {
       expect(call[0]?.data).toMatchObject({ parentId: SOURCE_NODE_ID, kind: 'GENERATED' });
@@ -327,9 +329,11 @@ describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
     const res = await POST(makeReq(baseFields({ variantCount: '4' })), ctx());
     expect(res.status).toBe(429);
     expect(mockGenerate).not.toHaveBeenCalled();
+    // The 4 × 50 debited just before the limiter come back.
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 200);
   });
 
-  it('reports partial success when some variants fail to generate, and records tier usage for the 2 that actually succeeded, not the 3 requested', async () => {
+  it('reports partial success when some variants fail to generate, and refunds the variant that failed', async () => {
     mockGenerate
       .mockResolvedValueOnce({ imageBuffer: Buffer.from('a'), mimeType: 'image/png' })
       .mockRejectedValueOnce(new Error('boom'))
@@ -340,26 +344,27 @@ describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
     const body = (await res.json()) as { createdCount: number; requestedCount: number };
     expect(body.requestedCount).toBe(3);
     expect(body.createdCount).toBe(2);
-    expect(mockRecordTierUsage).toHaveBeenCalledWith(prismaMock, USER_ID, 2);
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 150);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
   });
 
-  it('502s when every variant fails to generate, and never records any tier usage', async () => {
+  it('502s when every variant fails to generate, and refunds every credit', async () => {
     mockGenerate.mockRejectedValue(new Error('boom'));
     const res = await POST(makeReq(baseFields({ variantCount: '2' })), ctx());
     expect(res.status).toBe(502);
-    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 100);
+  });
+
+  it('prices N variants at 4K at N × 70', async () => {
+    const res = await POST(makeReq(baseFields({ variantCount: '2', resolution: '4k' })), ctx());
+    expect(res.status).toBe(201);
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 140);
   });
 });
 
-describe('POST /api/projects/[projectId]/edit — monthly tier quota', () => {
+describe('POST /api/projects/[projectId]/edit — credits', () => {
   it('403s with NO_ACTIVE_TIER before any engine call', async () => {
-    mockCheckTierQuota.mockResolvedValue({
-      allowed: false,
-      reason: 'NO_ACTIVE_TIER',
-      tier: null,
-      max: null,
-      remaining: null,
-    });
+    mockDebitCredits.mockResolvedValue({ ok: false, reason: 'NO_ACTIVE_TIER', balance: null });
     const res = await POST(makeReq(baseFields()), ctx());
     expect(res.status).toBe(403);
     const body = (await res.json()) as { error: string };
@@ -367,17 +372,13 @@ describe('POST /api/projects/[projectId]/edit — monthly tier quota', () => {
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 
-  it('402s with QUOTA_EXCEEDED when the batch would overshoot the remaining quota', async () => {
-    mockCheckTierQuota.mockResolvedValue({
-      allowed: false,
-      reason: 'QUOTA_EXCEEDED',
-      tier: 'decouverte',
-      max: 30,
-      remaining: 2,
-    });
+  it('402s with INSUFFICIENT_CREDITS when the batch would overshoot the balance', async () => {
+    mockDebitCredits.mockResolvedValue({ ok: false, reason: 'INSUFFICIENT_CREDITS', balance: 100 });
     const res = await POST(makeReq(baseFields({ variantCount: '3' })), ctx());
     expect(res.status).toBe(402);
+    expect(await res.json()).toMatchObject({ error: 'INSUFFICIENT_CREDITS', cost: 150 });
     expect(mockGenerate).not.toHaveBeenCalled();
+    expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
   });
 });
 
@@ -950,7 +951,7 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
           { face: 'toiture', valeur: 'Ardoise', origin: 'correction', nodeId: SOURCE_NODE_ID },
         ]);
       }
-      expect(mockRecordTierUsage).toHaveBeenCalledWith(prismaMock, USER_ID, 2);
+      expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
     });
   });
 
@@ -1020,14 +1021,14 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
         expect(JSON.stringify(body)).not.toContain('db.internal');
         // Nothing charged, nothing produced, no partial list, no fallback.
         expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
-        expect(mockCheckTierQuota).not.toHaveBeenCalled();
+        expect(mockDebitCredits).not.toHaveBeenCalled();
         expect(mockModerateImage).not.toHaveBeenCalled();
         expect(global.fetch).not.toHaveBeenCalled();
         expect(mockGenerate).not.toHaveBeenCalled();
         expect(prismaMock.material.findMany).not.toHaveBeenCalled();
         expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
         expect(prismaMock.generation.create).not.toHaveBeenCalled();
-        expect(mockRecordTierUsage).not.toHaveBeenCalled();
+        expect(mockRefundCredits).not.toHaveBeenCalled();
       },
     );
 
@@ -1059,7 +1060,7 @@ describe('POST /api/projects/[projectId]/edit — engine deadline (étape 3B.4)'
       code: 'GENERATION_TIMEOUT',
       message: 'Generation timed out',
     });
-    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 100);
   });
 
   it('keeps 502 when the variants fail for mixed reasons (a timeout and another error)', async () => {
@@ -1077,6 +1078,6 @@ describe('POST /api/projects/[projectId]/edit — engine deadline (étape 3B.4)'
     expect(res.status).toBe(201);
     const body = (await res.json()) as { createdCount: number; requestedCount: number };
     expect(body).toMatchObject({ requestedCount: 2, createdCount: 1 });
-    expect(mockRecordTierUsage).toHaveBeenCalledWith(prismaMock, USER_ID, 1);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
   });
 });

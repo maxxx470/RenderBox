@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { PrismaClient } from '@prisma/client';
 import { AUTH_DISABLED_USER_ID, AUTH_DISABLED_USER_EMAIL } from '../src/lib/server/auth-disabled';
+import { getPricingTier } from '../src/lib/pricing-tiers';
 
 const SEED_USERS = [
   { email: 'admin@example.com', role: 'SUPERADMIN' },
@@ -60,14 +61,14 @@ export async function main(_args: string[] = [], deps: SeedDeps = {}): Promise<v
     // working even when auth itself is skipped. role: 'USER' is deliberate —
     // this identity must never be able to reach /admin (requireAdmin never
     // consults AUTH_DISABLED at all, but keeping the row non-admin is
-    // defense in depth). A tier is pre-assigned so generation isn't blocked
-    // by the monthly quota gate while auth is disabled. The tier is re-granted
+    // defense in depth). A tier and its credits are pre-assigned so
+    // generation isn't blocked by the credit gate while auth is disabled. The tier is re-granted
     // on every run (not just on create): tier-quota.ts clears it once the
     // 30-day period lapses, so re-running the seed restores a working demo.
     const demoTier = {
       currentTier: 'pro',
       tierPeriodStart: new Date(),
-      generationsUsedInPeriod: 0,
+      creditsBalance: getPricingTier('pro')!.creditsPerMonth,
     };
     await prisma.user.upsert({
       where: { id: AUTH_DISABLED_USER_ID },

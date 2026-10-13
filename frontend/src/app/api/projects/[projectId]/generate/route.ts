@@ -17,7 +17,12 @@ import { prisma } from '@/lib/server/prisma';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { assertProjectOwner, ProjectNotFoundError } from '@/lib/server/idor/assert-project-owner';
 import { enforceGenerationRateLimit } from '@/lib/server/middleware/rate-limit-generation';
-import { checkTierQuota, recordTierUsage } from '@/lib/server/generation/tier-quota';
+import {
+  creditRefusalResponse,
+  debitCredits,
+  refundCredits,
+} from '@/lib/server/generation/tier-quota';
+import { renderCost } from '@/lib/pricing-tiers';
 import {
   generateRender,
   isEngineConfigured,
@@ -74,20 +79,6 @@ export async function POST(
         );
       }
       throw e;
-    }
-
-    const quota = await checkTierQuota(prisma, auth.user.sub);
-    if (!quota.allowed) {
-      // `error` (not `code`) is the field lib/api.ts's ApiError.code reads —
-      // the frontend switches on err.code to tell "no active tier" apart
-      // from "quota exhausted" apart from the daily rate limit further down.
-      return NextResponse.json(
-        { error: quota.reason, message: 'Monthly generation quota check failed' },
-        {
-          status: quota.reason === 'QUOTA_EXCEEDED' ? 402 : 403,
-          headers: { 'x-request-id': ctx.requestId },
-        },
-      );
     }
 
     const json = await req.json().catch(() => null);
@@ -148,140 +139,164 @@ export async function POST(
       );
     }
 
-    // The daily cap, once every precondition holds (étape 3C.3-R2): a request
-    // that cannot start — invalid body, unknown source, a service not
-    // configured, unreadable materials, no monthly quota — never takes a daily
-    // unit; there is nothing to give back, so no DECR. One call, one unit (an
-    // immediate INCR; on a 429 the limiter rolls its own increment back). A
-    // request that gets past here counts, even if the engine then fails.
-    const limited = await enforceGenerationRateLimit(auth.user.sub);
-    if (limited) return limited;
+    // The credits, once every precondition holds: one image at the size asked
+    // for, priced by the server (never by the client), debited atomically
+    // BEFORE the engine call (tier-quota.ts). Without a plan or enough
+    // credits the request stops here, before taking an hourly unit.
+    const cost = renderCost(resolution);
+    const debit = await debitCredits(prisma, auth.user.sub, cost);
+    if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);
 
-    // The project's old sheet, kept whole in Generation.materialsSnapshot (its
-    // schema contract); it no longer reaches the prompt.
-    const materials = await prisma.material.findMany({
-      where: { projectId },
-      select: { face: true, valeur: true, source: true, confidence: true },
-    });
-
-    const sourceRes = await fetch(sourceNode.blobUrl);
-    if (!sourceRes.ok) {
-      return NextResponse.json(
-        { code: 'SOURCE_IMAGE_FETCH_FAILED', message: 'Could not read the source image' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
-
-    const assembledPrompt = buildGenerationPrompt({
-      materialsSnapshot: toPromptEntries(promptMaterials),
-      preset: promptPreset,
-      customPrompt,
-      photoRender: !template && !promptPreset,
-    });
-
-    let result;
+    // Whatever is still owed back when the request ends: all of it until the
+    // render is stored, nothing after.
+    let owed = cost;
     try {
-      result = await generateRender(engine, {
-        sourceImageBuffer,
-        sourceMimeType: sourceNode.mimeType,
-        prompt: assembledPrompt,
-        ...(ratio && ratio !== 'auto' ? { aspectRatio: ratio } : {}),
-        ...(resolution ? { resolution } : {}),
-      });
-    } catch (e) {
-      if (e instanceof EngineNotConfiguredError) {
-        return NextResponse.json(
-          { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
-          { status: 503, headers: { 'x-request-id': ctx.requestId } },
-        );
-      }
-      if (e instanceof EngineTimeoutError) {
-        return NextResponse.json(
-          { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
-          { status: 504, headers: { 'x-request-id': ctx.requestId } },
-        );
-      }
-      return NextResponse.json(
-        { code: 'GENERATION_FAILED', message: 'Generation failed' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+      // The hourly cap, once every precondition holds (étape 3C.3-R2): a request
+      // that cannot start — invalid body, unknown source, a service not
+      // configured, unreadable materials, no credits — never takes a unit;
+      // there is nothing to give back, so no DECR. One call, one unit (an
+      // immediate INCR; on a 429 the limiter rolls its own increment back, and
+      // the credits are refunded below). A request that gets past here counts,
+      // even if the engine then fails.
+      const limited = await enforceGenerationRateLimit(auth.user.sub);
+      if (limited) return limited;
 
-    let uploaded;
-    try {
-      const pathname = `renderbox/${auth.user.sub}/${projectId}/${randomUUID()}`;
-      uploaded = await uploadBuffer(pathname, result.imageBuffer, result.mimeType);
-    } catch (e) {
-      if (e instanceof StorageNotConfiguredError) {
+      // The project's old sheet, kept whole in Generation.materialsSnapshot (its
+      // schema contract); it no longer reaches the prompt.
+      const materials = await prisma.material.findMany({
+        where: { projectId },
+        select: { face: true, valeur: true, source: true, confidence: true },
+      });
+
+      const sourceRes = await fetch(sourceNode.blobUrl);
+      if (!sourceRes.ok) {
         return NextResponse.json(
-          { code: 'STORAGE_NOT_CONFIGURED', message: 'Storage not configured' },
-          { status: 503, headers: { 'x-request-id': ctx.requestId } },
+          { code: 'SOURCE_IMAGE_FETCH_FAILED', message: 'Could not read the source image' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
         );
       }
-      return NextResponse.json(
-        { code: 'UPLOAD_FAILED', message: 'Storage write failed' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+      const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
-    const newNodeId = await prisma.$transaction(async (tx) => {
-      const newNode = await tx.renderNode.create({
-        data: {
-          projectId,
-          parentId: sourceNode.id,
-          kind: 'GENERATED',
-          blobUrl: uploaded.blobUrl,
-          mimeType: result.mimeType,
-          sizeBytes: uploaded.bytes,
-          preset,
-          engine,
-        },
-        select: { id: true },
+      const assembledPrompt = buildGenerationPrompt({
+        materialsSnapshot: toPromptEntries(promptMaterials),
+        preset: promptPreset,
+        customPrompt,
+        photoRender: !template && !promptPreset,
       });
-      await tx.generation.create({
-        data: {
-          nodeId: newNode.id,
-          engine,
-          preset,
+
+      let result;
+      try {
+        result = await generateRender(engine, {
+          sourceImageBuffer,
+          sourceMimeType: sourceNode.mimeType,
           prompt: assembledPrompt,
-          materialsSnapshot: materials,
-          // Exactly the materials the prompt lists; [] when it lists none.
-          promptMaterials,
+          ...(ratio && ratio !== 'auto' ? { aspectRatio: ratio } : {}),
+          ...(resolution ? { resolution } : {}),
+        });
+      } catch (e) {
+        if (e instanceof EngineNotConfiguredError) {
+          return NextResponse.json(
+            { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
+            { status: 503, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+        if (e instanceof EngineTimeoutError) {
+          return NextResponse.json(
+            { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
+            { status: 504, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+        return NextResponse.json(
+          { code: 'GENERATION_FAILED', message: 'Generation failed' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+
+      let uploaded;
+      try {
+        const pathname = `renderbox/${auth.user.sub}/${projectId}/${randomUUID()}`;
+        uploaded = await uploadBuffer(pathname, result.imageBuffer, result.mimeType);
+      } catch (e) {
+        if (e instanceof StorageNotConfiguredError) {
+          return NextResponse.json(
+            { code: 'STORAGE_NOT_CONFIGURED', message: 'Storage not configured' },
+            { status: 503, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+        return NextResponse.json(
+          { code: 'UPLOAD_FAILED', message: 'Storage write failed' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+
+      const newNodeId = await prisma.$transaction(async (tx) => {
+        const newNode = await tx.renderNode.create({
+          data: {
+            projectId,
+            parentId: sourceNode.id,
+            kind: 'GENERATED',
+            blobUrl: uploaded.blobUrl,
+            mimeType: result.mimeType,
+            sizeBytes: uploaded.bytes,
+            preset,
+            engine,
+          },
+          select: { id: true },
+        });
+        await tx.generation.create({
+          data: {
+            nodeId: newNode.id,
+            engine,
+            preset,
+            prompt: assembledPrompt,
+            materialsSnapshot: materials,
+            // Exactly the materials the prompt lists; [] when it lists none.
+            promptMaterials,
+          },
+        });
+        return newNode.id;
+      });
+
+      // The render is stored: the credits are spent for good.
+      owed = 0;
+
+      // Detect + merge materials from the render that was JUST produced (Phase
+      // 2). Never lets a Vision hiccup fail the generation the user asked for
+      // — the render + tree above are already committed by this point.
+      let materialsDetected = false;
+      try {
+        await detectAndMergeMaterials(projectId, result.imageBuffer, result.mimeType);
+        materialsDetected = true;
+      } catch (e) {
+        log.warn('generate: material detection failed (non-fatal)', { err: String(e) });
+      }
+
+      const nodes = await prisma.renderNode.findMany({
+        where: { projectId },
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          parentId: true,
+          kind: true,
+          createdAt: true,
+          preset: true,
+          engine: true,
         },
       });
-      return newNode.id;
-    });
 
-    // Only after the render was actually produced + stored — never before,
-    // never on a failed engine call (see tier-quota.ts's doc comment).
-    await recordTierUsage(prisma, auth.user.sub);
-
-    // Detect + merge materials from the render that was JUST produced (Phase
-    // 2). Never lets a Vision hiccup fail the generation the user asked for
-    // — the render + tree above are already committed by this point.
-    let materialsDetected = false;
-    try {
-      await detectAndMergeMaterials(projectId, result.imageBuffer, result.mimeType);
-      materialsDetected = true;
-    } catch (e) {
-      log.warn('generate: material detection failed (non-fatal)', { err: String(e) });
+      return NextResponse.json(
+        {
+          tree: buildRenderTree(nodes),
+          nodeId: newNodeId,
+          materialsDetected,
+          creditsBalance: debit.balance,
+        },
+        { status: 201, headers: { 'x-request-id': ctx.requestId } },
+      );
+    } finally {
+      // Engine, storage or database failure, or the hourly cap: nothing was
+      // produced, so nothing is charged.
+      if (owed > 0) await refundCredits(prisma, auth.user.sub, owed);
     }
-
-    const nodes = await prisma.renderNode.findMany({
-      where: { projectId },
-      orderBy: { createdAt: 'asc' },
-      select: { id: true, parentId: true, kind: true, createdAt: true, preset: true, engine: true },
-    });
-
-    return NextResponse.json(
-      {
-        tree: buildRenderTree(nodes),
-        nodeId: newNodeId,
-        materialsDetected,
-        quotaRemaining: quota.remaining !== null ? Math.max(0, quota.remaining - 1) : null,
-      },
-      { status: 201, headers: { 'x-request-id': ctx.requestId } },
-    );
   });
 }

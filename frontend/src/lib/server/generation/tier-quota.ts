@@ -1,31 +1,44 @@
-// Gate #2 for AI generation — the REAL, paid monthly quota (30/100/300 per
-// tier, see lib/pricing-tiers.ts). Fully independent of
-// rate-limit-generation.ts's hourly/daily anti-abuse cap: both gates must
-// pass before an engine call is made, and neither replaces the other (see
-// CLAUDE.md "Modèle de tarification").
+// Gate #2 for AI generation — the paid CREDITS (since 2026-10-13; a monthly
+// count of renders before). A plan grants its credits (lib/pricing-tiers.ts)
+// for 30 days; each image produced costs RENDER_COST (1K / 2K) or
+// RENDER_COST_4K, whatever made it. Fully independent of
+// rate-limit-generation.ts's hourly anti-abuse cap: both gates must pass
+// before an engine call is made, and neither replaces the other.
+//
+// The order a route follows:
+//   1. debitCredits() BEFORE any engine call — one conditional UPDATE, so two
+//      quick clicks can never spend the same credits twice;
+//   2. refundCredits() for whatever was debited and not produced (an engine
+//      or storage failure, a variant that failed, a request stopped after the
+//      debit).
+// The cost is always computed by the server from the request it validated
+// (renderCost), never taken from the client.
 //
 // Lazy by design — expiry is detected and cleared the moment a user tries to
-// generate (or loads a page that displays their quota), never by a cron
-// sweeping every account.
+// generate (or loads a page that displays their credits), never by a cron
+// sweeping every account. Credits left at the end of a period are lost: no
+// carryover.
 import 'server-only';
+import { NextResponse } from 'next/server';
 import type { PrismaClient } from '@prisma/client';
 import { getPricingTier, type PricingTierId } from '@/lib/pricing-tiers';
 
 const TIER_PERIOD_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-export type TierQuotaReason = 'NO_ACTIVE_TIER' | 'TIER_EXPIRED' | 'QUOTA_EXCEEDED';
+export type CreditRefusal = 'NO_ACTIVE_TIER' | 'TIER_EXPIRED' | 'INSUFFICIENT_CREDITS';
 
-export interface TierQuotaResult {
-  allowed: boolean;
-  reason?: TierQuotaReason;
+export interface CreditStatus {
+  /** Set when there is no plan to spend from. */
+  reason?: 'NO_ACTIVE_TIER' | 'TIER_EXPIRED';
   /** Which tier is active, or null (no active tier). */
   tier: PricingTierId | null;
-  /** The tier's monthly quota, or null when there's no active tier. */
+  /** The plan's monthly credits, or null when there's no active tier. */
   max: number | null;
-  /** Generations left in the current period, or null when there's no active tier. */
+  /** Credits left in the current period, or null when there's no active tier. */
   remaining: number | null;
   /**
-   * When the current period ends, or null when there's no active tier.
+   * When the current period ends — the credits left expire then — or null
+   * when there's no active tier.
    *
    * Returned here rather than re-read by callers: this function already loads
    * `tierPeriodStart`, and on a `connection_limit=1` pooled connection every
@@ -36,113 +49,139 @@ export interface TierQuotaResult {
   periodEndsAt: Date | null;
 }
 
+const NONE = { tier: null, max: null, remaining: null, periodEndsAt: null } as const;
+
 /**
- * Checks (and, on the display-only `count: 0` path, also surfaces) the
- * user's real paid quota. `count` is how many generations this attempt would
- * consume (1 for a standard render, N for an N-variant edit) — pass 0 from a
- * page load to read status only, with no effect on the allowed/not-allowed
- * outcome beyond the tier-active / expired checks.
+ * The user's plan and credits, for display and as the first step of a debit.
+ * Also clears a lapsed period (its credits expire), so opening any app page
+ * keeps the plan honest.
  */
-export async function checkTierQuota(
-  prisma: PrismaClient,
-  userId: string,
-  count = 1,
-): Promise<TierQuotaResult> {
+export async function getCreditStatus(prisma: PrismaClient, userId: string): Promise<CreditStatus> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { currentTier: true, tierPeriodStart: true, generationsUsedInPeriod: true },
+    select: { currentTier: true, tierPeriodStart: true, creditsBalance: true },
   });
 
-  if (!user?.currentTier) {
-    return {
-      allowed: false,
-      reason: 'NO_ACTIVE_TIER',
-      tier: null,
-      max: null,
-      remaining: null,
-      periodEndsAt: null,
-    };
-  }
-
-  const tier = getPricingTier(user.currentTier);
-  if (!tier) {
-    // Defensive — currentTier holds a value pricing-tiers.ts no longer
-    // recognizes (e.g. a retired tier id). Treat exactly like no active tier.
-    return {
-      allowed: false,
-      reason: 'NO_ACTIVE_TIER',
-      tier: null,
-      max: null,
-      remaining: null,
-      periodEndsAt: null,
-    };
-  }
+  // A currentTier pricing-tiers.ts no longer recognizes (a retired id) is
+  // treated exactly like no active tier.
+  const tier = user?.currentTier ? getPricingTier(user.currentTier) : undefined;
+  if (!user || !tier) return { reason: 'NO_ACTIVE_TIER', ...NONE };
 
   if (!user.tierPeriodStart || Date.now() - user.tierPeriodStart.getTime() >= TIER_PERIOD_MS) {
-    // Period lapsed without a renewal — no "grace" generation even if the
-    // old period had unused headroom left.
+    // Period lapsed without a renewal: the plan ends and its unused credits
+    // expire with it.
     await prisma.user.update({
       where: { id: userId },
-      data: { currentTier: null, tierPeriodStart: null, generationsUsedInPeriod: 0 },
+      data: { currentTier: null, tierPeriodStart: null, creditsBalance: 0 },
     });
-    return {
-      allowed: false,
-      reason: 'TIER_EXPIRED',
-      tier: null,
-      max: null,
-      remaining: null,
-      periodEndsAt: null,
-    };
+    return { reason: 'TIER_EXPIRED', ...NONE };
   }
 
-  const periodEndsAt = new Date(user.tierPeriodStart.getTime() + TIER_PERIOD_MS);
-  const remaining = tier.generationsPerMonth - user.generationsUsedInPeriod;
-  if (remaining < count) {
-    return {
-      allowed: false,
-      reason: 'QUOTA_EXCEEDED',
-      tier: tier.id,
-      max: tier.generationsPerMonth,
-      remaining: Math.max(0, remaining),
-      periodEndsAt,
-    };
-  }
+  return {
+    tier: tier.id,
+    max: tier.creditsPerMonth,
+    remaining: Math.max(0, user.creditsBalance),
+    periodEndsAt: new Date(user.tierPeriodStart.getTime() + TIER_PERIOD_MS),
+  };
+}
 
-  return { allowed: true, tier: tier.id, max: tier.generationsPerMonth, remaining, periodEndsAt };
+export type DebitResult =
+  | { ok: true; balance: number }
+  | { ok: false; reason: CreditRefusal; balance: number | null };
+
+/**
+ * Takes `cost` credits, or nothing. The debit is ONE conditional UPDATE —
+ * "subtract cost where the plan is still valid and the balance covers it" —
+ * which PostgreSQL runs atomically: of two simultaneous requests the second
+ * re-reads the row the first changed, and is refused if what is left no
+ * longer covers it. No read-then-write window, so no double spend.
+ */
+export async function debitCredits(
+  prisma: PrismaClient,
+  userId: string,
+  cost: number,
+): Promise<DebitResult> {
+  const status = await getCreditStatus(prisma, userId);
+  if (status.reason || status.remaining === null) {
+    return { ok: false, reason: status.reason ?? 'NO_ACTIVE_TIER', balance: null };
+  }
+  if (cost <= 0) return { ok: true, balance: status.remaining };
+
+  const { count } = await prisma.user.updateMany({
+    where: {
+      id: userId,
+      currentTier: status.tier,
+      tierPeriodStart: { gt: new Date(Date.now() - TIER_PERIOD_MS) },
+      creditsBalance: { gte: cost },
+    },
+    data: { creditsBalance: { decrement: cost } },
+  });
+  if (count === 0) {
+    return { ok: false, reason: 'INSUFFICIENT_CREDITS', balance: status.remaining };
+  }
+  return { ok: true, balance: Math.max(0, status.remaining - cost) };
+}
+
+/** Gives back credits debited for images that were not produced. */
+export async function refundCredits(
+  prisma: PrismaClient,
+  userId: string,
+  amount: number,
+): Promise<void> {
+  if (amount <= 0) return;
+  await prisma.user.update({
+    where: { id: userId },
+    data: { creditsBalance: { increment: amount } },
+  });
 }
 
 /**
- * Records N successful generations against the current period. Call this
- * AFTER the engine call(s) succeeded — never before, never for a failed or
- * partially-failed batch's failed variants. A 4-variant edit where only 3
- * variants actually produced + uploaded a RenderNode decrements by 3, not 4.
+ * The answer to a refused debit. `error` (not `code`) is the field
+ * lib/api.ts's ApiError.code reads — the frontend switches on it to tell "no
+ * plan" apart from "not enough credits" apart from the hourly rate limit, and
+ * shows the matching message with a link to the Abonnement page.
  */
-export async function recordTierUsage(
-  prisma: PrismaClient,
-  userId: string,
-  count = 1,
-): Promise<void> {
-  if (count <= 0) return;
-  await prisma.user.update({
-    where: { id: userId },
-    data: { generationsUsedInPeriod: { increment: count } },
-  });
+export function creditRefusalResponse(
+  refusal: Extract<DebitResult, { ok: false }>,
+  cost: number,
+  requestId: string,
+): NextResponse {
+  return NextResponse.json(
+    {
+      error: refusal.reason,
+      message:
+        refusal.reason === 'INSUFFICIENT_CREDITS'
+          ? 'Not enough credits for this request'
+          : 'No active plan',
+      cost,
+      balance: refusal.balance,
+    },
+    {
+      status: refusal.reason === 'INSUFFICIENT_CREDITS' ? 402 : 403,
+      headers: { 'x-request-id': requestId },
+    },
+  );
 }
 
 /**
  * Activates or renews a tier — called once an Order actually transitions to
- * PAID (see maketou-reconcile.ts). A renewal before the current period
- * expires extends the period from now() rather than stacking: no carryover
- * of unused generations across periods, consistent with a monthly
- * subscription model rather than a cumulative credit system.
+ * PAID (see maketou-reconcile.ts). The balance is SET to the plan's credits
+ * and the period restarts now: no carryover of unused credits, consistent
+ * with a monthly subscription rather than a cumulative credit system.
  */
 export async function activateTier(
   prisma: PrismaClient,
   userId: string,
-  tier: PricingTierId,
+  tierId: PricingTierId,
 ): Promise<void> {
+  const tier = getPricingTier(tierId);
+  if (!tier) throw new Error(`activateTier: unknown tier ${tierId}`);
   await prisma.user.update({
     where: { id: userId },
-    data: { currentTier: tier, tierPeriodStart: new Date(), generationsUsedInPeriod: 0 },
+    data: {
+      currentTier: tier.id,
+      tierPeriodStart: new Date(),
+      creditsBalance: tier.creditsPerMonth,
+    },
   });
 }

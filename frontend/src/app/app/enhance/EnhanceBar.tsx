@@ -16,6 +16,7 @@ import { Glyph } from '../RailIcon';
 import { RatioSelect } from '../RatioSelect';
 import { ResolutionSelect } from '../ResolutionSelect';
 import { ACCEPTED_UPLOAD_TYPES } from '../upload-types';
+import { renderCost } from '@/lib/pricing-tiers';
 
 export function EnhanceBar({
   instruction,
@@ -63,6 +64,7 @@ export function EnhanceBar({
     <SendButton
       big={big}
       label={t('enhance.submit')}
+      cost={renderCost(resolution)}
       disabled={sendDisabled}
       busy={working}
       onClick={onSubmit}

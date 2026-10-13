@@ -36,16 +36,18 @@ const { counters, fakeRedis } = vi.hoisted(() => {
 });
 vi.mock('@/lib/server/redis', () => ({ redis: fakeRedis }));
 
-const { mockCheckTierQuota, mockRecordTierUsage, mockGenerate, mockIsEngineConfigured } =
-  vi.hoisted(() => ({
-    mockCheckTierQuota: vi.fn(),
-    mockRecordTierUsage: vi.fn(),
+const { mockDebitCredits, mockRefundCredits, mockGenerate, mockIsEngineConfigured } = vi.hoisted(
+  () => ({
+    mockDebitCredits: vi.fn(),
+    mockRefundCredits: vi.fn(),
     mockGenerate: vi.fn(),
     mockIsEngineConfigured: vi.fn(),
-  }));
-vi.mock('@/lib/server/generation/tier-quota', () => ({
-  checkTierQuota: mockCheckTierQuota,
-  recordTierUsage: mockRecordTierUsage,
+  }),
+);
+vi.mock('@/lib/server/generation/tier-quota', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/server/generation/tier-quota')>()),
+  debitCredits: mockDebitCredits,
+  refundCredits: mockRefundCredits,
 }));
 vi.mock('@/lib/server/generation/engines', async () => {
   const actual = await vi.importActual<typeof import('@/lib/server/generation/engines')>(
@@ -109,10 +111,8 @@ beforeEach(() => {
   vi.mocked(verifyToken).mockReset();
   signIn(USER_ID);
   mockIsEngineConfigured.mockReset().mockReturnValue(true);
-  mockCheckTierQuota
-    .mockReset()
-    .mockResolvedValue({ allowed: true, tier: 'standard', max: 100, remaining: 99 });
-  mockRecordTierUsage.mockReset().mockResolvedValue(undefined);
+  mockDebitCredits.mockReset().mockResolvedValue({ ok: true, balance: 2950 });
+  mockRefundCredits.mockReset().mockResolvedValue(undefined);
   mockGenerate
     .mockReset()
     .mockResolvedValue({ imageBuffer: Buffer.from('img'), mimeType: 'image/png' });
@@ -159,14 +159,12 @@ describe('POST /generate — the daily unit, counted on the real limiter (étape
       503,
     ],
     [
-      'a refused monthly quota',
+      'not enough credits',
       () =>
-        mockCheckTierQuota.mockResolvedValue({
-          allowed: false,
-          reason: 'QUOTA_EXCEEDED',
-          tier: 'decouverte',
-          max: 30,
-          remaining: 0,
+        mockDebitCredits.mockResolvedValue({
+          ok: false,
+          reason: 'INSUFFICIENT_CREDITS',
+          balance: 0,
         }),
       {},
       402,

@@ -22,7 +22,7 @@ describe('assistant knowledge', () => {
 
   it('reads the plans from pricing-tiers, not from a copy', () => {
     for (const tier of PRICING_TIERS)
-      expect(doc).toContain(`${tier.generationsPerMonth} générations`);
+      expect(doc).toContain(`${tier.creditsPerMonth.toLocaleString('fr-FR')} crédits`);
   });
 
   it('never names an AI vendor', () => {

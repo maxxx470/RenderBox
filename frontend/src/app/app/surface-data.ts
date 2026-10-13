@@ -12,8 +12,8 @@ export async function loadAppSurface(current: RailPage): Promise<AppSurfaceProps
   return {
     current,
     tier: quota.tier,
-    quotaMax: quota.max,
-    quotaRemaining: quota.remaining,
+    creditsMax: quota.max,
+    creditsBalance: quota.remaining,
     userEmail: auth.user.email ?? '',
   };
 }

@@ -42,6 +42,7 @@ import { ContextChip, type ContextMaterial } from './ContextChip';
 import { ElementsPicker } from './ElementsPicker';
 import { Glyph, type RailIconName } from './RailIcon';
 import { CHIP_ACTIVE, CHIP_BASE, CHIP_STATIC } from './chip';
+import { renderCost } from '@/lib/pricing-tiers';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
 
@@ -147,27 +148,42 @@ export function Pinned({ image, removeLabel }: { image: PinnedImage; removeLabel
  * (/public/rail/envoyer.webp, 288px) filling the whole square. The tile's own
  * corners are clipped by the button's (22%, the tile's radius). The verb stays
  * as the accessible name and the tooltip.
+ *
+ * Since 2026-10-13 (credits) the tile also shows what the click will cost,
+ * before it: a small badge along its bottom edge ("50 crédits" on a computer,
+ * the figure alone on the phone's 36px tile), and the name and tooltip read
+ * "Générer · 50 crédits". Display only: the server prices the request itself.
  */
 export function SendButton({
   big,
   label,
+  cost,
   disabled,
   busy,
   onClick,
 }: {
   big: boolean;
   label: string;
+  /** Credits this click will spend; shown on the tile when given. */
+  cost?: number;
   disabled: boolean;
   busy: boolean;
   onClick: () => void;
 }) {
+  const { t, locale } = useLocale();
+  const figure =
+    cost !== undefined ? cost.toLocaleString(locale === 'fr' ? 'fr-FR' : 'en-US') : null;
+  const fullLabel =
+    figure !== null
+      ? t('app.sendWithCost', { verb: label, cost: t('app.creditsCount', { count: figure }) })
+      : label;
   return (
     <button
       type="button"
       disabled={disabled || busy}
       onClick={onClick}
-      aria-label={label}
-      title={label}
+      aria-label={fullLabel}
+      title={fullLabel}
       className={`relative flex-shrink-0 overflow-hidden rounded-[22%] transition-[filter,transform,opacity] duration-150 ease-out enabled:hover:brightness-110 enabled:active:scale-[0.97] disabled:cursor-not-allowed ${
         busy ? '' : 'disabled:opacity-45'
       } ${
@@ -183,6 +199,18 @@ export function SendButton({
         draggable={false}
         className="absolute inset-0 h-full w-full object-cover"
       />
+      {figure !== null && !busy && (
+        <span
+          aria-hidden
+          className={`absolute inset-x-0 bottom-0 flex justify-center font-[family-name:var(--font-mono)] font-semibold text-white ${
+            big ? 'pb-2 text-[11px]' : 'pb-0.5 text-[8.5px] leading-none'
+          }`}
+        >
+          <span className={big ? 'rounded-md bg-[#17161F]/35 px-1.5 py-0.5' : ''}>
+            {big ? t('app.creditsCount', { count: figure }) : figure}
+          </span>
+        </span>
+      )}
       {busy && (
         <span className="absolute inset-0 flex items-center justify-center bg-[#17161F]/35">
           <span className="rb-spin h-5 w-5 rounded-full border-2 border-white/40 border-t-white" />
@@ -487,6 +515,7 @@ export function CommandBar({
     <SendButton
       big={big}
       label={submitLabel}
+      cost={renderCost(resolution, mode === 'generate' ? 1 : (variantCount ?? 1))}
       disabled={sendDisabled}
       busy={generating}
       onClick={onSubmit}

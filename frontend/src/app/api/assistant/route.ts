@@ -16,6 +16,13 @@ import { log } from '@/lib/server/observability/log';
 import { enforceAssistantRateLimit } from '@/lib/server/middleware/rate-limit-assistant';
 import { buildSystemPrompt } from '@/lib/server/assistant/knowledge';
 import { fallbackReply } from '@/lib/server/assistant/fallback';
+import { prisma } from '@/lib/server/prisma';
+import {
+  creditRefusalResponse,
+  debitCredits,
+  refundCredits,
+} from '@/lib/server/generation/tier-quota';
+import { ASSISTANT_COST } from '@/lib/pricing-tiers';
 
 export const runtime = 'nodejs';
 
@@ -65,6 +72,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const limited = await enforceAssistantRateLimit(auth.user.sub);
     if (limited) return limited;
 
+    // Free today (ASSISTANT_COST = 0, pricing-tiers.ts): no plan needed, no
+    // database call. Priced one day, a message is debited like a render and
+    // given back when only the keyword answer could be served.
+    let owed = 0;
+    if (ASSISTANT_COST > 0) {
+      const debit = await debitCredits(prisma, auth.user.sub, ASSISTANT_COST);
+      if (!debit.ok) return creditRefusalResponse(debit, ASSISTANT_COST, ctx.requestId);
+      owed = ASSISTANT_COST;
+    }
+
     const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) {
       try {
@@ -101,6 +118,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
+    if (owed > 0) await refundCredits(prisma, auth.user.sub, owed);
     return NextResponse.json(
       { reply: fallbackReply(last.content, locale), mode, sources: [], fallback: true },
       { headers: { 'x-request-id': ctx.requestId } },

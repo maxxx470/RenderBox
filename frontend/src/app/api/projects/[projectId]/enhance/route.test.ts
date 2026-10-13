@@ -17,16 +17,16 @@ const {
   mockGenerate,
   mockIsEngineConfigured,
   mockModerateImage,
-  mockCheckTierQuota,
-  mockRecordTierUsage,
+  mockDebitCredits,
+  mockRefundCredits,
   mockDetectMaterials,
 } = vi.hoisted(() => ({
   mockEnforceGenerationRateLimit: vi.fn(),
   mockGenerate: vi.fn(),
   mockIsEngineConfigured: vi.fn(),
   mockModerateImage: vi.fn(),
-  mockCheckTierQuota: vi.fn(),
-  mockRecordTierUsage: vi.fn(),
+  mockDebitCredits: vi.fn(),
+  mockRefundCredits: vi.fn(),
   mockDetectMaterials: vi.fn(),
 }));
 
@@ -38,9 +38,10 @@ vi.mock('@/lib/server/middleware/rate-limit-generation', () => ({
   enforceGenerationRateLimit: mockEnforceGenerationRateLimit,
 }));
 
-vi.mock('@/lib/server/generation/tier-quota', () => ({
-  checkTierQuota: mockCheckTierQuota,
-  recordTierUsage: mockRecordTierUsage,
+vi.mock('@/lib/server/generation/tier-quota', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/server/generation/tier-quota')>()),
+  debitCredits: mockDebitCredits,
+  refundCredits: mockRefundCredits,
 }));
 
 vi.mock('@/lib/server/generation/engines', async () => {
@@ -122,10 +123,8 @@ beforeEach(() => {
   mockGenerate.mockReset();
   mockIsEngineConfigured.mockReset().mockReturnValue(true);
   mockEnforceGenerationRateLimit.mockReset().mockResolvedValue(null);
-  mockCheckTierQuota
-    .mockReset()
-    .mockResolvedValue({ allowed: true, tier: 'standard', max: 100, remaining: 99 });
-  mockRecordTierUsage.mockReset().mockResolvedValue(undefined);
+  mockDebitCredits.mockReset().mockResolvedValue({ ok: true, balance: 2950 });
+  mockRefundCredits.mockReset().mockResolvedValue(undefined);
   mockModerateImage.mockReset().mockResolvedValue({ flagged: false, categories: [] });
   mockDetectMaterials.mockReset().mockResolvedValue(undefined);
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
@@ -354,7 +353,8 @@ describe('POST /api/projects/[projectId]/enhance — engine deadline (étape 3B.
       code: 'GENERATION_TIMEOUT',
       message: 'Generation timed out',
     });
-    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    // Debited before the engine, given back: nothing was produced.
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
   });
 
   it('keeps 502 GENERATION_FAILED for any other engine error', async () => {
@@ -362,5 +362,34 @@ describe('POST /api/projects/[projectId]/enhance — engine deadline (étape 3B.
     const res = await POST(makeReq(baseFields()), ctx());
     expect(res.status).toBe(502);
     expect(((await res.json()) as { code: string }).code).toBe('GENERATION_FAILED');
+  });
+});
+
+describe('POST /api/projects/[projectId]/enhance — credits', () => {
+  it('debits one image at the size produced, before the engine: 50 at 1K / 2K, 70 at 4K', async () => {
+    expect((await POST(makeReq(baseFields({ resolution: '2k' })), ctx())).status).toBe(201);
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 50);
+    expect(mockDebitCredits.mock.invocationCallOrder[0]).toBeLessThan(
+      mockGenerate.mock.invocationCallOrder[0]!,
+    );
+    expect((await POST(makeReq(baseFields({ resolution: '4k' })), ctx())).status).toBe(201);
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 70);
+    expect(mockRefundCredits).not.toHaveBeenCalled();
+  });
+
+  it('402s with INSUFFICIENT_CREDITS before any engine call', async () => {
+    mockDebitCredits.mockResolvedValue({ ok: false, reason: 'INSUFFICIENT_CREDITS', balance: 20 });
+    const res = await POST(makeReq(baseFields()), ctx());
+    expect(res.status).toBe(402);
+    expect(await res.json()).toMatchObject({ error: 'INSUFFICIENT_CREDITS', cost: 50 });
+    expect(mockGenerate).not.toHaveBeenCalled();
+    expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
+  });
+
+  it('refunds the credits when the engine fails', async () => {
+    mockGenerate.mockRejectedValueOnce(new Error('engine down'));
+    const res = await POST(makeReq(baseFields({ resolution: '4k' })), ctx());
+    expect(res.status).toBe(502);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
   });
 });

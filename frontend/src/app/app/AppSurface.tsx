@@ -22,16 +22,16 @@ import { PageHeader } from './PageHeader';
 export interface AppSurfaceProps {
   current: RailPage;
   tier: PricingTierId | null;
-  quotaMax: number | null;
-  quotaRemaining: number | null;
+  creditsMax: number | null;
+  creditsBalance: number | null;
   userEmail: string;
 }
 
 export function AppSurface({
   current,
   tier,
-  quotaMax,
-  quotaRemaining,
+  creditsMax,
+  creditsBalance,
   userEmail,
   eyebrow,
   title,
@@ -55,7 +55,7 @@ export function AppSurface({
   children: ReactNode;
 }) {
   return (
-    <AppFrame current={current} topbar={{ title, tier, quotaMax, quotaRemaining, userEmail }}>
+    <AppFrame current={current} topbar={{ title, tier, creditsMax, creditsBalance, userEmail }}>
       {/* min-w-0 so this flex child can shrink below its content's intrinsic
           width instead of pushing the page past the viewport. */}
       <main

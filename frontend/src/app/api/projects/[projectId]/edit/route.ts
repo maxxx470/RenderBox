@@ -31,7 +31,12 @@ import { prisma } from '@/lib/server/prisma';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { assertProjectOwner, ProjectNotFoundError } from '@/lib/server/idor/assert-project-owner';
 import { enforceGenerationRateLimit } from '@/lib/server/middleware/rate-limit-generation';
-import { checkTierQuota, recordTierUsage } from '@/lib/server/generation/tier-quota';
+import {
+  creditRefusalResponse,
+  debitCredits,
+  refundCredits,
+} from '@/lib/server/generation/tier-quota';
+import { renderCost } from '@/lib/pricing-tiers';
 import {
   generateRender,
   isEngineConfigured,
@@ -228,8 +233,8 @@ export async function POST(
     // where the ambiance is re-applied: an Ajouter or a retouch on a render
     // whose ambiance comes back. Commenter and the edits that keep the photo's
     // own light send none, and read none. Every variant starts from this one
-    // source node, so they share this one list. Read before the rate limit,
-    // the quota and the engine; unreadable, the edit stops here rather than
+    // source node, so they share this one list. Read before the credits, the
+    // rate limit and the engine; unreadable, the edit stops here rather than
     // run on a partial list or on the project's old sheet.
     let promptMaterials: ResolvedMaterial[] = [];
     if (editType !== 'annotate' && promptPreset) {
@@ -245,208 +250,218 @@ export async function POST(
       }
     }
 
-    // Each variant is a distinct AI call — charge the full count up front,
-    // before any engine call, and never partially (see
-    // rate-limit-generation.ts's rollback behavior).
-    const limited = await enforceGenerationRateLimit(auth.user.sub, variantCount);
-    if (limited) return limited;
+    // Each variant is a distinct AI call and a distinct image: N variants
+    // cost N times one image at the size asked for, priced by the server and
+    // debited in full, atomically, before any engine call (tier-quota.ts).
+    const unitCost = renderCost(resolution);
+    const cost = unitCost * variantCount;
+    const debit = await debitCredits(prisma, auth.user.sub, cost);
+    if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);
 
-    // Same "charge the full count up front" posture as the rate limit above
-    // — a 4-variant request needs 4 remaining in the monthly quota, not 1.
-    const quota = await checkTierQuota(prisma, auth.user.sub, variantCount);
-    if (!quota.allowed) {
-      // `error` (not `code`) is the field lib/api.ts's ApiError.code reads —
-      // the frontend switches on err.code to tell "no active tier" apart
-      // from "quota exhausted" apart from the hourly rate limit above.
-      return NextResponse.json(
-        { error: quota.reason, message: 'Monthly generation quota check failed' },
-        {
-          status: quota.reason === 'QUOTA_EXCEEDED' ? 402 : 403,
-          headers: { 'x-request-id': ctx.requestId },
-        },
-      );
-    }
+    // Whatever is still owed back when the request ends: everything until
+    // the variants are stored, then the share of those that failed.
+    let owed = cost;
+    try {
+      // Same "charge the full count up front" posture for the hourly cap —
+      // never partially (see rate-limit-generation.ts's rollback behavior; on
+      // a 429 the credits are refunded below).
+      const limited = await enforceGenerationRateLimit(auth.user.sub, variantCount);
+      if (limited) return limited;
 
-    let referenceImages: { buffer: Buffer; mimeType: string }[] | undefined;
-    if (editType === 'add_element') {
-      const checked = await checkImageFile(referenceFile as File, ctx.requestId, 'Reference image');
-      if (!checked.ok) return checked.res;
-      referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];
-    }
-    // Optional: without it the prompt still places each comment by its
-    // coordinates and region name.
-    const markedFile = form.get('markedImage');
-    if (editType === 'annotate' && markedFile instanceof File) {
-      const checked = await checkImageFile(markedFile, ctx.requestId, 'Marked image');
-      if (!checked.ok) return checked.res;
-      referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];
-    }
-
-    // The project's old sheet, kept whole in Generation.materialsSnapshot (its
-    // schema contract); it no longer reaches the prompt.
-    const materials = await prisma.material.findMany({
-      where: { projectId },
-      select: { face: true, valeur: true, source: true, confidence: true },
-    });
-
-    const sourceRes = await fetch(sourceNode.blobUrl);
-    if (!sourceRes.ok) {
-      return NextResponse.json(
-        { code: 'SOURCE_IMAGE_FETCH_FAILED', message: 'Could not read the source image' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
-
-    let assembledPrompt: string;
-    if (editType === 'annotate') {
-      // Neither the image's materials ("keep these materials") nor the preset
-      // (a full relighting) belongs here: a comment typically asks for a
-      // material to CHANGE, and everything else is held by the prompt itself.
-      assembledPrompt = buildAnnotationPrompt({
-        annotations: annotations!,
-        instruction,
-        withMarkedImage: referenceImages !== undefined,
-      });
-    } else {
-      const editInstruction =
-        editType === 'add_element'
-          ? `Add the following element into the scene, using the attached reference image for its appearance: ${instruction}`
-          : `${describeZone(zone!)} Requested change: ${instruction}`;
-      assembledPrompt = promptPreset
-        ? buildGenerationPrompt({
-            materialsSnapshot: toPromptEntries(promptMaterials),
-            preset: promptPreset,
-            customPrompt: editInstruction,
-          })
-        : `${editInstruction}\nKeep everything else in the image exactly as it is: framing, light, materials.`;
-    }
-
-    const settled = await Promise.allSettled(
-      Array.from({ length: variantCount }, () =>
-        generateRender(engine, {
-          sourceImageBuffer,
-          sourceMimeType: sourceNode.mimeType,
-          prompt: assembledPrompt,
-          referenceImages,
-          ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
-          resolution,
-        }),
-      ),
-    );
-
-    const succeeded: GenerateRenderOutput[] = [];
-    for (const r of settled) {
-      if (r.status === 'fulfilled') succeeded.push(r.value);
-      else if (r.reason instanceof EngineNotConfiguredError) {
-        log.warn('edit: engine reported not configured mid-batch', { engine });
+      let referenceImages: { buffer: Buffer; mimeType: string }[] | undefined;
+      if (editType === 'add_element') {
+        const checked = await checkImageFile(
+          referenceFile as File,
+          ctx.requestId,
+          'Reference image',
+        );
+        if (!checked.ok) return checked.res;
+        referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];
       }
-    }
+      // Optional: without it the prompt still places each comment by its
+      // coordinates and region name.
+      const markedFile = form.get('markedImage');
+      if (editType === 'annotate' && markedFile instanceof File) {
+        const checked = await checkImageFile(markedFile, ctx.requestId, 'Marked image');
+        if (!checked.ok) return checked.res;
+        referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];
+      }
 
-    if (succeeded.length === 0) {
-      // A timeout only when every variant ran out of time; any other failure
-      // among them keeps the general answer.
-      if (settled.every((r) => r.status === 'rejected' && r.reason instanceof EngineTimeoutError)) {
+      // The project's old sheet, kept whole in Generation.materialsSnapshot (its
+      // schema contract); it no longer reaches the prompt.
+      const materials = await prisma.material.findMany({
+        where: { projectId },
+        select: { face: true, valeur: true, source: true, confidence: true },
+      });
+
+      const sourceRes = await fetch(sourceNode.blobUrl);
+      if (!sourceRes.ok) {
         return NextResponse.json(
-          { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
-          { status: 504, headers: { 'x-request-id': ctx.requestId } },
+          { code: 'SOURCE_IMAGE_FETCH_FAILED', message: 'Could not read the source image' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
         );
       }
-      return NextResponse.json(
-        { code: 'GENERATION_FAILED', message: 'All variant generations failed' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
+      const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
-    const createdNodeIds: string[] = [];
-    for (const result of succeeded) {
-      let uploaded;
-      try {
-        const pathname = `renderbox/${auth.user.sub}/${projectId}/${randomUUID()}`;
-        uploaded = await uploadBuffer(pathname, result.imageBuffer, result.mimeType);
-      } catch (e) {
-        log.warn('edit: a variant failed to upload (skipped)', { err: String(e) });
-        continue;
+      let assembledPrompt: string;
+      if (editType === 'annotate') {
+        // Neither the image's materials ("keep these materials") nor the preset
+        // (a full relighting) belongs here: a comment typically asks for a
+        // material to CHANGE, and everything else is held by the prompt itself.
+        assembledPrompt = buildAnnotationPrompt({
+          annotations: annotations!,
+          instruction,
+          withMarkedImage: referenceImages !== undefined,
+        });
+      } else {
+        const editInstruction =
+          editType === 'add_element'
+            ? `Add the following element into the scene, using the attached reference image for its appearance: ${instruction}`
+            : `${describeZone(zone!)} Requested change: ${instruction}`;
+        assembledPrompt = promptPreset
+          ? buildGenerationPrompt({
+              materialsSnapshot: toPromptEntries(promptMaterials),
+              preset: promptPreset,
+              customPrompt: editInstruction,
+            })
+          : `${editInstruction}\nKeep everything else in the image exactly as it is: framing, light, materials.`;
       }
 
-      const newNodeId = await prisma.$transaction(async (tx) => {
-        const newNode = await tx.renderNode.create({
-          data: {
-            projectId,
-            parentId: sourceNodeId,
-            kind: 'GENERATED',
-            blobUrl: uploaded.blobUrl,
-            mimeType: result.mimeType,
-            sizeBytes: uploaded.bytes,
-            preset,
-            engine,
-            editType,
-            ...(editType === 'targeted_retouch' ? { editZone: zone! } : {}),
-            ...(editType === 'annotate' ? { editZone: { annotations: annotations! } } : {}),
-          },
-          select: { id: true },
-        });
-        await tx.generation.create({
-          data: {
-            nodeId: newNode.id,
-            engine,
-            preset,
+      const settled = await Promise.allSettled(
+        Array.from({ length: variantCount }, () =>
+          generateRender(engine, {
+            sourceImageBuffer,
+            sourceMimeType: sourceNode.mimeType,
             prompt: assembledPrompt,
-            materialsSnapshot: materials,
-            // Exactly the materials this variant's prompt lists; [] when none.
-            promptMaterials,
-          },
-        });
-        return newNode.id;
-      });
-      createdNodeIds.push(newNodeId);
-    }
-
-    if (createdNodeIds.length === 0) {
-      return NextResponse.json(
-        { code: 'UPLOAD_FAILED', message: 'Storage write failed for every generated variant' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
+            referenceImages,
+            ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
+            resolution,
+          }),
+        ),
       );
-    }
 
-    // Each ACTUALLY produced + stored variant decrements the monthly quota
-    // by 1 — a requested variant that failed the engine call or the upload
-    // is never charged.
-    await recordTierUsage(prisma, auth.user.sub, createdNodeIds.length);
-
-    // A comment usually changes a material ("façade en bois"), so the
-    // project's material memory is re-read from the result, as after a
-    // generation. Never fails the edit — the renders are already stored.
-    let materialsDetected = false;
-    const firstResult = succeeded[0];
-    if (editType === 'annotate' && firstResult) {
-      try {
-        await detectAndMergeMaterials(projectId, firstResult.imageBuffer, firstResult.mimeType);
-        materialsDetected = true;
-      } catch (e) {
-        log.warn('edit: material detection after annotate failed (non-fatal)', {
-          err: String(e),
-        });
+      const succeeded: GenerateRenderOutput[] = [];
+      for (const r of settled) {
+        if (r.status === 'fulfilled') succeeded.push(r.value);
+        else if (r.reason instanceof EngineNotConfiguredError) {
+          log.warn('edit: engine reported not configured mid-batch', { engine });
+        }
       }
+
+      if (succeeded.length === 0) {
+        // A timeout only when every variant ran out of time; any other failure
+        // among them keeps the general answer.
+        if (
+          settled.every((r) => r.status === 'rejected' && r.reason instanceof EngineTimeoutError)
+        ) {
+          return NextResponse.json(
+            { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
+            { status: 504, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+        return NextResponse.json(
+          { code: 'GENERATION_FAILED', message: 'All variant generations failed' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+
+      const createdNodeIds: string[] = [];
+      for (const result of succeeded) {
+        let uploaded;
+        try {
+          const pathname = `renderbox/${auth.user.sub}/${projectId}/${randomUUID()}`;
+          uploaded = await uploadBuffer(pathname, result.imageBuffer, result.mimeType);
+        } catch (e) {
+          log.warn('edit: a variant failed to upload (skipped)', { err: String(e) });
+          continue;
+        }
+
+        const newNodeId = await prisma.$transaction(async (tx) => {
+          const newNode = await tx.renderNode.create({
+            data: {
+              projectId,
+              parentId: sourceNodeId,
+              kind: 'GENERATED',
+              blobUrl: uploaded.blobUrl,
+              mimeType: result.mimeType,
+              sizeBytes: uploaded.bytes,
+              preset,
+              engine,
+              editType,
+              ...(editType === 'targeted_retouch' ? { editZone: zone! } : {}),
+              ...(editType === 'annotate' ? { editZone: { annotations: annotations! } } : {}),
+            },
+            select: { id: true },
+          });
+          await tx.generation.create({
+            data: {
+              nodeId: newNode.id,
+              engine,
+              preset,
+              prompt: assembledPrompt,
+              materialsSnapshot: materials,
+              // Exactly the materials this variant's prompt lists; [] when none.
+              promptMaterials,
+            },
+          });
+          return newNode.id;
+        });
+        createdNodeIds.push(newNodeId);
+      }
+
+      if (createdNodeIds.length === 0) {
+        return NextResponse.json(
+          { code: 'UPLOAD_FAILED', message: 'Storage write failed for every generated variant' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+
+      // Only the variants ACTUALLY produced + stored are charged — one that
+      // failed the engine call or the upload is refunded.
+      owed = unitCost * (variantCount - createdNodeIds.length);
+
+      // A comment usually changes a material ("façade en bois"), so the
+      // project's material memory is re-read from the result, as after a
+      // generation. Never fails the edit — the renders are already stored.
+      let materialsDetected = false;
+      const firstResult = succeeded[0];
+      if (editType === 'annotate' && firstResult) {
+        try {
+          await detectAndMergeMaterials(projectId, firstResult.imageBuffer, firstResult.mimeType);
+          materialsDetected = true;
+        } catch (e) {
+          log.warn('edit: material detection after annotate failed (non-fatal)', {
+            err: String(e),
+          });
+        }
+      }
+
+      const nodes = await prisma.renderNode.findMany({
+        where: { projectId },
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          parentId: true,
+          kind: true,
+          createdAt: true,
+          preset: true,
+          engine: true,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          tree: buildRenderTree(nodes),
+          nodeIds: createdNodeIds,
+          requestedCount: variantCount,
+          createdCount: createdNodeIds.length,
+          materialsDetected,
+          creditsBalance: debit.balance + owed,
+        },
+        { status: 201, headers: { 'x-request-id': ctx.requestId } },
+      );
+    } finally {
+      if (owed > 0) await refundCredits(prisma, auth.user.sub, owed);
     }
-
-    const nodes = await prisma.renderNode.findMany({
-      where: { projectId },
-      orderBy: { createdAt: 'asc' },
-      select: { id: true, parentId: true, kind: true, createdAt: true, preset: true, engine: true },
-    });
-
-    return NextResponse.json(
-      {
-        tree: buildRenderTree(nodes),
-        nodeIds: createdNodeIds,
-        requestedCount: variantCount,
-        createdCount: createdNodeIds.length,
-        materialsDetected,
-        quotaRemaining:
-          quota.remaining !== null ? Math.max(0, quota.remaining - createdNodeIds.length) : null,
-      },
-      { status: 201, headers: { 'x-request-id': ctx.requestId } },
-    );
   });
 }

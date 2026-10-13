@@ -19,6 +19,7 @@ import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import {
+  creditErrorKey,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -267,10 +268,9 @@ export function GenerationHome({
   }
 
   function errorToast(err: unknown, fallback: TranslationKey) {
-    if (err instanceof RequestError && err.code === 'NO_ACTIVE_TIER') {
-      toast(t('app.noActiveTierError'), 'error');
-    } else if (err instanceof RequestError && err.code === 'QUOTA_EXCEEDED') {
-      toast(t('app.quotaExceededError'), 'error');
+    const creditKey = creditErrorKey(err);
+    if (creditKey) {
+      toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
     } else if (isServiceNotConfigured(err)) {
       toast(t('app.serviceNotConfigured'), 'error');
     } else if (isMaterialsUnavailable(err)) {
@@ -422,8 +422,8 @@ export function GenerationHome({
       topbar={{
         title: t('app.genHomeTitle'),
         tier,
-        quotaMax: max,
-        quotaRemaining: remaining,
+        creditsMax: max,
+        creditsBalance: remaining,
         userEmail,
       }}
       onModeChange={handleModeChange}

@@ -26,13 +26,14 @@ vi.mock('@/lib/server/middleware/rate-limit-generation', () => ({
   enforceGenerationRateLimit: mockEnforceGenerationRateLimit,
 }));
 
-const { mockCheckTierQuota, mockRecordTierUsage } = vi.hoisted(() => ({
-  mockCheckTierQuota: vi.fn(),
-  mockRecordTierUsage: vi.fn(),
+const { mockDebitCredits, mockRefundCredits } = vi.hoisted(() => ({
+  mockDebitCredits: vi.fn(),
+  mockRefundCredits: vi.fn(),
 }));
-vi.mock('@/lib/server/generation/tier-quota', () => ({
-  checkTierQuota: mockCheckTierQuota,
-  recordTierUsage: mockRecordTierUsage,
+vi.mock('@/lib/server/generation/tier-quota', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/server/generation/tier-quota')>()),
+  debitCredits: mockDebitCredits,
+  refundCredits: mockRefundCredits,
 }));
 
 const { mockGenerate, mockIsEngineConfigured, mockDetectAndMerge } = vi.hoisted(() => ({
@@ -143,10 +144,8 @@ beforeEach(() => {
   mockGenerate.mockReset();
   mockIsEngineConfigured.mockReset().mockReturnValue(true);
   mockEnforceGenerationRateLimit.mockReset().mockResolvedValue(null);
-  mockCheckTierQuota
-    .mockReset()
-    .mockResolvedValue({ allowed: true, tier: 'standard', max: 100, remaining: 99 });
-  mockRecordTierUsage.mockReset().mockResolvedValue(undefined);
+  mockDebitCredits.mockReset().mockResolvedValue({ ok: true, balance: 2950 });
+  mockRefundCredits.mockReset().mockResolvedValue(undefined);
   mockDetectAndMerge.mockReset().mockResolvedValue(undefined);
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
 
@@ -309,15 +308,9 @@ describe('POST /api/projects/[projectId]/generate — engines (Phase 4)', () => 
   });
 });
 
-describe('POST /api/projects/[projectId]/generate — monthly tier quota', () => {
-  it('403s with NO_ACTIVE_TIER before any engine call, distinct from the daily rate limit', async () => {
-    mockCheckTierQuota.mockResolvedValue({
-      allowed: false,
-      reason: 'NO_ACTIVE_TIER',
-      tier: null,
-      max: null,
-      remaining: null,
-    });
+describe('POST /api/projects/[projectId]/generate — credits', () => {
+  it('403s with NO_ACTIVE_TIER before any engine call, distinct from the hourly rate limit', async () => {
+    mockDebitCredits.mockResolvedValue({ ok: false, reason: 'NO_ACTIVE_TIER', balance: null });
 
     const res = await POST(makeReq(validBody()), ctx());
     expect(res.status).toBe(403);
@@ -325,40 +318,59 @@ describe('POST /api/projects/[projectId]/generate — monthly tier quota', () =>
     expect(body.error).toBe('NO_ACTIVE_TIER');
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
-    // Since étape 3C.3-R2 a refused quota takes no daily unit.
+    // A refused debit takes no hourly unit, and there is nothing to refund.
     expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
+    expect(mockRefundCredits).not.toHaveBeenCalled();
   });
 
-  it('402s with QUOTA_EXCEEDED when the monthly quota is exhausted', async () => {
-    mockCheckTierQuota.mockResolvedValue({
-      allowed: false,
-      reason: 'QUOTA_EXCEEDED',
-      tier: 'decouverte',
-      max: 30,
-      remaining: 0,
-    });
+  it('402s with INSUFFICIENT_CREDITS when the balance does not cover the render (server-side, with the cost)', async () => {
+    mockDebitCredits.mockResolvedValue({ ok: false, reason: 'INSUFFICIENT_CREDITS', balance: 30 });
 
     const res = await POST(makeReq(validBody()), ctx());
     expect(res.status).toBe(402);
-    const body = (await res.json()) as { error: string };
-    expect(body.error).toBe('QUOTA_EXCEEDED');
+    expect(await res.json()).toMatchObject({
+      error: 'INSUFFICIENT_CREDITS',
+      cost: 50,
+      balance: 30,
+    });
     expect(mockGenerate).not.toHaveBeenCalled();
+    expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
   });
 
-  it('records tier usage only after a successful generation, never before', async () => {
-    const res = await POST(makeReq(validBody()), ctx());
+  it('debits 50 credits for a 1K / 2K render BEFORE the engine call, and keeps them once it is stored', async () => {
+    const res = await POST(makeReq(validBody({ resolution: '2k' })), ctx());
     expect(res.status).toBe(201);
-    expect(mockRecordTierUsage).toHaveBeenCalledWith(prismaMock, USER_ID);
-    expect(mockRecordTierUsage.mock.invocationCallOrder[0]).toBeGreaterThan(
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
+    expect(mockDebitCredits.mock.invocationCallOrder[0]).toBeLessThan(
       mockGenerate.mock.invocationCallOrder[0]!,
     );
+    expect(mockRefundCredits).not.toHaveBeenCalled();
+    expect(((await res.json()) as { creditsBalance: number }).creditsBalance).toBe(2950);
   });
 
-  it('never records tier usage when the engine call fails', async () => {
+  it('debits 70 credits for a 4K render', async () => {
+    const res = await POST(makeReq(validBody({ resolution: '4k' })), ctx());
+    expect(res.status).toBe(201);
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
+  });
+
+  it('prices the request itself: a cost sent by the client is ignored', async () => {
+    const res = await POST(makeReq({ ...validBody({ resolution: '4k' }), cost: 1 }), ctx());
+    expect(res.status).toBe(201);
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
+  });
+
+  it('refunds the credits when the engine call fails', async () => {
     mockGenerate.mockRejectedValueOnce(new Error('engine down'));
     const res = await POST(makeReq(validBody()), ctx());
     expect(res.status).toBe(502);
-    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
+  });
+
+  it('refunds the credits when the render cannot be stored', async () => {
+    prismaMock.$transaction.mockRejectedValueOnce(new Error('db down'));
+    await expect(POST(makeReq(validBody({ resolution: '4k' })), ctx())).rejects.toThrow('db down');
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
   });
 });
 
@@ -759,7 +771,7 @@ describe('POST /api/projects/[projectId]/generate — materials of the source im
         expect(prismaMock.material.findMany).not.toHaveBeenCalled();
         expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
         expect(prismaMock.generation.create).not.toHaveBeenCalled();
-        expect(mockRecordTierUsage).not.toHaveBeenCalled();
+        expect(mockDebitCredits).not.toHaveBeenCalled();
         expect(mockDetectAndMerge).not.toHaveBeenCalled();
       },
     );
@@ -773,14 +785,14 @@ describe('POST /api/projects/[projectId]/generate — materials of the source im
       expect(body.error).not.toBe('GENERATION_TIMEOUT');
     });
 
-    it('takes no daily unit and charges no monthly quota: the quota was only checked', async () => {
+    it('takes no hourly unit and debits no credits', async () => {
       prismaMock.materialCorrection.findMany.mockRejectedValue(dbDown());
       await POST(makeReq(validBody()), ctx());
-      // Étape 3C.3-R2: the daily limit comes after every precondition, the
-      // materials included — a request that cannot start never reaches it.
+      // Étape 3C.3-R2: the limit and the credits come after every
+      // precondition, the materials included.
       expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
-      expect(mockCheckTierQuota).toHaveBeenCalledTimes(1);
-      expect(mockRecordTierUsage).not.toHaveBeenCalled();
+      expect(mockDebitCredits).not.toHaveBeenCalled();
+      expect(mockRefundCredits).not.toHaveBeenCalled();
     });
   });
 });
@@ -847,30 +859,22 @@ describe('POST /api/projects/[projectId]/generate — daily limit after the prec
     [
       'no active tier',
       () =>
-        mockCheckTierQuota.mockResolvedValue({
-          allowed: false,
-          reason: 'NO_ACTIVE_TIER',
-          tier: null,
-          max: null,
-          remaining: null,
-        }),
+        mockDebitCredits.mockResolvedValue({ ok: false, reason: 'NO_ACTIVE_TIER', balance: null }),
       {},
       403,
-      { error: 'NO_ACTIVE_TIER', message: 'Monthly generation quota check failed' },
+      { error: 'NO_ACTIVE_TIER', message: 'No active plan' },
     ],
     [
-      'an exhausted monthly quota',
+      'not enough credits',
       () =>
-        mockCheckTierQuota.mockResolvedValue({
-          allowed: false,
-          reason: 'QUOTA_EXCEEDED',
-          tier: 'decouverte',
-          max: 30,
-          remaining: 0,
+        mockDebitCredits.mockResolvedValue({
+          ok: false,
+          reason: 'INSUFFICIENT_CREDITS',
+          balance: 0,
         }),
       {},
       402,
-      { error: 'QUOTA_EXCEEDED', message: 'Monthly generation quota check failed' },
+      { error: 'INSUFFICIENT_CREDITS', message: 'Not enough credits for this request' },
     ],
   ];
 
@@ -884,7 +888,7 @@ describe('POST /api/projects/[projectId]/generate — daily limit after the prec
       expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
       expect(mockGenerate).not.toHaveBeenCalled();
       expect(global.fetch).not.toHaveBeenCalled();
-      expect(mockRecordTierUsage).not.toHaveBeenCalled();
+      expect(mockRefundCredits).not.toHaveBeenCalled();
     },
   );
 
@@ -915,7 +919,7 @@ describe('POST /api/projects/[projectId]/generate — daily limit after the prec
       body: JSON.stringify(validBody()),
     });
     expect((await POST(noCsrf, ctx())).status).toBe(403);
-    expect(mockCheckTierQuota).not.toHaveBeenCalled();
+    expect(mockDebitCredits).not.toHaveBeenCalled();
     expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
   });
 
@@ -927,13 +931,11 @@ describe('POST /api/projects/[projectId]/generate — daily limit after the prec
     const limit = mockEnforceGenerationRateLimit.mock.invocationCallOrder[0]!;
     expect(prismaMock.materialCorrection.findMany.mock.invocationCallOrder[0]!).toBeLessThan(limit);
     expect(prismaMock.materialDetection.findMany.mock.invocationCallOrder[0]!).toBeLessThan(limit);
-    expect(mockCheckTierQuota.mock.invocationCallOrder[0]!).toBeLessThan(limit);
+    expect(mockDebitCredits.mock.invocationCallOrder[0]!).toBeLessThan(limit);
     expect(mockIsEngineConfigured.mock.invocationCallOrder[0]!).toBeLessThan(limit);
     expect(vi.mocked(global.fetch).mock.invocationCallOrder[0]!).toBeGreaterThan(limit);
     expect(mockGenerate.mock.invocationCallOrder[0]!).toBeGreaterThan(limit);
-    expect(mockRecordTierUsage.mock.invocationCallOrder[0]!).toBeGreaterThan(
-      mockGenerate.mock.invocationCallOrder[0]!,
-    );
+    expect(mockRefundCredits).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -949,13 +951,13 @@ describe('POST /api/projects/[projectId]/generate — daily limit after the prec
       502,
     ],
   ])(
-    'past the daily limit, %s keeps the unit: one call, nothing given back',
+    'past the hourly limit, %s keeps the unit (one call) but refunds the credits',
     async (_label, arrange, status) => {
       arrange();
       const res = await POST(makeReq(validBody()), ctx());
       expect(res.status).toBe(status);
       expect(mockEnforceGenerationRateLimit).toHaveBeenCalledTimes(1);
-      expect(mockRecordTierUsage).not.toHaveBeenCalled();
+      expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
     },
   );
 
@@ -972,7 +974,8 @@ describe('POST /api/projects/[projectId]/generate — daily limit after the prec
     expect(global.fetch).not.toHaveBeenCalled();
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
-    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    // The credits were debited just before the limiter: they come back.
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
   });
 
   it('two valid requests at once: each calls the limiter once, for its own user unit (mocked, not real Redis)', async () => {
@@ -1008,7 +1011,7 @@ describe('POST /api/projects/[projectId]/generate — engine deadline (étape 3B
     });
     expect(res.headers.get('x-request-id')).toBeTruthy();
     expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
-    expect(mockRecordTierUsage).not.toHaveBeenCalled();
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
     expect(mockDetectAndMerge).not.toHaveBeenCalled();
   });
 
@@ -1034,6 +1037,6 @@ describe('POST /api/projects/[projectId]/generate — engine deadline (étape 3B
     const res = await POST(makeReq(validBody()), ctx());
     expect(res.status).toBe(201);
     expect(((await res.json()) as { materialsDetected: boolean }).materialsDetected).toBe(false);
-    expect(mockRecordTierUsage).toHaveBeenCalledTimes(1);
+    expect(mockRefundCredits).not.toHaveBeenCalled();
   });
 });

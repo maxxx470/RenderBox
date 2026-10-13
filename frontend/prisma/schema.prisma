@@ -42,14 +42,14 @@ model User {
   // mapping) — distinct from GENERATION_RATE_LIMIT_MAX_PER_DAY's anti-abuse
   // hourly/daily cap; both gates must pass, neither replaces the other (see
   // lib/server/generation/tier-quota.ts). NULL = no active tier (never paid,
-  // or the period lapsed without renewal — checkTierQuota() resets it here
+  // or the period lapsed without renewal — getCreditStatus() resets it here
   // lazily rather than via a cron, so this can go stale for up to 30 days
   // for a user who never generates again, which is harmless: it just means
   // the next attempt re-derives NULL instead of reading it pre-computed).
   currentTier             String?
   // Start of the current paid period. A renewal of the SAME tier before
   // expiry moves this to now() (extends, not stacks) rather than carrying
-  // over unused generations — see tier-quota.ts's activateTier().
+  // over unused credits — see tier-quota.ts's activateTier().
   tierPeriodStart         DateTime?
   generationsUsedInPeriod Int       @default(0)
   createdAt               DateTime  @default(now())

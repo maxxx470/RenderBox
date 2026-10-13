@@ -49,6 +49,7 @@ import { CARD_TRANSFORM, ExampleFanCard } from '../fan';
 import { ENHANCE_EXAMPLES } from '../generer-examples';
 import { MOBILE_NAV_PAD } from '../MobileNav';
 import {
+  creditErrorKey,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -219,7 +220,7 @@ export function EnhanceClient({
   const [instruction, setInstruction] = useState('');
   const [ratio, setRatio] = useState<RatioKey>('auto');
   const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
-  const [remaining, setRemaining] = useState(surface.quotaRemaining);
+  const [remaining, setRemaining] = useState(surface.creditsBalance);
   const [panelOpen, setPanelOpen] = useState(false);
   const refInputRef = useRef<HTMLInputElement>(null);
   // Which improvement the reference picker was opened for.
@@ -337,13 +338,14 @@ export function EnhanceClient({
         headers: csrf ? { 'x-csrf-token': csrf } : {},
       });
       if (!res.ok) throw new RequestError(await readErrorCode(res));
-      const data = (await res.json()) as { nodeId: string; quotaRemaining: number | null };
+      const data = (await res.json()) as { nodeId: string; creditsBalance: number | null };
       setResultId(data.nodeId);
-      setRemaining(data.quotaRemaining);
+      setRemaining(data.creditsBalance);
     } catch (err) {
       const code = err instanceof RequestError ? err.code : '';
-      if (code === 'NO_ACTIVE_TIER') toast(t('app.noActiveTierError'), 'error');
-      else if (code === 'QUOTA_EXCEEDED') toast(t('app.quotaExceededError'), 'error');
+      const creditKey = creditErrorKey(err);
+      if (creditKey)
+        toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       else if (code === 'CONTENT_FLAGGED') toast(t('enhance.refFlagged'), 'error');
       else if (isServiceNotConfigured(err)) toast(t('app.serviceNotConfigured'), 'error');
       else if (isGenerationTimeout(err)) toast(t('app.generationTimeout'), 'error');
@@ -372,8 +374,8 @@ export function EnhanceClient({
       topbar={{
         title: t('enhance.title'),
         tier: surface.tier,
-        quotaMax: surface.quotaMax,
-        quotaRemaining: remaining,
+        creditsMax: surface.creditsMax,
+        creditsBalance: remaining,
         userEmail: surface.userEmail,
       }}
     >
@@ -630,8 +632,8 @@ export function EnhanceClient({
 
             <p className="mt-auto pt-3 text-center text-[11.5px] text-[#6B6878]">
               {t('enhance.costNote')}
-              {remaining !== null && surface.quotaMax !== null
-                ? ` · ${remaining}/${surface.quotaMax}`
+              {remaining !== null && surface.creditsMax !== null
+                ? ` · ${remaining}/${surface.creditsMax}`
                 : ''}
             </p>
           </aside>

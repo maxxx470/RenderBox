@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { api, ApiError } from '@/lib/api';
+import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,6 +37,7 @@ import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
 import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
 import {
+  creditErrorKey,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -55,7 +56,7 @@ interface GenerateResponse {
   tree: RenderTreeNode[];
   nodeId: string;
   materialsDetected: boolean;
-  quotaRemaining: number | null;
+  creditsBalance: number | null;
 }
 
 // The generate route may run up to its 300 s maxDuration; the browser waits a
@@ -69,7 +70,7 @@ interface EditResponse {
   requestedCount: number;
   createdCount: number;
   materialsDetected?: boolean;
-  quotaRemaining: number | null;
+  creditsBalance: number | null;
 }
 
 // "retouch" in the UI is the point-and-comment mode since 2026-10-06 (it used
@@ -176,7 +177,7 @@ export function AppShell({
   const compareDragging = useRef(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   // Updated in place after each successful generate/edit (via the route's
-  // quotaRemaining field) so the display never needs a full page reload.
+  // creditsBalance field) so the display never needs a full page reload.
   const [tier] = useState(initialTier);
   const [max] = useState(initialMax);
   const [remaining, setRemaining] = useState(initialRemaining);
@@ -353,13 +354,12 @@ export function AppShell({
       setSelectedId(res.nodeId);
       setPrompt('');
       setTemplate(null);
-      setRemaining(res.quotaRemaining);
+      setRemaining(res.creditsBalance);
       if (res.materialsDetected) void refreshMaterials(projectId);
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'NO_ACTIVE_TIER') {
-        toast(t('app.noActiveTierError'), 'error');
-      } else if (err instanceof ApiError && err.code === 'QUOTA_EXCEEDED') {
-        toast(t('app.quotaExceededError'), 'error');
+      const creditKey = creditErrorKey(err);
+      if (creditKey) {
+        toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       } else if (isServiceNotConfigured(err)) {
         toast(t('app.serviceNotConfigured'), 'error');
       } else if (isMaterialsUnavailable(err)) {
@@ -431,14 +431,13 @@ export function AppShell({
       setPrompt('');
       setPins([]);
       setReferenceFile(null);
-      setRemaining(data.quotaRemaining);
+      setRemaining(data.creditsBalance);
       // A comment usually changed a material — the server re-read them.
       if (data.materialsDetected) void refreshMaterials(projectId);
     } catch (err) {
-      if (err instanceof RequestError && err.code === 'NO_ACTIVE_TIER') {
-        toast(t('app.noActiveTierError'), 'error');
-      } else if (err instanceof RequestError && err.code === 'QUOTA_EXCEEDED') {
-        toast(t('app.quotaExceededError'), 'error');
+      const creditKey = creditErrorKey(err);
+      if (creditKey) {
+        toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       } else if (isServiceNotConfigured(err)) {
         toast(t('app.serviceNotConfigured'), 'error');
       } else if (isMaterialsUnavailable(err)) {
@@ -603,8 +602,8 @@ export function AppShell({
       topbar={{
         title: projectName,
         tier,
-        quotaMax: max,
-        quotaRemaining: remaining,
+        creditsMax: max,
+        creditsBalance: remaining,
         userEmail: user?.email ?? '',
       }}
       onModeChange={handleModeChange}

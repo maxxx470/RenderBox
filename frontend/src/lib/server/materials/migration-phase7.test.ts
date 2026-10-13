@@ -36,9 +36,10 @@ const statements = sql
 const NEW_TABLES = ['MaterialDetectionRun', 'MaterialDetection', 'MaterialCorrection'];
 
 describe(`migration ${NAME}`, () => {
-  it('sorts after every existing migration folder', () => {
+  it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
-    expect(sorted[sorted.length - 1]).toBe(NAME);
+    // Only 9_phase8_credits (2026-10-13) may come after it.
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase8_credits']);
     // ...and in particular after the folders that create what it references.
     for (const dep of ['5_phase1_renderbox_core', '6_phase2_materials_memory']) {
       expect(sorted.indexOf(dep)).toBeGreaterThanOrEqual(0);

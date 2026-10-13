@@ -1,8 +1,8 @@
 // POST /api/projects/[projectId]/enhance — improves an existing image (the
 // /app/enhance page) without redesigning it: sharper, better lit, more
 // believable materials. Same guard rail as generate/route.ts (CSRF, owner
-// check, hourly rate limit, monthly quota charged only once a render is
-// stored); what differs is the prompt — see generation/enhance.ts — and that
+// check, credits debited before the engine and refunded if no render is
+// stored, hourly rate limit); what differs is the prompt — see generation/enhance.ts — and that
 // no ambiance preset applies, so the node carries `editType: 'enhance'` and a
 // null preset.
 //
@@ -31,7 +31,12 @@ import { prisma } from '@/lib/server/prisma';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { assertProjectOwner, ProjectNotFoundError } from '@/lib/server/idor/assert-project-owner';
 import { enforceGenerationRateLimit } from '@/lib/server/middleware/rate-limit-generation';
-import { checkTierQuota, recordTierUsage } from '@/lib/server/generation/tier-quota';
+import {
+  creditRefusalResponse,
+  debitCredits,
+  refundCredits,
+} from '@/lib/server/generation/tier-quota';
+import { renderCost } from '@/lib/pricing-tiers';
 import {
   generateRender,
   isEngineConfigured,
@@ -135,151 +140,153 @@ export async function POST(
       refFiles.push({ key, file });
     }
 
-    const limited = await enforceGenerationRateLimit(auth.user.sub);
-    if (limited) return limited;
+    // One image at the size asked for, priced by the server, debited
+    // atomically before the engine call — see generate/route.ts.
+    const cost = renderCost(resolution);
+    const debit = await debitCredits(prisma, auth.user.sub, cost);
+    if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);
 
-    const quota = await checkTierQuota(prisma, auth.user.sub);
-    if (!quota.allowed) {
-      // `error`, not `code` — see generate/route.ts.
-      return NextResponse.json(
-        { error: quota.reason, message: 'Monthly generation quota check failed' },
-        {
-          status: quota.reason === 'QUOTA_EXCEEDED' ? 402 : 403,
-          headers: { 'x-request-id': ctx.requestId },
-        },
-      );
-    }
-
-    const sourceNode = await prisma.renderNode.findUnique({
-      where: { id: sourceNodeId },
-      select: { id: true, projectId: true, blobUrl: true, mimeType: true },
-    });
-    if (!sourceNode || sourceNode.projectId !== projectId) {
-      return NextResponse.json(
-        { error: 'SOURCE_NODE_NOT_FOUND', message: 'Source render node not found in this project' },
-        { status: 404, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-
-    if (!isEngineConfigured(engine)) {
-      return NextResponse.json(
-        { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
-        { status: 503, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return NextResponse.json(
-        { code: 'STORAGE_NOT_CONFIGURED', message: 'Storage not configured' },
-        { status: 503, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-
-    const sourceRes = await fetch(sourceNode.blobUrl);
-    if (!sourceRes.ok) {
-      return NextResponse.json(
-        { code: 'SOURCE_IMAGE_FETCH_FAILED', message: 'Could not read the source image' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-    const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
-
-    const referenceImages: ReferenceImage[] = [];
-    for (const { key, file } of refFiles) {
-      const checked = await checkImageFile(file, ctx.requestId, `Reference image (${key})`);
-      if (!checked.ok) return checked.res;
-      referenceImages.push({ buffer: checked.buffer, mimeType: checked.mimeType });
-    }
-
-    const prompt = buildEnhancePrompt({
-      options,
-      strength,
-      instruction,
-      references: refFiles.map((r) => r.key),
-    });
-
-    let result;
+    let owed = cost;
     try {
-      // 'auto' keeps the framing — one of the things enhance preserves; any
-      // other ratio is the user's explicit choice in the bar.
-      result = await generateRender(engine, {
-        sourceImageBuffer,
-        sourceMimeType: sourceNode.mimeType,
-        prompt,
-        ...(referenceImages.length > 0 ? { referenceImages } : {}),
-        ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
-        resolution,
+      const limited = await enforceGenerationRateLimit(auth.user.sub);
+      if (limited) return limited;
+
+      const sourceNode = await prisma.renderNode.findUnique({
+        where: { id: sourceNodeId },
+        select: { id: true, projectId: true, blobUrl: true, mimeType: true },
       });
-    } catch (e) {
-      if (e instanceof EngineNotConfiguredError) {
+      if (!sourceNode || sourceNode.projectId !== projectId) {
+        return NextResponse.json(
+          {
+            error: 'SOURCE_NODE_NOT_FOUND',
+            message: 'Source render node not found in this project',
+          },
+          { status: 404, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+
+      if (!isEngineConfigured(engine)) {
         return NextResponse.json(
           { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
           { status: 503, headers: { 'x-request-id': ctx.requestId } },
         );
       }
-      if (e instanceof EngineTimeoutError) {
-        return NextResponse.json(
-          { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
-          { status: 504, headers: { 'x-request-id': ctx.requestId } },
-        );
-      }
-      return NextResponse.json(
-        { code: 'GENERATION_FAILED', message: 'Generation failed' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
 
-    let uploaded;
-    try {
-      const pathname = `renderbox/${auth.user.sub}/${projectId}/${randomUUID()}`;
-      uploaded = await uploadBuffer(pathname, result.imageBuffer, result.mimeType);
-    } catch (e) {
-      if (e instanceof StorageNotConfiguredError) {
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
         return NextResponse.json(
           { code: 'STORAGE_NOT_CONFIGURED', message: 'Storage not configured' },
           { status: 503, headers: { 'x-request-id': ctx.requestId } },
         );
       }
+
+      const sourceRes = await fetch(sourceNode.blobUrl);
+      if (!sourceRes.ok) {
+        return NextResponse.json(
+          { code: 'SOURCE_IMAGE_FETCH_FAILED', message: 'Could not read the source image' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+      const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
+
+      const referenceImages: ReferenceImage[] = [];
+      for (const { key, file } of refFiles) {
+        const checked = await checkImageFile(file, ctx.requestId, `Reference image (${key})`);
+        if (!checked.ok) return checked.res;
+        referenceImages.push({ buffer: checked.buffer, mimeType: checked.mimeType });
+      }
+
+      const prompt = buildEnhancePrompt({
+        options,
+        strength,
+        instruction,
+        references: refFiles.map((r) => r.key),
+      });
+
+      let result;
+      try {
+        // 'auto' keeps the framing — one of the things enhance preserves; any
+        // other ratio is the user's explicit choice in the bar.
+        result = await generateRender(engine, {
+          sourceImageBuffer,
+          sourceMimeType: sourceNode.mimeType,
+          prompt,
+          ...(referenceImages.length > 0 ? { referenceImages } : {}),
+          ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
+          resolution,
+        });
+      } catch (e) {
+        if (e instanceof EngineNotConfiguredError) {
+          return NextResponse.json(
+            { code: 'AI_ENGINE_NOT_CONFIGURED', message: 'AI generation is not configured' },
+            { status: 503, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+        if (e instanceof EngineTimeoutError) {
+          return NextResponse.json(
+            { code: 'GENERATION_TIMEOUT', message: 'Generation timed out' },
+            { status: 504, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+        return NextResponse.json(
+          { code: 'GENERATION_FAILED', message: 'Generation failed' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+
+      let uploaded;
+      try {
+        const pathname = `renderbox/${auth.user.sub}/${projectId}/${randomUUID()}`;
+        uploaded = await uploadBuffer(pathname, result.imageBuffer, result.mimeType);
+      } catch (e) {
+        if (e instanceof StorageNotConfiguredError) {
+          return NextResponse.json(
+            { code: 'STORAGE_NOT_CONFIGURED', message: 'Storage not configured' },
+            { status: 503, headers: { 'x-request-id': ctx.requestId } },
+          );
+        }
+        return NextResponse.json(
+          { code: 'UPLOAD_FAILED', message: 'Storage write failed' },
+          { status: 502, headers: { 'x-request-id': ctx.requestId } },
+        );
+      }
+
+      const materials = await prisma.material.findMany({
+        where: { projectId },
+        select: { face: true, valeur: true, source: true, confidence: true },
+      });
+
+      const nodeId = await prisma.$transaction(async (tx) => {
+        const node = await tx.renderNode.create({
+          data: {
+            projectId,
+            parentId: sourceNode.id,
+            kind: 'GENERATED',
+            blobUrl: uploaded.blobUrl,
+            mimeType: result.mimeType,
+            sizeBytes: uploaded.bytes,
+            engine,
+            editType: 'enhance',
+          },
+          select: { id: true },
+        });
+        await tx.generation.create({
+          data: { nodeId: node.id, engine, prompt, materialsSnapshot: materials },
+        });
+        return node.id;
+      });
+
+      // The render is stored: the credits are spent for good.
+      owed = 0;
+
       return NextResponse.json(
-        { code: 'UPLOAD_FAILED', message: 'Storage write failed' },
-        { status: 502, headers: { 'x-request-id': ctx.requestId } },
-      );
-    }
-
-    const materials = await prisma.material.findMany({
-      where: { projectId },
-      select: { face: true, valeur: true, source: true, confidence: true },
-    });
-
-    const nodeId = await prisma.$transaction(async (tx) => {
-      const node = await tx.renderNode.create({
-        data: {
-          projectId,
-          parentId: sourceNode.id,
-          kind: 'GENERATED',
-          blobUrl: uploaded.blobUrl,
-          mimeType: result.mimeType,
-          sizeBytes: uploaded.bytes,
-          engine,
-          editType: 'enhance',
+        {
+          nodeId,
+          creditsBalance: debit.balance,
         },
-        select: { id: true },
-      });
-      await tx.generation.create({
-        data: { nodeId: node.id, engine, prompt, materialsSnapshot: materials },
-      });
-      return node.id;
-    });
-
-    // Charged only now that the render exists — see tier-quota.ts.
-    await recordTierUsage(prisma, auth.user.sub);
-
-    return NextResponse.json(
-      {
-        nodeId,
-        quotaRemaining: quota.remaining !== null ? Math.max(0, quota.remaining - 1) : null,
-      },
-      { status: 201, headers: { 'x-request-id': ctx.requestId } },
-    );
+        { status: 201, headers: { 'x-request-id': ctx.requestId } },
+      );
+    } finally {
+      if (owed > 0) await refundCredits(prisma, auth.user.sub, owed);
+    }
   });
 }

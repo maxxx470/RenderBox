@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ApiError } from '@/lib/api';
 import {
+  creditErrorKey,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -107,5 +108,20 @@ describe('isMaterialsUnavailable (étape 3C.4)', () => {
     );
     expect(isMaterialsUnavailable(new RequestError('AI_ENGINE_NOT_CONFIGURED'))).toBe(false);
     expect(isMaterialsUnavailable(new Error('MATERIALS_UNAVAILABLE'))).toBe(false);
+  });
+});
+
+describe('creditErrorKey', () => {
+  it('names the credit refusals, from either error type, and nothing else', () => {
+    expect(creditErrorKey(new RequestError('INSUFFICIENT_CREDITS'))).toBe(
+      'app.insufficientCreditsError',
+    );
+    expect(creditErrorKey(new ApiError(402, 'x', { error: 'INSUFFICIENT_CREDITS' }))).toBe(
+      'app.insufficientCreditsError',
+    );
+    expect(creditErrorKey(new RequestError('NO_ACTIVE_TIER'))).toBe('app.noActiveTierError');
+    expect(creditErrorKey(new RequestError('TIER_EXPIRED'))).toBe('app.noActiveTierError');
+    expect(creditErrorKey(new RequestError('GENERATION_FAILED'))).toBeNull();
+    expect(creditErrorKey(new Error('x'))).toBeNull();
   });
 });

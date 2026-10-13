@@ -177,8 +177,8 @@ export function AppChrome({
           <AppTopbar
             title={title}
             tier={quota.tier}
-            quotaMax={quota.max}
-            quotaRemaining={quota.remaining}
+            creditsMax={quota.max}
+            creditsBalance={quota.remaining}
             userEmail={userEmail}
           />
           <div className="relative flex min-h-0 flex-1">{children}</div>

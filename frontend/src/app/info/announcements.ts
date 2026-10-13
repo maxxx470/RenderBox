@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'credits',
+    date: '2026-10-13',
+    kind: 'shipped',
+    title: {
+      fr: 'Les formules passent aux crédits',
+      en: 'Plans now come with credits',
+    },
+    body: {
+      fr: 'Chaque formule donne désormais des crédits pour 30 jours, au même prix (le détail est sur la page Tarifs et dans Abonnement). Une image se paie en crédits selon sa taille, un peu plus en 4K, qu’elle vienne d’un rendu, de Commenter, d’Ajouter ou d’Améliorer ; le coût s’affiche sur le bouton d’envoi avant le clic, et une génération qui échoue est remboursée. Votre solde est en haut de chaque page. Les rendus qu’il vous restait ont été convertis en crédits, sans rien perdre.',
+      en: 'Each plan now gives credits for 30 days, at the same price (the details are on the Pricing page and in Subscription). An image is paid in credits according to its size, a little more at 4K, whether it comes from a render, Comment, Add or Enhance; the cost shows on the send button before you click, and a generation that fails is refunded. Your balance is at the top of every page. The renders you had left were converted into credits, with nothing lost.',
+    },
+  },
+  {
     id: 'materials-per-image',
     date: '2026-10-13',
     kind: 'shipped',

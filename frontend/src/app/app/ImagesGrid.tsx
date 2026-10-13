@@ -281,8 +281,8 @@ export function ImagesGrid({
       topbar={{
         title: t(isDashboard ? 'dashboard.title' : 'app.railImages'),
         tier: dashboard.tier,
-        quotaMax: dashboard.quotaMax,
-        quotaRemaining: dashboard.quotaRemaining,
+        creditsMax: dashboard.creditsMax,
+        creditsBalance: dashboard.creditsBalance,
         userEmail,
       }}
     >

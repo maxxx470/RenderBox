@@ -55,14 +55,14 @@ export function AppFrame({
     if (handlers) handlers.current = { onModeChange, onNew, onTreeClose: onSidebarClose };
   });
 
-  const { title, tier, quotaMax, quotaRemaining } = topbar;
+  const { title, tier, creditsMax, creditsBalance } = topbar;
   const hasModeChange = Boolean(onModeChange);
   const hasNew = Boolean(onNew);
   const hasTree = Boolean(sidebarChildren);
   useIsoLayoutEffect(() => {
     register?.({
       title,
-      quota: { tier, max: quotaMax, remaining: quotaRemaining },
+      quota: { tier, max: creditsMax, remaining: creditsBalance },
       hasModeChange,
       hasNew,
       hasTree,
@@ -72,8 +72,8 @@ export function AppFrame({
     register,
     title,
     tier,
-    quotaMax,
-    quotaRemaining,
+    creditsMax,
+    creditsBalance,
     hasModeChange,
     hasNew,
     hasTree,
