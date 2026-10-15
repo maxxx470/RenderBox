@@ -10,10 +10,16 @@
 // —; on the right the form on white.
 //
 // The pictures are the owner's, on a plain blue ground the panel is tinted
-// to match (per picture, below), and their edges fade, so they melt into it: /public/connexion/visuel.webp on
-// /connexion, /public/connexion/bienvenue.webp on /bienvenue. To swap one,
-// replace the file under the same name. Below 1024px the panel sits above the
-// form: the logo, the picture, the title, without the steps.
+// to match (per picture, below), and their edges fade, so they melt into it:
+// /public/connexion/visuel.webp on /connexion, /public/connexion/bienvenue.webp
+// on /bienvenue. To swap one, replace the file under the same name.
+//
+// Below 1024px (owner, 2026-10-15, after the « Laundrify » and « TripStar »
+// references: « tout doit tenir sur l'écran, on ne scrolle pas ») the page is
+// exactly one screen: the form at the bottom at its natural height, and above
+// it the blue band — the logo, FR / EN, the picture — taking whatever height
+// is left, fading into the white. Only a form taller than the phone (a very
+// small screen, the keyboard open) scrolls, inside itself.
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { TickSquare } from 'react-iconly';
@@ -35,26 +41,32 @@ const MODEL = {
 };
 const PICTURE = { 1: VILLA, 2: MODEL, 3: MODEL } as const;
 
+/** The blue band's least height on a phone: the logo row. */
+const BAND_MIN = 'min-h-[76px]';
+
 export function AuthShell({ step, children }: { step: 1 | 2 | 3; children: ReactNode }) {
   const t = useTranslations();
   return (
-    <main className="grid min-h-screen grid-cols-1 bg-white min-[1024px]:grid-cols-[1.08fr_1fr]">
+    <main className="flex h-dvh flex-col overflow-hidden bg-white min-[1024px]:grid min-[1024px]:h-auto min-[1024px]:min-h-screen min-[1024px]:grid-cols-[1.08fr_1fr] min-[1024px]:overflow-visible">
       <section
-        className={`relative isolate flex flex-col overflow-hidden px-6 pb-7 pt-6 text-white min-[1024px]:sticky min-[1024px]:top-0 min-[1024px]:h-screen min-[1024px]:px-12 min-[1024px]:pb-10 min-[1024px]:pt-9 ${PICTURE[step].panel}`}
+        className={`relative isolate flex ${BAND_MIN} flex-1 flex-col overflow-hidden px-5 pb-4 pt-[max(16px,env(safe-area-inset-top))] text-white min-[1024px]:sticky min-[1024px]:top-0 min-[1024px]:h-screen min-[1024px]:flex-none min-[1024px]:px-12 min-[1024px]:pb-10 min-[1024px]:pt-9 ${PICTURE[step].panel}`}
       >
-        <Link
-          href="/"
-          aria-label="RenderPro"
-          className="flex w-fit items-center gap-2.5 text-[20px]"
-        >
-          <BrandMark size="md" inverse />
-          <Wordmark inverse />
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/"
+            aria-label="RenderPro"
+            className="flex w-fit items-center gap-2.5 text-[20px]"
+          >
+            <BrandMark size="md" inverse />
+            <Wordmark inverse />
+          </Link>
+          <div className="min-[1024px]:hidden">
+            <LanguageInlineSwitch className="rounded-lg bg-white px-2.5 py-1.5" />
+          </div>
+        </div>
 
-        {/* The picture takes whatever height the text and steps leave; on a
-            phone (owner, 2026-10-15, after the « Laundrify » reference) a
-            fixed band under the logo. */}
-        <div className="my-3 flex h-[190px] min-h-0 items-center justify-center min-[640px]:h-[240px] min-[1024px]:h-auto min-[1024px]:flex-1">
+        {/* The picture takes whatever height is left. */}
+        <div className="flex min-h-0 flex-1 items-center justify-center py-1 min-[1024px]:my-3 min-[1024px]:py-0">
           {/* Its edges fade out, so the picture's ground melts into the panel. */}
           <img
             src={PICTURE[step].src}
@@ -64,14 +76,14 @@ export function AuthShell({ step, children }: { step: 1 | 2 | 3; children: React
           />
         </div>
 
-        <div>
+        <div className="hidden min-[1024px]:block">
           <span className="inline-flex rounded-lg bg-white/15 px-3 py-1.5 text-[13px] font-medium backdrop-blur-sm">
             {t('connexion.panelPill')}
           </span>
-          <h2 className="mt-4 max-w-[560px] font-[family-name:var(--font-display)] text-[28px] font-semibold leading-[1.12] tracking-[-0.5px] min-[1024px]:text-[40px]">
+          <h2 className="mt-4 max-w-[560px] font-[family-name:var(--font-display)] text-[40px] font-semibold leading-[1.12] tracking-[-0.5px]">
             {t('connexion.panelTitle')}
           </h2>
-          <p className="mt-3 max-w-[480px] text-[14px] leading-relaxed text-white/80 min-[1024px]:text-[15px]">
+          <p className="mt-3 max-w-[480px] text-[15px] leading-relaxed text-white/80">
             {t('connexion.panelSubtitle')}
           </p>
         </div>
@@ -113,13 +125,19 @@ export function AuthShell({ step, children }: { step: 1 | 2 | 3; children: React
             );
           })}
         </ol>
+
+        {/* On a phone the blue fades into the white of the form below. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-b from-transparent to-white min-[1024px]:hidden"
+        />
       </section>
 
-      <section className="flex flex-col px-5 min-[1024px]:min-h-screen pb-10 pt-5 min-[640px]:px-10 min-[1024px]:px-16">
-        <div className="flex justify-end">
+      <section className="flex max-h-[calc(100dvh-76px)] flex-none flex-col overflow-y-auto px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-2 min-[640px]:px-10 min-[1024px]:max-h-none min-[1024px]:min-h-screen min-[1024px]:overflow-visible min-[1024px]:px-16 min-[1024px]:pb-10 min-[1024px]:pt-5">
+        <div className="hidden justify-end min-[1024px]:flex">
           <LanguageInlineSwitch className="rounded-lg bg-[#F2F2F5] px-2.5 py-1.5" />
         </div>
-        <div className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-6">
+        <div className="mx-auto flex w-full max-w-[420px] flex-col min-[1024px]:flex-1 min-[1024px]:justify-center min-[1024px]:py-6">
           {children}
         </div>
       </section>

@@ -43,6 +43,14 @@ export const ENGINE_COLORS: Record<
   },
 };
 
+// Each engine's own symbol (owner-generated, 2026-10-15): Visio's eye, Pixel
+// IA's four pixels with one turned into a petal. 128px squares on white in
+// public/engines/; replace a file under the same name to change one.
+export const ENGINE_LOGOS: Record<EngineName, string> = {
+  nanobanana: '/engines/visio.webp',
+  gpt_image: '/engines/pixel-ia.webp',
+};
+
 export const ENGINE_LABELS: Record<EngineName, EngineLabel> = {
   nanobanana: {
     name: { fr: 'Visio', en: 'Visio' },

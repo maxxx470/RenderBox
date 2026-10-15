@@ -72,3 +72,14 @@ export function creditErrorKey(
   if (code === 'INSUFFICIENT_CREDITS') return 'app.insufficientCreditsError';
   return null;
 }
+
+/** The same refusal, as the reason the plans dialog opens with (owner,
+ *  2026-10-15: a refused render opens « Choisissez une formule »). */
+export function plansReasonFor(err: unknown): 'noTier' | 'noCredits' | null {
+  const key = creditErrorKey(err);
+  return key === 'app.noActiveTierError'
+    ? 'noTier'
+    : key === 'app.insufficientCreditsError'
+      ? 'noCredits'
+      : null;
+}

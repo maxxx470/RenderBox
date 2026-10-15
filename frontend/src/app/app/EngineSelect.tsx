@@ -7,15 +7,16 @@
 // The panel is the reference's own model popover: a "Model" caption over a
 // radio list. Radios rather than a trailing tick — one of these is on, and a
 // radio says so before a single label has been read.
-import { ChevronUp, ChevronDown, Image } from 'react-iconly';
+import { ChevronUp, ChevronDown } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
-import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { EngineLogo } from '@/components/EngineLogo';
 import { Radio } from './Radio';
 import { POPOVER_HEADING, popoverPanelClass, useHoverPopover } from './useHoverPopover';
 
-// Each engine wears its own colour (red, yellow) from ENGINE_COLORS — never a
-// vendor's name or logo.
+// Each engine wears its own symbol (EngineLogo) — never a vendor's name or
+// logo.
 
 export function EngineSelect({
   engine,
@@ -50,11 +51,7 @@ export function EngineSelect({
         aria-expanded={open}
         className="flex flex-shrink-0 items-center gap-2 rounded-lg bg-[#F2F2F5] py-1.5 pl-1.5 pr-3 transition-colors hover:bg-[#E9E9EE] disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <span
-          className={`flex h-[22px] w-[22px] items-center justify-center rounded-md ${ENGINE_COLORS[engine].mark}`}
-        >
-          <Image set="curved" size={12} primaryColor={ENGINE_COLORS[engine].glyph} />
-        </span>
+        <EngineLogo engine={engine} size={22} />
         <span className="text-[12.5px] font-medium text-[#17161F]">
           {ENGINE_LABELS[engine].name[locale]}
         </span>
@@ -85,11 +82,7 @@ export function EngineSelect({
                 className="flex w-full items-center gap-2.5 rounded-[10px] p-2.5 text-left transition-colors duration-150 ease-out hover:bg-[#F7F7FA]"
               >
                 <Radio checked={selected} />
-                <span
-                  className={`flex h-[28px] w-[28px] flex-shrink-0 items-center justify-center rounded-lg ${ENGINE_COLORS[key].mark}`}
-                >
-                  <Image set="curved" size={14} primaryColor={ENGINE_COLORS[key].glyph} />
-                </span>
+                <EngineLogo engine={key} size={28} />
                 <span className="flex-1">
                   <span className="block text-[13px] font-semibold text-[#17161F]">
                     {ENGINE_LABELS[key].name[locale]}

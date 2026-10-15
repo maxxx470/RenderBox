@@ -9,6 +9,10 @@
 //   forgot   email → a code is emailed
 //   reset    the code + a new password → signed in
 //
+// On a phone (below 1024px) a welcome screen comes first — the promise,
+// Google, « Créer un compte avec mon e-mail », « J'ai déjà un compte » — so
+// each screen fits without scrolling (owner, 2026-10-15).
+//
 // Google sits above, when configured. With email sending configured
 // (`verifyEmail`, Resend), signup goes through the code and the password
 // typed at signup stays in this component until the code is entered — the
@@ -89,6 +93,8 @@ export function ConnexionForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  // Below 1024px: the email form is open (else the welcome screen shows).
+  const [emailOpen, setEmailOpen] = useState(false);
 
   const go = (m: Mode) => {
     setMode(m);
@@ -176,180 +182,247 @@ export function ConnexionForm({
 
   const showGoogle = googleEnabled && (mode === 'login' || mode === 'signup');
 
+  const googleHref = `/api/auth/oauth/google/start?next=${encodeURIComponent(next)}`;
+  const legal = (
+    <p className="mt-6 text-center text-[12px] leading-relaxed text-[#8A8896] min-[1024px]:mt-8">
+      {t('connexion.legalPrefix')}{' '}
+      <a href="/legal" className="font-medium text-[#2948FC] hover:underline">
+        {t('connexion.legalLink')}
+      </a>
+      .
+    </p>
+  );
+
   return (
     <div>
-      <h1 className="font-[family-name:var(--font-display)] text-[28px] font-semibold tracking-[-0.4px] text-[#17161F]">
-        {t(title[mode])}
-      </h1>
-      <p className="mt-1.5 text-[14px] text-[#6B6878]">{subtitle[mode]}</p>
-
-      {showGoogle && (
-        <a
-          href={`/api/auth/oauth/google/start?next=${encodeURIComponent(next)}`}
-          className="mt-7 flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#F2F2F5] text-[14px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE]"
-        >
-          <GoogleMark />
-          {t('connexion.googleButton')}
-        </a>
-      )}
-
-      {showGoogle && (
-        <div className="my-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-[#ECECF2]" />
-          <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
-            {t('connexion.or')}
-          </span>
-          <div className="h-px flex-1 bg-[#ECECF2]" />
+      {/* Below 1024px: the welcome screen first (owner, 2026-10-15, after the
+          « Laundrify » reference) — the promise and three choices, nothing to
+          scroll. The email form only shows once one is picked. From 1024px
+          the form is there at once, and this block never shows. */}
+      {!emailOpen && (
+        <div className="min-[1024px]:hidden">
+          <h1 className="font-[family-name:var(--font-display)] text-[25px] font-semibold leading-[1.15] tracking-[-0.4px] text-[#17161F]">
+            {t('connexion.panelTitle')}
+          </h1>
+          <p className="mt-1.5 text-[14px] text-[#6B6878]">{t('connexion.signupSubtitle')}</p>
+          <div className="mt-5 flex flex-col gap-2.5">
+            {googleEnabled && (
+              <a
+                href={googleHref}
+                className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#F2F2F5] text-[14px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE]"
+              >
+                <GoogleMark />
+                {t('connexion.googleButton')}
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                go('signup');
+                setEmailOpen(true);
+              }}
+              className={`h-12 w-full rounded-xl text-[14px] font-semibold text-white transition-[opacity,scale] duration-150 active:scale-[0.98] ${GRADIENT}`}
+            >
+              {t('connexion.emailSignup')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                go('login');
+                setEmailOpen(true);
+              }}
+              className="h-12 w-full rounded-xl text-[14px] font-semibold text-[#2948FC] transition-colors hover:bg-[#EEF1FF]"
+            >
+              {t('connexion.haveAccount')}
+            </button>
+          </div>
+          {legal}
         </div>
       )}
 
-      <form onSubmit={onSubmit} className={`flex flex-col gap-4 ${showGoogle ? '' : 'mt-7'}`}>
-        {mode === 'signup' && (
-          <Field label={t('connexion.nameLabel')} htmlFor="cx-name">
-            <input
-              id="cx-name"
-              autoComplete="name"
-              maxLength={120}
-              placeholder={t('connexion.namePlaceholder')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={INPUT}
-            />
-          </Field>
-        )}
-
-        {(mode === 'login' || mode === 'signup' || mode === 'forgot') && (
-          <Field label={t('connexion.emailLabel')} htmlFor="cx-email">
-            <input
-              id="cx-email"
-              type="email"
-              required
-              autoComplete="email"
-              placeholder={t('connexion.emailPlaceholder')}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={INPUT}
-            />
-          </Field>
-        )}
-
-        {(mode === 'code' || mode === 'reset') && (
-          <Field label={t('connexion.codeLabel')} htmlFor="cx-code">
-            <input
-              id="cx-code"
-              required
-              autoComplete="one-time-code"
-              inputMode="text"
-              maxLength={8}
-              placeholder="ABCD2345"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-              className={`${INPUT} font-[family-name:var(--font-mono)] text-[16px] tracking-[0.3em]`}
-            />
-          </Field>
-        )}
-
-        {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
-          <PasswordField
-            id="cx-password"
-            label={t(mode === 'reset' ? 'connexion.newPasswordLabel' : 'connexion.passwordLabel')}
-            value={password}
-            onChange={setPassword}
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            hint={
-              mode === 'login' ? null : t('connexion.passwordHint', { min: String(passwordMin) })
-            }
-            aside={
-              mode === 'login' && verifyEmail ? (
-                <button
-                  type="button"
-                  onClick={() => go('forgot')}
-                  className="text-[12.5px] font-medium text-[#2948FC] hover:underline"
-                >
-                  {t('connexion.forgot')}
-                </button>
-              ) : null
-            }
-          />
-        )}
-
-        {error && (
-          <p role="alert" className="text-[13px] text-[#E5484D]">
-            {error}
-          </p>
-        )}
-        {info && (
-          <p role="status" className="text-[13px] text-[#1E7A3D]">
-            {info}
-          </p>
-        )}
-
+      <div className={emailOpen ? '' : 'max-[1023px]:hidden'}>
         <button
-          type="submit"
-          disabled={busy}
-          className={`mt-1 h-12 w-full rounded-xl text-[14px] font-semibold text-white transition-[opacity,scale] duration-150 active:scale-[0.98] disabled:opacity-60 ${GRADIENT}`}
+          type="button"
+          onClick={() => {
+            setEmailOpen(false);
+            go(initialMode);
+          }}
+          className="mb-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-[#6B6878] hover:text-[#17161F] min-[1024px]:hidden"
         >
-          {busy
-            ? t('connexion.submitting')
-            : mode === 'login'
-              ? t('connexion.signIn')
-              : mode === 'forgot'
-                ? t('connexion.sendCode')
-                : mode === 'signup' && !verifyEmail
-                  ? t('connexion.createAccount')
-                  : t('connexion.continue')}
+          <span aria-hidden>←</span>
+          {t('connexion.back')}
         </button>
+        <h1 className="font-[family-name:var(--font-display)] text-[25px] font-semibold tracking-[-0.4px] text-[#17161F] min-[1024px]:text-[28px]">
+          {t(title[mode])}
+        </h1>
+        <p className="mt-1.5 text-[14px] text-[#6B6878]">{subtitle[mode]}</p>
 
-        {(mode === 'code' || mode === 'reset') && (
-          <div className="flex items-center justify-between text-[13px]">
+        {/* On a phone Google was offered on the welcome screen. */}
+        {showGoogle && (
+          <a
+            href={googleHref}
+            className="mt-7 flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#F2F2F5] text-[14px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE] max-[1023px]:hidden"
+          >
+            <GoogleMark />
+            {t('connexion.googleButton')}
+          </a>
+        )}
+
+        {showGoogle && (
+          <div className="my-6 flex items-center gap-3 max-[1023px]:hidden">
+            <div className="h-px flex-1 bg-[#ECECF2]" />
+            <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
+              {t('connexion.or')}
+            </span>
+            <div className="h-px flex-1 bg-[#ECECF2]" />
+          </div>
+        )}
+
+        <form
+          onSubmit={onSubmit}
+          className={`flex flex-col gap-3.5 max-[1023px]:mt-5 min-[1024px]:gap-4 ${showGoogle ? '' : 'min-[1024px]:mt-7'}`}
+        >
+          {mode === 'signup' && (
+            <Field label={t('connexion.nameLabel')} htmlFor="cx-name">
+              <input
+                id="cx-name"
+                autoComplete="name"
+                maxLength={120}
+                placeholder={t('connexion.namePlaceholder')}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={INPUT}
+              />
+            </Field>
+          )}
+
+          {(mode === 'login' || mode === 'signup' || mode === 'forgot') && (
+            <Field label={t('connexion.emailLabel')} htmlFor="cx-email">
+              <input
+                id="cx-email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder={t('connexion.emailPlaceholder')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={INPUT}
+              />
+            </Field>
+          )}
+
+          {(mode === 'code' || mode === 'reset') && (
+            <Field label={t('connexion.codeLabel')} htmlFor="cx-code">
+              <input
+                id="cx-code"
+                required
+                autoComplete="one-time-code"
+                inputMode="text"
+                maxLength={8}
+                placeholder="ABCD2345"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                className={`${INPUT} font-[family-name:var(--font-mono)] text-[16px] tracking-[0.3em]`}
+              />
+            </Field>
+          )}
+
+          {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
+            <PasswordField
+              id="cx-password"
+              label={t(mode === 'reset' ? 'connexion.newPasswordLabel' : 'connexion.passwordLabel')}
+              value={password}
+              onChange={setPassword}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              hint={
+                mode === 'login' ? null : t('connexion.passwordHint', { min: String(passwordMin) })
+              }
+              aside={
+                mode === 'login' && verifyEmail ? (
+                  <button
+                    type="button"
+                    onClick={() => go('forgot')}
+                    className="text-[12.5px] font-medium text-[#2948FC] hover:underline"
+                  >
+                    {t('connexion.forgot')}
+                  </button>
+                ) : null
+              }
+            />
+          )}
+
+          {error && (
+            <p role="alert" className="text-[13px] text-[#E5484D]">
+              {error}
+            </p>
+          )}
+          {info && (
+            <p role="status" className="text-[13px] text-[#1E7A3D]">
+              {info}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={busy}
+            className={`mt-1 h-12 w-full rounded-xl text-[14px] font-semibold text-white transition-[opacity,scale] duration-150 active:scale-[0.98] disabled:opacity-60 ${GRADIENT}`}
+          >
+            {busy
+              ? t('connexion.submitting')
+              : mode === 'login'
+                ? t('connexion.signIn')
+                : mode === 'forgot'
+                  ? t('connexion.sendCode')
+                  : mode === 'signup' && !verifyEmail
+                    ? t('connexion.createAccount')
+                    : t('connexion.continue')}
+          </button>
+
+          {(mode === 'code' || mode === 'reset') && (
+            <div className="flex items-center justify-between text-[13px]">
+              <button
+                type="button"
+                onClick={() => go(mode === 'code' ? 'signup' : 'forgot')}
+                className="text-[#6B6878] hover:text-[#17161F]"
+              >
+                {t('connexion.back')}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void resend()}
+                className="font-medium text-[#2948FC] hover:underline disabled:opacity-60"
+              >
+                {t('connexion.resend')}
+              </button>
+            </div>
+          )}
+          {mode === 'forgot' && (
             <button
               type="button"
-              onClick={() => go(mode === 'code' ? 'signup' : 'forgot')}
-              className="text-[#6B6878] hover:text-[#17161F]"
+              onClick={() => go('login')}
+              className="text-[13px] text-[#6B6878] hover:text-[#17161F]"
             >
               {t('connexion.back')}
             </button>
+          )}
+        </form>
+
+        {(mode === 'login' || mode === 'signup') && (
+          <p className="mt-5 text-center text-[13px] text-[#6B6878] min-[1024px]:mt-6">
+            {mode === 'login' ? t('connexion.toSignup') : t('connexion.toLogin')}{' '}
             <button
               type="button"
-              disabled={busy}
-              onClick={() => void resend()}
-              className="font-medium text-[#2948FC] hover:underline disabled:opacity-60"
+              onClick={() => go(mode === 'login' ? 'signup' : 'login')}
+              className="font-semibold text-[#2948FC] hover:underline"
             >
-              {t('connexion.resend')}
+              {mode === 'login' ? t('connexion.toSignupLink') : t('connexion.toLoginLink')}
             </button>
-          </div>
+          </p>
         )}
-        {mode === 'forgot' && (
-          <button
-            type="button"
-            onClick={() => go('login')}
-            className="text-[13px] text-[#6B6878] hover:text-[#17161F]"
-          >
-            {t('connexion.back')}
-          </button>
-        )}
-      </form>
 
-      {(mode === 'login' || mode === 'signup') && (
-        <p className="mt-6 text-center text-[13px] text-[#6B6878]">
-          {mode === 'login' ? t('connexion.toSignup') : t('connexion.toLogin')}{' '}
-          <button
-            type="button"
-            onClick={() => go(mode === 'login' ? 'signup' : 'login')}
-            className="font-semibold text-[#2948FC] hover:underline"
-          >
-            {mode === 'login' ? t('connexion.toSignupLink') : t('connexion.toLoginLink')}
-          </button>
-        </p>
-      )}
-
-      <p className="mt-8 text-center text-[12px] leading-relaxed text-[#8A8896]">
-        {t('connexion.legalPrefix')}{' '}
-        <a href="/legal" className="font-medium text-[#2948FC] hover:underline">
-          {t('connexion.legalLink')}
-        </a>
-        .
-      </p>
+        {legal}
+      </div>
     </div>
   );
 }

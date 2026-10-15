@@ -33,6 +33,22 @@ const USER_SELECT = {
   emailVerifiedAt: true,
   createdAt: true,
   deletedAt: true,
+  // RenderPro (2026-10-15): the user's file in the back-office — plan,
+  // credits, and everything the onboarding asked.
+  currentTier: true,
+  tierPeriodStart: true,
+  creditsBalance: true,
+  defaultEngine: true,
+  phone: true,
+  profession: true,
+  company: true,
+  teamSize: true,
+  projectTypes: true,
+  mainUse: true,
+  country: true,
+  city: true,
+  referralSource: true,
+  onboardedAt: true,
 } as const satisfies Prisma.UserSelect;
 
 export async function GET(
@@ -62,7 +78,7 @@ export async function GET(
     // Phase 6 — the detail page needs a drill-down into this user's
     // projects/generations/payments. A single user's history is small
     // enough to embed directly (no separate pagination endpoint needed).
-    const [projectsRaw, ordersRaw] = await Promise.all([
+    const [projectsRaw, ordersRaw, rendersRaw] = await Promise.all([
       prisma.project.findMany({
         where: { userId: id },
         orderBy: { createdAt: 'desc' },
@@ -78,9 +94,18 @@ export async function GET(
         orderBy: { createdAt: 'desc' },
         select: { id: true, amount: true, currency: true, status: true, createdAt: true },
       }),
+      // The latest images, for the file's gallery (pictures through the
+      // admin image route).
+      prisma.renderNode.findMany({
+        where: { kind: 'GENERATED', project: { userId: id } },
+        orderBy: { createdAt: 'desc' },
+        take: 12,
+        select: { id: true, engine: true, createdAt: true },
+      }),
     ]);
     const projects = projectsRaw ?? [];
     const orders = ordersRaw ?? [];
+    const renders = rendersRaw ?? [];
 
     return NextResponse.json(
       {
@@ -92,6 +117,7 @@ export async function GET(
           generationsCount: p._count.renderNodes,
         })),
         orders,
+        renders,
       },
       { headers: { 'x-request-id': reqCtx.requestId } },
     );

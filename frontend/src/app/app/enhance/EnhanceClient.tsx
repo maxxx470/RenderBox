@@ -20,7 +20,7 @@
 // scatter a project per attempt.
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Category, Folder, Download, Paper, Plus } from 'react-iconly';
+import { Category, Download, Paper, Plus } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -29,6 +29,7 @@ import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_NAMES } from '@/lib/server/generation/engines/types';
 import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { EngineLogo } from '@/components/EngineLogo';
 import {
   DEFAULT_ENHANCE_OPTIONS,
   ENHANCE_OPTIONS,
@@ -43,6 +44,8 @@ import type { RatioKey } from '@/lib/server/generation/ratios';
 import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/resolutions';
 import { BeforeAfterSlider } from '@/app/BeforeAfterSlider';
 import { AppFrame } from '../AppFrame';
+import { useAppChrome } from '../AppChrome';
+import { renderCost } from '@/lib/pricing-tiers';
 import type { AppSurfaceProps } from '../AppSurface';
 import { useObjectUrl } from '../CommandBar';
 import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from '../fan';
@@ -50,6 +53,7 @@ import { ENHANCE_EXAMPLES } from '../generer-examples';
 import { MOBILE_NAV_PAD } from '../MobileNav';
 import {
   creditErrorKey,
+  plansReasonFor,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -206,6 +210,7 @@ export function EnhanceClient({
   const { locale } = useLocale();
   const { user } = useAuth();
   const { toast } = useToast();
+  const chrome = useAppChrome();
 
   const [file, setFile] = useState<File | null>(null);
   const [session, setSession] = useState<Session | null>(initialSession);
@@ -309,6 +314,11 @@ export function EnhanceClient({
 
   async function run() {
     if (!canRun || working) return;
+    // No plan, or not enough credits: the plans open over the page (owner,
+    // 2026-10-15), before anything is uploaded.
+    if (!surface.tier) return chrome?.openPlans('noTier');
+    if (remaining !== null && remaining < renderCost(resolution))
+      return chrome?.openPlans('noCredits');
     setWorking(true);
     let current = session;
     const fresh = !current;
@@ -344,7 +354,9 @@ export function EnhanceClient({
     } catch (err) {
       const code = err instanceof RequestError ? err.code : '';
       const creditKey = creditErrorKey(err);
-      if (creditKey)
+      const plansReason = plansReasonFor(err);
+      if (plansReason && chrome) chrome.openPlans(plansReason);
+      else if (creditKey)
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       else if (code === 'CONTENT_FLAGGED') toast(t('enhance.refFlagged'), 'error');
       else if (isServiceNotConfigured(err)) toast(t('app.serviceNotConfigured'), 'error');
@@ -422,27 +434,9 @@ export function EnhanceClient({
             <p className="text-[13px] text-[#8A8896]">{t('enhance.subtitle')}</p>
           </div>
 
-          {!surface.tier ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-              <div
-                className={`flex h-[52px] w-[52px] items-center justify-center rounded-2xl ${GRADIENT}`}
-              >
-                <Folder set="curved" size={24} primaryColor="#ffffff" />
-              </div>
-              <h2 className="text-[15px] font-semibold text-[#17161F]">
-                {t('app.genHomeNoTierTitle')}
-              </h2>
-              <p className="max-w-[320px] text-[13px] text-[#6B6878]">
-                {t('app.genHomeNoTierBody')}
-              </p>
-              <Link
-                href="/app/tarifs"
-                className={`inline-flex items-center gap-2 rounded-xl ${GRADIENT} px-5 py-2.5 text-[13px] font-semibold text-white`}
-              >
-                {t('app.genHomeChooseTier')}
-              </Link>
-            </div>
-          ) : !hasSource ? (
+          {/* Without a plan the page is the same (owner, 2026-10-15);
+              launching opens the plans (run). */}
+          {!hasSource ? (
             // Nothing attached yet: four blurry/sharp examples, each one picture
             // split in two with both resolutions on it (owner, 2026-10-13).
             // The render comes in through the bar's paperclip.
@@ -518,7 +512,7 @@ export function EnhanceClient({
           )}
         </section>
 
-        {surface.tier && (
+        {
           <EnhanceBar
             instruction={instruction}
             onInstructionChange={setInstruction}
@@ -548,10 +542,10 @@ export function EnhanceClient({
             sendHint={sendHint}
             working={working}
           />
-        )}
+        }
       </main>
 
-      {surface.tier && (
+      {
         <>
           {panelOpen && (
             <div
@@ -625,12 +619,7 @@ export function EnhanceClient({
                       : 'text-[#3D3B49] hover:bg-white'
                   }`}
                 >
-                  <span
-                    aria-hidden
-                    className={`h-2 w-2 rounded-full ${
-                      engine === e ? 'bg-current opacity-80' : ENGINE_COLORS[e].dot
-                    }`}
-                  />
+                  <EngineLogo engine={e} size={16} />
                   {ENGINE_LABELS[e].name[locale]}
                 </button>
               ))}
@@ -644,7 +633,7 @@ export function EnhanceClient({
             </p>
           </aside>
         </>
-      )}
+      }
     </AppFrame>
   );
 }

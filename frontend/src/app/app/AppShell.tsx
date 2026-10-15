@@ -21,6 +21,8 @@ import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Download, Swap } from 'react-iconly';
 import { AppFrame } from './AppFrame';
+import { useAppChrome } from './AppChrome';
+import { renderCost } from '@/lib/pricing-tiers';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from './fan';
 import { EXAMPLE_RENDERS } from './generer-examples';
@@ -38,6 +40,7 @@ import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
 import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
 import {
   creditErrorKey,
+  plansReasonFor,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -105,6 +108,7 @@ export function AppShell({
   const t = useTranslations();
   const { locale } = useLocale();
   const { toast } = useToast();
+  const chrome = useAppChrome();
   const { user } = useAuth();
   const searchParams = useSearchParams();
 
@@ -358,7 +362,10 @@ export function AppShell({
       if (res.materialsDetected) void refreshMaterials(projectId);
     } catch (err) {
       const creditKey = creditErrorKey(err);
-      if (creditKey) {
+      const plansReason = plansReasonFor(err);
+      if (plansReason && chrome) {
+        chrome.openPlans(plansReason);
+      } else if (creditKey) {
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       } else if (isServiceNotConfigured(err)) {
         toast(t('app.serviceNotConfigured'), 'error');
@@ -436,7 +443,10 @@ export function AppShell({
       if (data.materialsDetected) void refreshMaterials(projectId);
     } catch (err) {
       const creditKey = creditErrorKey(err);
-      if (creditKey) {
+      const plansReason = plansReasonFor(err);
+      if (plansReason && chrome) {
+        chrome.openPlans(plansReason);
+      } else if (creditKey) {
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       } else if (isServiceNotConfigured(err)) {
         toast(t('app.serviceNotConfigured'), 'error');
@@ -456,6 +466,11 @@ export function AppShell({
   }
 
   function handleSubmit() {
+    // No plan, or not enough credits for this render: the plans open over
+    // the page (owner, 2026-10-15) instead of a refused request.
+    const cost = renderCost(resolution, mode === 'generate' ? 1 : variantCount);
+    if (!tier) return chrome?.openPlans('noTier');
+    if (remaining !== null && remaining < cost) return chrome?.openPlans('noCredits');
     if (mode === 'generate') void handleGenerate();
     else void handleEditSubmit();
   }
@@ -544,14 +559,15 @@ export function AppShell({
     return nodeTitle(node, locale, t);
   }
 
+  // A missing plan does not lock the bar any more: sending opens the plans
+  // (handleSubmit).
   const inputDisabled =
-    mode === 'generate' ? !selectedId || generating || !tier : !canEdit || submittingEdit || !tier;
+    mode === 'generate' ? !selectedId || generating : !canEdit || submittingEdit;
   const sendDisabled =
     mode === 'generate'
-      ? !selectedId || generating || !tier
+      ? !selectedId || generating
       : !canEdit ||
         submittingEdit ||
-        !tier ||
         (mode === 'add' ? !prompt.trim() || !referenceFile : !hasComments);
 
   // Names the FIRST missing thing, in the order the user would fix them.
@@ -559,21 +575,19 @@ export function AppShell({
   // no way to find out what the app was waiting for.
   const sendHint = !sendDisabled
     ? undefined
-    : !tier
-      ? t('app.hintNoTier')
-      : mode === 'generate'
-        ? !selectedId
-          ? t('app.hintNoImage')
-          : undefined
-        : !canEdit
-          ? t('app.modeSelectNodeHint')
-          : mode === 'add' && !referenceFile
-            ? t('edit.referenceRequired')
-            : mode === 'retouch' && !hasComments
-              ? t('edit.zoneRequired')
-              : !prompt.trim()
-                ? t('app.hintNoPrompt')
-                : undefined;
+    : mode === 'generate'
+      ? !selectedId
+        ? t('app.hintNoImage')
+        : undefined
+      : !canEdit
+        ? t('app.modeSelectNodeHint')
+        : mode === 'add' && !referenceFile
+          ? t('edit.referenceRequired')
+          : mode === 'retouch' && !hasComments
+            ? t('edit.zoneRequired')
+            : !prompt.trim()
+              ? t('app.hintNoPrompt')
+              : undefined;
 
   // The image the action starts from, then (Ajouter) the element to add.
   const pinned: PinnedImage[] = [];
@@ -696,7 +710,7 @@ export function AppShell({
                         imgRef={imgRef}
                         pins={pins}
                         onChange={setPins}
-                        disabled={submittingEdit || !tier}
+                        disabled={submittingEdit}
                       />
                     )}
 

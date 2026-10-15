@@ -99,16 +99,17 @@ ABONNEMENTS ET CRÉDITS
 - Une formule dure 30 jours à partir du paiement, sans prélèvement automatique ensuite. Les crédits non utilisés expirent à la fin de la période, sans report. Choisir une formule (ou renouveler la sienne) démarre une nouvelle période de 30 jours avec tous ses crédits.
 - Page Abonnement : le « Solde actuel » (crédits restants, formule et date d'expiration), un avertissement quand il ne reste plus assez de crédits, les trois formules (crédits par mois, prix en FCFA, équivalent en dollars indicatif, la formule actuelle marquée) puis l’« Historique » des paiements.
 - Une limite quotidienne anti-abus existe aussi ; si elle est atteinte, réessayer le lendemain.
+- Sans formule ou sans assez de crédits, toute l'interface reste visible et utilisable : c'est au moment de lancer un rendu (Générer, Commenter, Ajouter, Améliorer) que s'ouvre une petite fenêtre « Choisissez une formule » avec les trois formules, pour en choisir une sans quitter la page.
 
 COMPTE ET CONNEXION
-- La page Connexion propose « Continuer avec Google » ou l'adresse e-mail et un mot de passe (10 caractères minimum). Pour créer un compte par e-mail, on saisit son nom, son adresse et son mot de passe : le compte est créé tout de suite. Une adresse qui a déjà un compte ne peut pas en créer un second : on se connecte. Il n'y a pas encore de « Mot de passe oublié » : si vous avez oublié votre mot de passe et que votre adresse est un compte Google, utilisez « Continuer avec Google ». Après 10 mauvais mots de passe, le compte est bloqué 15 minutes.
+- La page Connexion propose « Continuer avec Google » ou l'adresse e-mail et un mot de passe (10 caractères minimum). Sur téléphone, un premier écran propose trois choix — Google, « Créer un compte avec mon e-mail », « J'ai déjà un compte » — et chaque écran tient sans défiler. Pour créer un compte par e-mail, on saisit son nom, son adresse et son mot de passe : le compte est créé tout de suite. Une adresse qui a déjà un compte ne peut pas en créer un second : on se connecte. Il n'y a pas encore de « Mot de passe oublié » : si vous avez oublié votre mot de passe et que votre adresse est un compte Google, utilisez « Continuer avec Google ». Après 10 mauvais mots de passe, le compte est bloqué 15 minutes.
 - Juste après la première connexion, quatre courts écrans font connaissance : nom et téléphone, métier, entreprise et taille de l'équipe, types de projets, usage principal et moteur préféré, puis pays, ville et comment vous avez connu RenderPro. Le nom, le métier et le pays sont obligatoires. Tout est enregistré sur le compte au fil des écrans, et le moteur choisi devient le moteur par défaut.
 
 PARAMÈTRES
 - Compte connecté, moteur par défaut (pré-sélectionné dans la barre de commande), comptes liés (connexion Google), historique de facturation, déconnexion. La langue se change avec le sélecteur FR / EN en haut des pages.
 
 INFO
-- La page « Info » de l'application : les films qui montrent les fonctions, deux par ligne, chacun avec un titre qui dit ce qu'il montre. Les nouveautés datées, elles, sont sur la page Info publique du site.
+- La page « Info » de l'application : en haut « Restez informé », avec la chaîne WhatsApp de RenderPro dans la langue de l'interface (française ou anglaise) et la chaîne YouTube (démonstrations, tutoriels, nouveautés) ; puis les films qui montrent les fonctions, deux par ligne, chacun avec un titre qui dit ce qu'il montre (« Plein écran » sur téléphone). Les nouveautés datées, elles, sont sur la page Info publique du site.
 
 FORMATS ACCEPTÉS
 - Images JPEG, PNG ou WebP.`;

@@ -31,6 +31,7 @@ import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { PresetKey } from '@/lib/server/generation/presets';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { EngineLogo } from '@/components/EngineLogo';
 import type { RatioKey } from '@/lib/server/generation/ratios';
 import type { ResolutionKey } from '@/lib/server/generation/resolutions';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
@@ -380,12 +381,7 @@ export function CommandBar({
             {locked ? (
               <Lock set="curved" size={12} primaryColor="#8A8896" />
             ) : (
-              <span
-                aria-hidden
-                className={`h-2 w-2 rounded-full ${
-                  selected ? 'bg-current opacity-80' : ENGINE_COLORS[e].dot
-                }`}
-              />
+              <EngineLogo engine={e} size={16} />
             )}
             {ENGINE_LABELS[e].name[locale]}
           </button>

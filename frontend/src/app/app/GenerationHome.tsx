@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Category, Folder, Upload } from 'react-iconly';
+import { Category, Upload } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -20,6 +20,7 @@ import { api } from '@/lib/api';
 import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import {
   creditErrorKey,
+  plansReasonFor,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -36,6 +37,8 @@ import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
 import type { RatioKey } from '@/lib/server/generation/ratios';
 import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/resolutions';
 import { AppFrame } from './AppFrame';
+import { useAppChrome } from './AppChrome';
+import { renderCost } from '@/lib/pricing-tiers';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { SideColumn } from './SideColumn';
 import { NodeMaterialsPanel } from './NodeMaterialsPanel';
@@ -158,6 +161,7 @@ export function GenerationHome({
   const router = useRouter();
   const { user } = useAuth();
   const { toast } = useToast();
+  const chrome = useAppChrome();
 
   const [mode, setMode] = useState<AppMode>('generate');
   const [engine, setEngine] = useState<EngineName>('nanobanana');
@@ -269,7 +273,11 @@ export function GenerationHome({
 
   function errorToast(err: unknown, fallback: TranslationKey) {
     const creditKey = creditErrorKey(err);
-    if (creditKey) {
+    const plansReason = plansReasonFor(err);
+    if (plansReason && chrome) {
+      // Refused for want of a plan or credits: the plans, over the page.
+      chrome.openPlans(plansReason);
+    } else if (creditKey) {
       toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
     } else if (isServiceNotConfigured(err)) {
       toast(t('app.serviceNotConfigured'), 'error');
@@ -469,27 +477,9 @@ export function GenerationHome({
             </h2>
             <p className="text-[13px] text-[#8A8896]">{t('page.generateSubtitle')}</p>
           </div>
-          {!tier ? (
-            // Blocking, not a late error at generate-time: without an active
-            // tier there's nothing to do in any mode.
-            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-              <div className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-[#EEF1FF]">
-                <Folder set="curved" size={24} primaryColor="#2948FC" />
-              </div>
-              <h2 className="font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F]">
-                {t('app.genHomeNoTierTitle')}
-              </h2>
-              <p className="max-w-[320px] text-[13px] text-[#8A8896]">
-                {t('app.genHomeNoTierBody')}
-              </p>
-              <Link
-                href="/app/tarifs"
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-2.5 text-[13px] font-semibold text-white"
-              >
-                {t('app.genHomeChooseTier')}
-              </Link>
-            </div>
-          ) : (
+          {/* Without a plan the page is the same (owner, 2026-10-15: « qu'il
+              voie toute l'interface »); launching a render opens the plans. */}
+          {
             <div className="flex min-h-0 flex-1 flex-col">
               {/* No drag-and-drop on the canvas (owner, 2026-10-08): images
                   come in through the command bar's paperclip. */}
@@ -578,10 +568,10 @@ export function GenerationHome({
                 />
               )}
             </div>
-          )}
+          }
         </section>
 
-        {tier && (
+        {
           <CommandBar
             mode={mode}
             onModeChange={handleModeChange}
@@ -633,6 +623,11 @@ export function GenerationHome({
             }
             onSubmit={() => {
               if (!photoFile || sendDisabled) return;
+              // No plan, or not enough credits for this render: the plans
+              // open over the page, before anything is uploaded.
+              const cost = renderCost(resolution, mode === 'generate' ? 1 : (variantCount ?? 1));
+              if (!tier) return chrome?.openPlans('noTier');
+              if (remaining !== null && remaining < cost) return chrome?.openPlans('noCredits');
               if (mode === 'generate') void quickStart(photoFile);
               else void runEdit(photoFile);
             }}
@@ -649,7 +644,7 @@ export function GenerationHome({
             generating={creating}
             fill
           />
-        )}
+        }
       </main>
 
       <SideColumn

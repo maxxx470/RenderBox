@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'plans-dialog-channels',
+    date: '2026-10-15',
+    kind: 'shipped',
+    title: {
+      fr: 'Toute l’interface dès l’arrivée, et nos chaînes',
+      en: 'The whole interface from the start, and our channels',
+    },
+    body: {
+      fr: 'Sans formule ou sans assez de crédits, le Générateur, vos projets et Améliorer s’ouvrent désormais en entier : vous préparez votre rendu, et les formules s’affichent dans une petite fenêtre au moment de lancer. Visio et Pixel IA ont chacun leur symbole. Sur téléphone, la connexion et l’accueil tiennent sur un seul écran. Et la page Info mène à notre chaîne WhatsApp (en français ou en anglais selon votre langue) et à notre chaîne YouTube.',
+      en: 'Without a plan or with too few credits, the Image generator, your projects and Enhance now open in full: you prepare your render, and the plans show in a small window when you launch it. Visio and Pixel AI each have their own symbol. On a phone, sign-in and onboarding fit on a single screen. And the Info page leads to our WhatsApp channel (in French or English, following your language) and to our YouTube channel.',
+    },
+  },
+  {
     id: 'credits',
     date: '2026-10-13',
     kind: 'shipped',

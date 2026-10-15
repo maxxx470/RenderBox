@@ -25,6 +25,7 @@ const ACTION_KEY: Record<string, TranslationKey> = {
   'user.role_change': 'admin.journal.action.user_role_change',
   'user.soft_delete': 'admin.journal.action.user_soft_delete',
   'user.restore_deleted': 'admin.journal.action.user_restore_deleted',
+  'user.credits_adjust': 'admin.journal.action.user_credits_adjust',
 };
 
 function describe(
@@ -35,7 +36,9 @@ function describe(
   const target = row.targetId ?? '';
   if (key) {
     const to = typeof row.metadata?.to === 'string' ? row.metadata.to : '';
-    return t(key, { target, to });
+    const delta = typeof row.metadata?.delta === 'number' ? row.metadata.delta : 0;
+    const reason = typeof row.metadata?.reason === 'string' ? row.metadata.reason : '';
+    return t(key, { target, to, delta: delta > 0 ? `+${delta}` : String(delta), reason });
   }
   return t('admin.journal.action.generic', {
     action: row.action,

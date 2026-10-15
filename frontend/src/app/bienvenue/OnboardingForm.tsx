@@ -12,6 +12,7 @@ import { api, ApiError } from '@/lib/api';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { EngineLogo } from '@/components/EngineLogo';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
 import {
   COUNTRY_SUGGESTIONS_FR,
@@ -38,7 +39,7 @@ export interface OnboardingProfile {
 
 const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
 const FIELD =
-  'h-12 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 text-[14px] text-[#17161F] outline-none placeholder:text-[#8A8896] focus:border-[#2948FC]';
+  'h-11 w-full rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 min-[1024px]:h-12 text-[14px] text-[#17161F] outline-none placeholder:text-[#8A8896] focus:border-[#2948FC]';
 
 const SCREENS = [
   'onboarding.screen1',
@@ -125,17 +126,17 @@ export function OnboardingForm({ initial }: { initial: OnboardingProfile }) {
           />
         ))}
       </div>
-      <p className="mt-4 font-[family-name:var(--font-mono)] text-[11px] font-semibold uppercase tracking-[0.12em] text-[#2948FC]">
+      <p className="mt-3 font-[family-name:var(--font-mono)] text-[11px] min-[1024px]:mt-4 font-semibold uppercase tracking-[0.12em] text-[#2948FC]">
         {t('onboarding.stepOf', { n: String(screen + 1), total: String(SCREENS.length) })}
       </p>
-      <h1 className="mt-1.5 font-[family-name:var(--font-display)] text-[26px] font-semibold tracking-[-0.4px] text-[#17161F]">
+      <h1 className="mt-1 font-[family-name:var(--font-display)] text-[22px] min-[1024px]:mt-1.5 min-[1024px]:text-[26px] font-semibold tracking-[-0.4px] text-[#17161F]">
         {t(SCREENS[screen]!)}
       </h1>
-      <p className="mt-1.5 text-[14px] text-[#6B6878]">
+      <p className="mt-1 text-[13px] text-[#6B6878] min-[1024px]:mt-1.5 min-[1024px]:text-[14px]">
         {t(`${SCREENS[screen]!}Sub` as TranslationKey)}
       </p>
 
-      <div className="mt-7 flex flex-col gap-5">
+      <div className="mt-4 flex flex-col gap-3.5 min-[1024px]:mt-7 min-[1024px]:gap-5">
         {screen === 0 && (
           <>
             <Labeled label={t('onboarding.name')} htmlFor="ob-name" required>
@@ -289,7 +290,7 @@ export function OnboardingForm({ initial }: { initial: OnboardingProfile }) {
                 setError(null);
                 setScreen((s) => s - 1);
               }}
-              className="h-12 rounded-xl bg-[#F2F2F5] px-5 text-[14px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE] disabled:opacity-60"
+              className="h-11 rounded-xl bg-[#F2F2F5] px-5 min-[1024px]:h-12 text-[14px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE] disabled:opacity-60"
             >
               {t('onboarding.back')}
             </button>
@@ -298,7 +299,7 @@ export function OnboardingForm({ initial }: { initial: OnboardingProfile }) {
             type="button"
             disabled={busy}
             onClick={() => void next()}
-            className={`h-12 flex-1 rounded-xl text-[14px] font-semibold text-white transition-[opacity,scale] duration-150 active:scale-[0.98] disabled:opacity-60 ${GRADIENT}`}
+            className={`h-11 flex-1 rounded-xl text-[14px] min-[1024px]:h-12 font-semibold text-white transition-[opacity,scale] duration-150 active:scale-[0.98] disabled:opacity-60 ${GRADIENT}`}
           >
             {busy
               ? t('onboarding.saving')
@@ -307,7 +308,9 @@ export function OnboardingForm({ initial }: { initial: OnboardingProfile }) {
                 : t('onboarding.next')}
           </button>
         </div>
-        <p className="text-center text-[12px] text-[#8A8896]">{t('onboarding.privacy')}</p>
+        <p className="text-center text-[12px] text-[#8A8896] [@media(max-height:700px)]:max-[1023px]:hidden">
+          {t('onboarding.privacy')}
+        </p>
       </div>
     </div>
   );
@@ -334,7 +337,7 @@ function Labeled({
   );
   return (
     <div>
-      <div className="mb-2 flex items-baseline justify-between gap-3">
+      <div className="mb-1.5 flex items-baseline justify-between gap-3 min-[1024px]:mb-2">
         {htmlFor ? <label htmlFor={htmlFor}>{head}</label> : head}
         {hint && <span className="text-[12px] text-[#8A8896]">{hint}</span>}
       </div>
@@ -356,7 +359,7 @@ function Chips<K extends string>({
 }) {
   const { t } = useLocale();
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5 min-[1024px]:gap-2">
       {options.map((k) => {
         const on = value.includes(k);
         return (
@@ -365,7 +368,7 @@ function Chips<K extends string>({
             type="button"
             aria-pressed={on}
             onClick={() => onToggle(k)}
-            className={`h-9 rounded-lg px-3.5 text-[13px] font-medium transition-colors ${
+            className={`h-8 rounded-lg px-3 text-[12.5px] font-medium transition-colors min-[1024px]:h-9 min-[1024px]:px-3.5 min-[1024px]:text-[13px] ${
               on ? 'bg-[#2948FC] text-white' : 'bg-[#F2F2F5] text-[#3D3B49] hover:bg-[#E9E9EE]'
             }`}
           >
@@ -395,12 +398,12 @@ function EngineChoice({
             type="button"
             aria-pressed={on}
             onClick={() => onChange(e)}
-            className={`flex flex-col items-start gap-1 rounded-xl p-3 text-left transition-colors ${
+            className={`flex flex-col items-start gap-0.5 rounded-xl p-2.5 text-left min-[1024px]:gap-1 min-[1024px]:p-3 transition-colors ${
               on ? ENGINE_COLORS[e].chip : 'bg-[#F2F2F5] text-[#17161F] hover:bg-[#E9E9EE]'
             }`}
           >
             <span className="flex items-center gap-2 text-[14px] font-semibold">
-              {!on && <span className={`h-2 w-2 rounded-full ${ENGINE_COLORS[e].dot}`} />}
+              <EngineLogo engine={e} size={18} />
               {ENGINE_LABELS[e].name[locale]}
             </span>
             <span className={`text-[12px] ${on ? 'opacity-85' : 'text-[#6B6878]'}`}>

@@ -35,6 +35,14 @@ const USER_SELECT = {
   emailVerifiedAt: true,
   createdAt: true,
   deletedAt: true,
+  // RenderPro (2026-10-15): the plan, the credits and the onboarding answers
+  // the back-office table shows.
+  profession: true,
+  country: true,
+  currentTier: true,
+  tierPeriodStart: true,
+  creditsBalance: true,
+  onboardedAt: true,
 } as const satisfies Prisma.UserSelect;
 
 const Q_MAX = 200;

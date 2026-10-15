@@ -33,6 +33,8 @@ import type { PricingTierId } from '@/lib/pricing-tiers';
 import { AppTopbar } from './AppTopbar';
 import { HomeSidebar, type RailPage } from './HomeSidebar';
 import { MobileNav } from './MobileNav';
+import { PlansDialog, type PlansReason } from './PlansDialog';
+import { isPlaceholderAccount } from '@/lib/account-label';
 import type { AppMode } from './CommandBar';
 import { SIDEBAR_COOKIE } from './sidebar-cookie';
 
@@ -63,6 +65,8 @@ interface ChromeContext {
   handlers: MutableRefObject<PageHandlers>;
   /** Where a project's render tree is portalled into the rail. */
   treeSlot: HTMLElement | null;
+  /** Opens « Choisissez une formule » over the page (PlansDialog). */
+  openPlans: (reason: PlansReason) => void;
 }
 
 const Ctx = createContext<ChromeContext | null>(null);
@@ -123,6 +127,9 @@ export function AppChrome({
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   // The rail entry just clicked, shown as current before the page arrives.
   const [pendingPage, setPendingPage] = useState<RailPage | null>(null);
+  const [plans, setPlans] = useState<PlansReason | null>(null);
+  const openPlans = useCallback((reason: PlansReason) => setPlans(reason), []);
+  const closePlans = useCallback(() => setPlans(null), []);
 
   useEffect(() => {
     setPendingPage(null);
@@ -146,8 +153,8 @@ export function AppChrome({
   }, []);
 
   const ctx = useMemo<ChromeContext>(
-    () => ({ register, handlers, treeSlot }),
-    [register, treeSlot],
+    () => ({ register, handlers, treeSlot, openPlans }),
+    [register, treeSlot, openPlans],
   );
 
   const current = pendingPage ?? railPageFor(pathname);
@@ -188,6 +195,14 @@ export function AppChrome({
         </div>
         <MobileNav current={current} />
       </div>
+      {plans && (
+        <PlansDialog
+          reason={plans}
+          currentTier={quota.tier}
+          demo={isPlaceholderAccount(userEmail)}
+          onClose={closePlans}
+        />
+      )}
     </Ctx.Provider>
   );
 }
