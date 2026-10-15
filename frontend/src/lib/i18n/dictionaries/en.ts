@@ -627,6 +627,8 @@ const en: Record<keyof typeof fr, string> = {
   'admin.journal.action.user_credits_adjust':
     'adjusted the credits of {target} ({delta}): {reason}',
   'admin.checkingAccess': 'Checking access…',
+  'admin.accessError': 'The admin space could not be reached. Check your connection and try again.',
+  'admin.retry': 'Try again',
   'admin.roleLabel': 'role: {role}',
   'admin.backToApp': 'Back to the app',
 

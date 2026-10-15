@@ -23,6 +23,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [admin, setAdmin] = useState<AdminMe['admin'] | null>(null);
   const [checked, setChecked] = useState(false);
+  // The check failed for another reason than the account (server, network):
+  // said on the page with a retry, never a silent bounce to /app.
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,9 +35,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         const res = await api<AdminMe>('/api/admin/me');
         if (!cancelled) setAdmin(res.admin);
       } catch (err) {
-        if (!cancelled) {
-          router.replace(err instanceof ApiError && err.status === 401 ? '/connexion' : '/app');
-        }
+        if (cancelled) return;
+        const status = err instanceof ApiError ? err.status : 0;
+        if (status === 401) router.replace('/connexion');
+        else if (status === 403) router.replace('/app');
+        else setFailed(true);
       } finally {
         if (!cancelled) setChecked(true);
       }
@@ -41,7 +47,26 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, attempt]);
+
+  if (failed) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-white px-6 text-center">
+        <p className="text-sm text-[#3D3B49]">{t('admin.accessError')}</p>
+        <button
+          type="button"
+          onClick={() => {
+            setFailed(false);
+            setChecked(false);
+            setAttempt((n) => n + 1);
+          }}
+          className="rounded-xl bg-[#2948FC] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1E36D6]"
+        >
+          {t('admin.retry')}
+        </button>
+      </main>
+    );
+  }
 
   if (!checked || !admin) {
     return (

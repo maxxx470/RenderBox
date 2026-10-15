@@ -643,6 +643,9 @@ const fr = {
   'admin.journal.action.user_credits_adjust':
     'a ajusté les crédits de {target} ({delta}) : {reason}',
   'admin.checkingAccess': 'Vérification des accès…',
+  'admin.accessError':
+    'L’espace admin n’a pas pu être joint. Vérifiez votre connexion et réessayez.',
+  'admin.retry': 'Réessayer',
   'admin.roleLabel': 'role : {role}',
   'admin.backToApp': "Retour à l'app",
 

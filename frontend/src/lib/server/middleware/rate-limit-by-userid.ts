@@ -14,52 +14,56 @@
 // Threat T-03-01-03: rate-limits the back-office surface — without it,
 // a compromised admin token could be used to scrape PII at unbounded rate.
 //
-// WR-03 — fail-closed semantics in production. When `redis === null`
-// (UPSTASH env missing) we fail OPEN in dev/CI so local development still
-// works, but fail CLOSED with 503 in production so a misconfigured deploy
-// (typo'd UPSTASH_REDIS_REST_URL, plan downgrade) does not silently
-// disable the back-office rate limit.
+// Without Redis (UPSTASH env missing) the limit is counted in memory, per
+// instance, and logged once — the same degraded mode as the per-email
+// limiter (rate-limit-by-email.ts). Until 2026-10-15 production failed
+// CLOSED with 503 here (WR-03), but RenderPro runs on Vercel without Upstash
+// on purpose: every /api/admin/* route answered 503, /admin's access check
+// failed and sent every admin back to /app (owner: « ça me ramène sur le
+// dashboard »). Every route still requires an ADMIN session first; set
+// ADMIN_RATE_LIMIT_FAIL_CLOSED=1 to bring the 503 back once Redis exists.
 import 'server-only';
 import { NextResponse } from 'next/server';
 import { redis } from '@/lib/server/redis';
-import { RedisRateLimitStore } from '@/lib/server/rate-limit-store';
+import { MemoryRateLimitStore, RedisRateLimitStore } from '@/lib/server/rate-limit-store';
+import { log } from '@/lib/server/observability/log';
 
 const ADMIN_PREFIX = 'rl:admin:userid:';
 const WINDOW_MS = 60_000;
 const MAX_HITS = 100;
+
+// The per-instance fallback, kept across requests of the same instance.
+let memoryStore: MemoryRateLimitStore | null = null;
 
 /**
  * Enforce the per-userId admin rate limit. Returns a 429 NextResponse when
  * the userId has exceeded MAX_HITS in WINDOW_MS, otherwise returns null and
  * the caller should proceed.
  *
- * Behavior when `redis === null` (no Upstash configured):
- *   - In production (NODE_ENV === 'production'): returns 503
- *     RATE_LIMIT_BACKEND_UNAVAILABLE so the route fails closed (WR-03).
- *   - In dev / test / CI: returns null (fail open) so local development
- *     without Upstash still works.
+ * Without Redis the hits are counted in memory (see the header), unless
+ * ADMIN_RATE_LIMIT_FAIL_CLOSED=1, which answers 503 instead.
  */
 export async function enforceAdminRateLimit(userId: string): Promise<NextResponse | null> {
-  if (!redis) {
-    if (process.env.NODE_ENV === 'production') {
-      // WR-03 — fail closed. Silent disablement of the back-office rate
-      // limit in production is exactly the inverse of the T-03-01-03
-      // mitigation. Surface as 503 so the route operator notices.
-      return NextResponse.json(
-        {
-          error: 'RATE_LIMIT_BACKEND_UNAVAILABLE',
-          message: 'Rate-limit backend unavailable.',
-        },
-        { status: 503 },
-      );
-    }
-    return null;
+  if (!redis && process.env.ADMIN_RATE_LIMIT_FAIL_CLOSED === '1') {
+    return NextResponse.json(
+      {
+        error: 'RATE_LIMIT_BACKEND_UNAVAILABLE',
+        message: 'Rate-limit backend unavailable.',
+      },
+      { status: 503 },
+    );
+  }
+  if (!redis && !memoryStore) {
+    log.warn('admin-limiter using in-memory fallback (Redis absent)');
+    memoryStore = new MemoryRateLimitStore({ windowMs: WINDOW_MS });
   }
   // Use empty `prefix` since we encode the full keyspace into the key
   // ourselves — the existing store applies its own prefix on top, so we
   // pass '' and prepend rl:admin:userid: explicitly to keep the keyspace
   // contract documented at this call site.
-  const store = new RedisRateLimitStore({ redis, prefix: '', windowMs: WINDOW_MS });
+  const store = redis
+    ? new RedisRateLimitStore({ redis, prefix: '', windowMs: WINDOW_MS })
+    : memoryStore!;
   const { totalHits, resetTime } = await store.increment(`${ADMIN_PREFIX}${userId}`);
   if (totalHits > MAX_HITS) {
     const retryAfter = Math.max(1, Math.ceil((resetTime.getTime() - Date.now()) / 1000));
