@@ -36,6 +36,7 @@ export default async function AppProjectPage({ params }: { params: Promise<{ pro
         createdAt: true,
         preset: true,
         engine: true,
+        engineVersion: true,
         editType: true,
       },
     }),

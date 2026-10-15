@@ -1,25 +1,34 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
-const { mockNanobanana, mockGptImage } = vi.hoisted(() => ({
+const { mockNanobanana, mockGptImage, mockKie } = vi.hoisted(() => ({
   mockNanobanana: vi.fn(),
   mockGptImage: vi.fn(),
+  mockKie: vi.fn(),
 }));
 
 vi.mock('./nanobanana', () => ({ generateWithNanobanana: mockNanobanana }));
 vi.mock('./gpt-image', () => ({ generateWithGptImage: mockGptImage }));
+vi.mock('./kie', async (orig) => ({
+  ...(await orig<typeof import('./kie')>()),
+  generateWithKie: mockKie,
+}));
 
 import {
   generateRender,
   isEngineConfigured,
+  resolveEngineVersion,
   EngineTimeoutError,
   ENGINE_DEADLINE_MS,
 } from './index';
+import { KieError } from './kie';
 
 const INPUT = { sourceImageBuffer: Buffer.from('x'), sourceMimeType: 'image/png', prompt: 'p' };
 
 beforeEach(() => {
   mockNanobanana.mockReset();
   mockGptImage.mockReset();
+  mockKie.mockReset();
+  vi.stubEnv('KIE_API_KEY', '');
 });
 
 afterEach(() => {
@@ -43,6 +52,66 @@ describe('generateRender', () => {
     expect(mockGptImage).toHaveBeenCalledWith({ ...INPUT, signal: expect.any(AbortSignal) });
     expect(mockNanobanana).not.toHaveBeenCalled();
     expect(result).toEqual({ imageBuffer: Buffer.from('b'), mimeType: 'image/png' });
+  });
+});
+
+// 2026-10-15: a version runs through Kie; Kie's account refusing falls back.
+describe('generateRender — engine versions (Kie)', () => {
+  const KIE_OUT = { imageBuffer: Buffer.from('k'), mimeType: 'image/png' };
+
+  it('runs a version through Kie and says which version made the image', async () => {
+    mockKie.mockResolvedValue(KIE_OUT);
+    const result = await generateRender('nanobanana', { ...INPUT, version: 'visio-2-1' });
+    expect(mockKie).toHaveBeenCalledWith('visio-2-1', {
+      ...INPUT,
+      version: 'visio-2-1',
+      signal: expect.any(AbortSignal),
+    });
+    expect(mockNanobanana).not.toHaveBeenCalled();
+    expect(result).toEqual({ ...KIE_OUT, engineVersion: 'visio-2-1' });
+  });
+
+  it.each([401, 402])(
+    'Kie account refusal (%i) falls back to the direct engine, without a version',
+    async (code) => {
+      vi.stubEnv('OPENAI_API_KEY', 'key');
+      mockKie.mockRejectedValue(new KieError('refused', code, 'create'));
+      mockGptImage.mockResolvedValue({ imageBuffer: Buffer.from('d'), mimeType: 'image/png' });
+      const result = await generateRender('gpt_image', { ...INPUT, version: 'pixel-2' });
+      expect(mockGptImage).toHaveBeenCalledWith({ ...INPUT, signal: expect.any(AbortSignal) });
+      expect(result).toEqual({ imageBuffer: Buffer.from('d'), mimeType: 'image/png' });
+    },
+  );
+
+  it('no fallback without the direct key, nor for a failed task', async () => {
+    vi.stubEnv('GEMINI_API_KEY', '');
+    const refused = new KieError('no credits', 402, 'create');
+    mockKie.mockRejectedValueOnce(refused);
+    await expect(generateRender('nanobanana', { ...INPUT, version: 'visio-pro' })).rejects.toBe(
+      refused,
+    );
+    vi.stubEnv('GEMINI_API_KEY', 'key');
+    const failed = new KieError('policy', 501, 'task');
+    mockKie.mockRejectedValueOnce(failed);
+    await expect(generateRender('nanobanana', { ...INPUT, version: 'visio-pro' })).rejects.toBe(
+      failed,
+    );
+    expect(mockNanobanana).not.toHaveBeenCalled();
+  });
+
+  it('resolveEngineVersion: none without Kie; the asked one, else the default', () => {
+    expect(resolveEngineVersion('nanobanana', 'visio-2')).toBeUndefined();
+    vi.stubEnv('KIE_API_KEY', 'key');
+    expect(resolveEngineVersion('nanobanana', 'visio-2')).toBe('visio-2');
+    expect(resolveEngineVersion('nanobanana', undefined)).toBe('visio-pro');
+    // A version of the other engine (annotate forces Pixel IA): the default.
+    expect(resolveEngineVersion('gpt_image', 'visio-2')).toBe('pixel-2');
+  });
+
+  it('isEngineConfigured: the Kie key alone is enough', () => {
+    vi.stubEnv('GEMINI_API_KEY', '');
+    vi.stubEnv('KIE_API_KEY', 'key');
+    expect(isEngineConfigured('nanobanana')).toBe(true);
   });
 });
 

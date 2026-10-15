@@ -29,7 +29,9 @@ import {
   EngineNotConfiguredError,
   EngineTimeoutError,
   ENGINE_NAMES,
+  resolveEngineVersion,
 } from '@/lib/server/generation/engines';
+import { ENGINE_VERSION_KEYS, ENGINE_VERSIONS } from '@/lib/server/generation/engine-versions';
 import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
 import { buildRenderTree } from '@/lib/server/render-tree';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
@@ -42,19 +44,26 @@ import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
 import { log } from '@/lib/server/observability/log';
 
-const Body = z.object({
-  sourceNodeId: z.string().min(1),
-  // Null or absent: no ambiance — a faithful photo render (PHOTO_RENDER_MODIFIER).
-  preset: z.enum(PRESET_KEYS).nullish(),
-  engine: z.enum(ENGINE_NAMES),
-  customPrompt: z.string().trim().max(2000).optional(),
-  // Started from a template (the image generator page): the prompt is the
-  // template's, sent without any ambiance, and the node keeps the template's
-  // key as its preset (the four lights, named in the tree).
-  template: z.enum(TEMPLATE_KEYS).optional(),
-  ratio: z.enum(RATIO_KEYS).optional(),
-  resolution: z.enum(RESOLUTION_KEYS).optional(),
-});
+const Body = z
+  .object({
+    sourceNodeId: z.string().min(1),
+    // Null or absent: no ambiance — a faithful photo render (PHOTO_RENDER_MODIFIER).
+    preset: z.enum(PRESET_KEYS).nullish(),
+    engine: z.enum(ENGINE_NAMES),
+    customPrompt: z.string().trim().max(2000).optional(),
+    // Started from a template (the image generator page): the prompt is the
+    // template's, sent without any ambiance, and the node keeps the template's
+    // key as its preset (the four lights, named in the tree).
+    template: z.enum(TEMPLATE_KEYS).optional(),
+    ratio: z.enum(RATIO_KEYS).optional(),
+    resolution: z.enum(RESOLUTION_KEYS).optional(),
+    // The engine's version (engine-versions.ts); absent: the engine's default.
+    version: z.enum(ENGINE_VERSION_KEYS).optional(),
+  })
+  .refine((b) => !b.version || ENGINE_VERSIONS[b.version].engine === b.engine, {
+    message: 'version does not belong to engine',
+    path: ['version'],
+  });
 
 export async function POST(
   req: NextRequest,
@@ -91,6 +100,7 @@ export async function POST(
     }
     // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
     const { sourceNodeId, engine, customPrompt, ratio, resolution, template } = parsed.data;
+    const version = resolveEngineVersion(engine, parsed.data.version);
     // The ambiance whose modifier goes into the prompt — none for a template.
     const promptPreset = template ? null : (parsed.data.preset ?? null);
     // What the node records: the template's key or the ambiance.
@@ -192,6 +202,7 @@ export async function POST(
           prompt: assembledPrompt,
           ...(ratio && ratio !== 'auto' ? { aspectRatio: ratio } : {}),
           ...(resolution ? { resolution } : {}),
+          ...(version ? { version } : {}),
         });
       } catch (e) {
         if (e instanceof EngineNotConfiguredError) {
@@ -240,6 +251,7 @@ export async function POST(
             sizeBytes: uploaded.bytes,
             preset,
             engine,
+            engineVersion: result.engineVersion ?? null,
           },
           select: { id: true },
         });
@@ -281,6 +293,7 @@ export async function POST(
           createdAt: true,
           preset: true,
           engine: true,
+          engineVersion: true,
         },
       });
 

@@ -343,37 +343,41 @@ model Project {
 }
 
 model RenderNode {
-  id        String       @id @default(cuid())
-  projectId String
-  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  parentId  String?
-  parent    RenderNode?  @relation("NodeTree", fields: [parentId], references: [id], onDelete: SetNull)
-  children  RenderNode[] @relation("NodeTree")
-  kind      String // UPLOADED | GENERATED
+  id            String       @id @default(cuid())
+  projectId     String
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId      String?
+  parent        RenderNode?  @relation("NodeTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children      RenderNode[] @relation("NodeTree")
+  kind          String // UPLOADED | GENERATED
   // Vercel Blob URL. Vercel Blob has no private/signed access mode — this
   // field must NEVER be sent to the client directly. All reads go through
   // the authenticated proxy route (app/api/render-nodes/[id]/image) which
   // checks project ownership before streaming bytes.
-  blobUrl   String
-  mimeType  String
-  sizeBytes Int
+  blobUrl       String
+  mimeType      String
+  sizeBytes     Int
   // Phase 3 — which ambiance preset produced this node. Null for UPLOADED
   // nodes (no preset applies to a source photo) and for any GENERATED node
   // predating Phase 3. See lib/server/generation/presets.ts.
-  preset    String?
+  preset        String?
   // Phase 4 — which engine produced this node ("nanobanana" | "gpt_image").
   // Null for UPLOADED nodes and for any GENERATED node predating Phase 4.
   // Denormalized onto RenderNode (mirroring `preset`) so the viewer's
   // per-node badge doesn't need a join through Generation.
-  engine    String?
+  engine        String?
+  // 2026-10-15 — which version of that engine made the node ("visio-2-1",
+  // see lib/server/generation/engine-versions.ts). Null for uploads, older
+  // renders and renders the engine's direct API made (no Kie).
+  engineVersion String?
   // Phase 5 — set only when this node came from the edit route (not the
   // standard generate route). Null = a standard generation or an upload.
   // "enhance" = the /app/enhance route (no preset, see generation/enhance.ts).
-  editType  String? // "add_element" | "targeted_retouch" | "enhance" | null
+  editType      String? // "add_element" | "targeted_retouch" | "enhance" | null
   // { x, y, width, height } in percent (0-100) of the source image,
   // present only when editType = "targeted_retouch".
-  editZone  Json?
-  createdAt DateTime     @default(now())
+  editZone      Json?
+  createdAt     DateTime     @default(now())
 
   generation Generation?
 

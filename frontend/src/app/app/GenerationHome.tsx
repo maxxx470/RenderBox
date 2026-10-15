@@ -323,7 +323,9 @@ export function GenerationHome({
       form.append('editType', mode === 'retouch' ? 'annotate' : 'add_element');
       form.append('instruction', prompt.trim());
       form.append('variantCount', String(variantCount));
-      form.append('engine', mode === 'retouch' ? ANNOTATE_ENGINE : engine);
+      const editEngine = mode === 'retouch' ? ANNOTATE_ENGINE : engine;
+      form.append('engine', editEngine);
+      if (chrome?.versionsEnabled) form.append('version', chrome.versions[editEngine]);
       form.append('ratio', ratio);
       form.append('resolution', resolution);
       if (mode === 'retouch') {
@@ -581,6 +583,8 @@ export function GenerationHome({
             engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
             onEngineChange={handleEngineChange}
             engineLocked={mode === 'retouch'}
+            versions={chrome?.versionsEnabled ? chrome.versions : undefined}
+            onVersionChange={chrome?.versionsEnabled ? chrome.setVersion : undefined}
             ratio={ratio}
             onRatioChange={setRatio}
             resolution={resolution}

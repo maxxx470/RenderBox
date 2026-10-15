@@ -37,6 +37,34 @@ import { PlansDialog, type PlansReason } from './PlansDialog';
 import { isPlaceholderAccount } from '@/lib/account-label';
 import type { AppMode } from './CommandBar';
 import { SIDEBAR_COOKIE } from './sidebar-cookie';
+import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
+import {
+  DEFAULT_ENGINE_VERSION,
+  ENGINE_VERSIONS,
+  isEngineVersionKey,
+  type EngineVersionKey,
+} from '@/lib/server/generation/engine-versions';
+
+/** Where the version chosen for each engine is remembered, per browser. */
+const VERSIONS_STORAGE = 'rp-engine-versions';
+
+/** The version remembered for each engine, the defaults where none is. */
+function readStoredVersions(): Record<EngineName, EngineVersionKey> {
+  const next = { ...DEFAULT_ENGINE_VERSION };
+  try {
+    const raw = JSON.parse(localStorage.getItem(VERSIONS_STORAGE) ?? '{}') as Record<
+      string,
+      unknown
+    >;
+    for (const engine of ENGINE_NAMES) {
+      const v = raw[engine];
+      if (isEngineVersionKey(v) && ENGINE_VERSIONS[v].engine === engine) next[engine] = v;
+    }
+  } catch {
+    // No storage (private window): the defaults.
+  }
+  return next;
+}
 
 export interface ChromeQuota {
   tier: PricingTierId | null;
@@ -67,6 +95,11 @@ interface ChromeContext {
   treeSlot: HTMLElement | null;
   /** Opens « Choisissez une formule » over the page (PlansDialog). */
   openPlans: (reason: PlansReason) => void;
+  /** The engines' versions run (Kie configured): the bars show their chip. */
+  versionsEnabled: boolean;
+  /** The version chosen for each engine, kept across pages and visits. */
+  versions: Record<EngineName, EngineVersionKey>;
+  setVersion: (engine: EngineName, version: EngineVersionKey) => void;
 }
 
 const Ctx = createContext<ChromeContext | null>(null);
@@ -108,11 +141,13 @@ export function AppChrome({
   userEmail,
   initialQuota,
   initialCollapsed,
+  versionsEnabled = false,
   children,
 }: {
   userEmail: string;
   initialQuota: ChromeQuota;
   initialCollapsed: boolean;
+  versionsEnabled?: boolean;
   children: ReactNode;
 }) {
   const t = useTranslations();
@@ -130,6 +165,20 @@ export function AppChrome({
   const [plans, setPlans] = useState<PlansReason | null>(null);
   const openPlans = useCallback((reason: PlansReason) => setPlans(reason), []);
   const closePlans = useCallback(() => setPlans(null), []);
+  // The defaults on the server's render, the remembered ones once mounted.
+  const [versions, setVersions] = useState(DEFAULT_ENGINE_VERSION);
+  useEffect(() => setVersions(readStoredVersions()), []);
+  const setVersion = useCallback((engine: EngineName, version: EngineVersionKey) => {
+    setVersions((prev) => {
+      const next = { ...prev, [engine]: version };
+      try {
+        localStorage.setItem(VERSIONS_STORAGE, JSON.stringify(next));
+      } catch {
+        // Non-fatal — the choice just won't survive a reload.
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     setPendingPage(null);
@@ -153,8 +202,8 @@ export function AppChrome({
   }, []);
 
   const ctx = useMemo<ChromeContext>(
-    () => ({ register, handlers, treeSlot, openPlans }),
-    [register, treeSlot, openPlans],
+    () => ({ register, handlers, treeSlot, openPlans, versionsEnabled, versions, setVersion }),
+    [register, treeSlot, openPlans, versionsEnabled, versions, setVersion],
   );
 
   const current = pendingPage ?? railPageFor(pathname);

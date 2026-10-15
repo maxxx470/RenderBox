@@ -9,6 +9,7 @@
 // runtime edge and there is no import cycle to resolve.
 import type { RatioKey } from '../ratios';
 import type { ResolutionKey } from '../resolutions';
+import type { EngineVersionKey } from '../engine-versions';
 
 export type EngineName = 'nanobanana' | 'gpt_image';
 
@@ -39,6 +40,9 @@ export interface GenerateRenderInput {
   // Requested output size (1K / 2K / 4K). Visio renders at it; any engine
   // output smaller than it is enlarged afterwards — see output-shape.ts.
   resolution?: ResolutionKey | undefined;
+  // The engine version (engine-versions.ts), run through Kie (kie.ts). Absent:
+  // the engine's direct API (Gemini / OpenAI), as before versions existed.
+  version?: EngineVersionKey | undefined;
   // Set by generateRender (index.ts): aborted once ENGINE_DEADLINE_MS is up.
   // Each engine hands it to its SDK, so the connection is closed then.
   signal?: AbortSignal | undefined;
@@ -55,6 +59,9 @@ export const ENGINE_DEADLINE_MS = 180_000;
 export interface GenerateRenderOutput {
   imageBuffer: Buffer;
   mimeType: string;
+  // The version that made the image — absent when the direct API did
+  // (no version asked, or Kie's account refused and the call fell back).
+  engineVersion?: EngineVersionKey;
 }
 
 export class EngineNotConfiguredError extends Error {

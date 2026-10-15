@@ -24,6 +24,9 @@ export async function AppLayoutShell({ children }: { children: ReactNode }) {
       userEmail={auth.user.email ?? ''}
       initialQuota={{ tier: quota.tier, max: quota.max, remaining: quota.remaining }}
       initialCollapsed={jar.get(SIDEBAR_COOKIE)?.value === '1'}
+      // The engines' versions run through Kie: without its key the routes
+      // use the direct APIs and no version chip is shown.
+      versionsEnabled={Boolean(process.env.KIE_API_KEY)}
     >
       {children}
     </AppChrome>

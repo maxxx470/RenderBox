@@ -30,8 +30,12 @@ const statements = sql
 describe(`migration ${NAME}`, () => {
   it('sorts after every migration folder that came before it (Prisma applies them in byte order)', () => {
     const sorted = [...folders].sort(byteOrder);
-    // Only 9_phase9_auth_onboarding (2026-10-13) may come after it.
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9_auth_onboarding']);
+    // Only 9_phase9_auth_onboarding (2026-10-13) and 9_phase9b_engine_versions
+    // (2026-10-15) may come after it.
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
+      '9_phase9_auth_onboarding',
+      '9_phase9b_engine_versions',
+    ]);
     expect(sorted.indexOf('20260829225539_tier_quota')).toBeLessThan(sorted.indexOf(NAME));
   });
 

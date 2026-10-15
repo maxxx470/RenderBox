@@ -375,6 +375,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.presetNone': 'No ambiance',
   'app.presetNoneHint': 'A faithful photo render of your image',
   'app.engineLabel': 'Engine',
+  'app.versionLabel': 'Engine version',
   'app.resolutionLabel': 'Resolution',
   'app.ratioAuto': 'Auto',
   'app.submitGenerate': 'Generate',

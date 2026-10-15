@@ -17,7 +17,7 @@ import {
   isResolutionKey,
   type ResolutionKey,
 } from '@/lib/server/generation/resolutions';
-import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import { engineDisplayName } from '@/lib/server/generation/engine-versions';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Download, Swap } from 'react-iconly';
 import { AppFrame } from './AppFrame';
@@ -352,6 +352,7 @@ export function AppShell({
           // 'auto' is the absence of a request, so it is not sent at all.
           ratio: ratio === 'auto' ? undefined : ratio,
           resolution,
+          version: chrome?.versionsEnabled ? chrome.versions[engine] : undefined,
         },
       });
       setTree(res.tree);
@@ -402,7 +403,9 @@ export function AppShell({
       form.append('editType', EDIT_TYPE[mode]);
       form.append('instruction', prompt.trim());
       form.append('variantCount', String(variantCount));
-      form.append('engine', mode === 'retouch' ? ANNOTATE_ENGINE : engine);
+      const editEngine = mode === 'retouch' ? ANNOTATE_ENGINE : engine;
+      form.append('engine', editEngine);
+      if (chrome?.versionsEnabled) form.append('version', chrome.versions[editEngine]);
       form.append('ratio', ratio);
       form.append('resolution', resolution);
       if (mode === 'retouch') {
@@ -677,15 +680,19 @@ export function AppShell({
                       {selectedNode?.preset
                         ? t('app.canvasPresetBadge', {
                             preset: PRESETS[selectedNode.preset as PresetKey].label[locale],
-                            engine:
-                              ENGINE_LABELS[(selectedNode.engine as EngineName) || 'nanobanana']
-                                .name[locale],
+                            engine: engineDisplayName(
+                              selectedNode.engine,
+                              selectedNode.engineVersion,
+                              locale,
+                            ),
                           })
                         : // No preset: a source photo, or a render made from a
-                          // template — name the engine that made it, if any.
-                          ENGINE_LABELS[(selectedNode?.engine as EngineName) || 'nanobanana'].name[
-                            locale
-                          ]}
+                          // template — name the engine (and version) that made it.
+                          engineDisplayName(
+                            selectedNode?.engine,
+                            selectedNode?.engineVersion,
+                            locale,
+                          )}
                     </span>
                     {/* Hidden while comparing: the two image labels take that
                         corner then. */}
@@ -854,6 +861,8 @@ export function AppShell({
           onModeChange={handleModeChange}
           editEnabled={Boolean(selectedNode)}
           editDisabledHint={t('app.modeSelectNodeHint')}
+          versions={chrome?.versionsEnabled ? chrome.versions : undefined}
+          onVersionChange={chrome?.versionsEnabled ? chrome.setVersion : undefined}
           ratio={ratio}
           onRatioChange={setRatio}
           resolution={resolution}

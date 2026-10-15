@@ -43,7 +43,9 @@ import {
   EngineNotConfiguredError,
   EngineTimeoutError,
   ENGINE_NAMES,
+  resolveEngineVersion,
 } from '@/lib/server/generation/engines';
+import { ENGINE_VERSION_KEYS, ENGINE_VERSIONS } from '@/lib/server/generation/engine-versions';
 import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
 import {
   buildEnhancePrompt,
@@ -65,6 +67,12 @@ const Fields = z
     instruction: z.string().trim().max(2000).optional(),
     ratio: z.enum(RATIO_KEYS).default('auto'),
     resolution: z.enum(RESOLUTION_KEYS).default('1k'),
+    // The engine's version (engine-versions.ts); absent: the engine's default.
+    version: z.enum(ENGINE_VERSION_KEYS).optional(),
+  })
+  .refine((v) => !v.version || ENGINE_VERSIONS[v.version].engine === v.engine, {
+    message: 'version does not belong to engine',
+    path: ['version'],
   })
   .refine((v) => v.options.length > 0 || Boolean(v.instruction), {
     message: 'tick an improvement or describe one',
@@ -115,6 +123,7 @@ export async function POST(
       instruction: text('instruction'),
       ratio: text('ratio'),
       resolution: text('resolution'),
+      version: text('version'),
     });
     if (!parsed.success) {
       return NextResponse.json(
@@ -123,6 +132,7 @@ export async function POST(
       );
     }
     const { sourceNodeId, engine, options, strength, instruction, ratio, resolution } = parsed.data;
+    const version = resolveEngineVersion(engine, parsed.data.version);
 
     // One reference per ticked improvement, in the options' fixed order so the
     // prompt numbers them the way they are sent. A reference for an option
@@ -213,6 +223,7 @@ export async function POST(
           ...(referenceImages.length > 0 ? { referenceImages } : {}),
           ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
           resolution,
+          ...(version ? { version } : {}),
         });
       } catch (e) {
         if (e instanceof EngineNotConfiguredError) {
@@ -265,6 +276,7 @@ export async function POST(
             mimeType: result.mimeType,
             sizeBytes: uploaded.bytes,
             engine,
+            engineVersion: result.engineVersion ?? null,
             editType: 'enhance',
           },
           select: { id: true },

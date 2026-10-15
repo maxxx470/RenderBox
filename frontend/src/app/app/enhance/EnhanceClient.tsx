@@ -30,6 +30,7 @@ import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_NAMES } from '@/lib/server/generation/engines/types';
 import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { EngineLogo } from '@/components/EngineLogo';
+import { VersionSelect } from '../VersionSelect';
 import {
   DEFAULT_ENHANCE_OPTIONS,
   ENHANCE_OPTIONS,
@@ -331,6 +332,7 @@ export function EnhanceClient({
       const form = new FormData();
       form.append('sourceNodeId', current.sourceNodeId);
       form.append('engine', engine);
+      if (chrome?.versionsEnabled) form.append('version', chrome.versions[engine]);
       form.append('strength', strength);
       form.append('ratio', ratio);
       form.append('resolution', resolution);
@@ -624,6 +626,16 @@ export function EnhanceClient({
                 </button>
               ))}
             </div>
+            {chrome?.versionsEnabled && (
+              <div className="mt-2">
+                <VersionSelect
+                  engine={engine}
+                  version={chrome.versions[engine]}
+                  onChange={(v) => chrome.setVersion(engine, v)}
+                  disabled={working}
+                />
+              </div>
+            )}
 
             <p className="mt-auto pt-3 text-center text-[11.5px] text-[#6B6878]">
               {t('enhance.costNote')}

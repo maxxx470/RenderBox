@@ -43,8 +43,10 @@ import {
   EngineNotConfiguredError,
   EngineTimeoutError,
   ENGINE_NAMES,
+  resolveEngineVersion,
   type GenerateRenderOutput,
 } from '@/lib/server/generation/engines';
+import { ENGINE_VERSION_KEYS } from '@/lib/server/generation/engine-versions';
 import { uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
 import { checkImageFile } from '@/lib/server/upload/check-image-file';
 import { buildRenderTree } from '@/lib/server/render-tree';
@@ -77,6 +79,9 @@ const FieldsSchema = z
     // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
     ratio: z.enum(RATIO_KEYS).default('auto'),
     resolution: z.enum(RESOLUTION_KEYS).default('1k'),
+    // The engine's version; one of the other engine (annotate forces Pixel
+    // IA) is ignored for the engine's default — see resolveEngineVersion.
+    version: z.enum(ENGINE_VERSION_KEYS).optional(),
   })
   .refine((v) => v.editType === 'annotate' || v.instruction.length > 0, {
     message: 'instruction is required',
@@ -159,6 +164,7 @@ export async function POST(
       annotations: parsedAnnotations,
       ratio: form.get('ratio') || undefined,
       resolution: form.get('resolution') || undefined,
+      version: form.get('version') || undefined,
     });
     if (!parsed.success) {
       return NextResponse.json(
@@ -179,6 +185,7 @@ export async function POST(
     // Annotate is a gpt-image feature: the client's engine choice does not
     // apply to it (see generation/annotations.ts).
     const engine = editType === 'annotate' ? ANNOTATE_ENGINE : parsed.data.engine;
+    const version = resolveEngineVersion(engine, parsed.data.version);
 
     const referenceFile = form.get('referenceImage');
     if (editType === 'add_element' && !(referenceFile instanceof File)) {
@@ -336,6 +343,7 @@ export async function POST(
             referenceImages,
             ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
             resolution,
+            ...(version ? { version } : {}),
           }),
         ),
       );
@@ -387,6 +395,7 @@ export async function POST(
               sizeBytes: uploaded.bytes,
               preset,
               engine,
+              engineVersion: result.engineVersion ?? null,
               editType,
               ...(editType === 'targeted_retouch' ? { editZone: zone! } : {}),
               ...(editType === 'annotate' ? { editZone: { annotations: annotations! } } : {}),
@@ -446,6 +455,7 @@ export async function POST(
           createdAt: true,
           preset: true,
           engine: true,
+          engineVersion: true,
         },
       });
 

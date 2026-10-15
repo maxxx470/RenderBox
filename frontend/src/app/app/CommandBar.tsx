@@ -32,6 +32,8 @@ import type { PresetKey } from '@/lib/server/generation/presets';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { EngineLogo } from '@/components/EngineLogo';
+import type { EngineVersionKey } from '@/lib/server/generation/engine-versions';
+import { VersionSelect } from './VersionSelect';
 import type { RatioKey } from '@/lib/server/generation/ratios';
 import type { ResolutionKey } from '@/lib/server/generation/resolutions';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
@@ -258,6 +260,8 @@ export function CommandBar({
   pickingElement,
   template = null,
   fill = false,
+  versions,
+  onVersionChange,
 }: {
   mode: AppMode;
   onModeChange: (mode: AppMode) => void;
@@ -318,6 +322,9 @@ export function CommandBar({
    * editor lines the bar up with the canvas above it (owner, 2026-10-08).
    */
   fill?: boolean;
+  /** The version chosen for each engine; absent: no version chip (no Kie). */
+  versions?: Record<EngineName, EngineVersionKey> | undefined;
+  onVersionChange?: ((engine: EngineName, version: EngineVersionKey) => void) | undefined;
 }) {
   const { t, locale } = useLocale();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -391,6 +398,19 @@ export function CommandBar({
   );
 
   const settings: ReactNode[] = [];
+  // The chosen engine's version (2026-10-15), first: it decides what the
+  // other settings produce. Only while the versions run (Kie configured).
+  if (versions && onVersionChange) {
+    settings.push(
+      <VersionSelect
+        key="version"
+        engine={engine}
+        version={versions[engine]}
+        onChange={(v) => onVersionChange(engine, v)}
+        disabled={inputDisabled}
+      />,
+    );
+  }
   if (mode === 'generate' && template) {
     settings.push(
       <span key="template" className={`${CHIP_BASE} pl-1`} title={t('app.templateChip')}>

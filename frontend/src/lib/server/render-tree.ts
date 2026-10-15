@@ -10,6 +10,8 @@ export interface FlatRenderNode {
   // Optional so existing call sites/tests that don't select it keep working.
   preset?: string | null;
   engine?: string | null;
+  // The engine's version that made it (engine-versions.ts), when known.
+  engineVersion?: string | null;
 }
 
 export interface RenderTreeNode extends FlatRenderNode {

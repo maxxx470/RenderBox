@@ -17,6 +17,11 @@ import {
   DEFAULT_ENHANCE_OPTIONS,
 } from '@/lib/server/generation/enhance';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+import {
+  DEFAULT_ENGINE_VERSION,
+  ENGINE_VERSIONS,
+  versionsOf,
+} from '@/lib/server/generation/engine-versions';
 import { MAX_ANNOTATIONS } from '@/lib/server/generation/annotations';
 
 const TIER_NAME: Record<string, string> = {
@@ -35,6 +40,12 @@ export function buildRenderBoxDoc(): string {
   ).join(' ; ');
   const m1 = ENGINE_LABELS.nanobanana;
   const m2 = ENGINE_LABELS.gpt_image;
+  const versionList = (engine: 'nanobanana' | 'gpt_image') =>
+    versionsOf(engine)
+      .map((k) => `${ENGINE_VERSIONS[k].name.fr} (${ENGINE_VERSIONS[k].description.fr})`)
+      .join(', ');
+  const v1 = ENGINE_VERSIONS[DEFAULT_ENGINE_VERSION.nanobanana].name.fr;
+  const v2 = ENGINE_VERSIONS[DEFAULT_ENGINE_VERSION.gpt_image].name.fr;
   const ratios = RATIO_KEYS.map((r) => (r === 'auto' ? 'Auto' : r)).join(', ');
   const res = RESOLUTION_KEYS.map((r) => RESOLUTIONS[r].label).join(', ');
   const enhance = ENHANCE_OPTION_KEYS.map(
@@ -72,6 +83,7 @@ LES DEUX MOTEURS
 - ${m1.name.fr} (pastille rouge) : ${m1.description.fr}.
 - ${m2.name.fr} (pastille jaune) : ${m2.description.fr}.
 - On change de moteur à chaque rendu, d'un clic dans la barre de commande (les deux y sont toujours affichés). Le moteur par défaut se règle dans Paramètres. Les deux moteurs reçoivent les mêmes matériaux (ceux de l'image de départ) et partagent le même historique du projet.
+- Chaque moteur a plusieurs versions, choisies avec la puce « Version du moteur », la première des réglages de la barre de commande (sous les deux moteurs sur la page Améliorer). ${m1.name.fr} : ${versionList('nanobanana')}. ${m2.name.fr} : ${versionList('gpt_image')}. Par défaut ${v1} et ${v2}. La version choisie pour chaque moteur est retenue pour les rendus suivants, l'image indique la version qui l'a faite, et toutes les versions coûtent les mêmes crédits.
 - Ne jamais citer de fournisseur ou de marque d'IA : les moteurs s'appellent ${m1.name.fr} et ${m2.name.fr}.
 
 DANS UN PROJET

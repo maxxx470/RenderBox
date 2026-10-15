@@ -44,7 +44,15 @@ export async function GET(
     const nodes = await prisma.renderNode.findMany({
       where: { projectId },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, parentId: true, kind: true, createdAt: true, preset: true, engine: true },
+      select: {
+        id: true,
+        parentId: true,
+        kind: true,
+        createdAt: true,
+        preset: true,
+        engine: true,
+        engineVersion: true,
+      },
     });
 
     return NextResponse.json(

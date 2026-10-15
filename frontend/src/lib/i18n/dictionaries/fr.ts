@@ -383,6 +383,7 @@ const fr = {
   'app.presetNone': 'Sans ambiance',
   'app.presetNoneHint': 'Rendu photo fidèle à votre image',
   'app.engineLabel': 'Moteur',
+  'app.versionLabel': 'Version du moteur',
   'app.resolutionLabel': 'Résolution',
   'app.ratioAuto': 'Auto',
   'app.submitGenerate': 'Générer',
