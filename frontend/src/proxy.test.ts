@@ -33,9 +33,51 @@ describe('proxy — AUTH_DISABLED CSRF cookie mint', () => {
     expect(res.cookies.get('app-csrf')).toBeUndefined();
   });
 
-  it('is a no-op (no redirect, no forced cookie) on the landing page — AUTH_PROTECTED_PREFIXES is empty by default', () => {
+  it('is a no-op (no redirect, no forced cookie) on the landing page, a public page', () => {
     vi.stubEnv('AUTH_DISABLED', '');
     const res = proxy(req('/'));
     expect(res.status).toBe(200);
+  });
+});
+
+// 2026-10-13: real sign-in is back. RenderPro's pages are protected by
+// default; the session hint is the CSRF cookie (the refresh cookie is
+// path-scoped to /api/auth and never reaches a page request).
+describe('proxy — protected pages', () => {
+  it('a visitor with no session is sent to /connexion, the page kept in ?next=', () => {
+    vi.stubEnv('AUTH_DISABLED', '');
+    const res = proxy(req('/app/tarifs'));
+    expect(res.status).toBe(303);
+    const to = new URL(res.headers.get('location')!);
+    expect(to.pathname).toBe('/connexion');
+    expect(to.searchParams.get('next')).toBe('/app/tarifs');
+  });
+
+  it('an expired access cookie with a session still open goes through the silent refresh', () => {
+    vi.stubEnv('AUTH_DISABLED', '');
+    const res = proxy(req('/bienvenue', 'app-csrf=t'));
+    expect(res.status).toBe(303);
+    const to = new URL(res.headers.get('location')!);
+    expect(to.pathname).toBe('/api/auth/refresh-and-return');
+    expect(to.searchParams.get('next')).toBe('/bienvenue');
+  });
+
+  it('a valid access cookie passes, and so does every public page', () => {
+    vi.stubEnv('AUTH_DISABLED', '');
+    expect(proxy(req('/app', 'app-token=x')).status).toBe(200);
+    for (const path of ['/', '/connexion', '/info', '/legal', '/exemple']) {
+      expect(proxy(req(path)).status, path).toBe(200);
+    }
+  });
+
+  it('protects /admin and /parametres too', () => {
+    vi.stubEnv('AUTH_DISABLED', '');
+    expect(proxy(req('/admin/utilisateurs')).status).toBe(303);
+    expect(proxy(req('/parametres')).status).toBe(303);
+  });
+
+  it('protects nothing while AUTH_DISABLED=true (the free-access mode)', () => {
+    vi.stubEnv('AUTH_DISABLED', 'true');
+    expect(proxy(req('/app')).status).toBe(200);
   });
 });

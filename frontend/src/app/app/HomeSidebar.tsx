@@ -54,6 +54,7 @@ export type RailPage =
   | 'enhance'
   | 'pricing'
   | 'settings'
+  | 'admin'
   | 'info';
 
 /** A section: full-width hairline above, its own padding. */
@@ -157,7 +158,10 @@ export function HomeSidebar({
   treeSlotRef: ((el: HTMLElement | null) => void) | null;
 }) {
   const t = useTranslations();
-  const { logout, loggingOut } = useAuth();
+  const { logout, loggingOut, user } = useAuth();
+  // The back-office, for admins only (the server checks the role again on
+  // every /api/admin route; this only decides whether the link shows).
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
 
   // No account (free-access mode) shows a neutral label. See lib/account-label.ts.
   const placeholder = isPlaceholderAccount(userEmail);
@@ -297,6 +301,7 @@ export function HomeSidebar({
             <nav className="flex flex-col gap-1">
               {link('/parametres', t('parametres.title'), 'settings', 'settings')}
               {link('/app/tarifs', t('app.railPricing'), 'pricing', 'pricing')}
+              {isAdmin && link('/admin', t('app.railAdmin'), 'admin', 'admin')}
               {/* Always Se déconnecter (owner, 2026-10-08: inside the app you
                 are signed in). In free access there is no session to end:
                 logout() clears nothing and the click lands on the landing. */}

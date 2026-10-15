@@ -36,6 +36,7 @@ describe('getCreditStatus', () => {
     } as never);
 
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
+      onboarded: false,
       reason: 'NO_ACTIVE_TIER',
       tier: null,
       max: null,
@@ -58,6 +59,7 @@ describe('getCreditStatus', () => {
     prismaMock.user.update.mockResolvedValueOnce({} as never);
 
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
+      onboarded: false,
       reason: 'TIER_EXPIRED',
       tier: null,
       max: null,
@@ -75,6 +77,7 @@ describe('getCreditStatus', () => {
     prismaMock.user.findUnique.mockResolvedValueOnce(activeUser('standard', 2350));
 
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
+      onboarded: false,
       tier: 'standard',
       max: 3000,
       remaining: 2350,

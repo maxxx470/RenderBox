@@ -33,7 +33,8 @@ export function MobileNav({
   onNew?: () => void;
 }) {
   const t = useTranslations();
-  const { logout, loggingOut } = useAuth();
+  const { logout, loggingOut, user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
 
@@ -77,6 +78,16 @@ export function MobileNav({
     { page: 'info', href: '/app/info', label: t('app.railInfo'), icon: 'info' },
     { page: 'settings', href: '/parametres', label: t('parametres.title'), icon: 'settings' },
     { page: 'pricing', href: '/app/tarifs', label: t('app.railPricing'), icon: 'pricing' },
+    ...(isAdmin
+      ? [
+          {
+            page: 'admin' as const,
+            href: '/admin',
+            label: t('app.railAdmin'),
+            icon: 'admin' as const,
+          },
+        ]
+      : []),
   ];
   const moreActive = moreOpen || MORE_PAGES.includes(current);
 

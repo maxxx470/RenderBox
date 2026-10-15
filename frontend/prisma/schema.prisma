@@ -60,6 +60,30 @@ model User {
   // refunded on failure, zeroed when the period lapses. Never negative (a
   // CHECK constraint in the database).
   creditsBalance          Int       @default(0)
+  // Email + password sign-in (Phase 9, 2026-10-13; the starter's password
+  // routes were removed by the RenderBox port and come back in a smaller
+  // shape, lib/server/auth/password.ts). bcrypt hash; NULL = no password
+  // (Google only). A password is only ever set AFTER the email is proved by
+  // a code, so nobody can attach a password to someone else's address.
+  passwordHash            String?
+  // Lockout after repeated wrong passwords, kept in the database so it holds
+  // across serverless instances (no Redis in production).
+  failedLoginAttempts     Int       @default(0)
+  lockedUntil             DateTime?
+  // Onboarding (Phase 9): what the user tells RenderPro about themselves
+  // after the first sign-in. `name` above holds their full name. NULL
+  // onboardedAt = the onboarding has not been completed; /app sends them
+  // to /bienvenue until it is.
+  phone                   String?
+  profession              String?
+  company                 String?
+  teamSize                String?
+  projectTypes            String[]  @default([])
+  mainUse                 String?
+  country                 String?
+  city                    String?
+  referralSource          String?
+  onboardedAt             DateTime?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 

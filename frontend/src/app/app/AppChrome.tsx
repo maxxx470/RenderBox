@@ -96,6 +96,8 @@ const TITLE_KEY: Record<RailPage, TranslationKey> = {
   pricing: 'tarifs.title',
   info: 'app.railInfo',
   settings: 'parametres.title',
+  // /admin has its own layout; never reached inside the app chrome.
+  admin: 'app.railAdmin',
 };
 
 export function AppChrome({

@@ -1,109 +1,426 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
-import { Message } from 'react-iconly';
-import { api, ApiError } from '@/lib/api';
-import { useTranslations } from '@/lib/i18n/LocaleContext';
+// The sign-in form of /connexion (2026-10-13, owner: « Google et connexion
+// par email et mot de passe »). Five screens in one place:
+//
+//   login    email + password, « Mot de passe oublié ? »
+//   signup   name + email + password → a code is emailed
+//   code     the code from the email → the account exists, signed in
+//   forgot   email → a code is emailed
+//   reset    the code + a new password → signed in
+//
+// Google sits above, when configured. The email screens only show once
+// email sending is configured (Resend); until then the page offers Google
+// alone, or says sign-in opens soon. The password typed at signup stays in
+// this component until the code is entered: the server only stores it once
+// the address is proved (lib/server/auth/password.ts).
+//
+// Plain fetch, not lib/api.ts's api(): a 401 here is a wrong password, not
+// an expired session to refresh.
+import { useState, type FormEvent, type ReactNode } from 'react';
+import { Hide, Show } from 'react-iconly';
+import { useLocale } from '@/lib/i18n/LocaleContext';
+import type { TranslationKey } from '@/lib/i18n/dictionaries';
 
-type Status = 'idle' | 'submitting' | 'sent' | 'error';
+type Mode = 'login' | 'signup' | 'code' | 'forgot' | 'reset';
 
-export function ConnexionForm({ initialError }: { initialError?: 'invalid' | 'expired' | null }) {
-  const t = useTranslations();
+const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
+const FIELD =
+  'flex h-12 items-center gap-2 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 focus-within:border-[#2948FC]';
+const INPUT =
+  'h-full w-full min-w-0 bg-transparent text-[14px] text-[#17161F] outline-none placeholder:text-[#8A8896]';
+
+async function post(
+  path: string,
+  body: unknown,
+): Promise<{ ok: boolean; status: number; code: string }> {
+  try {
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(body),
+    });
+    const data = (await res.json().catch(() => ({}))) as { error?: unknown };
+    return {
+      ok: res.ok,
+      status: res.status,
+      code: typeof data.error === 'string' ? data.error : '',
+    };
+  } catch {
+    return { ok: false, status: 0, code: 'NETWORK' };
+  }
+}
+
+const ERRORS: Record<string, TranslationKey> = {
+  INVALID_CREDENTIALS: 'connexion.errorInvalidCredentials',
+  ACCOUNT_LOCKED: 'connexion.errorLocked',
+  ACCOUNT_SUSPENDED: 'connexion.errorSuspended',
+  CODE_INVALID: 'connexion.errorCodeInvalid',
+  CODE_EXPIRED: 'connexion.errorCodeExpired',
+  CODE_TOO_MANY_ATTEMPTS: 'connexion.errorCodeTooMany',
+  PASSWORD_TOO_SHORT: 'connexion.errorPasswordShort',
+  PASSWORD_TOO_LONG: 'connexion.errorPasswordLong',
+  PASSWORD_TOO_COMMON: 'connexion.errorPasswordCommon',
+  EMAIL_NOT_CONFIGURED: 'connexion.errorEmailUnavailable',
+};
+
+export function ConnexionForm({
+  googleEnabled,
+  emailEnabled,
+  passwordMin,
+  next,
+  initialMode,
+}: {
+  googleEnabled: boolean;
+  emailEnabled: boolean;
+  passwordMin: number;
+  next: string;
+  initialMode: 'login' | 'signup';
+}) {
+  const { t, locale } = useLocale();
+  const [mode, setMode] = useState<Mode>(initialMode);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<Status>(initialError ? 'error' : 'idle');
-  const [error, setError] = useState<string | null>(
-    initialError === 'expired'
-      ? t('verifier.expiredBody')
-      : initialError === 'invalid'
-        ? t('verifier.invalidBody')
-        : null,
-  );
+  const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+
+  const go = (m: Mode) => {
+    setMode(m);
+    setError(null);
+    setInfo(null);
+    setCode('');
+  };
+
+  function fail(r: { status: number; code: string }) {
+    if (r.status === 429) return setError(t('connexion.errorRateLimited'));
+    const key = ERRORS[r.code];
+    setError(key ? t(key, { min: String(passwordMin) }) : t('connexion.errorGeneric'));
+  }
+
+  const signedIn = () => window.location.assign(next);
+
+  async function sendCode(purpose: 'signup' | 'reset') {
+    return post('/api/auth/password/code', { email, purpose, locale });
+  }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    setStatus('submitting');
     setError(null);
+    setInfo(null);
+    if ((mode === 'signup' || mode === 'reset') && password.length < passwordMin) {
+      setError(t('connexion.errorPasswordShort', { min: String(passwordMin) }));
+      return;
+    }
+    setBusy(true);
     try {
-      await api('/api/auth/magic-link/request', { method: 'POST', body: { email } });
-      setStatus('sent');
-    } catch (err) {
-      setStatus('error');
-      if (err instanceof ApiError && err.status === 429) {
-        setError(t('connexion.errorRateLimited'));
-      } else {
-        setError(t('connexion.errorGeneric'));
+      if (mode === 'login') {
+        const r = await post('/api/auth/password/login', { email, password });
+        return r.ok ? signedIn() : fail(r);
       }
+      if (mode === 'signup' || mode === 'forgot') {
+        const r = await sendCode(mode === 'signup' ? 'signup' : 'reset');
+        if (!r.ok) return fail(r);
+        return go(mode === 'signup' ? 'code' : 'reset');
+      }
+      // code (signup) or reset: prove the address, set the password.
+      const r = await post('/api/auth/password/confirm', {
+        email,
+        code,
+        password,
+        purpose: mode === 'code' ? 'signup' : 'reset',
+        ...(mode === 'code' && name.trim() ? { name: name.trim() } : {}),
+      });
+      return r.ok ? signedIn() : fail(r);
+    } finally {
+      setBusy(false);
     }
   }
 
-  if (status === 'sent') {
-    return (
-      <div className="text-center">
-        <h1 className="mb-1.5 font-[family-name:var(--font-display)] text-xl font-semibold text-[#17161F]">
-          {t('connexion.sentTitle')}
-        </h1>
-        <p className="text-sm text-[#8A8896]">{t('connexion.sentBody')}</p>
-      </div>
-    );
+  async function resend() {
+    setError(null);
+    setBusy(true);
+    const r = await sendCode(mode === 'code' ? 'signup' : 'reset');
+    setBusy(false);
+    if (r.ok) setInfo(t('connexion.resent'));
+    else fail(r);
   }
 
+  const title: Record<Mode, TranslationKey> = {
+    login: 'connexion.loginTitle',
+    signup: 'connexion.signupTitle',
+    code: 'connexion.codeTitle',
+    forgot: 'connexion.forgotTitle',
+    reset: 'connexion.resetTitle',
+  };
+  const subtitle: Record<Mode, string> = {
+    login: t('connexion.loginSubtitle'),
+    signup: t('connexion.signupSubtitle'),
+    code: t('connexion.codeBody', { email }),
+    forgot: t('connexion.forgotBody'),
+    reset: t('connexion.codeBody', { email }),
+  };
+
+  const nothing = !googleEnabled && !emailEnabled;
+  const showGoogle = googleEnabled && (mode === 'login' || mode === 'signup');
+
   return (
-    <>
-      <h1 className="mb-1.5 text-center font-[family-name:var(--font-display)] text-xl font-semibold text-[#17161F]">
-        {t('connexion.heading')}
+    <div>
+      <h1 className="font-[family-name:var(--font-display)] text-[28px] font-semibold tracking-[-0.4px] text-[#17161F]">
+        {t(title[mode])}
       </h1>
-      <p className="mb-7 text-center text-[13px] text-[#8A8896]">{t('connexion.subheading')}</p>
+      <p className="mt-1.5 text-[14px] text-[#6B6878]">
+        {nothing ? t('connexion.unavailable') : subtitle[mode]}
+      </p>
 
-      <a
-        href="/api/auth/oauth/google/start?next=/app"
-        className="mb-5 flex w-full items-center justify-center gap-2.5 rounded-xl px-3 py-3 text-sm font-medium text-[#17161F] bg-[#F2F2F5] hover:bg-[#E9E9EE]"
-      >
-        <GoogleMark />
-        {t('connexion.googleButton')}
-      </a>
-
-      <div className="mb-5 flex items-center gap-2.5">
-        <div className="h-px flex-1 bg-[#ECECF2]" />
-        <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
-          {t('connexion.or')}
-        </span>
-        <div className="h-px flex-1 bg-[#ECECF2]" />
-      </div>
-
-      <form onSubmit={onSubmit}>
-        <label className="mb-1.5 block text-xs text-[#8A8896]" htmlFor="connexion-email">
-          {t('connexion.emailLabel')}
-        </label>
-        <div className="mb-3.5 flex items-center gap-2 rounded-xl border border-[#ECECF2] bg-[#F7F7FA] px-3.5 py-3 focus-within:border-[#2948FC]">
-          <Message set="curved" size={18} primaryColor="#8A8896" />
-          <input
-            id="connexion-email"
-            type="email"
-            required
-            placeholder={t('connexion.emailPlaceholder')}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-transparent text-sm text-[#17161F] outline-none placeholder:text-[#8A8896]"
-          />
-        </div>
-
-        {error && (
-          <p role="alert" className="mb-3 text-sm text-[#E5484D]">
-            {error}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={status === 'submitting'}
-          className="w-full rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
+      {showGoogle && (
+        <a
+          href={`/api/auth/oauth/google/start?next=${encodeURIComponent(next)}`}
+          className="mt-7 flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#F2F2F5] text-[14px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE]"
         >
-          {status === 'submitting' ? t('connexion.submitting') : t('connexion.submitButton')}
-        </button>
-      </form>
+          <GoogleMark />
+          {t('connexion.googleButton')}
+        </a>
+      )}
 
-      <p className="mt-4 text-center text-xs text-[#8A8896]">{t('connexion.hint')}</p>
-    </>
+      {showGoogle && emailEnabled && (
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-[#ECECF2]" />
+          <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
+            {t('connexion.or')}
+          </span>
+          <div className="h-px flex-1 bg-[#ECECF2]" />
+        </div>
+      )}
+
+      {emailEnabled && (
+        <form onSubmit={onSubmit} className={`flex flex-col gap-4 ${showGoogle ? '' : 'mt-7'}`}>
+          {mode === 'signup' && (
+            <Field label={t('connexion.nameLabel')} htmlFor="cx-name">
+              <input
+                id="cx-name"
+                autoComplete="name"
+                maxLength={120}
+                placeholder={t('connexion.namePlaceholder')}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={INPUT}
+              />
+            </Field>
+          )}
+
+          {(mode === 'login' || mode === 'signup' || mode === 'forgot') && (
+            <Field label={t('connexion.emailLabel')} htmlFor="cx-email">
+              <input
+                id="cx-email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder={t('connexion.emailPlaceholder')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={INPUT}
+              />
+            </Field>
+          )}
+
+          {(mode === 'code' || mode === 'reset') && (
+            <Field label={t('connexion.codeLabel')} htmlFor="cx-code">
+              <input
+                id="cx-code"
+                required
+                autoComplete="one-time-code"
+                inputMode="text"
+                maxLength={8}
+                placeholder="ABCD2345"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                className={`${INPUT} font-[family-name:var(--font-mono)] text-[16px] tracking-[0.3em]`}
+              />
+            </Field>
+          )}
+
+          {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
+            <PasswordField
+              id="cx-password"
+              label={t(mode === 'reset' ? 'connexion.newPasswordLabel' : 'connexion.passwordLabel')}
+              value={password}
+              onChange={setPassword}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              hint={
+                mode === 'login' ? null : t('connexion.passwordHint', { min: String(passwordMin) })
+              }
+              aside={
+                mode === 'login' ? (
+                  <button
+                    type="button"
+                    onClick={() => go('forgot')}
+                    className="text-[12.5px] font-medium text-[#2948FC] hover:underline"
+                  >
+                    {t('connexion.forgot')}
+                  </button>
+                ) : null
+              }
+            />
+          )}
+
+          {error && (
+            <p role="alert" className="text-[13px] text-[#E5484D]">
+              {error}
+            </p>
+          )}
+          {info && (
+            <p role="status" className="text-[13px] text-[#1E7A3D]">
+              {info}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={busy}
+            className={`mt-1 h-12 w-full rounded-xl text-[14px] font-semibold text-white transition-[opacity,scale] duration-150 active:scale-[0.98] disabled:opacity-60 ${GRADIENT}`}
+          >
+            {busy
+              ? t('connexion.submitting')
+              : mode === 'login'
+                ? t('connexion.signIn')
+                : mode === 'forgot'
+                  ? t('connexion.sendCode')
+                  : t('connexion.continue')}
+          </button>
+
+          {(mode === 'code' || mode === 'reset') && (
+            <div className="flex items-center justify-between text-[13px]">
+              <button
+                type="button"
+                onClick={() => go(mode === 'code' ? 'signup' : 'forgot')}
+                className="text-[#6B6878] hover:text-[#17161F]"
+              >
+                {t('connexion.back')}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void resend()}
+                className="font-medium text-[#2948FC] hover:underline disabled:opacity-60"
+              >
+                {t('connexion.resend')}
+              </button>
+            </div>
+          )}
+          {mode === 'forgot' && (
+            <button
+              type="button"
+              onClick={() => go('login')}
+              className="text-[13px] text-[#6B6878] hover:text-[#17161F]"
+            >
+              {t('connexion.back')}
+            </button>
+          )}
+        </form>
+      )}
+
+      {(mode === 'login' || mode === 'signup') && emailEnabled && (
+        <p className="mt-6 text-center text-[13px] text-[#6B6878]">
+          {mode === 'login' ? t('connexion.toSignup') : t('connexion.toLogin')}{' '}
+          <button
+            type="button"
+            onClick={() => go(mode === 'login' ? 'signup' : 'login')}
+            className="font-semibold text-[#2948FC] hover:underline"
+          >
+            {mode === 'login' ? t('connexion.toSignupLink') : t('connexion.toLoginLink')}
+          </button>
+        </p>
+      )}
+
+      {!nothing && (
+        <p className="mt-8 text-center text-[12px] leading-relaxed text-[#8A8896]">
+          {t('connexion.legalPrefix')}{' '}
+          <a href="/legal" className="font-medium text-[#2948FC] hover:underline">
+            {t('connexion.legalLink')}
+          </a>
+          .
+        </p>
+      )}
+    </div>
+  );
+}
+
+function Field({
+  label,
+  htmlFor,
+  children,
+  aside,
+}: {
+  label: string;
+  htmlFor: string;
+  children: ReactNode;
+  aside?: ReactNode;
+}) {
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between">
+        <label htmlFor={htmlFor} className="text-[13px] font-medium text-[#17161F]">
+          {label}
+        </label>
+        {aside}
+      </div>
+      <div className={FIELD}>{children}</div>
+    </div>
+  );
+}
+
+function PasswordField({
+  id,
+  label,
+  value,
+  onChange,
+  autoComplete,
+  hint,
+  aside,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete: string;
+  hint: string | null;
+  aside: ReactNode;
+}) {
+  const { t } = useLocale();
+  const [shown, setShown] = useState(false);
+  return (
+    <div>
+      <Field label={label} htmlFor={id} aside={aside}>
+        <input
+          id={id}
+          type={shown ? 'text' : 'password'}
+          required
+          autoComplete={autoComplete}
+          maxLength={128}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={INPUT}
+        />
+        <button
+          type="button"
+          onClick={() => setShown((s) => !s)}
+          aria-label={t(shown ? 'connexion.hidePassword' : 'connexion.showPassword')}
+          title={t(shown ? 'connexion.hidePassword' : 'connexion.showPassword')}
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg hover:bg-[#ECECF2]"
+        >
+          {shown ? (
+            <Hide set="curved" size={18} primaryColor="#6B6878" />
+          ) : (
+            <Show set="curved" size={18} primaryColor="#6B6878" />
+          )}
+        </button>
+      </Field>
+      {hint && <p className="mt-1.5 text-[12px] text-[#8A8896]">{hint}</p>}
+    </div>
   );
 }
 

@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { AppChrome } from './AppChrome';
 import { SIDEBAR_COOKIE } from './sidebar-cookie';
 import { loadShell } from './shell-data';
@@ -9,9 +11,14 @@ import { loadShell } from './shell-data';
  * (/app/* and /parametres): reads the account, its plan and the rail's folded
  * state, then hands them to AppChrome, which stays mounted while the pages
  * under it change.
+ *
+ * An account that has not done the onboarding yet is sent to /bienvenue
+ * first (owner, 2026-10-13: after sign-in « on tombera sur la page
+ * d'onboarding »); the demo user of the free-access mode never is.
  */
 export async function AppLayoutShell({ children }: { children: ReactNode }) {
   const [{ auth, quota }, jar] = await Promise.all([loadShell(), cookies()]);
+  if (!quota.onboarded && !isAuthDisabled()) redirect('/bienvenue');
   return (
     <AppChrome
       userEmail={auth.user.email ?? ''}

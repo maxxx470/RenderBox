@@ -295,6 +295,9 @@ function RenderVisual() {
 }
 
 export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
+  // « Se connecter » opens the sign-in; every « start » button opens the
+  // account creation directly (2026-10-13).
+  const startHref = ctaHref === '/connexion' ? '/connexion?mode=signup' : ctaHref;
   const t = useTranslations();
   const { locale } = useLocale();
   const router = useRouter();
@@ -424,7 +427,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               {t('landing.navLogin')}
             </Link>
             <Link
-              href={ctaHref}
+              href={startHref}
               className={`inline-flex items-center rounded-xl ${GRADIENT} px-5 py-2.5 text-[13.5px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
             >
               {t('landing.navStart')}
@@ -489,13 +492,13 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               hero-cards.ts; until then the preview block stands in, rather
               than a row of empty frames on a marketing page. */}
           {HERO_CARDS.length > 0 && (
-            <HeroFan ctaHref={ctaHref} ctaLabel={t('landing.heroCtaPrimary')} />
+            <HeroFan ctaHref={startHref} ctaLabel={t('landing.heroCtaPrimary')} />
           )}
 
           {HERO_CARDS.length === 0 && (
             <Reveal delayMs={120} className="relative mx-auto mt-12 max-w-[760px]">
               <Link
-                href={ctaHref}
+                href={startHref}
                 className={`mb-10 inline-flex items-center rounded-xl ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
               >
                 {t('landing.heroCtaPrimary')}
@@ -809,7 +812,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           />
           <Reveal delayMs={200} className="mt-10 flex justify-center">
             <Link
-              href={ctaHref}
+              href={startHref}
               className={`inline-flex items-center rounded-xl ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
             >
               {t('landing.checklistCta')}
@@ -948,12 +951,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </div>
       </section>
 
-      <SiteFooter ctaHref={ctaHref} />
+      <SiteFooter ctaHref={startHref} />
 
       {/* The primary action: this bar is pinned to the bottom of every screen
           from the end of the hero to the footer, so it repeats the one action
           the page exists for rather than a secondary link. */}
-      <StickyBar visible={pastHero} href={ctaHref} label={t('landing.heroCtaPrimary')} />
+      <StickyBar visible={pastHero} href={startHref} label={t('landing.heroCtaPrimary')} />
     </main>
   );
 }

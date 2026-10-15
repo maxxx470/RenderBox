@@ -94,3 +94,47 @@ export function magicLinkEmail(args: MagicLinkEmailArgs): EmailTemplate {
     text: `Clique sur ce lien pour te connecter à RenderPro : ${args.url}\n\nCe lien expire ${ttl}. Si tu n'es pas à l'origine de cette demande, ignore cet email.`,
   };
 }
+
+export interface PasswordCodeEmailArgs {
+  /** The 8-character code (VERIFICATION_CODE_REGEX). */
+  code: string;
+  /** signup: prove the address before the account gets its password;
+   *  reset: prove it before the password is replaced. */
+  purpose: 'signup' | 'reset';
+  locale: 'fr' | 'en';
+  expiresAt?: string;
+}
+
+/** The code the user types on /connexion — vous, RenderPro (2026-10-13). */
+export function passwordCodeEmail(args: PasswordCodeEmailArgs): EmailTemplate {
+  const code = htmlEscape(args.code);
+  const box = `<p style="font:600 28px/1.2 monospace;letter-spacing:6px;color:#1E36D6;background:#EEF1FF;border-radius:12px;padding:16px 20px;display:inline-block">${code}</p>`;
+  if (args.locale === 'en') {
+    const ttl = ttlWording(args.expiresAt);
+    const what =
+      args.purpose === 'signup'
+        ? 'to confirm your email address and create your RenderPro account'
+        : 'to choose a new RenderPro password';
+    return {
+      subject:
+        args.purpose === 'signup'
+          ? `Your RenderPro code: ${args.code}`
+          : `Reset your RenderPro password: ${args.code}`,
+      html: `<p>Hello,</p><p>Enter this code ${what}:</p>${box}<p>It expires ${ttl}. If you did not ask for it, you can ignore this email.</p>`,
+      text: `Enter this code ${what}: ${args.code}\n\nIt expires ${ttl}. If you did not ask for it, you can ignore this email.`,
+    };
+  }
+  const ttl = ttlWordingFr(args.expiresAt);
+  const what =
+    args.purpose === 'signup'
+      ? 'pour confirmer votre adresse et créer votre compte RenderPro'
+      : 'pour choisir un nouveau mot de passe RenderPro';
+  return {
+    subject:
+      args.purpose === 'signup'
+        ? `Votre code RenderPro : ${args.code}`
+        : `Nouveau mot de passe RenderPro : ${args.code}`,
+    html: `<p>Bonjour,</p><p>Saisissez ce code ${what} :</p>${box}<p>Il expire ${ttl}. Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.</p>`,
+    text: `Saisissez ce code ${what} : ${args.code}\n\nIl expire ${ttl}. Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.`,
+  };
+}

@@ -47,6 +47,13 @@ export interface CreditStatus {
    * valid — a caller reading the column itself could show a lapsed date.
    */
   periodEndsAt: Date | null;
+  /**
+   * The onboarding is done (User.onboardedAt set). Read in the same query
+   * because the app layout needs both on every page (connection_limit=1:
+   * one round trip, not two); /app sends a user who is not onboarded to
+   * /bienvenue. False for an unknown account.
+   */
+  onboarded: boolean;
 }
 
 const NONE = { tier: null, max: null, remaining: null, periodEndsAt: null } as const;
@@ -59,13 +66,14 @@ const NONE = { tier: null, max: null, remaining: null, periodEndsAt: null } as c
 export async function getCreditStatus(prisma: PrismaClient, userId: string): Promise<CreditStatus> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { currentTier: true, tierPeriodStart: true, creditsBalance: true },
+    select: { currentTier: true, tierPeriodStart: true, creditsBalance: true, onboardedAt: true },
   });
 
   // A currentTier pricing-tiers.ts no longer recognizes (a retired id) is
   // treated exactly like no active tier.
   const tier = user?.currentTier ? getPricingTier(user.currentTier) : undefined;
-  if (!user || !tier) return { reason: 'NO_ACTIVE_TIER', ...NONE };
+  const onboarded = Boolean(user?.onboardedAt);
+  if (!user || !tier) return { reason: 'NO_ACTIVE_TIER', ...NONE, onboarded };
 
   if (!user.tierPeriodStart || Date.now() - user.tierPeriodStart.getTime() >= TIER_PERIOD_MS) {
     // Period lapsed without a renewal: the plan ends and its unused credits
@@ -74,10 +82,11 @@ export async function getCreditStatus(prisma: PrismaClient, userId: string): Pro
       where: { id: userId },
       data: { currentTier: null, tierPeriodStart: null, creditsBalance: 0 },
     });
-    return { reason: 'TIER_EXPIRED', ...NONE };
+    return { reason: 'TIER_EXPIRED', ...NONE, onboarded };
   }
 
   return {
+    onboarded,
     tier: tier.id,
     max: tier.creditsPerMonth,
     remaining: Math.max(0, user.creditsBalance),

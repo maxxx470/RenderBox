@@ -45,7 +45,7 @@ function safeNext(raw: string | null): string {
 
 function loginRedirect(req: NextRequest, next: string): NextResponse {
   const url = req.nextUrl.clone();
-  url.pathname = process.env.AUTH_LOGIN_PATH || '/login';
+  url.pathname = process.env.AUTH_LOGIN_PATH || '/connexion';
   url.search = `?next=${encodeURIComponent(next)}`;
   return NextResponse.redirect(url, 303);
 }

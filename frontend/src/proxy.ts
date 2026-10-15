@@ -10,9 +10,15 @@ import { buildCsp } from '@/lib/csp';
 // bounces the request through /api/auth/refresh-and-return, which mints fresh
 // cookies and 302s back to the original URL — invisible to the user.
 //
-// Protected paths are configured via AUTH_PROTECTED_PREFIXES (comma-separated,
-// e.g. "/dashboard,/account"). Empty by default — the API surface is the only
-// thing shipped, so out-of-the-box this proxy is a no-op.
+// Protected paths: AUTH_PROTECTED_PREFIXES (comma-separated) or, since
+// 2026-10-13 (RenderPro turns real sign-in back on), RenderPro's own pages by
+// default — the app, Paramètres, the onboarding and the back-office. While
+// AUTH_DISABLED=true nothing is protected (the demo user needs no session).
+//
+// The refresh cookie is path-scoped to /api/auth, so a page request never
+// carries it: the session hint read here is the CSRF cookie (path /, same
+// 7-day life). /api/auth/refresh-and-return then reads the real refresh
+// cookie and falls back to the sign-in page if it is gone or invalid.
 //
 // Edge runtime: no DB, no bcrypt, no Prisma. We only inspect cookies and
 // build redirects — the heavy lifting happens in /api/auth/refresh-and-return
@@ -20,17 +26,20 @@ import { buildCsp } from '@/lib/csp';
 
 const COOKIE_PREFIX = process.env.COOKIE_PREFIX || 'app';
 const ACCESS_COOKIE = `${COOKIE_PREFIX}-token`;
-const REFRESH_COOKIE = `${COOKIE_PREFIX}-refresh`;
 const CSRF_COOKIE = `${COOKIE_PREFIX}-csrf`;
-const LOGIN_PATH = process.env.AUTH_LOGIN_PATH || '/login';
+const DEFAULT_PROTECTED = '/app,/parametres,/bienvenue,/admin';
 
-const AUTHED_PREFIXES = (process.env.AUTH_PROTECTED_PREFIXES || '')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+// Read per request (not at module load) so the switch takes effect as set.
+function authedPrefixes(): string[] {
+  if (process.env.AUTH_DISABLED === 'true') return [];
+  return (process.env.AUTH_PROTECTED_PREFIXES || DEFAULT_PROTECTED)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
-function isAuthedPath(pathname: string): boolean {
-  return AUTHED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+function isAuthedPath(prefixes: string[], pathname: string): boolean {
+  return prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 // AUTH_DISABLED (see lib/server/auth-disabled.ts) skips the login flow
@@ -73,17 +82,18 @@ export function proxy(req: NextRequest): NextResponse {
   const nextResponse = () => NextResponse.next({ request: { headers: requestHeaders } });
 
   const res = ((): NextResponse => {
-    if (AUTHED_PREFIXES.length === 0) return nextResponse();
+    const prefixes = authedPrefixes();
+    if (prefixes.length === 0) return nextResponse();
 
     const { pathname, search } = req.nextUrl;
-    if (!isAuthedPath(pathname)) return nextResponse();
+    if (!isAuthedPath(prefixes, pathname)) return nextResponse();
     if (req.cookies.get(ACCESS_COOKIE)?.value) return nextResponse();
 
     const target = pathname + search;
     const url = req.nextUrl.clone();
 
-    if (!req.cookies.get(REFRESH_COOKIE)?.value) {
-      url.pathname = LOGIN_PATH;
+    if (!req.cookies.get(CSRF_COOKIE)?.value) {
+      url.pathname = process.env.AUTH_LOGIN_PATH || '/connexion';
       url.search = `?next=${encodeURIComponent(target)}`;
       return NextResponse.redirect(url, 303);
     }

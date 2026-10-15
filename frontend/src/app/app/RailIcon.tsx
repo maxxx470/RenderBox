@@ -16,6 +16,7 @@ import {
   InfoSquare,
   Plus,
   Setting,
+  ShieldDone,
   Star,
   Wallet,
 } from 'react-iconly';
@@ -27,6 +28,7 @@ export type RailIconName =
   | 'enhance'
   | 'pricing'
   | 'settings'
+  | 'admin'
   | 'info'
   | 'comment'
   | 'add'
@@ -46,6 +48,7 @@ const ICON: Record<Exclude<RailIconName, 'clip'>, IconlyIcon> = {
   enhance: Star,
   pricing: Wallet,
   settings: Setting,
+  admin: ShieldDone,
   info: InfoSquare,
   comment: Chat,
   add: Plus,

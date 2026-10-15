@@ -100,6 +100,10 @@ ABONNEMENTS ET CRÉDITS
 - Page Abonnement : le « Solde actuel » (crédits restants, formule et date d'expiration), un avertissement quand il ne reste plus assez de crédits, les trois formules (crédits par mois, prix en FCFA, équivalent en dollars indicatif, la formule actuelle marquée) puis l’« Historique » des paiements.
 - Une limite quotidienne anti-abus existe aussi ; si elle est atteinte, réessayer le lendemain.
 
+COMPTE ET CONNEXION
+- La page Connexion propose « Continuer avec Google » et, quand l'envoi d'e-mails est actif, l'adresse e-mail et un mot de passe (10 caractères minimum). Pour créer un compte par e-mail, on saisit son nom, son adresse et son mot de passe, puis le code à 8 caractères reçu par e-mail (valable 15 minutes). « Mot de passe oublié ? » envoie un code pour choisir un nouveau mot de passe ; cela déconnecte les autres appareils. Après 10 mauvais mots de passe, le compte est bloqué 15 minutes.
+- Juste après la première connexion, quatre courts écrans font connaissance : nom et téléphone, métier, entreprise et taille de l'équipe, types de projets, usage principal et moteur préféré, puis pays, ville et comment vous avez connu RenderPro. Le nom, le métier et le pays sont obligatoires. Tout est enregistré sur le compte au fil des écrans, et le moteur choisi devient le moteur par défaut.
+
 PARAMÈTRES
 - Compte connecté, moteur par défaut (pré-sélectionné dans la barre de commande), comptes liés (connexion Google), historique de facturation, déconnexion. La langue se change avec le sélecteur FR / EN en haut des pages.
 
