@@ -5,9 +5,10 @@ import { isEmailSignInConfigured, PASSWORD_MIN_LENGTH } from '@/lib/server/auth/
 import { AuthShell } from '../AuthShell';
 import { ConnexionForm } from './ConnexionForm';
 
-// /connexion — Google and email + password (2026-10-13). Each method shows
-// only when it can work: Google with its three GOOGLE_* variables, email +
-// password once Resend can send the codes.
+// /connexion — Google and email + password (2026-10-13). Google shows with
+// its three GOOGLE_* variables. Email + password always shows; once Resend
+// can send codes, a new account proves its address first and « Mot de passe
+// oublié » appears — until then accounts are created at once (2026-10-15).
 
 /** Same-origin path only (no `//host`, no scheme) — the proxy and the
  *  refresh route send `?next=` here. */
@@ -40,7 +41,7 @@ export default async function ConnexionPage({
     <AuthShell step={1}>
       <ConnexionForm
         googleEnabled={googleEnabled}
-        emailEnabled={isEmailSignInConfigured()}
+        verifyEmail={isEmailSignInConfigured()}
         passwordMin={PASSWORD_MIN_LENGTH}
         next={safeNext(next)}
         initialMode={mode === 'signup' ? 'signup' : 'login'}

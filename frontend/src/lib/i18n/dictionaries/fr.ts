@@ -15,7 +15,9 @@ const fr = {
   'connexion.forgotBody':
     'Indiquez votre adresse : nous vous envoyons un code pour choisir un nouveau mot de passe.',
   'connexion.resetTitle': 'Nouveau mot de passe',
-  'connexion.unavailable': 'La connexion ouvre très bientôt.',
+  'connexion.createAccount': 'Créer mon compte',
+  'connexion.errorEmailTaken':
+    'Un compte existe déjà avec cette adresse : connectez-vous, ou continuez avec Google.',
   'connexion.googleButton': 'Continuer avec Google',
   'connexion.or': 'OU',
   'connexion.nameLabel': 'Nom complet',

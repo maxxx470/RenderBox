@@ -9,11 +9,12 @@
 //   forgot   email → a code is emailed
 //   reset    the code + a new password → signed in
 //
-// Google sits above, when configured. The email screens only show once
-// email sending is configured (Resend); until then the page offers Google
-// alone, or says sign-in opens soon. The password typed at signup stays in
-// this component until the code is entered: the server only stores it once
-// the address is proved (lib/server/auth/password.ts).
+// Google sits above, when configured. With email sending configured
+// (`verifyEmail`, Resend), signup goes through the code and the password
+// typed at signup stays in this component until the code is entered — the
+// server only stores it once the address is proved. Without it (2026-10-15,
+// owner), signup creates the account at once and there is no « forgot »
+// screen (lib/server/auth/password.ts).
 //
 // Plain fetch, not lib/api.ts's api(): a 401 here is a wrong password, not
 // an expired session to refresh.
@@ -63,17 +64,18 @@ const ERRORS: Record<string, TranslationKey> = {
   PASSWORD_TOO_LONG: 'connexion.errorPasswordLong',
   PASSWORD_TOO_COMMON: 'connexion.errorPasswordCommon',
   EMAIL_NOT_CONFIGURED: 'connexion.errorEmailUnavailable',
+  EMAIL_TAKEN: 'connexion.errorEmailTaken',
 };
 
 export function ConnexionForm({
   googleEnabled,
-  emailEnabled,
+  verifyEmail,
   passwordMin,
   next,
   initialMode,
 }: {
   googleEnabled: boolean;
-  emailEnabled: boolean;
+  verifyEmail: boolean;
   passwordMin: number;
   next: string;
   initialMode: 'login' | 'signup';
@@ -121,6 +123,14 @@ export function ConnexionForm({
         const r = await post('/api/auth/password/login', { email, password });
         return r.ok ? signedIn() : fail(r);
       }
+      if (mode === 'signup' && !verifyEmail) {
+        const r = await post('/api/auth/password/signup', {
+          email,
+          password,
+          ...(name.trim() ? { name: name.trim() } : {}),
+        });
+        return r.ok ? signedIn() : fail(r);
+      }
       if (mode === 'signup' || mode === 'forgot') {
         const r = await sendCode(mode === 'signup' ? 'signup' : 'reset');
         if (!r.ok) return fail(r);
@@ -164,7 +174,6 @@ export function ConnexionForm({
     reset: t('connexion.codeBody', { email }),
   };
 
-  const nothing = !googleEnabled && !emailEnabled;
   const showGoogle = googleEnabled && (mode === 'login' || mode === 'signup');
 
   return (
@@ -172,9 +181,7 @@ export function ConnexionForm({
       <h1 className="font-[family-name:var(--font-display)] text-[28px] font-semibold tracking-[-0.4px] text-[#17161F]">
         {t(title[mode])}
       </h1>
-      <p className="mt-1.5 text-[14px] text-[#6B6878]">
-        {nothing ? t('connexion.unavailable') : subtitle[mode]}
-      </p>
+      <p className="mt-1.5 text-[14px] text-[#6B6878]">{subtitle[mode]}</p>
 
       {showGoogle && (
         <a
@@ -186,7 +193,7 @@ export function ConnexionForm({
         </a>
       )}
 
-      {showGoogle && emailEnabled && (
+      {showGoogle && (
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-[#ECECF2]" />
           <span className="font-[family-name:var(--font-mono)] text-[11px] text-[#8A8896]">
@@ -196,134 +203,134 @@ export function ConnexionForm({
         </div>
       )}
 
-      {emailEnabled && (
-        <form onSubmit={onSubmit} className={`flex flex-col gap-4 ${showGoogle ? '' : 'mt-7'}`}>
-          {mode === 'signup' && (
-            <Field label={t('connexion.nameLabel')} htmlFor="cx-name">
-              <input
-                id="cx-name"
-                autoComplete="name"
-                maxLength={120}
-                placeholder={t('connexion.namePlaceholder')}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={INPUT}
-              />
-            </Field>
-          )}
-
-          {(mode === 'login' || mode === 'signup' || mode === 'forgot') && (
-            <Field label={t('connexion.emailLabel')} htmlFor="cx-email">
-              <input
-                id="cx-email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder={t('connexion.emailPlaceholder')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={INPUT}
-              />
-            </Field>
-          )}
-
-          {(mode === 'code' || mode === 'reset') && (
-            <Field label={t('connexion.codeLabel')} htmlFor="cx-code">
-              <input
-                id="cx-code"
-                required
-                autoComplete="one-time-code"
-                inputMode="text"
-                maxLength={8}
-                placeholder="ABCD2345"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                className={`${INPUT} font-[family-name:var(--font-mono)] text-[16px] tracking-[0.3em]`}
-              />
-            </Field>
-          )}
-
-          {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
-            <PasswordField
-              id="cx-password"
-              label={t(mode === 'reset' ? 'connexion.newPasswordLabel' : 'connexion.passwordLabel')}
-              value={password}
-              onChange={setPassword}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              hint={
-                mode === 'login' ? null : t('connexion.passwordHint', { min: String(passwordMin) })
-              }
-              aside={
-                mode === 'login' ? (
-                  <button
-                    type="button"
-                    onClick={() => go('forgot')}
-                    className="text-[12.5px] font-medium text-[#2948FC] hover:underline"
-                  >
-                    {t('connexion.forgot')}
-                  </button>
-                ) : null
-              }
+      <form onSubmit={onSubmit} className={`flex flex-col gap-4 ${showGoogle ? '' : 'mt-7'}`}>
+        {mode === 'signup' && (
+          <Field label={t('connexion.nameLabel')} htmlFor="cx-name">
+            <input
+              id="cx-name"
+              autoComplete="name"
+              maxLength={120}
+              placeholder={t('connexion.namePlaceholder')}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={INPUT}
             />
-          )}
+          </Field>
+        )}
 
-          {error && (
-            <p role="alert" className="text-[13px] text-[#E5484D]">
-              {error}
-            </p>
-          )}
-          {info && (
-            <p role="status" className="text-[13px] text-[#1E7A3D]">
-              {info}
-            </p>
-          )}
+        {(mode === 'login' || mode === 'signup' || mode === 'forgot') && (
+          <Field label={t('connexion.emailLabel')} htmlFor="cx-email">
+            <input
+              id="cx-email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder={t('connexion.emailPlaceholder')}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={INPUT}
+            />
+          </Field>
+        )}
 
-          <button
-            type="submit"
-            disabled={busy}
-            className={`mt-1 h-12 w-full rounded-xl text-[14px] font-semibold text-white transition-[opacity,scale] duration-150 active:scale-[0.98] disabled:opacity-60 ${GRADIENT}`}
-          >
-            {busy
-              ? t('connexion.submitting')
-              : mode === 'login'
-                ? t('connexion.signIn')
-                : mode === 'forgot'
-                  ? t('connexion.sendCode')
+        {(mode === 'code' || mode === 'reset') && (
+          <Field label={t('connexion.codeLabel')} htmlFor="cx-code">
+            <input
+              id="cx-code"
+              required
+              autoComplete="one-time-code"
+              inputMode="text"
+              maxLength={8}
+              placeholder="ABCD2345"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+              className={`${INPUT} font-[family-name:var(--font-mono)] text-[16px] tracking-[0.3em]`}
+            />
+          </Field>
+        )}
+
+        {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
+          <PasswordField
+            id="cx-password"
+            label={t(mode === 'reset' ? 'connexion.newPasswordLabel' : 'connexion.passwordLabel')}
+            value={password}
+            onChange={setPassword}
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            hint={
+              mode === 'login' ? null : t('connexion.passwordHint', { min: String(passwordMin) })
+            }
+            aside={
+              mode === 'login' && verifyEmail ? (
+                <button
+                  type="button"
+                  onClick={() => go('forgot')}
+                  className="text-[12.5px] font-medium text-[#2948FC] hover:underline"
+                >
+                  {t('connexion.forgot')}
+                </button>
+              ) : null
+            }
+          />
+        )}
+
+        {error && (
+          <p role="alert" className="text-[13px] text-[#E5484D]">
+            {error}
+          </p>
+        )}
+        {info && (
+          <p role="status" className="text-[13px] text-[#1E7A3D]">
+            {info}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={busy}
+          className={`mt-1 h-12 w-full rounded-xl text-[14px] font-semibold text-white transition-[opacity,scale] duration-150 active:scale-[0.98] disabled:opacity-60 ${GRADIENT}`}
+        >
+          {busy
+            ? t('connexion.submitting')
+            : mode === 'login'
+              ? t('connexion.signIn')
+              : mode === 'forgot'
+                ? t('connexion.sendCode')
+                : mode === 'signup' && !verifyEmail
+                  ? t('connexion.createAccount')
                   : t('connexion.continue')}
-          </button>
+        </button>
 
-          {(mode === 'code' || mode === 'reset') && (
-            <div className="flex items-center justify-between text-[13px]">
-              <button
-                type="button"
-                onClick={() => go(mode === 'code' ? 'signup' : 'forgot')}
-                className="text-[#6B6878] hover:text-[#17161F]"
-              >
-                {t('connexion.back')}
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void resend()}
-                className="font-medium text-[#2948FC] hover:underline disabled:opacity-60"
-              >
-                {t('connexion.resend')}
-              </button>
-            </div>
-          )}
-          {mode === 'forgot' && (
+        {(mode === 'code' || mode === 'reset') && (
+          <div className="flex items-center justify-between text-[13px]">
             <button
               type="button"
-              onClick={() => go('login')}
-              className="text-[13px] text-[#6B6878] hover:text-[#17161F]"
+              onClick={() => go(mode === 'code' ? 'signup' : 'forgot')}
+              className="text-[#6B6878] hover:text-[#17161F]"
             >
               {t('connexion.back')}
             </button>
-          )}
-        </form>
-      )}
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void resend()}
+              className="font-medium text-[#2948FC] hover:underline disabled:opacity-60"
+            >
+              {t('connexion.resend')}
+            </button>
+          </div>
+        )}
+        {mode === 'forgot' && (
+          <button
+            type="button"
+            onClick={() => go('login')}
+            className="text-[13px] text-[#6B6878] hover:text-[#17161F]"
+          >
+            {t('connexion.back')}
+          </button>
+        )}
+      </form>
 
-      {(mode === 'login' || mode === 'signup') && emailEnabled && (
+      {(mode === 'login' || mode === 'signup') && (
         <p className="mt-6 text-center text-[13px] text-[#6B6878]">
           {mode === 'login' ? t('connexion.toSignup') : t('connexion.toLogin')}{' '}
           <button
@@ -336,15 +343,13 @@ export function ConnexionForm({
         </p>
       )}
 
-      {!nothing && (
-        <p className="mt-8 text-center text-[12px] leading-relaxed text-[#8A8896]">
-          {t('connexion.legalPrefix')}{' '}
-          <a href="/legal" className="font-medium text-[#2948FC] hover:underline">
-            {t('connexion.legalLink')}
-          </a>
-          .
-        </p>
-      )}
+      <p className="mt-8 text-center text-[12px] leading-relaxed text-[#8A8896]">
+        {t('connexion.legalPrefix')}{' '}
+        <a href="/legal" className="font-medium text-[#2948FC] hover:underline">
+          {t('connexion.legalLink')}
+        </a>
+        .
+      </p>
     </div>
   );
 }

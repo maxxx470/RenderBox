@@ -14,6 +14,7 @@ const {
   checkPasswordLogin,
   checkPasswordPolicy,
   confirmCodeAndSetPassword,
+  createPasswordAccount,
   isEmailSignInConfigured,
   issueCode,
 } = await import('./password');
@@ -227,6 +228,48 @@ describe('confirmCodeAndSetPassword', () => {
   });
 });
 
+describe('createPasswordAccount (direct signup, no email sending)', () => {
+  it('creates the account with the password hashed, unverified, with its name', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    prismaMock.user.create.mockResolvedValue({
+      id: 'u9',
+      email: 'new@x.com',
+      tokenVersion: 0,
+    } as never);
+    expect(
+      await createPasswordAccount(prismaMock, {
+        email: ' New@X.com ',
+        password: 'Maison-Dakar-2026',
+        name: ' Awa ',
+      }),
+    ).toEqual({ ok: true, user: { id: 'u9', email: 'new@x.com', tokenVersion: 0 } });
+    const data = prismaMock.user.create.mock.calls[0]![0].data;
+    expect(data).toEqual({
+      email: 'new@x.com',
+      passwordHash: 'hash:Maison-Dakar-2026',
+      name: 'Awa',
+    });
+    expect(data).not.toHaveProperty('emailVerifiedAt');
+  });
+
+  it('refuses an address that already has an account, and never touches it', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ id: 'u1' } as never);
+    expect(
+      await createPasswordAccount(prismaMock, { email: 'a@x.com', password: 'Maison-Dakar-2026' }),
+    ).toEqual({ ok: false, error: 'EMAIL_TAKEN' });
+    expect(prismaMock.user.create).not.toHaveBeenCalled();
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
+  });
+
+  it('two signups for one address at once: the unique index refuses the second', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    prismaMock.user.create.mockRejectedValue(Object.assign(new Error('unique'), { code: 'P2002' }));
+    expect(
+      await createPasswordAccount(prismaMock, { email: 'a@x.com', password: 'Maison-Dakar-2026' }),
+    ).toEqual({ ok: false, error: 'EMAIL_TAKEN' });
+  });
+});
+
 describe('checkPasswordLogin', () => {
   const account = (over: Record<string, unknown> = {}) => ({
     id: 'u1',
@@ -238,6 +281,7 @@ describe('checkPasswordLogin', () => {
     lockedUntil: null,
     status: 'ACTIVE',
     deletedAt: null,
+    _count: { oauthAccounts: 0 },
     ...over,
   });
 
@@ -246,6 +290,29 @@ describe('checkPasswordLogin', () => {
     expect(
       await checkPasswordLogin(prismaMock, { email: 'A@x.com', password: 'Maison-Dakar-2026' }),
     ).toEqual({ ok: true, user: { id: 'u1', email: 'a@x.com', tokenVersion: 2 } });
+  });
+
+  it('an account created by direct signup (address not proved) signs in too', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(account({ emailVerifiedAt: null }) as never);
+    expect(
+      await checkPasswordLogin(prismaMock, { email: 'a@x.com', password: 'Maison-Dakar-2026' }),
+    ).toMatchObject({ ok: true });
+  });
+
+  it('…but not once Google has linked it: that unproved password is refused like a wrong one', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(
+      account({ emailVerifiedAt: null, _count: { oauthAccounts: 1 } }) as never,
+    );
+    expect(
+      await checkPasswordLogin(prismaMock, { email: 'a@x.com', password: 'Maison-Dakar-2026' }),
+    ).toEqual({ ok: false, error: 'INVALID_CREDENTIALS' });
+    // A proved password on a Google-linked account still works.
+    prismaMock.user.findUnique.mockResolvedValue(
+      account({ _count: { oauthAccounts: 1 } }) as never,
+    );
+    expect(
+      await checkPasswordLogin(prismaMock, { email: 'a@x.com', password: 'Maison-Dakar-2026' }),
+    ).toMatchObject({ ok: true });
   });
 
   it('an unknown address and an account without a password answer exactly like a wrong password', async () => {

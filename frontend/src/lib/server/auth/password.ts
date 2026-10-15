@@ -3,10 +3,15 @@
 // removed by the RenderBox port; this is the smaller shape that replaces
 // them, with the same guarantees:
 //
-//   - A password is only ever attached AFTER the address is proved with an
-//     emailed code (signup and reset are the same operation: prove, then
-//     set). Nobody can pre-register someone else's address with their own
-//     password and wait for the owner to sign in with Google.
+//   - Once email sending is configured, a password is only ever attached
+//     AFTER the address is proved with an emailed code (signup and reset are
+//     the same operation: prove, then set). Until then the owner chose direct
+//     signup (`createPasswordAccount`): the account is created unverified
+//     and refused for any address that already has an account. Someone could
+//     still pre-register another person's address; once the real owner signs
+//     in with Google, that unproved password no longer signs in (the
+//     sessions it opened are not revoked — that needs the protected Google
+//     callback, left for when email verification comes back).
 //   - Asking for a code never reveals whether the address has an account.
 //   - Codes are stored hashed (SHA-256), live AUTH_VERIFICATION_TTL_MIN
 //     (15 min), allow 5 tries, and a new code voids the previous one.
@@ -47,8 +52,11 @@ const MAX_CODE_ATTEMPTS = 5;
 const LOCK_THRESHOLD = num(process.env.AUTH_LOCKOUT_THRESHOLD, 10);
 const LOCK_MS = num(process.env.AUTH_LOCKOUT_DURATION_MIN, 15) * 60_000;
 
-/** True when codes can be emailed — without it the email + password form is
- *  hidden on /connexion and its routes answer 503. */
+/** True when codes can be emailed. Then a new account proves its address
+ *  with a code before its password is stored, and « Mot de passe oublié »
+ *  works. Without it (2026-10-15, owner: « pour l'instant on ne va pas mettre
+ *  la vérification d'email »), an account is created at once by
+ *  `createPasswordAccount`, unverified, and there is no reset. */
 export function isEmailSignInConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
 }
@@ -225,6 +233,40 @@ export async function confirmCodeAndSetPassword(
   }
 }
 
+export type CreateResult = { ok: true; user: SignedInUser } | { ok: false; error: 'EMAIL_TAKEN' };
+
+/**
+ * Direct signup, while no email can be sent: creates the account with its
+ * password, unverified (`emailVerifiedAt` stays null). Any address that
+ * already has an account is refused — whether it signed up with Google or a
+ * password — so this can never set a password on someone else's account.
+ * Telling « this address is taken » is the price of signing up without a
+ * code; the route is rate-limited.
+ */
+export async function createPasswordAccount(
+  prisma: PrismaClient,
+  args: { email: string; password: string; name?: string | undefined },
+): Promise<CreateResult> {
+  const email = args.email.trim().toLowerCase();
+  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (existing) return { ok: false, error: 'EMAIL_TAKEN' };
+  const passwordHash = await hashPassword(args.password);
+  const name = args.name?.trim();
+  try {
+    const user = await prisma.user.create({
+      data: { email, passwordHash, ...(name ? { name } : {}) },
+      select: { id: true, email: true, tokenVersion: true },
+    });
+    return { ok: true, user };
+  } catch (err) {
+    // Two signups for the same address at once: the unique index decides.
+    if ((err as { code?: string } | null)?.code === 'P2002') {
+      return { ok: false, error: 'EMAIL_TAKEN' };
+    }
+    throw err;
+  }
+}
+
 let dummyHash: Promise<string> | null = null;
 
 export type LoginResult =
@@ -251,9 +293,15 @@ export async function checkPasswordLogin(
       lockedUntil: true,
       status: true,
       deletedAt: true,
+      _count: { select: { oauthAccounts: true } },
     },
   });
-  if (!user?.passwordHash || !user.emailVerifiedAt) {
+  // A password is set by a proved code or by a direct signup (unverified).
+  // An unverified password on an account that Google has since linked is
+  // not trusted: whoever chose it never proved the address, the Google
+  // sign-in did. That account signs in with Google only.
+  const untrusted = !user?.emailVerifiedAt && (user?._count.oauthAccounts ?? 0) > 0;
+  if (!user?.passwordHash || untrusted) {
     dummyHash ??= hashPassword(crypto.randomBytes(16).toString('hex'));
     await verifyPassword(args.password, await dummyHash);
     return { ok: false, error: 'INVALID_CREDENTIALS' };

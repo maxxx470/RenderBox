@@ -16,7 +16,9 @@ const en: Record<keyof typeof fr, string> = {
   'connexion.forgotTitle': 'Forgot your password',
   'connexion.forgotBody': 'Enter your address: we will send you a code to choose a new password.',
   'connexion.resetTitle': 'New password',
-  'connexion.unavailable': 'Sign-in opens very soon.',
+  'connexion.createAccount': 'Create my account',
+  'connexion.errorEmailTaken':
+    'An account already uses this address: sign in, or continue with Google.',
   'connexion.googleButton': 'Continue with Google',
   'connexion.or': 'OR',
   'connexion.nameLabel': 'Full name',
