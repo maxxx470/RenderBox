@@ -5,8 +5,9 @@
 // Since 2026-10-15 it fills the whole window (owner: no card, no margin, no
 // rounded corners): on the left, from 1024px, a blue panel the height of the
 // screen — the logo, a 3D picture, a pill, the title, one line, then the
-// three steps of getting started with the current one in white —; on the
-// right the form on white.
+// three steps of getting started, each with its own 3D picture
+// (/public/connexion/etape-1…3.webp, the owner's), the current one in white
+// —; on the right the form on white.
 //
 // The pictures are the owner's, on a plain blue ground the panel is tinted
 // to match (per picture, below), and their edges fade, so they melt into it: /public/connexion/visuel.webp on
@@ -82,22 +83,30 @@ export function AuthShell({ step, children }: { step: 1 | 2 | 3; children: React
               <li
                 key={key}
                 aria-current={current ? 'step' : undefined}
-                className={`flex h-[124px] flex-col justify-between rounded-2xl p-4 ${
+                className={`flex flex-col gap-2.5 rounded-2xl p-2.5 ${
                   current ? 'bg-white text-[#17161F]' : 'bg-white/12 text-white/85 backdrop-blur-sm'
                 }`}
               >
-                <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-lg font-[family-name:var(--font-mono)] text-[12px] font-semibold ${
-                    current
-                      ? 'bg-[#2948FC] text-white'
-                      : done
-                        ? 'bg-white text-[#2948FC]'
-                        : 'border border-white/45'
-                  }`}
-                >
-                  {done ? <TickSquare set="curved" size={15} primaryColor="#2948FC" /> : n}
-                </span>
-                <span className="text-[13.5px] font-medium leading-snug">{t(key)}</span>
+                <div className="relative overflow-hidden rounded-xl">
+                  <img
+                    src={`/connexion/etape-${n}.webp`}
+                    alt=""
+                    aria-hidden
+                    className={`aspect-[16/10] w-full object-cover ${current || done ? '' : 'opacity-80'}`}
+                  />
+                  <span
+                    className={`absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-lg font-[family-name:var(--font-mono)] text-[12px] font-semibold ${
+                      current
+                        ? 'bg-[#2948FC] text-white'
+                        : done
+                          ? 'bg-white text-[#2948FC]'
+                          : 'border border-white/60 bg-white/10 text-white backdrop-blur-sm'
+                    }`}
+                  >
+                    {done ? <TickSquare set="curved" size={15} primaryColor="#2948FC" /> : n}
+                  </span>
+                </div>
+                <span className="px-1.5 pb-1 text-[13.5px] font-medium leading-snug">{t(key)}</span>
               </li>
             );
           })}
