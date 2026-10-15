@@ -30,7 +30,7 @@ import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import { TEMPLATE_KEYS, TEMPLATES, type TemplateKey } from '@/lib/server/generation/templates';
-import { CARD_SHAPE, CARD_TRANSFORM, FAN_SLOTS, TemplateFanCard } from './fan';
+import { CARD_SHAPE, CARD_TRANSFORM, FAN_SLOTS, FanCarousel, TemplateFanCard } from './fan';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
 import type { RatioKey } from '@/lib/server/generation/ratios';
@@ -415,19 +415,17 @@ export function GenerationHome({
   }, [natural, largeSrc]);
 
   return (
-    // Below 900px the rail gives way to the bottom bar; here its "+" opens
-    // the photo picker directly instead of linking to this very page.
     <AppFrame
       current="generate"
       topbar={{
         title: t('app.genHomeTitle'),
+        shortTitle: t('app.genHomeShortTitle'),
         tier,
         creditsMax: max,
         creditsBalance: remaining,
         userEmail,
       }}
       onModeChange={handleModeChange}
-      onNew={() => fileInputRef.current?.click()}
     >
       {/* The same layout as a project (owner, 2026-10-08): on the left the
           canvas with the command bar under it at the same width, on the right
@@ -446,19 +444,26 @@ export function GenerationHome({
             e.target.value = '';
           }}
         />
-        <div className="flex items-center justify-end gap-2 px-5.5 pt-4 min-[900px]:hidden">
-          <button
-            type="button"
-            onClick={() => setPanelOpen(true)}
-            className="rounded-xl p-1.5"
-            aria-label={`${mode === 'generate' ? t('app.materialsTitle') : t('edit.panelTitle')} · ${t('app.treeTitle')}`}
-          >
-            <Category set="curved" size={16} primaryColor="#8A8896" />
-          </button>
-        </div>
+        {/* The right column's drawer, below 900px. In Générer it holds the
+            materials sheet and the tree, both empty on this page until the
+            first render opens its project — so the button only shows in
+            Commenter / Ajouter, where it holds the edit panel. */}
+        {mode !== 'generate' && (
+          <div className="flex items-center justify-end gap-2 px-5.5 pt-4 min-[900px]:hidden">
+            <button
+              type="button"
+              onClick={() => setPanelOpen(true)}
+              className="rounded-xl p-1.5"
+              aria-label={`${t('edit.panelTitle')} · ${t('app.treeTitle')}`}
+            >
+              <Category set="curved" size={16} primaryColor="#8A8896" />
+            </button>
+          </div>
+        )}
         {/* Same side padding as the command bar below it, as on a project. */}
         <section className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 pt-4 min-[640px]:px-5 min-[640px]:pt-5">
-          <div className="mb-4">
+          {/* On a phone the header already names the page (owner, 2026-10-15). */}
+          <div className="mb-4 max-[899px]:hidden">
             <h2 className="mb-1 font-[family-name:var(--font-display)] text-base font-semibold text-[#17161F]">
               {t('app.genHomeTitle')}
             </h2>
@@ -537,29 +542,40 @@ export function GenerationHome({
               ) : (
                 // The fan is always laid out with FAN_SLOTS positions: real
                 // renders fill it from the left, the rest stay empty slots.
-                <div className="flex flex-1 items-center justify-center gap-0 overflow-hidden pb-5">
-                  {Array.from({ length: FAN_SLOTS }, (_, i) => {
+                // On a phone it is a carousel, which only keeps the empty slot
+                // that speaks (the first one).
+                <FanCarousel
+                  items={Array.from({ length: FAN_SLOTS }, (_, i) => {
                     const render = recentRenders[i];
-                    if (render) return <RenderFanCard key={render.id} render={render} index={i} />;
+                    if (render)
+                      return {
+                        key: render.id,
+                        node: <RenderFanCard render={render} index={i} />,
+                      };
                     // All or nothing: the templates show only while the account
                     // has no render of its own.
                     const key = showTemplates ? TEMPLATE_KEYS[i] : undefined;
                     if (key)
-                      return (
-                        <TemplateFanCard
-                          key={key}
-                          src={TEMPLATES[key].image}
-                          label={TEMPLATES[key].label[locale]}
-                          action={t('app.templateUse')}
-                          index={i}
-                          onUse={() => applyTemplate(key)}
-                        />
-                      );
-                    return (
-                      <EmptyFanCard key={`slot-${i}`} index={i} lead={i === recentRenders.length} />
-                    );
+                      return {
+                        key,
+                        node: (
+                          <TemplateFanCard
+                            src={TEMPLATES[key].image}
+                            label={TEMPLATES[key].label[locale]}
+                            action={t('app.templateUse')}
+                            index={i}
+                            onUse={() => applyTemplate(key)}
+                          />
+                        ),
+                      };
+                    const lead = i === recentRenders.length;
+                    return {
+                      key: `slot-${i}`,
+                      node: <EmptyFanCard index={i} lead={lead} />,
+                      mobile: lead,
+                    };
                   })}
-                </div>
+                />
               )}
             </div>
           )}

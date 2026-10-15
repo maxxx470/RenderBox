@@ -9,6 +9,11 @@ import type { ReactNode } from 'react';
  *
  * `align="center"` is Metrio's subscription head: the eyebrow becomes a small
  * blue-tinted pill and the block is centred over the page.
+ *
+ * Below 900px (owner, 2026-10-15, mobile simplification) the left-aligned head
+ * drops its eyebrow and title — the header bar already names the page — and
+ * keeps the subtitle and the action. The centred head keeps everything: its
+ * title (« Choisissez votre formule ») is not the page's name.
  */
 export function PageHeader({
   eyebrow,
@@ -47,13 +52,15 @@ export function PageHeader({
       className={`flex flex-col gap-3 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between ${className}`}
     >
       <div className="min-w-0">
-        <span className="mb-1 block text-[11px] font-bold uppercase tracking-[0.14em] text-[#4B4A57]">
+        <span className="mb-1 block text-[11px] font-bold uppercase tracking-[0.14em] text-[#4B4A57] max-[899px]:hidden">
           {eyebrow}
         </span>
-        <h1 className="font-[family-name:var(--font-display)] text-[22px] font-black leading-none tracking-tight text-[#17161F] min-[640px]:text-[24px]">
+        <h1 className="font-[family-name:var(--font-display)] text-[22px] font-black leading-none tracking-tight text-[#17161F] max-[899px]:hidden min-[640px]:text-[24px]">
           {title}
         </h1>
-        {subtitle && <p className="mt-1.5 text-[13px] text-[#6B6878]">{subtitle}</p>}
+        {subtitle && (
+          <p className="mt-1.5 text-[13px] text-[#6B6878] max-[899px]:mt-0">{subtitle}</p>
+        )}
       </div>
       {action && <div className="flex-shrink-0 self-start min-[640px]:self-auto">{action}</div>}
     </div>

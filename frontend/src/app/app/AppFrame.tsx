@@ -6,8 +6,8 @@
 //
 // The page renders its own <main> as children, exactly where the chrome
 // leaves room for it, and tells the chrome the rest: its title, the plan
-// figures it fetched, what the mobile "+" and the rail's Image entry should
-// do, and — for an open project — the render tree, portalled into the rail.
+// figures it fetched, what the rail's Image entry should do, and — for an
+// open project — the render tree, portalled into the rail.
 //
 // Rendered without the chrome (a page outside the app layout), it simply
 // renders its children.
@@ -28,7 +28,6 @@ export function AppFrame({
   sidebarOpen = false,
   onSidebarClose,
   sidebarChildren,
-  onNew,
   children,
 }: {
   /** Kept for the call sites; the chrome derives the current entry from the URL. */
@@ -41,8 +40,6 @@ export function AppFrame({
   sidebarOpen?: boolean;
   onSidebarClose?: () => void;
   sidebarChildren?: ReactNode;
-  /** What the mobile "+" does; a link to /app/generer when absent. */
-  onNew?: () => void;
   /** The screen's own <main>, which carries `min-w-0 flex-1` and scrolls. */
   children: ReactNode;
 }) {
@@ -52,30 +49,29 @@ export function AppFrame({
 
   // Handlers change identity on every render; the chrome calls through a ref.
   useIsoLayoutEffect(() => {
-    if (handlers) handlers.current = { onModeChange, onNew, onTreeClose: onSidebarClose };
+    if (handlers) handlers.current = { onModeChange, onTreeClose: onSidebarClose };
   });
 
-  const { title, tier, creditsMax, creditsBalance } = topbar;
+  const { title, shortTitle, tier, creditsMax, creditsBalance } = topbar;
   const hasModeChange = Boolean(onModeChange);
-  const hasNew = Boolean(onNew);
   const hasTree = Boolean(sidebarChildren);
   useIsoLayoutEffect(() => {
     register?.({
       title,
+      shortTitle,
       quota: { tier, max: creditsMax, remaining: creditsBalance },
       hasModeChange,
-      hasNew,
       hasTree,
       treeOpen: sidebarOpen,
     });
   }, [
     register,
     title,
+    shortTitle,
     tier,
     creditsMax,
     creditsBalance,
     hasModeChange,
-    hasNew,
     hasTree,
     sidebarOpen,
   ]);

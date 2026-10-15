@@ -15,6 +15,9 @@
 // the account. Below 900px (no rail) it keeps the logo and the account.
 // 2026-10-13 (owner): no longer a floating rounded card — it touches the rail,
 // the top and the right edge, square, a hairline under it.
+// 2026-10-15 (owner, mobile simplification): below 900px FR / EN moves into
+// the bottom bar's « Plus » menu and a long title gives way to its short form
+// (« Générateur »), so the header is the logo, the page, the bell, the credits.
 import Link from 'next/link';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
@@ -35,13 +38,22 @@ const TIER_LABEL_KEY: Record<
 
 export interface AppTopbarProps {
   title: string;
+  /** Shown instead of the title below 640px; the title when absent. */
+  shortTitle?: string | undefined;
   tier: PricingTierId | null;
   creditsMax: number | null;
   creditsBalance: number | null;
   userEmail: string;
 }
 
-export function AppTopbar({ title, tier, creditsMax, creditsBalance, userEmail }: AppTopbarProps) {
+export function AppTopbar({
+  title,
+  shortTitle,
+  tier,
+  creditsMax,
+  creditsBalance,
+  userEmail,
+}: AppTopbarProps) {
   const { t, locale } = useLocale();
   const placeholder = isPlaceholderAccount(userEmail);
   const accountLabel = placeholder ? t('app.freeAccessAccount') : userEmail;
@@ -65,8 +77,18 @@ export function AppTopbar({ title, tier, creditsMax, creditsBalance, userEmail }
           <BrandMark size="md" />
         </Link>
         <div className="flex h-6 min-w-0 items-center min-[480px]:border-l min-[480px]:border-[#ECECF2] min-[480px]:pl-3 min-[640px]:pl-4 min-[900px]:border-l-0 min-[900px]:pl-0">
-          <h1 className="truncate font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F] min-[640px]:text-[19px]">
-            {title}
+          <h1
+            title={title}
+            className="truncate font-[family-name:var(--font-display)] text-[15px] font-semibold text-[#17161F] min-[640px]:text-[19px]"
+          >
+            {shortTitle && shortTitle !== title ? (
+              <>
+                <span className="min-[640px]:hidden">{shortTitle}</span>
+                <span className="hidden min-[640px]:inline">{title}</span>
+              </>
+            ) : (
+              title
+            )}
           </h1>
         </div>
       </div>
@@ -74,7 +96,8 @@ export function AppTopbar({ title, tier, creditsMax, creditsBalance, userEmail }
       <div className="flex flex-shrink-0 items-center gap-1 min-[480px]:gap-1.5 min-[640px]:gap-2.5">
         <NotificationsBell />
 
-        <LanguageInlineSwitch className="rounded-lg bg-[#F2F2F5] px-2 py-1.5 min-[480px]:px-2.5" />
+        {/* Below 900px FR / EN lives in the bottom bar's « Plus » menu. */}
+        <LanguageInlineSwitch className="rounded-lg bg-[#F2F2F5] px-2.5 py-1.5 max-[899px]:hidden" />
 
         <span
           aria-hidden

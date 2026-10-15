@@ -676,7 +676,12 @@ export function CommandBar({
           {/* Why the button is off — a phone has no room for it in the
               composer's row. Without this the bar is a dead end. */}
           {showHint && (
-            <p className="px-2 pb-1.5 pt-1 text-[11.5px] text-[#6B6878] min-[640px]:hidden">
+            // One line (owner, 2026-10-15: the phone has no room to spare);
+            // the whole sentence stays in the tooltip.
+            <p
+              title={sendHint}
+              className="truncate px-2 pb-1.5 pt-1 text-[11.5px] text-[#6B6878] min-[640px]:hidden"
+            >
               {sendHint}
             </p>
           )}

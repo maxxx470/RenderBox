@@ -57,8 +57,22 @@ function HowItWorks() {
       <MotionFilm
         {...motionFilm('etapes', locale)}
         label={t('dashboard.filmAlt')}
-        className="border-t border-[#ECECF2]"
+        className="border-t border-[#ECECF2] max-[899px]:hidden"
       />
+      {/* On a phone the film shows the computer's screen too small to read
+          (owner, 2026-10-15): the same three steps, written. */}
+      <ol className="flex flex-col gap-2 border-t border-[#ECECF2] px-4 py-3.5 min-[900px]:hidden">
+        {(['dashboard.howStep1', 'dashboard.howStep2', 'dashboard.howStep3'] as const).map(
+          (key, i) => (
+            <li key={key} className="flex items-center gap-3 text-[13px] text-[#3D3B49]">
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-[#EEF1FF] font-[family-name:var(--font-mono)] text-[11px] font-semibold text-[#1E36D6]">
+                {i + 1}
+              </span>
+              {t(key)}
+            </li>
+          ),
+        )}
+      </ol>
     </div>
   );
 }

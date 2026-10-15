@@ -40,7 +40,12 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
             <h2 className="px-1 font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
               {t(f.title)}
             </h2>
-            <MotionFilm {...motionFilm(f.id, locale)} label={t(f.alt)} className="rounded-[18px]" />
+            <MotionFilm
+              {...motionFilm(f.id, locale)}
+              label={t(f.alt)}
+              className="rounded-[18px]"
+              expandLabel={t('info.filmExpand')}
+            />
           </figure>
         ))}
       </div>

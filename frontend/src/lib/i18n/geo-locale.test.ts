@@ -20,9 +20,10 @@ describe('localeForCountry', () => {
     expect(localeForCountry('CA')).toBe('en');
   });
 
-  it('keeps French when the country is unknown (no geo headers off Vercel)', () => {
-    expect(localeForCountry(null)).toBe('fr');
-    expect(localeForCountry('')).toBe('fr');
+  it('falls back to English when the country is unknown (owner, 2026-10-15)', () => {
+    expect(localeForCountry(null)).toBe('en');
+    expect(localeForCountry('')).toBe('en');
+    expect(resolveLocale({ cookie: undefined, country: undefined })).toBe('en');
   });
 });
 

@@ -4,9 +4,9 @@
 // switch, remembered in the locale cookie) always wins over this.
 //
 // The country comes from Vercel's `x-vercel-ip-country` header (ISO 3166-1
-// alpha-2), the province from `x-vercel-ip-country-region`. Neither header
-// exists off Vercel (local dev): then the site keeps its historical default,
-// French.
+// alpha-2), the province from `x-vercel-ip-country-region`. When the country
+// is unknown — no header, as off Vercel — the site speaks English (owner,
+// 2026-10-15: « une langue universelle »; French until then).
 import type { Locale } from './dictionaries';
 
 /**
@@ -70,7 +70,7 @@ export const FRANCOPHONE_COUNTRIES: ReadonlySet<string> = new Set([
 const FRANCOPHONE_REGIONS: ReadonlySet<string> = new Set(['CA-QC']);
 
 /** The default when the country is unknown (no Vercel geo headers). */
-export const FALLBACK_LOCALE: Locale = 'fr';
+export const FALLBACK_LOCALE: Locale = 'en';
 
 export function localeForCountry(
   country: string | null | undefined,

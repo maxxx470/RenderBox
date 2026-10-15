@@ -22,7 +22,7 @@ import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Download, Swap } from 'react-iconly';
 import { AppFrame } from './AppFrame';
 import { MOBILE_NAV_PAD } from './MobileNav';
-import { CARD_TRANSFORM, ExampleFanCard } from './fan';
+import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from './fan';
 import { EXAMPLE_RENDERS } from './generer-examples';
 import { SideColumn } from './SideColumn';
 import { nodeTitle } from './ProjectTree';
@@ -636,11 +636,12 @@ export function AppShell({
               {/* No drop zone and no drag-and-drop here (owner, 2026-10-08):
                   an image comes in through the command bar's paperclip. The
                   canvas shows the four example renders of the Image page. */}
-              <div className="flex flex-1 items-center justify-center overflow-hidden pb-5">
-                {EXAMPLE_RENDERS.slice(0, CARD_TRANSFORM.length).map((example, i) => (
-                  <ExampleFanCard key={example.src} example={example} index={i} />
-                ))}
-              </div>
+              <FanCarousel
+                items={EXAMPLE_RENDERS.slice(0, CARD_TRANSFORM.length).map((example, i) => ({
+                  key: example.src,
+                  node: <ExampleFanCard example={example} index={i} />,
+                }))}
+              />
             </>
           ) : (
             <>

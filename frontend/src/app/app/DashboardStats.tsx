@@ -132,7 +132,7 @@ function ServiceCard({
         alt=""
         aria-hidden
         draggable={false}
-        className={`pointer-events-none absolute inset-y-0 right-0 h-full w-[52%] object-cover [mask-image:linear-gradient(to_right,transparent_0%,#000_42%)] transition-transform duration-300 ease-out motion-safe:group-hover:scale-[1.03] min-[640px]:w-[55%] ${art.position}`}
+        className={`pointer-events-none absolute inset-y-0 right-0 h-full w-[38%] object-cover [mask-image:linear-gradient(to_right,transparent_0%,#000_42%)] transition-transform duration-300 ease-out motion-safe:group-hover:scale-[1.03] min-[640px]:w-[55%] ${art.position}`}
       />
       <div className="relative max-w-[64%] min-[640px]:max-w-[52%] min-[1280px]:max-w-[56%]">
         <div

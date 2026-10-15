@@ -12,8 +12,8 @@
 // The pictures are the owner's, on a plain blue ground the panel is tinted
 // to match (per picture, below), and their edges fade, so they melt into it: /public/connexion/visuel.webp on
 // /connexion, /public/connexion/bienvenue.webp on /bienvenue. To swap one,
-// replace the file under the same name. Below 1024px the panel shrinks to the
-// logo and the title above the form, without the picture or the steps.
+// replace the file under the same name. Below 1024px the panel sits above the
+// form: the logo, the picture, the title, without the steps.
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { TickSquare } from 'react-iconly';
@@ -51,8 +51,10 @@ export function AuthShell({ step, children }: { step: 1 | 2 | 3; children: React
           <Wordmark inverse />
         </Link>
 
-        {/* The picture takes whatever height the text and steps leave. */}
-        <div className="my-3 hidden min-h-0 flex-1 items-center justify-center min-[1024px]:flex">
+        {/* The picture takes whatever height the text and steps leave; on a
+            phone (owner, 2026-10-15, after the « Laundrify » reference) a
+            fixed band under the logo. */}
+        <div className="my-3 flex h-[190px] min-h-0 items-center justify-center min-[640px]:h-[240px] min-[1024px]:h-auto min-[1024px]:flex-1">
           {/* Its edges fade out, so the picture's ground melts into the panel. */}
           <img
             src={PICTURE[step].src}
@@ -62,7 +64,7 @@ export function AuthShell({ step, children }: { step: 1 | 2 | 3; children: React
           />
         </div>
 
-        <div className="mt-6 min-[1024px]:mt-0">
+        <div>
           <span className="inline-flex rounded-lg bg-white/15 px-3 py-1.5 text-[13px] font-medium backdrop-blur-sm">
             {t('connexion.panelPill')}
           </span>

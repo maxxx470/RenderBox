@@ -344,7 +344,9 @@ export function ImagesGrid({
               <div
                 role="radiogroup"
                 aria-label={t('images.filterGroup')}
-                className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none]"
+                // Below 900px the row scrolls sideways; its right edge fades
+                // so the cut filter reads as « there is more ».
+                className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] max-[899px]:pr-6 max-[899px]:[mask-image:linear-gradient(to_right,#000_82%,transparent)]"
               >
                 <span className="mr-1 hidden text-[11px] font-bold uppercase text-[#4B4A57] min-[640px]:inline">
                   {t('projects.filterLabel')}

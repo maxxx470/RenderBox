@@ -45,16 +45,16 @@ export interface ChromeQuota {
 /** What the page under the chrome tells it. */
 export interface PageRegistration {
   title: string;
+  /** What the header shows on a phone when the title is too long. */
+  shortTitle?: string | undefined;
   quota: ChromeQuota;
   hasModeChange: boolean;
-  hasNew: boolean;
   hasTree: boolean;
   treeOpen: boolean;
 }
 
 export interface PageHandlers {
   onModeChange?: ((mode: AppMode) => void) | undefined;
-  onNew?: (() => void) | undefined;
   onTreeClose?: (() => void) | undefined;
 }
 
@@ -178,6 +178,7 @@ export function AppChrome({
         <div className="flex min-w-0 flex-1 flex-col">
           <AppTopbar
             title={title}
+            shortTitle={page?.shortTitle ?? title}
             tier={quota.tier}
             creditsMax={quota.max}
             creditsBalance={quota.remaining}
@@ -185,10 +186,7 @@ export function AppChrome({
           />
           <div className="relative flex min-h-0 flex-1">{children}</div>
         </div>
-        <MobileNav
-          current={current}
-          {...(page?.hasNew ? { onNew: () => handlers.current.onNew?.() } : {})}
-        />
+        <MobileNav current={current} />
       </div>
     </Ctx.Provider>
   );

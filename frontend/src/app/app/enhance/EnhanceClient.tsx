@@ -45,7 +45,7 @@ import { BeforeAfterSlider } from '@/app/BeforeAfterSlider';
 import { AppFrame } from '../AppFrame';
 import type { AppSurfaceProps } from '../AppSurface';
 import { useObjectUrl } from '../CommandBar';
-import { CARD_TRANSFORM, ExampleFanCard } from '../fan';
+import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from '../fan';
 import { ENHANCE_EXAMPLES } from '../generer-examples';
 import { MOBILE_NAV_PAD } from '../MobileNav';
 import {
@@ -397,20 +397,25 @@ export function EnhanceClient({
       />
 
       <main className={`flex min-w-0 flex-1 flex-col overflow-hidden ${MOBILE_NAV_PAD}`}>
-        <div className="flex items-center justify-end gap-2 px-5.5 pt-4 min-[900px]:hidden">
+        {/* On a phone: one short line, then the « À améliorer » column's
+            button, named — a bare grey icon was easy to miss (2026-10-15). */}
+        <div className="flex items-center justify-between gap-3 px-3.5 pt-3 min-[900px]:hidden">
+          <p className="min-w-0 text-[12.5px] leading-snug text-[#8A8896]">
+            {t('enhance.subtitleShort')}
+          </p>
           <button
             type="button"
             onClick={() => setPanelOpen(true)}
-            className="rounded-xl p-1.5"
-            aria-label={t('enhance.optionsHeading')}
+            className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg bg-[#EEF1FF] px-2.5 py-1.5 text-[12px] font-semibold text-[#1E36D6]"
           >
-            <Category set="curved" size={16} primaryColor="#8A8896" />
+            <Category set="curved" size={14} primaryColor="#2948FC" />
+            {t('enhance.optionsHeading')}
           </button>
         </div>
 
         {/* Same side padding as the bar below it, as on a project. */}
         <section className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 pt-4 min-[640px]:px-5 min-[640px]:pt-5">
-          <div className="mb-4">
+          <div className="mb-4 max-[899px]:hidden">
             <h2 className="mb-1 font-[family-name:var(--font-display)] text-base font-semibold text-[#17161F]">
               {t('enhance.title')}
             </h2>
@@ -441,11 +446,12 @@ export function EnhanceClient({
             // Nothing attached yet: four blurry/sharp examples, each one picture
             // split in two with both resolutions on it (owner, 2026-10-13).
             // The render comes in through the bar's paperclip.
-            <div className="flex flex-1 items-center justify-center overflow-hidden pb-5">
-              {ENHANCE_EXAMPLES.slice(0, CARD_TRANSFORM.length).map((example, i) => (
-                <ExampleFanCard key={example.src} example={example} index={i} />
-              ))}
-            </div>
+            <FanCarousel
+              items={ENHANCE_EXAMPLES.slice(0, CARD_TRANSFORM.length).map((example, i) => ({
+                key: example.src,
+                node: <ExampleFanCard example={example} index={i} />,
+              }))}
+            />
           ) : (
             <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 pb-2">
               {/* 16:10 like the slider, as large as the stage allows. */}
