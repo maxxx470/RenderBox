@@ -27,6 +27,7 @@ export async function AppLayoutShell({ children }: { children: ReactNode }) {
       // The engines' versions run through Kie: without its key the routes
       // use the direct APIs and no version chip is shown.
       versionsEnabled={Boolean(process.env.KIE_API_KEY)}
+      initialVersions={quota.engineVersions}
     >
       {children}
     </AppChrome>

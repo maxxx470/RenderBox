@@ -22,6 +22,8 @@ import 'server-only';
 import { NextResponse } from 'next/server';
 import type { PrismaClient } from '@prisma/client';
 import { getPricingTier, type PricingTierId } from '@/lib/pricing-tiers';
+import type { EngineName } from './engines/types';
+import { parseEngineVersions, type EngineVersionKey } from './engine-versions';
 
 const TIER_PERIOD_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
@@ -54,6 +56,12 @@ export interface CreditStatus {
    * /bienvenue. False for an unknown account.
    */
   onboarded: boolean;
+  /**
+   * The version chosen for each engine (User.engineVersions over the
+   * defaults) — read here for the same one-round-trip reason: the app layout
+   * hands it to the command bar on every page.
+   */
+  engineVersions: Record<EngineName, EngineVersionKey>;
 }
 
 const NONE = { tier: null, max: null, remaining: null, periodEndsAt: null } as const;
@@ -66,14 +74,21 @@ const NONE = { tier: null, max: null, remaining: null, periodEndsAt: null } as c
 export async function getCreditStatus(prisma: PrismaClient, userId: string): Promise<CreditStatus> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { currentTier: true, tierPeriodStart: true, creditsBalance: true, onboardedAt: true },
+    select: {
+      currentTier: true,
+      tierPeriodStart: true,
+      creditsBalance: true,
+      onboardedAt: true,
+      engineVersions: true,
+    },
   });
 
   // A currentTier pricing-tiers.ts no longer recognizes (a retired id) is
   // treated exactly like no active tier.
   const tier = user?.currentTier ? getPricingTier(user.currentTier) : undefined;
   const onboarded = Boolean(user?.onboardedAt);
-  if (!user || !tier) return { reason: 'NO_ACTIVE_TIER', ...NONE, onboarded };
+  const engineVersions = parseEngineVersions(user?.engineVersions);
+  if (!user || !tier) return { reason: 'NO_ACTIVE_TIER', ...NONE, onboarded, engineVersions };
 
   if (!user.tierPeriodStart || Date.now() - user.tierPeriodStart.getTime() >= TIER_PERIOD_MS) {
     // Period lapsed without a renewal: the plan ends and its unused credits
@@ -82,11 +97,12 @@ export async function getCreditStatus(prisma: PrismaClient, userId: string): Pro
       where: { id: userId },
       data: { currentTier: null, tierPeriodStart: null, creditsBalance: 0 },
     });
-    return { reason: 'TIER_EXPIRED', ...NONE, onboarded };
+    return { reason: 'TIER_EXPIRED', ...NONE, onboarded, engineVersions };
   }
 
   return {
     onboarded,
+    engineVersions,
     tier: tier.id,
     max: tier.creditsPerMonth,
     remaining: Math.max(0, user.creditsBalance),

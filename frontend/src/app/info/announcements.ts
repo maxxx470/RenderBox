@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'settings-payments-currency',
+    date: '2026-10-16',
+    kind: 'shipped',
+    title: {
+      fr: 'Une page Paramètres complète, et vos prix dans votre devise',
+      en: 'A complete Settings page, and prices in your currency',
+    },
+    body: {
+      fr: 'La page Paramètres montre votre formule et vos crédits, vos informations d’inscription (modifiables), le moteur et la version à utiliser par défaut, la langue, vos modes de connexion et vos derniers paiements. La version choisie pour chaque moteur est désormais gardée sur votre compte, sur tous vos appareils. Sous chaque prix, un équivalent indicatif s’affiche dans la devise de votre pays ; le paiement reste en FCFA. Et le paiement d’une formule est confirmé même si vous fermez la page avant de revenir sur RenderPro.',
+      en: 'The Settings page shows your plan and credits, your sign-up details (editable), the engine and version to use by default, the language, your sign-in methods and your latest payments. The version chosen for each engine is now kept on your account, on all your devices. Under each price, an approximate equivalent shows in your country’s currency; payment stays in FCFA. And a plan payment is confirmed even if you close the page before coming back to RenderPro.',
+    },
+  },
+  {
     id: 'plans-dialog-channels',
     date: '2026-10-15',
     kind: 'shipped',

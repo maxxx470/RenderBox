@@ -38,6 +38,11 @@ model User {
   // Preferred generation engine, set from /parametres. NULL falls back to
   // "nanobanana" client-side (AppShell.tsx's initial engine state).
   defaultEngine           String?
+  // The version chosen for each engine, {"nanobanana":"visio-2-1", …}
+  // (engine-versions.ts; NULL = the defaults). Set from the command bar's
+  // version chip and from /parametres; kept on the account since 2026-10-16
+  // (owner), in the browser before.
+  engineVersions          Json?
   // Real, paid monthly quota (see lib/pricing-tiers.ts for the tier→quota
   // mapping) — distinct from GENERATION_RATE_LIMIT_MAX_PER_DAY's anti-abuse
   // hourly/daily cap; both gates must pass, neither replaces the other (see

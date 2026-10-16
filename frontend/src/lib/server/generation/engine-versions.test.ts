@@ -5,6 +5,7 @@ import {
   ENGINE_VERSIONS,
   engineDisplayName,
   kieRatioFor,
+  parseEngineVersions,
   versionsOf,
 } from './engine-versions';
 import { RATIO_KEYS } from './ratios';
@@ -74,5 +75,19 @@ describe('kieRatioFor', () => {
     expect(kieRatioFor(p2, '5:4', null, '2K')).toBe('4:3');
     expect(kieRatioFor(p2, '5:4', null, '4K')).toBe('5:4');
     expect(kieRatioFor(p2, '5:4', null, '1K')).toBe('5:4');
+  });
+});
+
+describe('parseEngineVersions', () => {
+  it('the defaults when the account has chosen nothing', () => {
+    expect(parseEngineVersions(null)).toEqual(DEFAULT_ENGINE_VERSION);
+    expect(parseEngineVersions([])).toEqual(DEFAULT_ENGINE_VERSION);
+  });
+
+  it("keeps a chosen version, ignores an unknown one or another engine's", () => {
+    expect(
+      parseEngineVersions({ nanobanana: 'visio-2-1', gpt_image: 'visio-1', other: 'pixel-2' }),
+    ).toEqual({ nanobanana: 'visio-2-1', gpt_image: 'pixel-2' });
+    expect(parseEngineVersions({ nanobanana: 'visio-9' }).nanobanana).toBe('visio-pro');
   });
 });

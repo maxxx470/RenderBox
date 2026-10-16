@@ -35,6 +35,7 @@ describe(`migration ${NAME}`, () => {
     expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
       '9_phase9_auth_onboarding',
       '9_phase9b_engine_versions',
+      '9_phase9c_user_engine_versions',
     ]);
     expect(sorted.indexOf('20260829225539_tier_quota')).toBeLessThan(sorted.indexOf(NAME));
   });

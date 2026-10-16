@@ -28,8 +28,11 @@ const statements = code
 describe(`migration ${NAME}`, () => {
   it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
-    // Only 9_phase9b_engine_versions (2026-10-15) may come after it.
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9b_engine_versions']);
+    // Only the engine-versions migrations (2026-10-15/16) may come after it.
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
+      '9_phase9b_engine_versions',
+      '9_phase9c_user_engine_versions',
+    ]);
   });
 
   it('is one ALTER TABLE "User" adding the 13 expected columns', () => {

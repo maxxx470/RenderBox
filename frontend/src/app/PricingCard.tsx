@@ -17,6 +17,8 @@ import { TickSquare } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { PLAN_FEATURES, type PricingTier, type PricingTierId } from '@/lib/pricing-tiers';
+import { localPrice } from '@/lib/local-currency';
+import { useVisitorCountry } from '@/lib/visitor-country';
 
 const GRADIENT = 'bg-[linear-gradient(135deg,#435CFE_0%,#2948FC_48%,#1E36D6_100%)]';
 const MONO = 'font-[family-name:var(--font-mono)]';
@@ -63,6 +65,9 @@ export function PricingCard({
   const { t, locale } = useLocale();
   const intl = locale === 'fr' ? 'fr-FR' : 'en-US';
   const name = t(TIER_NAME_KEY[tier.id]);
+  // The price in the visitor's currency where we know it (« ≈ 9,15 € »),
+  // the dollar line otherwise; payment is in FCFA either way.
+  const local = localPrice(tier.priceXof, useVisitorCountry(), intl);
   // White type only on the featured card of the blue band.
   const light = tone === 'band' && tier.featured;
   const muted = light ? 'text-white/80' : 'text-[#6B6878]';
@@ -103,7 +108,9 @@ export function PricingCard({
           <span className={`text-[12px] ${muted}`}>{t('landing.pricingPeriod')}</span>
         </div>
         <div className={`text-[12px] ${MONO} ${muted}`}>
-          {t('landing.pricingUsd', { amount: String(tier.priceUsdDisplay) })}
+          {local
+            ? t('landing.pricingLocal', { amount: local })
+            : t('landing.pricingUsd', { amount: String(tier.priceUsdDisplay) })}
         </div>
       </div>
       <ul className="flex flex-col gap-2.5">

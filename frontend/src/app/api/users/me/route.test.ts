@@ -28,15 +28,44 @@ beforeEach(() => {
 
 describe('PATCH /api/users/me', () => {
   it('updates defaultEngine for the authed user', async () => {
-    prismaMock.user.update.mockResolvedValueOnce({ defaultEngine: 'gpt_image' } as never);
+    prismaMock.user.update.mockResolvedValueOnce({
+      defaultEngine: 'gpt_image',
+      engineVersions: null,
+    } as never);
     const res = await PATCH(makeReq({ defaultEngine: 'gpt_image' }));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ defaultEngine: 'gpt_image' });
+    expect(await res.json()).toEqual({
+      defaultEngine: 'gpt_image',
+      engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2' },
+    });
     expect(prismaMock.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
       data: { defaultEngine: 'gpt_image' },
-      select: { defaultEngine: true },
+      select: { defaultEngine: true, engineVersions: true },
     });
+  });
+
+  it("sets one engine's version and keeps the other engine's", async () => {
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      engineVersions: { gpt_image: 'pixel-2-5' },
+    } as never);
+    prismaMock.user.update.mockResolvedValueOnce({
+      defaultEngine: null,
+      engineVersions: { nanobanana: 'visio-2-1', gpt_image: 'pixel-2-5' },
+    } as never);
+    const res = await PATCH(makeReq({ engineVersion: 'visio-2-1' }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: { engineVersions: { nanobanana: 'visio-2-1', gpt_image: 'pixel-2-5' } },
+      select: { defaultEngine: true, engineVersions: true },
+    });
+  });
+
+  it('400 on an unknown version, or on an empty body', async () => {
+    expect((await PATCH(makeReq({ engineVersion: 'visio-9' }))).status).toBe(400);
+    expect((await PATCH(makeReq({}))).status).toBe(400);
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
   it('400 VALIDATION_FAILED on an unknown engine name', async () => {

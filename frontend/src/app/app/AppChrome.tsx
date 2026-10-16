@@ -37,34 +37,12 @@ import { PlansDialog, type PlansReason } from './PlansDialog';
 import { isPlaceholderAccount } from '@/lib/account-label';
 import type { AppMode } from './CommandBar';
 import { SIDEBAR_COOKIE } from './sidebar-cookie';
-import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
+import type { EngineName } from '@/lib/server/generation/engines/types';
 import {
   DEFAULT_ENGINE_VERSION,
-  ENGINE_VERSIONS,
-  isEngineVersionKey,
   type EngineVersionKey,
 } from '@/lib/server/generation/engine-versions';
-
-/** Where the version chosen for each engine is remembered, per browser. */
-const VERSIONS_STORAGE = 'rp-engine-versions';
-
-/** The version remembered for each engine, the defaults where none is. */
-function readStoredVersions(): Record<EngineName, EngineVersionKey> {
-  const next = { ...DEFAULT_ENGINE_VERSION };
-  try {
-    const raw = JSON.parse(localStorage.getItem(VERSIONS_STORAGE) ?? '{}') as Record<
-      string,
-      unknown
-    >;
-    for (const engine of ENGINE_NAMES) {
-      const v = raw[engine];
-      if (isEngineVersionKey(v) && ENGINE_VERSIONS[v].engine === engine) next[engine] = v;
-    }
-  } catch {
-    // No storage (private window): the defaults.
-  }
-  return next;
-}
+import { api } from '@/lib/api';
 
 export interface ChromeQuota {
   tier: PricingTierId | null;
@@ -142,12 +120,15 @@ export function AppChrome({
   initialQuota,
   initialCollapsed,
   versionsEnabled = false,
+  initialVersions = DEFAULT_ENGINE_VERSION,
   children,
 }: {
   userEmail: string;
   initialQuota: ChromeQuota;
   initialCollapsed: boolean;
   versionsEnabled?: boolean;
+  /** The account's chosen versions (User.engineVersions), read by the layout. */
+  initialVersions?: Record<EngineName, EngineVersionKey>;
   children: ReactNode;
 }) {
   const t = useTranslations();
@@ -165,18 +146,15 @@ export function AppChrome({
   const [plans, setPlans] = useState<PlansReason | null>(null);
   const openPlans = useCallback((reason: PlansReason) => setPlans(reason), []);
   const closePlans = useCallback(() => setPlans(null), []);
-  // The defaults on the server's render, the remembered ones once mounted.
-  const [versions, setVersions] = useState(DEFAULT_ENGINE_VERSION);
-  useEffect(() => setVersions(readStoredVersions()), []);
+  // Kept on the account since 2026-10-16 (owner: « liée au compte »), so the
+  // choice follows the user to every device; the browser's localStorage held
+  // it before. The bar switches at once; the save runs behind it.
+  const [versions, setVersions] = useState(initialVersions);
   const setVersion = useCallback((engine: EngineName, version: EngineVersionKey) => {
-    setVersions((prev) => {
-      const next = { ...prev, [engine]: version };
-      try {
-        localStorage.setItem(VERSIONS_STORAGE, JSON.stringify(next));
-      } catch {
-        // Non-fatal — the choice just won't survive a reload.
-      }
-      return next;
+    setVersions((prev) => ({ ...prev, [engine]: version }));
+    api('/api/users/me', { method: 'PATCH', body: { engineVersion: version } }).catch(() => {
+      // Non-fatal — this page keeps the choice; the next visit reads the
+      // account's last saved one.
     });
   }, []);
 

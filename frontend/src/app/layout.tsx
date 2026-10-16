@@ -7,6 +7,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { LocaleProvider } from '@/lib/i18n/LocaleContext';
 import type { Locale } from '@/lib/i18n/dictionaries';
 import { resolveLocale } from '@/lib/i18n/geo-locale';
+import { VisitorCountryProvider } from '@/lib/visitor-country';
 import { COOKIE_PREFIX } from '@/lib/constants';
 
 // Site-wide type (2026-10-06, owner: "la même police que sur Metrio"):
@@ -46,9 +47,10 @@ export default async function RootLayout({
   // The visitor's own FR / EN choice first; otherwise the language of the
   // country their IP is in (French-speaking → fr, anything else → en).
   const [store, head] = await Promise.all([cookies(), headers()]);
+  const country = head.get('x-vercel-ip-country');
   const locale: Locale = resolveLocale({
     cookie: store.get(`${COOKIE_PREFIX}-locale`)?.value,
-    country: head.get('x-vercel-ip-country'),
+    country,
     region: head.get('x-vercel-ip-country-region'),
   });
 
@@ -62,9 +64,12 @@ export default async function RootLayout({
     >
       <body className={`${inter.className} bg-white text-[#17161F] antialiased`}>
         <LocaleProvider initialLocale={locale}>
-          <ToastProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </ToastProvider>
+          {/* The country also gives the plan card its local-currency line. */}
+          <VisitorCountryProvider country={country}>
+            <ToastProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </ToastProvider>
+          </VisitorCountryProvider>
         </LocaleProvider>
       </body>
     </html>

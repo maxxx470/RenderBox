@@ -164,6 +164,21 @@ export function isEngineVersionKey(value: unknown): value is EngineVersionKey {
 }
 
 /**
+ * The account's chosen versions (User.engineVersions, JSON) over the
+ * defaults: anything unknown, or a version of another engine, is ignored.
+ */
+export function parseEngineVersions(raw: unknown): Record<EngineName, EngineVersionKey> {
+  const next = { ...DEFAULT_ENGINE_VERSION };
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    for (const engine of Object.keys(next) as EngineName[]) {
+      const v = (raw as Record<string, unknown>)[engine];
+      if (isEngineVersionKey(v) && ENGINE_VERSIONS[v].engine === engine) next[engine] = v;
+    }
+  }
+  return next;
+}
+
+/**
  * What to call the engine that made an image: its version (« Visio 2.1 »)
  * when known, else the engine (« Visio »). An unknown engine reads as Visio,
  * as the canvas badge always did.
