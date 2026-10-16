@@ -3,20 +3,26 @@
  * generic Bictorys starter scaffolding for this fork; bictorys.ts stays as
  * an unused reference, per CLAUDE.md "add new providers" guidance).
  *
- * Unlike Bictorys, Maketou has NO reliable webhook. The contract is:
- *   1. POST /api/v1/stores/cart/checkout → { redirectUrl, cartId }
+ * The contract (docs-api.maketou.com, checked 2026-10-15):
+ *   1. POST /api/v1/stores/cart/checkout { productDocumentId, email,
+ *      firstName, lastName (both required), redirectURL, meta (string
+ *      values) } → 201 { cart: { id, status, … }, redirectUrl }
  *   2. Customer pays on Maketou's hosted page, gets redirected back to us
- *   3. We verify ourselves: GET /api/v1/stores/cart/{cartId}
- *   4. Safety net: a 5-minute cron re-verifies any still-PENDING cart, in
- *      case the customer closed the tab before step 3 ran (see
- *      maketou-reconcile.ts + cron/maketou-reconcile/route.ts).
+ *      (Maketou appends the cartId to the redirectURL)
+ *   3. We verify ourselves: GET /api/v1/stores/cart/{cartId} → the cart at
+ *      the top level { id, status, meta, … }
+ *   4. Safety net: a cron re-verifies any still-PENDING cart, in case the
+ *      customer closed the tab before step 3 ran (see maketou-reconcile.ts +
+ *      cron/maketou-reconcile/route.ts).
+ * Each cart also carries a `webhookUrl`: Maketou POSTs the cart, Ed25519-
+ * signed, when it turns completed / payment_failed — see
+ * maketou-webhook.ts and api/webhooks/maketou.
+ * The API takes 8% of each cart created through it.
  *
- * Maketou's exact JSON response shape isn't pinned down in the integration
- * spec beyond "→ redirectUrl" / cart "statuses (waiting_payment / completed
- * / abandoned / payment_failed)" — the parsers below accept a couple of
- * plausible field-name variants defensively. Tighten once real traffic
- * against a live MAKETOU_API_KEY confirms the exact shape (same posture as
- * this starter's other pending-real-keys integrations).
+ * Until 2026-10-15 the checkout sent `prenom` / `nom` and looked for the
+ * cart id at the top level of the reply: Maketou requires firstName /
+ * lastName and nests the id under `cart`, so every checkout failed. The
+ * parsers still accept the older guessed variants.
  */
 import 'server-only';
 import { getPricingTier, type PricingTierId } from '@/lib/pricing-tiers';
@@ -43,10 +49,13 @@ export type MaketouCartStatus = 'waiting_payment' | 'completed' | 'abandoned' | 
 export interface MaketouCheckoutInput {
   tier: PricingTierId;
   email: string;
-  firstName?: string | undefined;
-  lastName?: string | undefined;
+  /** The account's full name, split into Maketou's firstName / lastName. */
+  name?: string | null | undefined;
   redirectUrl: string;
-  meta?: Record<string, unknown> | undefined;
+  /** Notified (signed POST) when the cart turns completed / payment_failed. */
+  webhookUrl?: string | undefined;
+  /** Maketou keeps only string values. */
+  meta?: Record<string, string> | undefined;
 }
 
 export interface MaketouCheckoutResult {
@@ -112,10 +121,28 @@ function unwrapString(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
+/**
+ * Maketou requires a first and a last name; the account has one name field
+ * (onboarding), sometimes a single word, or none at all. First word / the
+ * rest; a single word fills both; no name falls back to the address's local
+ * part.
+ */
+export function splitCustomerName(
+  name: string | null | undefined,
+  email: string,
+): { firstName: string; lastName: string } {
+  const words = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  const fallback = email.split('@')[0] || email;
+  const firstName = words[0] ?? fallback;
+  const lastName = words.slice(1).join(' ') || firstName;
+  return { firstName, lastName };
+}
+
 export async function maketouCheckout(input: MaketouCheckoutInput): Promise<MaketouCheckoutResult> {
   const cfg = getConfig();
   const productId = getTierProductId(input.tier);
   if (!productId) throw new MaketouNotConfiguredError();
+  const { firstName, lastName } = splitCustomerName(input.name, input.email);
 
   const res = await fetch(`${cfg.baseUrl}/api/v1/stores/cart/checkout`, {
     method: 'POST',
@@ -126,9 +153,10 @@ export async function maketouCheckout(input: MaketouCheckoutInput): Promise<Make
     body: JSON.stringify({
       productDocumentId: productId,
       email: input.email,
-      prenom: input.firstName ?? '',
-      nom: input.lastName ?? '',
+      firstName,
+      lastName,
       redirectURL: input.redirectUrl,
+      ...(input.webhookUrl ? { webhookUrl: input.webhookUrl } : {}),
       meta: input.meta ?? {},
     }),
   });
@@ -139,7 +167,15 @@ export async function maketouCheckout(input: MaketouCheckoutInput): Promise<Make
   }
 
   const obj = (data ?? {}) as Record<string, unknown>;
-  const cartId = unwrapString(obj.cartId) ?? unwrapString(obj.id) ?? unwrapString(obj.documentId);
+  const cart = (obj.cart && typeof obj.cart === 'object' ? obj.cart : {}) as Record<
+    string,
+    unknown
+  >;
+  const cartId =
+    unwrapString(cart.id) ??
+    unwrapString(obj.cartId) ??
+    unwrapString(obj.id) ??
+    unwrapString(obj.documentId);
   const redirectUrl =
     unwrapString(obj.redirectUrl) ?? unwrapString(obj.redirectURL) ?? unwrapString(obj.url);
 

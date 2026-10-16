@@ -79,8 +79,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const checkout = await maketouCheckout({
         tier,
         email: user.email,
-        firstName: user.name ?? undefined,
+        name: user.name,
         redirectUrl: `${appUrl}/paiement/retour?orderId=${order.id}`,
+        webhookUrl: `${appUrl}/api/webhooks/maketou`,
         meta: { orderId: order.id, tier },
       });
 

@@ -4,6 +4,7 @@ import {
   maketouVerifyCart,
   isMaketouConfigured,
   getTierAmount,
+  splitCustomerName,
   MaketouNotConfiguredError,
   MaketouApiError,
 } from './maketou';
@@ -86,6 +87,37 @@ describe('maketouCheckout', () => {
     expect(body.productDocumentId).toBe('prod-1');
   });
 
+  it('sends the documented body and reads the documented 201 reply (cart.id)', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(201, {
+        cart: { id: 'fd2d91d7', status: 'waiting_payment', customerInfo: {} },
+        redirectUrl: 'https://pay.example/fd2d91d7',
+      }),
+    );
+    const result = await maketouCheckout({
+      tier: 'standard',
+      email: 'aicha@atelier.sn',
+      name: 'Aïcha  Ndiaye Diallo',
+      redirectUrl: 'https://x/y',
+      webhookUrl: 'https://x/api/webhooks/maketou',
+      meta: { orderId: 'o1', tier: 'standard' },
+    });
+    expect(result).toEqual({ cartId: 'fd2d91d7', redirectUrl: 'https://pay.example/fd2d91d7' });
+    const body = JSON.parse((fetchMock.mock.calls[0]![1] as { body: string }).body) as Record<
+      string,
+      unknown
+    >;
+    expect(body).toEqual({
+      productDocumentId: 'prod-1',
+      email: 'aicha@atelier.sn',
+      firstName: 'Aïcha',
+      lastName: 'Ndiaye Diallo',
+      redirectURL: 'https://x/y',
+      webhookUrl: 'https://x/api/webhooks/maketou',
+      meta: { orderId: 'o1', tier: 'standard' },
+    });
+  });
+
   it('accepts the id/redirectURL field-name variants', async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse(200, { id: 'cart-2', redirectURL: 'https://pay.example/cart-2' }),
@@ -113,7 +145,38 @@ describe('maketouCheckout', () => {
   });
 });
 
+describe('splitCustomerName', () => {
+  it('first word / the rest', () => {
+    expect(splitCustomerName('Jean Paul Sartre', 'a@b.com')).toEqual({
+      firstName: 'Jean',
+      lastName: 'Paul Sartre',
+    });
+  });
+
+  it('a single word fills both (Maketou requires both)', () => {
+    expect(splitCustomerName('Moussa', 'a@b.com')).toEqual({
+      firstName: 'Moussa',
+      lastName: 'Moussa',
+    });
+  });
+
+  it('no name falls back to the address local part', () => {
+    expect(splitCustomerName(null, 'kofi.mensah@x.com')).toEqual({
+      firstName: 'kofi.mensah',
+      lastName: 'kofi.mensah',
+    });
+    expect(splitCustomerName('   ', 'kofi@x.com').firstName).toBe('kofi');
+  });
+});
+
 describe('maketouVerifyCart', () => {
+  it('reads the documented top-level cart reply', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { id: 'c1', status: 'completed', meta: { orderId: 'o1' } }),
+    );
+    expect((await maketouVerifyCart('c1')).status).toBe('completed');
+  });
+
   it('GETs /api/v1/stores/cart/{cartId} and maps a recognized status', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(200, { status: 'completed' }));
     const result = await maketouVerifyCart('cart-1');
