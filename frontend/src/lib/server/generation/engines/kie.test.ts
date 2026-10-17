@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { generateWithKie, isKieAccountError, KieError } from './kie';
+import { generateWithKie, getKieBalance, isKieAccountError, KieError } from './kie';
 
 // No network: every Kie endpoint is answered by this fake.
 type Call = { url: string; init: RequestInit | undefined };
@@ -87,7 +87,11 @@ function created() {
 describe('generateWithKie', () => {
   it('uploads source then references, creates the task, polls until success, downloads the image', async () => {
     const out = await run('visio-2-1');
-    expect(out).toEqual({ imageBuffer: Buffer.from([1, 2, 3]), mimeType: 'image/png' });
+    expect(out).toEqual({
+      imageBuffer: Buffer.from([1, 2, 3]),
+      mimeType: 'image/png',
+      providerCredits: 18,
+    });
 
     const body = created();
     expect(body.model).toBe('nano-banana-2-1');
@@ -153,5 +157,37 @@ describe('generateWithKie', () => {
     expect(await p).toMatchObject({ message: 'deadline' });
     await vi.advanceTimersByTimeAsync(30_000);
     expect(calls.filter((c) => c.url.includes('recordInfo')).length).toBe(polled);
+  });
+});
+
+describe('Kie cost and balance (the API usage in /admin)', () => {
+  it('returns what Kie charged for the image', async () => {
+    const out = await run('visio-pro');
+    expect(out.providerCredits).toBe(18);
+  });
+
+  it('reads the balance with the key, and reads a zero balance as zero', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string, init?: RequestInit) => {
+        calls.push({ url, init });
+        return json({ code: 200, msg: 'success', data: 0 });
+      }),
+    );
+    expect(await getKieBalance()).toBe(0);
+    expect(calls[0]?.url).toBe('https://api.kie.ai/api/v1/chat/credit');
+    expect((calls[0]?.init?.headers as Record<string, string>).Authorization).toBe(
+      'Bearer test-key',
+    );
+  });
+
+  it('throws when Kie refuses (its body code, HTTP 200), and is null without a key', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => json({ code: 401, msg: 'unauthorized', data: null })),
+    );
+    await expect(getKieBalance()).rejects.toBeInstanceOf(KieError);
+    vi.stubEnv('KIE_API_KEY', '');
+    expect(await getKieBalance()).toBeNull();
   });
 });

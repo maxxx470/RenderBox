@@ -1,8 +1,8 @@
 // Info badge migration — offline shape checks. Reads files only.
 //
 // What a reviewer of 9_phase9e_user_info_seen must be sure of before it runs
-// on the shared database (local = production): it sorts last (Prisma applies
-// folders in byte order of the name) and it only adds one nullable column.
+// on the shared database (local = production): it sorts after the folders before it
+// (Prisma applies folders in byte order of the name) and it only adds one nullable column.
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -24,9 +24,10 @@ const statements = sql
   .filter(Boolean);
 
 describe(`migration ${NAME}`, () => {
-  it('sorts after every existing migration folder', () => {
+  it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
-    expect(sorted[sorted.length - 1]).toBe(NAME);
+    // Only 9_phase9f_render_provider_credits (same day) may come after it.
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9f_render_provider_credits']);
   });
 
   it('only adds the nullable User.infoSeenAt column and changes no data', () => {

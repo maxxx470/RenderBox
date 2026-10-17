@@ -252,6 +252,7 @@ export async function POST(
             preset,
             engine,
             engineVersion: result.engineVersion ?? null,
+            providerCredits: result.providerCredits ?? null,
           },
           select: { id: true },
         });

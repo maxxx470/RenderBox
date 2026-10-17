@@ -277,6 +277,7 @@ export async function POST(
             sizeBytes: uploaded.bytes,
             engine,
             engineVersion: result.engineVersion ?? null,
+            providerCredits: result.providerCredits ?? null,
             editType: 'enhance',
           },
           select: { id: true },

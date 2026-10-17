@@ -62,6 +62,9 @@ export interface GenerateRenderOutput {
   // The version that made the image — absent when the direct API did
   // (no version asked, or Kie's account refused and the call fell back).
   engineVersion?: EngineVersionKey;
+  // What Kie charged for it, in Kie credits (recordInfo creditsConsumed) —
+  // absent off Kie. Stored on the RenderNode for the API usage in /admin.
+  providerCredits?: number;
 }
 
 export class EngineNotConfiguredError extends Error {

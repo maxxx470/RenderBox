@@ -400,6 +400,10 @@ model RenderNode {
   // see lib/server/generation/engine-versions.ts). Null for uploads, older
   // renders and renders the engine's direct API made (no Kie).
   engineVersion String?
+  // What Kie charged for this image, in Kie credits (its recordInfo
+  // `creditsConsumed`; 2026-10-17, owner: the API usage in /admin).
+  // NULL = not made through Kie (an upload, the direct engines, older images).
+  providerCredits Float?
   // Phase 5 — set only when this node came from the edit route (not the
   // standard generate route). Null = a standard generation or an upload.
   // "enhance" = the /app/enhance route (no preset, see generation/enhance.ts).

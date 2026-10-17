@@ -27,8 +27,11 @@ const statements = sql
 describe(`migration ${NAME}`, () => {
   it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
-    // Only 9_phase9e_user_info_seen (same day) may come after it.
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9e_user_info_seen']);
+    // Only the later 2026-10-17 migrations may come after it.
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
+      '9_phase9e_user_info_seen',
+      '9_phase9f_render_provider_credits',
+    ]);
   });
 
   it('only creates the SupportMessage table, its indexes and its link to User', () => {

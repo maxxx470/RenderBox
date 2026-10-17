@@ -396,6 +396,7 @@ export async function POST(
               preset,
               engine,
               engineVersion: result.engineVersion ?? null,
+              providerCredits: result.providerCredits ?? null,
               editType,
               ...(editType === 'targeted_retouch' ? { editZone: zone! } : {}),
               ...(editType === 'annotate' ? { editZone: { annotations: annotations! } } : {}),

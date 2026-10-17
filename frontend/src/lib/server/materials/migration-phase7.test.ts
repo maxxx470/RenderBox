@@ -46,6 +46,7 @@ describe(`migration ${NAME}`, () => {
       '9_phase9c_user_engine_versions',
       '9_phase9d_support_messages',
       '9_phase9e_user_info_seen',
+      '9_phase9f_render_provider_credits',
     ]);
     // ...and in particular after the folders that create what it references.
     for (const dep of ['5_phase1_renderbox_core', '6_phase2_materials_memory']) {

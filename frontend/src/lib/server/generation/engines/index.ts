@@ -106,5 +106,9 @@ export async function generateRender(
     ratio: input.aspectRatio,
     resolution: input.resolution,
   });
-  return output.engineVersion ? { ...shaped, engineVersion: output.engineVersion } : shaped;
+  return {
+    ...shaped,
+    ...(output.engineVersion ? { engineVersion: output.engineVersion } : {}),
+    ...(output.providerCredits !== undefined ? { providerCredits: output.providerCredits } : {}),
+  };
 }

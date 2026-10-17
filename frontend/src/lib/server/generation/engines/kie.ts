@@ -218,8 +218,31 @@ export async function generateWithKie(
   const image = await fetch(resultUrl, signal ? { signal } : {});
   if (!image.ok) throw new KieError(`kie download: HTTP ${image.status}`, image.status, 'download');
   const mimeType = image.headers.get('content-type')?.split(';')[0]?.trim() || 'image/png';
+  const credits = Number(record.creditsConsumed);
   return {
     imageBuffer: Buffer.from(await image.arrayBuffer()),
     mimeType: mimeType.startsWith('image/') ? mimeType : 'image/png',
+    ...(Number.isFinite(credits) && credits >= 0 ? { providerCredits: credits } : {}),
   };
+}
+
+/**
+ * The Kie account's remaining credits (GET /api/v1/chat/credit; reading it
+ * costs nothing) — for the API usage in /admin (owner, 2026-10-17). Null when
+ * no key is set. Kie answers HTTP 200 even on failure: its body `code` says.
+ */
+export async function getKieBalance(signal?: AbortSignal): Promise<number | null> {
+  const key = process.env.KIE_API_KEY;
+  if (!key) return null;
+  const res = await fetch('https://api.kie.ai/api/v1/chat/credit', {
+    headers: { Authorization: `Bearer ${key}` },
+    cache: 'no-store',
+    ...(signal ? { signal } : {}),
+  });
+  const body = (await res.json().catch(() => null)) as KieBody<number> | null;
+  const code = typeof body?.code === 'number' ? body.code : res.status;
+  if (!res.ok || code !== 200 || typeof body?.data !== 'number') {
+    throw new KieError(`kie balance: ${body?.msg ?? res.statusText}`, code, 'poll');
+  }
+  return body.data;
 }
