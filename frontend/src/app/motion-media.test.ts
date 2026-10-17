@@ -10,6 +10,10 @@ describe('motion films — served from Cloudflare R2, not from Vercel', () => {
       src: `${MEDIA_ORIGIN}/motion/ajouter${edition}-fr.mp4`,
       poster: `${MEDIA_ORIGIN}/motion/ajouter${edition}-fr.jpg`,
     });
+    // A film with its own later edition takes that name instead.
+    expect(motionFilm('tuto-generer', 'en').src).toBe(
+      `${MEDIA_ORIGIN}/motion/tuto-generer-20261017b-en.mp4`,
+    );
     expect(presentationFilm('en')).toEqual({
       src: `${MEDIA_ORIGIN}/motion/presentation-en.mp4`,
       poster: `${MEDIA_ORIGIN}/motion/presentation-en.jpg`,

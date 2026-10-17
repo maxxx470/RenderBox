@@ -74,54 +74,68 @@ export interface ShowcaseSlide {
 /**
  * Showcase renders, identical for every user.
  *
- * One entry per ambiance, in the order the presets are offered, so the block
- * doubles as a tour of what the four presets actually do rather than four
- * pretty pictures in a row. Every file is real RenderBox output and already
- * ships in /public/galerie for the /exemple page — no second copy.
+ * Six pictures, six things the product does (owner, 2026-10-17: the four
+ * /galerie renders before): the sketch turned into a render, a day exterior,
+ * a day interior, a night exterior, a furnished 3D plan (an ambiance of the
+ * command bar) and Améliorer's before / after. The owner generated each one
+ * from the prompts proposed with the dashboard layouts; they are 1200px WebP
+ * in `frontend/public/vitrine/`, 4:3, the subject in the middle, no text in
+ * the picture — the caption below is drawn over it by the site.
  *
- * The captions name the ambiance first and the subject second, because the
- * ambiance is the part the reader can act on: it is a preset they can pick.
+ * The frame is wider or narrower than 4:3 depending on the screen, so the
+ * pictures are centre-cropped; the two split pictures keep their seam in the
+ * middle.
  *
- * Sources are portrait and the frame is 16/9, so they are centre-cropped.
- * Each one below was chosen with that crop in mind — the subject sits in the
- * middle band of all four.
- *
- * To swap one: drop a JPG/WebP in `frontend/public/galerie/` and point `src`
- * at it. Only real RenderBox output belongs here — this block sits on the
- * page of someone paying for the product, and stock imagery would be
- * advertising renders it never made.
+ * To swap one: replace its file under the same name, or add a WebP in
+ * `public/vitrine/` and point `src` at it.
  */
 export const SHOWCASE_SLIDES: readonly ShowcaseSlide[] = [
   {
-    id: 'jour-ext',
-    src: '/galerie/jour-ext-2.jpg',
+    id: 'esquisse-rendu',
+    src: '/vitrine/esquisse-rendu.webp',
     caption: {
-      fr: 'Extérieur jour — villa en pierre',
-      en: 'Exterior day — stone villa',
+      fr: 'De l’esquisse au rendu — villa à Dakar',
+      en: 'From sketch to render — villa in Dakar',
     },
   },
   {
-    id: 'jour-int',
-    src: '/galerie/jour-int-2.jpg',
+    id: 'residence-abidjan',
+    src: '/vitrine/residence-abidjan.webp',
     caption: {
-      fr: 'Intérieur jour — chambre sur la mer',
-      en: 'Interior day — bedroom facing the sea',
+      fr: 'Extérieur jour — résidence à Abidjan',
+      en: 'Exterior day — residence in Abidjan',
     },
   },
   {
-    id: 'nuit-ext',
-    src: '/galerie/nuit-ext-1.jpg',
+    id: 'sejour-lin',
+    src: '/vitrine/sejour-lin.webp',
     caption: {
-      fr: 'Extérieur nuit — façade éclairée',
-      en: 'Exterior night — lit facade',
+      fr: 'Intérieur jour — séjour bois et lin',
+      en: 'Interior day — wood and linen living room',
     },
   },
   {
-    id: 'nuit-int',
-    src: '/galerie/nuit-int-3.jpg',
+    id: 'immeuble-nuit',
+    src: '/vitrine/immeuble-nuit.webp',
     caption: {
-      fr: 'Intérieur nuit — séjour en travertin',
-      en: 'Interior night — travertine living room',
+      fr: 'Extérieur nuit — immeuble à l’heure bleue',
+      en: 'Exterior night — building at blue hour',
+    },
+  },
+  {
+    id: 'plan-3d',
+    src: '/vitrine/plan-3d.webp',
+    caption: {
+      fr: 'Plan 3D aménagé — appartement',
+      en: 'Furnished 3D plan — apartment',
+    },
+  },
+  {
+    id: 'ameliorer',
+    src: '/vitrine/ameliorer.webp',
+    caption: {
+      fr: 'Améliorer — avant / après',
+      en: 'Enhance — before / after',
     },
   },
 ];

@@ -500,6 +500,8 @@ const en: Record<keyof typeof fr, string> = {
   'dashboard.videoTitle': 'Discover RenderPro in 2 minutes',
   'dashboard.videoPlay': 'Play the video',
   'dashboard.firstStepsTitle': 'First steps on RenderPro',
+  'dashboard.firstStepsSubtitle': 'Two short films to get started.',
+  'dashboard.emptyRecent': 'No image yet: your uploaded photos and your renders will appear here.',
   'dashboard.tutoGenerate': 'Generate an image',
   'dashboard.tutoGenerateCta': 'Open the generator',
   'dashboard.tutoEnhance': 'Enhance an image',

@@ -312,18 +312,21 @@ export function ImagesGrid({
 
           {isDashboard && (
             // As on Metrio: the four figures straight under the title, then
-            // the two banners (the "3 steps" film and the showcase).
-            <div className="mb-8 flex flex-col gap-5">
+            // one row (owner, 2026-10-17, layout C): « Premier pas » — the
+            // two tutorial films and « Lancer un rendu » — on two thirds, the
+            // showcase on the last third. Everything down to the recent
+            // images fits a 1440 × 900 screen without scrolling.
+            <div className="mb-7 flex flex-col gap-5">
               <DashboardStats data={dashboard} />
-              <div className="grid grid-cols-1 gap-4 min-[900px]:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 min-[900px]:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                 <DashboardVideoCard />
                 <DashboardCarousel />
               </div>
             </div>
           )}
 
-          {isDashboard && images.length > 0 && (
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          {isDashboard && (
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-[family-name:var(--font-display)] text-[16px] font-bold text-[#17161F]">
                 {t('images.recentTitle')}
               </h2>
@@ -402,7 +405,14 @@ export function ImagesGrid({
             </div>
           )}
 
-          {images.length === 0 ? (
+          {images.length === 0 && isDashboard ? (
+            // One low line: « Lancer un rendu » already sits in the
+            // « Premier pas » card above.
+            <div className="flex items-center justify-center gap-2.5 rounded-2xl border border-dashed border-[#DEDEE8] bg-[#F7F7FA] px-4 py-6 text-center text-[13px] text-[#6B6878]">
+              <ImageIcon set="curved" size={20} primaryColor="#2948FC" />
+              {t('dashboard.emptyRecent')}
+            </div>
+          ) : images.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[#DEDEE8] bg-[#F7F7FA] p-10 text-center">
               <div className="mb-2 flex justify-center">
                 <ImageIcon set="curved" size={32} primaryColor="#2948FC" />

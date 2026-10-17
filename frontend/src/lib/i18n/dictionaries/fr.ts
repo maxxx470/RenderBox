@@ -516,6 +516,9 @@ const fr = {
   'dashboard.videoTitle': 'Découvrez RenderPro en 2 minutes',
   'dashboard.videoPlay': 'Lancer la vidéo',
   'dashboard.firstStepsTitle': 'Premier pas sur RenderPro',
+  'dashboard.firstStepsSubtitle': 'Deux courts films pour bien démarrer.',
+  'dashboard.emptyRecent':
+    'Aucune image pour l’instant : vos photos importées et vos rendus apparaîtront ici.',
   'dashboard.tutoGenerate': 'Générer une image',
   'dashboard.tutoGenerateCta': 'Ouvrir le générateur',
   'dashboard.tutoEnhance': 'Améliorer une image',

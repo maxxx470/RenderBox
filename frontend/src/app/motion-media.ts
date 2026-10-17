@@ -30,9 +30,18 @@ export function presentationFilm(locale: string): { src: string; poster: string 
 // 2026-10-17 (owner: « corrige le logo et juste l'interface du site »).
 export const FILMS_EDITION: string | null = '20261017';
 
+// A film remade on its own after its edition keeps a later name here. The two
+// dashboard tutorials were re-rendered the same day without the engine
+// version (« Pixel IA 2 » became « Pixel IA » when the version choice went).
+export const FILM_EDITIONS: Readonly<Record<string, string>> = {
+  'tuto-generer': '20261017b',
+  'tuto-ameliorer': '20261017b',
+};
+
 /** The film's video and poster URLs for this language. */
 export function motionFilm(film: string, locale: string): { src: string; poster: string } {
-  const edition = FILMS_EDITION ? `-${FILMS_EDITION}` : '';
+  const own = FILM_EDITIONS[film] ?? FILMS_EDITION;
+  const edition = own ? `-${own}` : '';
   const base = `${MEDIA_ORIGIN}/motion/${film}${edition}-${locale}`;
   return { src: `${base}.mp4`, poster: `${base}.jpg` };
 }
