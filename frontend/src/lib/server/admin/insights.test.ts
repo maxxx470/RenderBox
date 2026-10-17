@@ -32,7 +32,10 @@ describe('computeInsights', () => {
     ] as never);
     prismaMock.order.aggregate
       .mockResolvedValueOnce({ _sum: { amount: 51000 }, _count: { _all: 4 } } as never)
-      .mockResolvedValueOnce({ _sum: { amount: null } } as never);
+      .mockResolvedValueOnce({ _sum: { amount: null } } as never)
+      .mockResolvedValueOnce({ _sum: { amount: 6000 }, _count: { _all: 1 } } as never) // today
+      .mockResolvedValueOnce({ _sum: { amount: 21000 }, _count: { _all: 2 } } as never) // week
+      .mockResolvedValueOnce({ _sum: { amount: 87000 }, _count: { _all: 7 } } as never); // year
     prismaMock.user.aggregate.mockResolvedValueOnce({ _sum: { creditsBalance: 9000 } } as never);
     prismaMock.user.findMany
       .mockResolvedValueOnce([
@@ -42,6 +45,13 @@ describe('computeInsights', () => {
       .mockResolvedValueOnce([] as never);
 
     const i = await computeInsights(prismaMock, NOW);
+
+    // 2026-10-15 is a Thursday: the week began on Monday the 12th (UTC).
+    const whereOf = (n: number) =>
+      prismaMock.order.aggregate.mock.calls[n]![0]!.where as { OR: { paidAt?: { gte: Date } }[] };
+    expect(whereOf(2).OR[0]!.paidAt!.gte.toISOString()).toBe('2026-10-15T00:00:00.000Z');
+    expect(whereOf(3).OR[0]!.paidAt!.gte.toISOString()).toBe('2026-10-12T00:00:00.000Z');
+    expect(whereOf(4).OR[0]!.paidAt!.gte.toISOString()).toBe('2026-01-01T00:00:00.000Z');
 
     expect(i.users).toEqual({ total: 12, new7d: 3, new30d: 5, onboarded: 8 });
     expect(i.activePlans).toEqual([
@@ -56,7 +66,17 @@ describe('computeInsights', () => {
         { key: 'gpt_image', count: 10 },
       ],
     });
-    expect(i.revenue).toEqual({ monthXof: 51000, totalXof: 0, paidOrdersMonth: 4 });
+    expect(i.revenue).toEqual({
+      todayXof: 6000,
+      weekXof: 21000,
+      monthXof: 51000,
+      yearXof: 87000,
+      totalXof: 0,
+      paidOrdersToday: 1,
+      paidOrdersWeek: 2,
+      paidOrdersMonth: 4,
+      paidOrdersYear: 7,
+    });
     expect(i.creditsLeft).toBe(9000);
     // Unanswered onboarding questions are not a category.
     expect(i.professions).toEqual([{ key: 'architect', count: 6 }]);

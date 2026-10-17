@@ -17,8 +17,22 @@
 
 export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev';
 
+/** The presentation film (with sound) and its poster for this language. */
+export function presentationFilm(locale: string): { src: string; poster: string } {
+  const base = `${MEDIA_ORIGIN}/motion/presentation-${locale}`;
+  return { src: `${base}.mp4`, poster: `${base}.jpg` };
+}
+
+// The bucket's files are cached as immutable, so a remade film goes up under a
+// new name: <film>-<FILMS_EDITION>-<lang>.mp4. Null = the first edition,
+// <film>-<lang>.mp4. The six feature films are being remade on the current
+// interface (2026-10-17, owner: « corrige le logo et juste l'interface du
+// site »); once uploaded, FILMS_EDITION becomes '20261017'.
+export const FILMS_EDITION: string | null = null;
+
 /** The film's video and poster URLs for this language. */
 export function motionFilm(film: string, locale: string): { src: string; poster: string } {
-  const base = `${MEDIA_ORIGIN}/motion/${film}-${locale}`;
+  const edition = FILMS_EDITION ? `-${FILMS_EDITION}` : '';
+  const base = `${MEDIA_ORIGIN}/motion/${film}${edition}-${locale}`;
   return { src: `${base}.mp4`, poster: `${base}.jpg` };
 }

@@ -1,7 +1,7 @@
 // Per-account engine versions migration — offline shape checks. Reads files only.
 //
 // What a reviewer of 9_phase9c_user_engine_versions must be sure of before it
-// runs on the shared database: it sorts last, and it only adds one nullable
+// runs on the shared database: it sorts after the migrations before it, and it only adds one nullable
 // column.
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -25,9 +25,10 @@ const statements = code
   .filter(Boolean);
 
 describe(`migration ${NAME}`, () => {
-  it('sorts after every existing migration folder', () => {
+  it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
-    expect(sorted[sorted.length - 1]).toBe(NAME);
+    // Only 9_phase9d_support_messages (2026-10-17) may come after it.
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9d_support_messages']);
   });
 
   it('is one nullable JSONB column on User', () => {

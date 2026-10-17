@@ -3,18 +3,17 @@
 // The landing's presentation video, right after the hero and the compatible
 // tools (owner, 2026-10-06).
 //
-// A PLACEHOLDER for now, on purpose: the film will be made once the site is
-// finished, and a real video of an unfinished product would have to be
-// re-shot. It is framed the way Metrio frames its hero video — a browser
-// window (three dots, a file name) tilted back in perspective, which
-// straightens and sharpens as it scrolls into view — so swapping in the film
-// later is one <video> element inside `VIDEO_BODY`, nothing else.
+// The film (2026-10-16, FR 2 min 15, EN 2 min 12) is framed the way Metrio
+// frames its hero video — a browser window (three dots, a file name) tilted
+// back in perspective, which straightens and sharpens as it scrolls into view.
 import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from '@/lib/i18n/LocaleContext';
+import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
+import { presentationFilm } from './motion-media';
 import { Reveal } from './Reveal';
 
 export function PresentationVideo() {
   const t = useTranslations();
+  const { locale } = useLocale();
   const ref = useRef<HTMLDivElement>(null);
   const [straight, setStraight] = useState(false);
 
@@ -73,34 +72,22 @@ export function PresentationVideo() {
               <span className="h-2.5 w-2.5 rounded-full bg-[#DEDEE8]" />
             </div>
             <span className="font-[family-name:var(--font-mono)] text-[11.5px] text-[#8A8896]">
-              presentation-renderbox.mp4
+              presentation-renderpro.mp4
             </span>
             <span className="w-[42px]" aria-hidden />
           </div>
 
-          {/* VIDEO_BODY — the film goes here once it exists. */}
-          <div className="relative flex aspect-[4/3] flex-col items-center justify-center gap-4 min-[640px]:aspect-video bg-[#FBFBFD] bg-[radial-gradient(circle,#DEDEE8_1px,transparent_1.2px)] [background-size:18px_18px] px-6 text-center">
-            <span className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-[#17161F] shadow-[0_14px_30px_-12px_rgba(23,22,31,0.6)] min-[640px]:h-20 min-[640px]:w-20">
-              <span
-                aria-hidden
-                className="absolute inset-0 animate-ping rounded-2xl bg-[#F34857]/35 motion-reduce:animate-none"
-              />
-              <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden className="relative ml-1">
-                <path
-                  d="M7 4.8v14.4a1 1 0 0 0 1.5.86l12-7.2a1 1 0 0 0 0-1.72l-12-7.2A1 1 0 0 0 7 4.8Z"
-                  fill="#F34857"
-                />
-              </svg>
-            </span>
-            <div>
-              <p className="text-[15px] font-semibold text-[#17161F] min-[640px]:text-[17px]">
-                {t('landing.videoSoon')}
-              </p>
-              <p className="mx-auto mt-1.5 max-w-[420px] text-[13px] leading-relaxed text-[#6B6878]">
-                {t('landing.videoSoonBody')}
-              </p>
-            </div>
-          </div>
+          {/* The film itself (2026-10-16): with its sound, so it never starts
+              on its own — the visitor presses play. Served from R2 like the
+              feature films (motion-media.ts), one file per language. */}
+          <video
+            {...presentationFilm(locale)}
+            controls
+            playsInline
+            preload="none"
+            aria-label={t('landing.videoLabel')}
+            className="block aspect-video w-full bg-[#17161F] object-cover"
+          />
         </div>
       </div>
     </section>

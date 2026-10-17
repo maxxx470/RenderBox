@@ -32,6 +32,7 @@ describe(`migration ${NAME}`, () => {
     expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
       '9_phase9b_engine_versions',
       '9_phase9c_user_engine_versions',
+      '9_phase9d_support_messages',
     ]);
   });
 

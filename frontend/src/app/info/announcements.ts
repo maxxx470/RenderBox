@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'assistant-team-messages',
+    date: '2026-10-17',
+    kind: 'shipped',
+    title: {
+      fr: 'Écrivez directement à l’équipe RenderPro',
+      en: 'Write straight to the RenderPro team',
+    },
+    body: {
+      fr: 'Le bouton « Assistant » ouvre maintenant une conversation avec l’équipe : posez votre question, nous vous répondons dans la même fenêtre et une notification vous prévient.',
+      en: 'The “Assistant” button now opens a conversation with the team: ask your question, we answer in the same window and a notification lets you know.',
+    },
+  },
+  {
     id: 'settings-payments-currency',
     date: '2026-10-16',
     kind: 'shipped',

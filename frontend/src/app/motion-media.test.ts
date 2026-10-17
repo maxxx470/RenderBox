@@ -1,13 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { MEDIA_ORIGIN, motionFilm } from './motion-media';
+import { FILMS_EDITION, MEDIA_ORIGIN, motionFilm, presentationFilm } from './motion-media';
 
 describe('motion films — served from Cloudflare R2, not from Vercel', () => {
   it('builds the video and poster URLs on the media origin', () => {
+    const edition = FILMS_EDITION ? `-${FILMS_EDITION}` : '';
     expect(motionFilm('ajouter', 'fr')).toEqual({
-      src: `${MEDIA_ORIGIN}/motion/ajouter-fr.mp4`,
-      poster: `${MEDIA_ORIGIN}/motion/ajouter-fr.jpg`,
+      src: `${MEDIA_ORIGIN}/motion/ajouter${edition}-fr.mp4`,
+      poster: `${MEDIA_ORIGIN}/motion/ajouter${edition}-fr.jpg`,
+    });
+    expect(presentationFilm('en')).toEqual({
+      src: `${MEDIA_ORIGIN}/motion/presentation-en.mp4`,
+      poster: `${MEDIA_ORIGIN}/motion/presentation-en.jpg`,
     });
   });
 

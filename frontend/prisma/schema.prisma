@@ -100,6 +100,7 @@ model User {
   oauthAccounts     OAuthAccount[]
   adminActions      AdminAction[]
   projects          Project[]
+  supportMessages   SupportMessage[]
 
   @@index([email])
   @@index([role])
@@ -219,6 +220,25 @@ model EmailJob {
 // ───────────────────────────────────────────────────────────────────────
 // Phase 2 — notifications (at-most-once via dedupeKey)
 // ───────────────────────────────────────────────────────────────────────
+// A conversation between a user and the RenderPro team (2026-10-17, owner):
+// the in-app Assistant panel is a message box, no automatic answer. The user
+// writes (fromAdmin false), an admin answers from /admin/messages (fromAdmin
+// true, adminId set). readAt = read by the other side: the admin for the
+// user's messages, the user for the answers.
+model SupportMessage {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromAdmin Boolean   @default(false)
+  adminId   String?
+  body      String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([fromAdmin, readAt])
+}
+
 model Notification {
   id        String    @id @default(cuid())
   userId    String

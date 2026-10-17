@@ -19,7 +19,19 @@ export interface AdminInsights {
   /** Accounts whose plan period is still running, per plan. */
   activePlans: Count[];
   renders: { month: number; total: number; byEngineMonth: Count[] };
-  revenue: { monthXof: number; totalXof: number; paidOrdersMonth: number };
+  /** PAID orders, in FCFA, over today, this week (since Monday), this month,
+   *  this year and in all — UTC days (owner, 2026-10-17). */
+  revenue: {
+    todayXof: number;
+    weekXof: number;
+    monthXof: number;
+    yearXof: number;
+    totalXof: number;
+    paidOrdersToday: number;
+    paidOrdersWeek: number;
+    paidOrdersMonth: number;
+    paidOrdersYear: number;
+  };
   creditsLeft: number;
   /** Sign-ups per day over the last 30 days, oldest first (ISO date keys). */
   signups30d: Count[];
@@ -57,6 +69,15 @@ export async function computeInsights(
   now = new Date(),
 ): Promise<AdminInsights> {
   const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  // The week starts on Monday.
+  const startOfWeek = new Date(startOfDay.getTime() - ((startOfDay.getUTCDay() + 6) % 7) * DAY);
+  const startOfYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+  // A payment counts on the day it was paid (createdAt for the rare older row without paidAt).
+  const paidSince = (from: Date) => ({
+    status: 'PAID',
+    OR: [{ paidAt: { gte: from } }, { paidAt: null, createdAt: { gte: from } }],
+  });
   const since7 = new Date(now.getTime() - 7 * DAY);
   const since30 = new Date(now.getTime() - 30 * DAY);
   const live = { deletedAt: null };
@@ -72,6 +93,9 @@ export async function computeInsights(
     engines,
     revenueMonth,
     revenueTotal,
+    revenueToday,
+    revenueWeek,
+    revenueYear,
     credits,
     recentSignups,
     professions,
@@ -100,11 +124,26 @@ export async function computeInsights(
       _count: { _all: true },
     }),
     prisma.order.aggregate({
-      where: { status: 'PAID', createdAt: { gte: startOfMonth } },
+      where: paidSince(startOfMonth),
       _sum: { amount: true },
       _count: { _all: true },
     }),
     prisma.order.aggregate({ where: { status: 'PAID' }, _sum: { amount: true } }),
+    prisma.order.aggregate({
+      where: paidSince(startOfDay),
+      _sum: { amount: true },
+      _count: { _all: true },
+    }),
+    prisma.order.aggregate({
+      where: paidSince(startOfWeek),
+      _sum: { amount: true },
+      _count: { _all: true },
+    }),
+    prisma.order.aggregate({
+      where: paidSince(startOfYear),
+      _sum: { amount: true },
+      _count: { _all: true },
+    }),
     prisma.user.aggregate({ where: live, _sum: { creditsBalance: true } }),
     prisma.user.findMany({
       where: { ...live, createdAt: { gte: since30 } },
@@ -148,9 +187,15 @@ export async function computeInsights(
       byEngineMonth: counts(engines as never, 'engine'),
     },
     revenue: {
+      todayXof: revenueToday?._sum.amount ?? 0,
+      weekXof: revenueWeek?._sum.amount ?? 0,
       monthXof: revenueMonth?._sum.amount ?? 0,
+      yearXof: revenueYear?._sum.amount ?? 0,
       totalXof: revenueTotal?._sum.amount ?? 0,
+      paidOrdersToday: revenueToday?._count._all ?? 0,
+      paidOrdersWeek: revenueWeek?._count._all ?? 0,
       paidOrdersMonth: revenueMonth?._count._all ?? 0,
+      paidOrdersYear: revenueYear?._count._all ?? 0,
     },
     creditsLeft: credits?._sum.creditsBalance ?? 0,
     signups30d: [...perDay].map(([key, count]) => ({ key, count })),

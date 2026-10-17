@@ -2,7 +2,7 @@
 
 // /admin — the back-office overview (2026-10-15, owner: « crée l'espace
 // admin »): four figures (users, active plans, renders this month, revenue
-// this month), the sign-ups of the last 30 days, the renders per engine, what
+// this month), the revenue in detail (today, week, month, year — 2026-10-17), the sign-ups of the last 30 days, the renders per engine, what
 // the onboarding says (professions, countries, how they heard), the latest
 // accounts. Data: GET /api/admin/insights (lib/server/admin/insights.ts).
 import { useEffect, useState, type ReactNode } from 'react';
@@ -23,7 +23,17 @@ interface Insights {
   users: { total: number; new7d: number; new30d: number; onboarded: number };
   activePlans: Count[];
   renders: { month: number; total: number; byEngineMonth: Count[] };
-  revenue: { monthXof: number; totalXof: number; paidOrdersMonth: number };
+  revenue: {
+    todayXof: number;
+    weekXof: number;
+    monthXof: number;
+    yearXof: number;
+    totalXof: number;
+    paidOrdersToday: number;
+    paidOrdersWeek: number;
+    paidOrdersMonth: number;
+    paidOrdersYear: number;
+  };
   creditsLeft: number;
   signups30d: Count[];
   professions: Count[];
@@ -101,6 +111,34 @@ export default function AdminOverviewPage() {
           accent
         />
       </div>
+
+      {/* Revenue in detail (owner, 2026-10-17): today, this week, this month,
+          this year — UTC days, the week from Monday — and in all. */}
+      <Card
+        title={t('admin.ov.revenueDetail')}
+        hint={data ? t('admin.ov.revenueNote', { n: num(data.revenue.totalXof) }) : ''}
+      >
+        <div className="grid grid-cols-2 gap-2.5 min-[900px]:grid-cols-4">
+          {(
+            [
+              ['admin.ov.revToday', 'todayXof', 'paidOrdersToday'],
+              ['admin.ov.revWeek', 'weekXof', 'paidOrdersWeek'],
+              ['admin.ov.revMonth', 'monthXof', 'paidOrdersMonth'],
+              ['admin.ov.revYear', 'yearXof', 'paidOrdersYear'],
+            ] as const
+          ).map(([key, amount, orders]) => (
+            <div key={key} className="rounded-xl bg-[#F7F7FA] px-3.5 py-3">
+              <p className="text-[12px] text-[#6B6878]">{t(key)}</p>
+              <p className="mt-1 font-[family-name:var(--font-mono)] text-[18px] font-semibold text-[#17161F] min-[640px]:text-[20px]">
+                {data ? `${num(data.revenue[amount])} FCFA` : '—'}
+              </p>
+              <p className="mt-0.5 text-[11.5px] text-[#8A8896]">
+                {data ? t('admin.ov.revPayments', { n: num(data.revenue[orders]) }) : ''}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-3 min-[1100px]:grid-cols-[1.6fr_1fr]">
         <Card

@@ -543,8 +543,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
         </Reveal>
 
         {/* PRESENTATION VIDEO — right after the hero and the compatible
-            tools (owner, 2026-10-06). A placeholder until the site is
-            finished and the film is made, framed like Metrio's: a browser
+            tools (owner, 2026-10-06), framed like Metrio's: a browser
             window that straightens as it scrolls in. */}
         <PresentationVideo />
 

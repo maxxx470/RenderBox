@@ -3,12 +3,23 @@
 // The back-office's navigation (2026-10-15, owner: « crée l'espace admin »),
 // drawn like the app's rail: white, full height against the left edge, a
 // hairline on its right, the logo row 63px, the current page on the blue
-// tint. Five sections — overview, users, renders, payments, journal — and
+// tint. Six sections — overview, messages (2026-10-17), users, renders,
+// payments, journal — and
 // the way back to the app at the bottom. Below 900px a floating bar at the
 // bottom, the same shape as the app's MobileNav.
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, Category, Document, Image as ImageIcon, User, Wallet } from 'react-iconly';
+import { useEffect, useState } from 'react';
+import {
+  ArrowLeft,
+  Category,
+  Chat,
+  Document,
+  Image as ImageIcon,
+  User,
+  Wallet,
+} from 'react-iconly';
+import { api } from '@/lib/api';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
@@ -16,6 +27,7 @@ import { BrandMark, Wordmark } from '@/components/BrandMark';
 const NAV: { href: string; icon: typeof Category; label: TranslationKey; short: TranslationKey }[] =
   [
     { href: '/admin', icon: Category, label: 'admin.navOverview', short: 'admin.navOverviewShort' },
+    { href: '/admin/messages', icon: Chat, label: 'admin.navMessages', short: 'admin.navMessages' },
     { href: '/admin/utilisateurs', icon: User, label: 'admin.navUsers', short: 'admin.navUsers' },
     {
       href: '/admin/rendus',
@@ -37,12 +49,42 @@ const NAV: { href: string; icon: typeof Category; label: TranslationKey; short: 
     },
   ];
 
+/** Conversations with a message no admin has read yet — the Messages entry's
+ *  badge. Read on each page change and every minute. */
+function useUnreadThreads(pathname: string | null): number {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    const read = () =>
+      api<{ unreadThreads: number }>('/api/admin/support?count=1')
+        .then((r) => alive && setN(r.unreadThreads))
+        .catch(() => undefined);
+    void read();
+    const timer = setInterval(read, 60_000);
+    return () => {
+      alive = false;
+      clearInterval(timer);
+    };
+  }, [pathname]);
+  return n;
+}
+
+const Badge = ({ n, className = '' }: { n: number; className?: string }) =>
+  n > 0 ? (
+    <span
+      className={`flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#F34857] px-1 font-[family-name:var(--font-mono)] text-[10.5px] font-semibold text-white ${className}`}
+    >
+      {n > 99 ? '99+' : n}
+    </span>
+  ) : null;
+
 const isActive = (pathname: string | null, href: string) =>
   pathname === href || (href !== '/admin' && !!pathname?.startsWith(href + '/'));
 
 export function AdminNav({ role, email }: { role: string; email: string }) {
   const t = useTranslations();
   const pathname = usePathname();
+  const unread = useUnreadThreads(pathname);
 
   return (
     <aside className="hidden h-dvh w-[236px] shrink-0 flex-col border-r border-[#ECECF2] bg-white min-[900px]:flex">
@@ -69,6 +111,7 @@ export function AdminNav({ role, email }: { role: string; email: string }) {
               >
                 <Icon set="curved" size={19} primaryColor={active ? '#2948FC' : '#3D3B49'} />
                 {t(label)}
+                {href === '/admin/messages' && <Badge n={unread} className="ml-auto" />}
               </Link>
             );
           })}
@@ -102,6 +145,7 @@ export function AdminNav({ role, email }: { role: string; email: string }) {
 export function AdminMobileNav() {
   const t = useTranslations();
   const pathname = usePathname();
+  const unread = useUnreadThreads(pathname);
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 min-[900px]:hidden">
@@ -120,6 +164,9 @@ export function AdminMobileNav() {
               >
                 <Icon set="curved" size={19} primaryColor="#2948FC" />
                 <span className="max-w-full truncate px-1">{t(short)}</span>
+                {href === '/admin/messages' && (
+                  <Badge n={unread} className="absolute right-1 top-1" />
+                )}
               </Link>
             );
           })}

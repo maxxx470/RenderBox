@@ -27,7 +27,10 @@ describe(`migration ${NAME}`, () => {
   it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
     // Only 9_phase9c_user_engine_versions (2026-10-16) may come after it.
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9c_user_engine_versions']);
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
+      '9_phase9c_user_engine_versions',
+      '9_phase9d_support_messages',
+    ]);
   });
 
   it('is one nullable column on RenderNode', () => {
