@@ -684,7 +684,6 @@ const en: Record<keyof typeof fr, string> = {
   'admin.userDetail.restoreButton': 'Restore account',
   'admin.userDetail.deleteButton': 'Delete account',
   'admin.userDetail.restoreDeletedButton': 'Restore account',
-  'admin.userDetail.roleSelectLabel': 'Change role',
   'admin.userDetail.confirmDelete':
     'Delete this account? Reversible for 30 days, permanently purged after that.',
   'admin.userDetail.confirmSuspend': 'Suspend this account?',

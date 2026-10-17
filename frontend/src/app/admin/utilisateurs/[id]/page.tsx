@@ -62,8 +62,6 @@ interface DetailResponse {
 
 const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
 
-const ROLES = ['USER', 'ADMIN', 'SUPERADMIN'] as const;
-
 export default function AdminUserDetailPage() {
   const { t, locale } = useLocale();
   const params = useParams<{ id: string }>();
@@ -375,31 +373,9 @@ export default function AdminUserDetailPage() {
           {t('admin.userDetail.actionsTitle')}
         </h2>
 
-        <div className="mb-4 flex items-center gap-2.5">
-          <label className="text-[12.5px] text-[#8A8896]">
-            {t('admin.userDetail.roleSelectLabel')}
-          </label>
-          <select
-            value={user.role}
-            disabled={busy}
-            onChange={(e) =>
-              void runAction(() =>
-                api(`/api/admin/users/${user.id}/role`, {
-                  method: 'PATCH',
-                  body: { role: e.target.value },
-                }),
-              )
-            }
-            className="rounded-[10px] bg-[#F7F7FA] px-3 py-1.5 text-[13px] text-[#17161F] outline-none"
-          >
-            {ROLES.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-        </div>
-
+        {/* No role selector on the file (owner, 2026-10-17: « à supprimer de
+            la page admin »). The role route stays; the first SUPERADMIN is made
+            with pnpm db:make-superadmin. */}
         <div className="flex flex-wrap gap-2.5">
           {user.status === 'SUSPENDED' ? (
             <button

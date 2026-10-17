@@ -702,7 +702,6 @@ const fr = {
   'admin.userDetail.restoreButton': 'Réactiver le compte',
   'admin.userDetail.deleteButton': 'Supprimer le compte',
   'admin.userDetail.restoreDeletedButton': 'Restaurer le compte',
-  'admin.userDetail.roleSelectLabel': 'Changer le rôle',
   'admin.userDetail.confirmDelete':
     'Supprimer ce compte ? Réversible pendant 30 jours, purge définitive ensuite.',
   'admin.userDetail.confirmSuspend': 'Suspendre ce compte ?',
