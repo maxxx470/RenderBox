@@ -25,10 +25,10 @@ export function presentationFilm(locale: string): { src: string; poster: string 
 
 // The bucket's files are cached as immutable, so a remade film goes up under a
 // new name: <film>-<FILMS_EDITION>-<lang>.mp4. Null = the first edition,
-// <film>-<lang>.mp4. The six feature films are being remade on the current
-// interface (2026-10-17, owner: « corrige le logo et juste l'interface du
-// site »); once uploaded, FILMS_EDITION becomes '20261017'.
-export const FILMS_EDITION: string | null = null;
+// <film>-<lang>.mp4. The six feature films (commenter, arbre, moteurs,
+// ajouter, ameliorer, etapes) were remade on the current interface on
+// 2026-10-17 (owner: « corrige le logo et juste l'interface du site »).
+export const FILMS_EDITION: string | null = '20261017';
 
 /** The film's video and poster URLs for this language. */
 export function motionFilm(film: string, locale: string): { src: string; poster: string } {
