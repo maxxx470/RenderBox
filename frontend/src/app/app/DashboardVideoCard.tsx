@@ -10,8 +10,8 @@
 //     cookies into every dashboard visit for a video most people never start.
 //
 //   • No video is configured — the card teaches the same thing the video was
-//     going to teach, in the space it was going to occupy: a short film of the
-//     three steps of a render, and a link straight to the generation space. It used to render a dead
+//     going to teach, in the space it was going to occupy: « Premier pas sur
+//     RenderPro », two short tutorial films (generate, enhance). It used to render a dead
 //     "video coming soon" pill instead, which spent the best block on the
 //     first screen after sign-in on a promise. A card that says nothing and
 //     does nothing is worse than no card; a card that explains the product is
@@ -30,49 +30,60 @@ import { DASHBOARD_VIDEO, toEmbedUrl } from './dashboard-media';
 const FRAME =
   'relative aspect-[16/9] overflow-hidden rounded-2xl min-[900px]:aspect-auto min-[900px]:h-[210px]';
 
-function HowItWorks() {
+// « Premier pas sur RenderPro » (owner, 2026-10-17; « De la photo au rendu,
+// en 3 étapes » with the etapes film before): two short tutorial films, one
+// above the other in 16:9 — generating an image on the Générateur d'images,
+// then enhancing one on Améliorer —, each step captioned in the film itself,
+// muted and looping like the landing films (MotionFilm). Each opens its page.
+// On a phone the films keep a « Plein écran » button, as on the Info page.
+const TUTORIALS = [
+  {
+    film: 'tuto-generer',
+    title: 'dashboard.tutoGenerate',
+    cta: 'dashboard.tutoGenerateCta',
+    href: '/app/generer',
+  },
+  {
+    film: 'tuto-ameliorer',
+    title: 'dashboard.tutoEnhance',
+    cta: 'dashboard.tutoEnhanceCta',
+    href: '/app/enhance',
+  },
+] as const;
+
+function FirstSteps() {
   const t = useTranslations();
   const { locale } = useLocale();
   return (
-    // White, not the green gradient it used to sit on: the film is the
-    // content now (owner, 2026-10-06), and it carries its own light ground.
     <div className="flex flex-col overflow-hidden rounded-2xl bg-white">
-      <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <h3 className="min-w-0 font-[family-name:var(--font-display)] text-[15px] font-semibold leading-tight text-[#17161F]">
-          {t('dashboard.howTitle')}
-        </h3>
-        {/* Straight to the generation space: the in-app gallery this used to
-            open was removed on 2026-10-06. */}
-        <Link
-          href="/app/generer"
-          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-3.5 py-2 text-[12.5px] font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
-        >
-          {t('dashboard.howCta')}
-          <ArrowRight set="curved" size={14} primaryColor="#ffffff" />
-        </Link>
-      </div>
-      {/* The three steps, shown rather than listed: a photo or a sketch, an
-          ambiance (day, night, interior, exterior), the render. Rendered
-          with HyperFrames like the landing films. */}
-      <MotionFilm
-        {...motionFilm('etapes', locale)}
-        label={t('dashboard.filmAlt')}
-        className="border-t border-[#ECECF2] max-[899px]:hidden"
-      />
-      {/* On a phone the film shows the computer's screen too small to read
-          (owner, 2026-10-15): the same three steps, written. */}
-      <ol className="flex flex-col gap-2 border-t border-[#ECECF2] px-4 py-3.5 min-[900px]:hidden">
-        {(['dashboard.howStep1', 'dashboard.howStep2', 'dashboard.howStep3'] as const).map(
-          (key, i) => (
-            <li key={key} className="flex items-center gap-3 text-[13px] text-[#3D3B49]">
+      <h3 className="px-4 pb-1 pt-3.5 font-[family-name:var(--font-display)] text-[15px] font-semibold leading-tight text-[#17161F]">
+        {t('dashboard.firstStepsTitle')}
+      </h3>
+      {TUTORIALS.map((tuto, i) => (
+        <div key={tuto.film} className={i > 0 ? 'border-t border-[#ECECF2]' : ''}>
+          <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+            <p className="flex min-w-0 items-center gap-2 text-[13px] font-medium text-[#3D3B49]">
               <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-[#EEF1FF] font-[family-name:var(--font-mono)] text-[11px] font-semibold text-[#1E36D6]">
                 {i + 1}
               </span>
-              {t(key)}
-            </li>
-          ),
-        )}
-      </ol>
+              <span className="truncate">{t(tuto.title)}</span>
+            </p>
+            <Link
+              href={tuto.href}
+              className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-3 py-1.5 text-[12px] font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+            >
+              {t(tuto.cta)}
+              <ArrowRight set="curved" size={13} primaryColor="#ffffff" />
+            </Link>
+          </div>
+          <MotionFilm
+            {...motionFilm(tuto.film, locale)}
+            label={t(tuto.title)}
+            expandLabel={t('info.filmExpand')}
+            className="border-t border-[#ECECF2]"
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -82,7 +93,7 @@ export function DashboardVideoCard() {
   const [playing, setPlaying] = useState(false);
 
   const url = DASHBOARD_VIDEO.url;
-  if (!url) return <HowItWorks />;
+  if (!url) return <FirstSteps />;
 
   const embed = toEmbedUrl(url);
 
