@@ -630,7 +630,7 @@ export function GenerationHome({
               // No plan, or not enough credits for this render: the plans
               // open over the page, before anything is uploaded.
               const cost = renderCost(resolution, mode === 'generate' ? 1 : (variantCount ?? 1));
-              if (!tier) return chrome?.openPlans('noTier');
+              if (!tier && !remaining) return chrome?.openPlans('noTier');
               if (remaining !== null && remaining < cost) return chrome?.openPlans('noCredits');
               if (mode === 'generate') void quickStart(photoFile);
               else void runEdit(photoFile);

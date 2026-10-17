@@ -317,7 +317,7 @@ export function EnhanceClient({
     if (!canRun || working) return;
     // No plan, or not enough credits: the plans open over the page (owner,
     // 2026-10-15), before anything is uploaded.
-    if (!surface.tier) return chrome?.openPlans('noTier');
+    if (!surface.tier && !remaining) return chrome?.openPlans('noTier');
     if (remaining !== null && remaining < renderCost(resolution))
       return chrome?.openPlans('noCredits');
     setWorking(true);

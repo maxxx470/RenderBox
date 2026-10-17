@@ -165,7 +165,8 @@ export function DashboardStats({ data }: { data: DashboardData }) {
   const shortDate = (iso: string) =>
     new Date(iso).toLocaleDateString(intl, { day: 'numeric', month: 'short' });
 
-  const hasPlan = data.tier !== null && data.creditsMax !== null && data.creditsBalance !== null;
+  // A plan's credits, or credits given without a plan (tier-quota.ts).
+  const hasPlan = data.creditsBalance !== null;
   const n = (v: number) => v.toLocaleString(intl);
 
   return (

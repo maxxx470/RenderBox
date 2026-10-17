@@ -887,6 +887,7 @@ const fr = {
   'parametres.languageHint': 'Aussi dans la barre du haut.',
   'parametres.planEyebrow': 'Votre formule',
   'parametres.planNone': 'Aucune formule active',
+  'parametres.planNoneCredits': '{n} crédits disponibles, offerts sans formule.',
   'parametres.planNoneHint': 'Choisissez une formule pour générer vos images.',
   'parametres.planOf': '/ {max} crédits',
   'parametres.planUntil': 'Valable jusqu’au {date}',

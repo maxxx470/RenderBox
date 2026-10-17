@@ -18,6 +18,12 @@
 // generate (or loads a page that displays their credits), never by a cron
 // sweeping every account. Credits left at the end of a period are lost: no
 // carryover.
+//
+// Credits without a plan (2026-10-17, owner: credits an admin adds must show
+// on the user's dashboard and be spendable): an account with no active plan
+// but a positive balance — credits given by hand in the back-office — spends
+// them like a plan's, with no end date. Without a plan and with nothing left,
+// it is NO_ACTIVE_TIER as before.
 import 'server-only';
 import { NextResponse } from 'next/server';
 import type { PrismaClient } from '@prisma/client';
@@ -36,7 +42,8 @@ export interface CreditStatus {
   tier: PricingTierId | null;
   /** The plan's monthly credits, or null when there's no active tier. */
   max: number | null;
-  /** Credits left in the current period, or null when there's no active tier. */
+  /** Credits left — the plan's, or credits given without a plan — or null
+   *  when there is nothing to spend from (no plan, nothing given). */
   remaining: number | null;
   /**
    * When the current period ends — the credits left expire then — or null
@@ -98,8 +105,19 @@ export async function getCreditStatus(prisma: PrismaClient, userId: string): Pro
   const onboarded = Boolean(user?.onboardedAt);
   const engineVersions = parseEngineVersions(user?.engineVersions);
   const infoSince = user?.infoSeenAt ?? user?.createdAt ?? null;
-  if (!user || !tier)
+  if (!user || !tier) {
+    // Credits given by hand without a plan are spendable (header above).
+    if (user && !user.currentTier && user.creditsBalance > 0) {
+      return {
+        ...NONE,
+        remaining: user.creditsBalance,
+        onboarded,
+        engineVersions,
+        infoSince,
+      };
+    }
     return { reason: 'NO_ACTIVE_TIER', ...NONE, onboarded, engineVersions, infoSince };
+  }
 
   if (!user.tierPeriodStart || Date.now() - user.tierPeriodStart.getTime() >= TIER_PERIOD_MS) {
     // Period lapsed without a renewal: the plan ends and its unused credits
@@ -147,8 +165,13 @@ export async function debitCredits(
   const { count } = await prisma.user.updateMany({
     where: {
       id: userId,
-      currentTier: status.tier,
-      tierPeriodStart: { gt: new Date(Date.now() - TIER_PERIOD_MS) },
+      // Credits given without a plan: still no plan at the moment of the debit.
+      ...(status.tier
+        ? {
+            currentTier: status.tier,
+            tierPeriodStart: { gt: new Date(Date.now() - TIER_PERIOD_MS) },
+          }
+        : { currentTier: null }),
       creditsBalance: { gte: cost },
     },
     data: { creditsBalance: { decrement: cost } },
@@ -204,7 +227,9 @@ export function creditRefusalResponse(
  * Activates or renews a tier — called once an Order actually transitions to
  * PAID (see maketou-reconcile.ts). The balance is SET to the plan's credits
  * and the period restarts now: no carryover of unused credits, consistent
- * with a monthly subscription rather than a cumulative credit system.
+ * with a monthly subscription rather than a cumulative credit system. The
+ * one exception: an account with no plan keeps the credits it was given by
+ * hand, the plan's credits are added to them (2026-10-17).
  */
 export async function activateTier(
   prisma: PrismaClient,
@@ -213,12 +238,19 @@ export async function activateTier(
 ): Promise<void> {
   const tier = getPricingTier(tierId);
   if (!tier) throw new Error(`activateTier: unknown tier ${tierId}`);
-  await prisma.user.update({
-    where: { id: userId },
+  const tierPeriodStart = new Date();
+  // No plan yet: what was given by hand stays, the plan's credits come on top.
+  const first = await prisma.user.updateMany({
+    where: { id: userId, currentTier: null },
     data: {
       currentTier: tier.id,
-      tierPeriodStart: new Date(),
-      creditsBalance: tier.creditsPerMonth,
+      tierPeriodStart,
+      creditsBalance: { increment: tier.creditsPerMonth },
     },
+  });
+  if (first.count > 0) return;
+  await prisma.user.update({
+    where: { id: userId },
+    data: { currentTier: tier.id, tierPeriodStart, creditsBalance: tier.creditsPerMonth },
   });
 }

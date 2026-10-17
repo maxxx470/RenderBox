@@ -46,19 +46,13 @@ export interface AppTopbarProps {
   userEmail: string;
 }
 
-export function AppTopbar({
-  title,
-  shortTitle,
-  tier,
-  creditsMax,
-  creditsBalance,
-  userEmail,
-}: AppTopbarProps) {
+export function AppTopbar({ title, shortTitle, tier, creditsBalance, userEmail }: AppTopbarProps) {
   const { t, locale } = useLocale();
   const placeholder = isPlaceholderAccount(userEmail);
   const accountLabel = placeholder ? t('app.freeAccessAccount') : userEmail;
   const initial = (placeholder ? accountLabel : userEmail).trim().charAt(0).toUpperCase() || '?';
-  const hasCredits = tier !== null && creditsMax !== null && creditsBalance !== null;
+  // A plan's credits, or credits given without a plan (tier-quota.ts).
+  const hasCredits = creditsBalance !== null;
   const figure = hasCredits
     ? creditsBalance.toLocaleString(locale === 'fr' ? 'fr-FR' : 'en-US')
     : '';

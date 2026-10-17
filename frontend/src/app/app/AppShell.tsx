@@ -472,7 +472,7 @@ export function AppShell({
     // No plan, or not enough credits for this render: the plans open over
     // the page (owner, 2026-10-15) instead of a refused request.
     const cost = renderCost(resolution, mode === 'generate' ? 1 : variantCount);
-    if (!tier) return chrome?.openPlans('noTier');
+    if (!tier && !remaining) return chrome?.openPlans('noTier');
     if (remaining !== null && remaining < cost) return chrome?.openPlans('noCredits');
     if (mode === 'generate') void handleGenerate();
     else void handleEditSubmit();

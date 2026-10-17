@@ -427,7 +427,11 @@ function PlanCard({
           <div className="font-[family-name:var(--font-display)] text-[20px] font-bold">
             {t('parametres.planNone')}
           </div>
-          <p className="mt-1 text-[13px] text-white/80">{t('parametres.planNoneHint')}</p>
+          <p className="mt-1 text-[13px] text-white/80">
+            {creditsBalance
+              ? t('parametres.planNoneCredits', { n: creditsBalance.toLocaleString(intl) })
+              : t('parametres.planNoneHint')}
+          </p>
         </div>
         <Link
           href="/app/tarifs"

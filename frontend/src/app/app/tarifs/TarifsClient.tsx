@@ -81,7 +81,7 @@ export function TarifsClient({
   }
 
   const { tier, creditsBalance } = surface;
-  const remaining = tier !== null && creditsBalance !== null ? creditsBalance : 0;
+  const remaining = creditsBalance ?? 0;
   const endDate = periodEndsAt
     ? new Date(periodEndsAt).toLocaleDateString(intl, { day: 'numeric', month: 'long' })
     : null;

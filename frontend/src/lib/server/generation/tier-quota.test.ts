@@ -27,6 +27,24 @@ const activeUser = (tier: string, creditsBalance: number) =>
     creditsBalance,
   }) as never;
 
+describe('credits given without a plan', () => {
+  it('shows them and lets them be spent, with no end date', async () => {
+    const planless = { currentTier: null, tierPeriodStart: null, creditsBalance: 100 };
+    prismaMock.user.findUnique.mockResolvedValueOnce(planless as never);
+    const status = await getCreditStatus(prismaMock, 'user-1');
+    expect(status).toMatchObject({ tier: null, max: null, remaining: 100, periodEndsAt: null });
+    expect(status.reason).toBeUndefined();
+
+    prismaMock.user.findUnique.mockResolvedValueOnce(planless as never);
+    prismaMock.user.updateMany.mockResolvedValueOnce({ count: 1 } as never);
+    expect(await debitCredits(prismaMock, 'user-1', 50)).toEqual({ ok: true, balance: 50 });
+    expect(prismaMock.user.updateMany).toHaveBeenCalledWith({
+      where: { id: 'user-1', currentTier: null, creditsBalance: { gte: 50 } },
+      data: { creditsBalance: { decrement: 50 } },
+    });
+  });
+});
+
 describe('getCreditStatus', () => {
   it('reports NO_ACTIVE_TIER when the user has never paid', async () => {
     prismaMock.user.findUnique.mockResolvedValueOnce({
@@ -245,16 +263,18 @@ describe('creditRefusalResponse', () => {
 });
 
 describe('activateTier', () => {
-  it('starts the period now with the plan’s full credits', async () => {
-    prismaMock.user.update.mockResolvedValueOnce({} as never);
+  it('a first plan starts now and adds its credits to those given by hand', async () => {
+    prismaMock.user.updateMany.mockResolvedValueOnce({ count: 1 } as never);
     await activateTier(prismaMock, 'user-1', 'pro');
-    expect(prismaMock.user.update).toHaveBeenCalledWith({
-      where: { id: 'user-1' },
-      data: { currentTier: 'pro', tierPeriodStart: NOW, creditsBalance: 8000 },
+    expect(prismaMock.user.updateMany).toHaveBeenCalledWith({
+      where: { id: 'user-1', currentTier: null },
+      data: { currentTier: 'pro', tierPeriodStart: NOW, creditsBalance: { increment: 8000 } },
     });
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
   it('a renewal SETS the balance to the plan’s credits — no carryover, no stacking', async () => {
+    prismaMock.user.updateMany.mockResolvedValueOnce({ count: 0 } as never);
     prismaMock.user.update.mockResolvedValueOnce({} as never);
     await activateTier(prismaMock, 'user-1', 'decouverte');
     expect(prismaMock.user.update).toHaveBeenCalledWith({

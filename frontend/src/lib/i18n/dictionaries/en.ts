@@ -861,6 +861,7 @@ const en: Record<keyof typeof fr, string> = {
   'parametres.languageHint': 'Also in the top bar.',
   'parametres.planEyebrow': 'Your plan',
   'parametres.planNone': 'No active plan',
+  'parametres.planNoneCredits': '{n} credits available, given without a plan.',
   'parametres.planNoneHint': 'Choose a plan to generate your images.',
   'parametres.planOf': '/ {max} credits',
   'parametres.planUntil': 'Valid until {date}',
