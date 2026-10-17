@@ -21,6 +21,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { enforceUploadRateLimit } from '@/lib/server/middleware/rate-limit-upload';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { prisma } from '@/lib/server/prisma';
+import { log } from '@/lib/server/observability/log';
 import { assertProjectOwner, ProjectNotFoundError } from '@/lib/server/idor/assert-project-owner';
 import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
 import { verifyMagicBytes } from '@/lib/server/upload/sniff';
@@ -132,6 +133,13 @@ export async function POST(
           { status: 503, headers: { 'x-request-id': ctx.requestId } },
         );
       }
+      // Said in the logs: no image has ever reached the store in production
+      // (2026-10-17), and this error was swallowed.
+      log.warn('upload: storage write failed', {
+        error: e instanceof Error ? `${e.name}: ${e.message}`.slice(0, 300) : String(e),
+        bytes: buf.length,
+        mime: storedMime,
+      });
       return NextResponse.json(
         { code: 'UPLOAD_FAILED', message: 'Storage write failed' },
         { status: 502, headers: { 'x-request-id': ctx.requestId } },

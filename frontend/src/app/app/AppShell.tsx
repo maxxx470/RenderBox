@@ -47,6 +47,7 @@ import {
   isMaterialsUnavailable,
   isServiceNotConfigured,
 } from './request-error';
+import { fitForUpload, UPLOAD_FIT } from './fit-upload';
 
 interface UploadResponse {
   id: string;
@@ -267,7 +268,7 @@ export function AppShell({
     setUploading(true);
     try {
       const form = new FormData();
-      form.append('file', file);
+      form.append('file', await fitForUpload(file));
       const csrf = getCsrfTokenForUpload();
       const res = await fetch(`/api/projects/${projectId}/upload`, {
         method: 'POST',
@@ -417,9 +418,16 @@ export function AppShell({
         // comment by its coordinates.
         const marked = await drawMarkedImage(`/api/render-nodes/${selectedNode.id}/image`, notes);
         if (marked)
-          form.append('markedImage', new File([marked], 'marked.jpg', { type: 'image/jpeg' }));
+          form.append(
+            'markedImage',
+            await fitForUpload(
+              new File([marked], 'marked.jpg', { type: 'image/jpeg' }),
+              UPLOAD_FIT.reference,
+            ),
+          );
       }
-      if (mode === 'add' && referenceFile) form.append('referenceImage', referenceFile);
+      if (mode === 'add' && referenceFile)
+        form.append('referenceImage', await fitForUpload(referenceFile, UPLOAD_FIT.reference));
 
       const csrf = getCsrfTokenForUpload();
       const res = await fetch(`/api/projects/${projectId}/edit`, {

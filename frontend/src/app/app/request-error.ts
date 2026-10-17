@@ -20,6 +20,8 @@ export class RequestError extends Error {
 }
 
 export async function readErrorCode(res: Response): Promise<string> {
+  // Vercel's own refusal of a body over 4.5 MB, before the route runs.
+  if (res.status === 413) return 'FILE_TOO_LARGE';
   const body = (await res.json().catch(() => ({}))) as { error?: unknown; code?: unknown };
   if (typeof body.error === 'string') return body.error;
   if (typeof body.code === 'string') return body.code;

@@ -45,6 +45,7 @@ import { NodeMaterialsPanel } from './NodeMaterialsPanel';
 import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
+import { fitForUpload, UPLOAD_FIT } from './fit-upload';
 
 export interface RecentRenderCardData {
   id: string;
@@ -251,7 +252,7 @@ export function GenerationHome({
     });
 
     const form = new FormData();
-    form.append('file', file);
+    form.append('file', await fitForUpload(file));
     const csrf = getCsrfTokenForUpload();
     const res = await fetch(`/api/projects/${project.id}/upload`, {
       method: 'POST',
@@ -337,9 +338,16 @@ export function GenerationHome({
         // comment by its coordinates.
         const marked = photoUrl ? await drawMarkedImage(photoUrl, notes) : null;
         if (marked)
-          form.append('markedImage', new File([marked], 'marked.jpg', { type: 'image/jpeg' }));
+          form.append(
+            'markedImage',
+            await fitForUpload(
+              new File([marked], 'marked.jpg', { type: 'image/jpeg' }),
+              UPLOAD_FIT.reference,
+            ),
+          );
       }
-      if (mode === 'add' && referenceFile) form.append('referenceImage', referenceFile);
+      if (mode === 'add' && referenceFile)
+        form.append('referenceImage', await fitForUpload(referenceFile, UPLOAD_FIT.reference));
 
       const csrf = getCsrfTokenForUpload();
       const res = await fetch(`/api/projects/${projectId}/edit`, {

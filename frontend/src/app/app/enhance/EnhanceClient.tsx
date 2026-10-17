@@ -61,6 +61,7 @@ import {
   isServiceNotConfigured,
 } from '../request-error';
 import { EnhanceBar } from './EnhanceBar';
+import { fitForUpload, UPLOAD_FIT } from '../fit-upload';
 
 const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
 const HEADING =
@@ -293,7 +294,7 @@ export function EnhanceClient({
       },
     });
     const form = new FormData();
-    form.append('file', source);
+    form.append('file', await fitForUpload(source));
     const csrf = getCsrfTokenForUpload();
     const res = await fetch(`/api/projects/${project.id}/upload`, {
       method: 'POST',
@@ -340,7 +341,7 @@ export function EnhanceClient({
       if (instruction.trim()) form.append('instruction', instruction.trim());
       for (const key of options) {
         const ref = refs[key];
-        if (ref) form.append(`ref_${key}`, ref);
+        if (ref) form.append(`ref_${key}`, await fitForUpload(ref, UPLOAD_FIT.reference));
       }
       const csrf = getCsrfTokenForUpload();
       const res = await fetch(`/api/projects/${current.projectId}/enhance`, {
