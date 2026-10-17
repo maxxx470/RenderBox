@@ -1,6 +1,7 @@
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { describe, it, expect } from 'vitest';
 import { computeApiUsage, usageLevel } from './api-usage';
+import { KieError } from '@/lib/server/generation/engines/kie';
 
 const NOW = new Date('2026-10-20T12:00:00.000Z');
 const ago = (days: number) => new Date(NOW.getTime() - days * 24 * 60 * 60 * 1000);
@@ -54,6 +55,20 @@ describe('computeApiUsage — the Kie usage in /admin', () => {
     expect(usage.balanceError).toBe(true);
     expect(usage.level).toBe('unknown');
     expect(usage.daysLeft).toBeNull();
+    expect(usage.balanceProblem).toEqual({ code: null, message: 'kie down' });
+  });
+
+  it("keeps Kie's own refusal code and message for the admin", async () => {
+    prismaMock.renderNode.findMany.mockResolvedValueOnce([] as never);
+    const usage = await computeApiUsage(
+      prismaMock,
+      async () => {
+        throw new KieError('Unauthorized', 401, 'poll');
+      },
+      true,
+      NOW,
+    );
+    expect(usage.balanceProblem).toEqual({ code: 401, message: 'Unauthorized' });
   });
 
   it('warns by balance or by days left', () => {

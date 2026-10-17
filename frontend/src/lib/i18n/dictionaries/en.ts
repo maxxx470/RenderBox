@@ -602,6 +602,12 @@ const en: Record<keyof typeof fr, string> = {
     'The Kie key (KIE_API_KEY) is not set on the server: renders go through the Google and OpenAI keys.',
   'admin.api.balanceError':
     'Kie did not answer for the balance (network or key refused). Try again in a moment.',
+  'admin.api.problemKey':
+    'Kie refuses the API key: the KIE_API_KEY saved on Vercel is not accepted. Check it in your Kie space (API Keys), copy it to Vercel again, then redeploy. While it is refused, renders go through the Google and OpenAI keys.',
+  'admin.api.problemCredits': 'Kie says the account has no credits: top it up.',
+  'admin.api.problemLimit': 'Kie is limiting requests for now: try again in a minute.',
+  'admin.api.problemNetwork': 'Kie did not answer in time (network). Try again in a moment.',
+  'admin.api.kieSaid': 'Kie’s answer — code {code}: {msg}',
   'admin.api.direct':
     '{n} images made outside Kie over the last 7 days: Kie refused (balance empty or key), they went through your Google / OpenAI keys.',
   'admin.api.unpriced': '{n} older images have no cost: it is recorded since 17 October 2026.',

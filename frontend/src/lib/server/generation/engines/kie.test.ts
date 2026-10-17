@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { generateWithKie, getKieBalance, isKieAccountError, KieError } from './kie';
+import { generateWithKie, getKieBalance, isKieAccountError, KieError, readCredits } from './kie';
 
 // No network: every Kie endpoint is answered by this fake.
 type Call = { url: string; init: RequestInit | undefined };
@@ -189,5 +189,16 @@ describe('Kie cost and balance (the API usage in /admin)', () => {
     await expect(getKieBalance()).rejects.toBeInstanceOf(KieError);
     vi.stubEnv('KIE_API_KEY', '');
     expect(await getKieBalance()).toBeNull();
+  });
+});
+
+describe('readCredits — the balance in whatever shape Kie sends it', () => {
+  it('reads a number, a numeric string or an object holding one', () => {
+    expect(readCredits(100.5)).toBe(100.5);
+    expect(readCredits('2400')).toBe(2400);
+    expect(readCredits({ credits: 12 })).toBe(12);
+    expect(readCredits({ balance: '7.5' })).toBe(7.5);
+    expect(readCredits(null)).toBeNull();
+    expect(readCredits('abc')).toBeNull();
   });
 });

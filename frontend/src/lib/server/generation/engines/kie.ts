@@ -235,14 +235,33 @@ export async function getKieBalance(signal?: AbortSignal): Promise<number | null
   const key = process.env.KIE_API_KEY;
   if (!key) return null;
   const res = await fetch('https://api.kie.ai/api/v1/chat/credit', {
-    headers: { Authorization: `Bearer ${key}` },
+    // Kie's refusal names both headers, so both are sent, as on createTask.
+    headers: { Authorization: `Bearer ${key.trim()}`, 'Content-Type': 'application/json' },
     cache: 'no-store',
     ...(signal ? { signal } : {}),
   });
-  const body = (await res.json().catch(() => null)) as KieBody<number> | null;
+  const body = (await res.json().catch(() => null)) as KieBody<unknown> | null;
   const code = typeof body?.code === 'number' ? body.code : res.status;
-  if (!res.ok || code !== 200 || typeof body?.data !== 'number') {
-    throw new KieError(`kie balance: ${body?.msg ?? res.statusText}`, code, 'poll');
+  const credits = readCredits(body?.data);
+  if (!res.ok || code !== 200 || credits === null) {
+    throw new KieError(body?.msg ?? res.statusText ?? 'no answer', code, 'poll');
   }
-  return body.data;
+  return credits;
+}
+
+/** The balance as Kie sends it: a number, a numeric string, or an object
+ *  holding one (`credits`, `credit`, `balance`…). */
+export function readCredits(data: unknown): number | null {
+  if (typeof data === 'number') return Number.isFinite(data) ? data : null;
+  if (typeof data === 'string' && data.trim() !== '') {
+    const n = Number(data);
+    return Number.isFinite(n) ? n : null;
+  }
+  if (data && typeof data === 'object') {
+    for (const f of ['credits', 'credit', 'balance', 'remaining', 'remainCredits']) {
+      const n = readCredits((data as Record<string, unknown>)[f]);
+      if (n !== null) return n;
+    }
+  }
+  return null;
 }

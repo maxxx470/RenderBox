@@ -1,6 +1,7 @@
 import 'server-only';
 import type { PrismaClient } from '@prisma/client';
 import { log } from '@/lib/server/observability/log';
+import { KieError } from '@/lib/server/generation/engines/kie';
 
 // The API usage of the back-office (2026-10-17, owner: « mets-moi les
 // utilisations de mon abonnement API … si c'est en train de finir »): the Kie
@@ -26,6 +27,10 @@ export interface ApiUsage {
   balanceUsd: number | null;
   /** Kie did not answer the balance (network, key refused). */
   balanceError: boolean;
+  /** Kie's own reason when it gave no balance: its body code (401 key
+   *  refused, 402 no credits, 429 limit…) or null (network, timeout), and its
+   *  message. Shown to the admin; never holds the key. */
+  balanceProblem: { code: number | null; message: string } | null;
   spent: { today: number; week: number; month: number };
   /** Images made through Kie over 30 days, with and without a known cost. */
   kieImages30d: number;
@@ -65,7 +70,14 @@ export async function computeApiUsage(
         log.warn('admin api usage: kie balance unavailable', {
           error: err instanceof Error ? err.message : String(err),
         });
-        return { ok: false as const, b: null };
+        const code = err instanceof KieError ? err.code : null;
+        const message =
+          err instanceof Error && err.name === 'TimeoutError'
+            ? 'timeout'
+            : err instanceof Error
+              ? err.message.slice(0, 200)
+              : String(err).slice(0, 200);
+        return { ok: false as const, b: null, problem: { code, message } };
       },
     ),
     prisma.renderNode.findMany({
@@ -127,6 +139,7 @@ export async function computeApiUsage(
     balance,
     balanceUsd: balance === null ? null : round(balance * KIE_USD_PER_CREDIT),
     balanceError: configured && !balanceResult.ok,
+    balanceProblem: balanceResult.ok ? null : balanceResult.problem,
     spent: { today: round(spent.today), week: round(spent.week), month: round(spent.month) },
     kieImages30d: kieImages,
     pricedImages30d: priced,

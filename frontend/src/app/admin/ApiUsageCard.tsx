@@ -172,7 +172,19 @@ export function ApiUsageCard() {
       {data && (
         <ul className="mt-4 flex flex-col gap-1.5 border-t border-[#ECECF2] pt-3 text-[12.5px] leading-relaxed text-[#6B6878]">
           {!data.configured && <li className="text-[#B8710B]">{t('admin.api.notConfigured')}</li>}
-          {data.balanceError && <li className="text-[#B8710B]">{t('admin.api.balanceError')}</li>}
+          {data.balanceError && (
+            <li className="text-[#B8710B]">
+              {t(problemKey(data.balanceProblem?.code ?? null, data.balanceProblem?.message))}
+              {data.balanceProblem && data.balanceProblem.message !== 'timeout' && (
+                <span className="mt-0.5 block font-[family-name:var(--font-mono)] text-[11.5px] text-[#8A8896]">
+                  {t('admin.api.kieSaid', {
+                    code: String(data.balanceProblem.code ?? '—'),
+                    msg: data.balanceProblem.message,
+                  })}
+                </span>
+              )}
+            </li>
+          )}
           {data.directImages7d > 0 && (
             <li className="text-[#C21F33]">
               {t('admin.api.direct', { n: num(data.directImages7d) })}
@@ -186,6 +198,15 @@ export function ApiUsageCard() {
       )}
     </section>
   );
+}
+
+/** What to do, from Kie's refusal code. */
+function problemKey(code: number | null, message: string | undefined): TranslationKey {
+  if (code === 401 || code === 403) return 'admin.api.problemKey';
+  if (code === 402) return 'admin.api.problemCredits';
+  if (code === 429) return 'admin.api.problemLimit';
+  if (message === 'timeout' || code === null) return 'admin.api.problemNetwork';
+  return 'admin.api.balanceError';
 }
 
 function Stat({ label, value, note }: { label: string; value: string; note: string }) {

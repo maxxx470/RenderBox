@@ -620,6 +620,12 @@ const fr = {
     'La clé Kie (KIE_API_KEY) n’est pas réglée sur le serveur : les rendus passent par les clés Google et OpenAI.',
   'admin.api.balanceError':
     'Kie n’a pas répondu pour le solde (réseau ou clé refusée). Réessayez dans un moment.',
+  'admin.api.problemKey':
+    'Kie refuse la clé API : la clé KIE_API_KEY enregistrée sur Vercel n’est pas acceptée. Vérifiez-la dans votre espace Kie (API Keys), recopiez-la sur Vercel, puis redéployez. Tant qu’elle est refusée, les rendus passent par les clés Google et OpenAI.',
+  'admin.api.problemCredits': 'Kie indique un compte sans crédits : rechargez-le.',
+  'admin.api.problemLimit': 'Kie limite les demandes pour l’instant : réessayez dans une minute.',
+  'admin.api.problemNetwork': 'Kie n’a pas répondu à temps (réseau). Réessayez dans un moment.',
+  'admin.api.kieSaid': 'Réponse de Kie — code {code} : {msg}',
   'admin.api.direct':
     '{n} images faites hors Kie ces 7 derniers jours : Kie a refusé (solde épuisé ou clé), elles sont passées par vos clés Google / OpenAI.',
   'admin.api.unpriced':
