@@ -148,10 +148,18 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   },
 };
 
-/** The version used when none is chosen — the model each engine ran before. */
+/**
+ * The one version each engine runs on (owner, 2026-10-17: « garde la dernière
+ * version la plus performante de chaque modèle », no choice offered). Checked
+ * that day: Nano Banana Pro still gives the most realistic colours and
+ * proportions in hands-on tests (2.1 leads Google's own benchmarks and is
+ * cheaper); GPT Image 2.5 Sunburst leads LMArena's image editing and changes
+ * only what is asked. The other versions stay in the catalogue for the
+ * renders already made.
+ */
 export const DEFAULT_ENGINE_VERSION: Record<EngineName, EngineVersionKey> = {
   nanobanana: 'visio-pro',
-  gpt_image: 'pixel-2',
+  gpt_image: 'pixel-2-5',
 };
 
 /** One engine's versions, newest last, as the menu lists them. */
@@ -179,16 +187,15 @@ export function parseEngineVersions(raw: unknown): Record<EngineName, EngineVers
 }
 
 /**
- * What to call the engine that made an image: its version (« Visio 2.1 »)
- * when known, else the engine (« Visio »). An unknown engine reads as Visio,
- * as the canvas badge always did.
+ * What to call the engine that made an image: the engine alone (« Visio »,
+ * « Pixel IA ») since versions are no longer shown (2026-10-17). An unknown
+ * engine reads as Visio, as the canvas badge always did.
  */
 export function engineDisplayName(
   engine: string | null | undefined,
-  version: string | null | undefined,
+  _version: string | null | undefined,
   locale: 'fr' | 'en',
 ): string {
-  if (isEngineVersionKey(version)) return ENGINE_VERSIONS[version].name[locale];
   const label = ENGINE_LABELS[(engine as EngineName) || 'nanobanana'] ?? ENGINE_LABELS.nanobanana;
   return label.name[locale];
 }

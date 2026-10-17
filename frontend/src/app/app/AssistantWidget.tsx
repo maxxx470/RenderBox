@@ -15,6 +15,7 @@ import { CloseSquare, Send } from 'react-iconly';
 import { api, ApiError } from '@/lib/api';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { BrandMark } from '@/components/BrandMark';
+import { refreshNotifications } from './NotificationsBell';
 
 const OPEN_EVENT = 'rb:open-assistant';
 /** While the panel is open, new answers are looked for this often. */
@@ -48,6 +49,8 @@ export function AssistantWidget() {
       const res = await api<{ messages: Message[] }>('/api/support/messages');
       setMessages(res.messages);
       setLoadError(false);
+      // Reading marks the team's answers read, their bell notifications too.
+      refreshNotifications();
     } catch {
       setLoadError(true);
     }

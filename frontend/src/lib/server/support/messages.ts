@@ -4,6 +4,13 @@
 // One conversation per user: the user's messages and the team's answers, in
 // order. No AI, no email (Resend is not set up): the answer reaches the user
 // in the panel itself, with a notification in the bell.
+//
+// Kept only while useful (owner, 2026-10-17): once a team answer is a day old,
+// it and every message before it in that conversation are deleted; a message
+// still waiting for an answer stays, read or not. Each answer is written in the
+// journal with who wrote the messages it answers and when (not their text), so
+// the trace outlives them. (Not one journal row per user message: a journal
+// row pins its author, and a user who has one could never be hard-deleted.)
 import 'server-only';
 import type { PrismaClient } from '@prisma/client';
 import { createNotification } from '@/lib/server/notifications';
@@ -13,6 +20,8 @@ export const SUPPORT_MAX_LENGTH = 2000;
 /** A user may send this many messages per hour — enough to talk, not to flood. */
 export const SUPPORT_HOURLY_LIMIT = 20;
 const HOUR = 60 * 60 * 1000;
+/** How long an answered exchange is kept after the team's answer. */
+export const SUPPORT_KEEP_AFTER_ANSWER_MS = 24 * HOUR;
 /** The last messages a conversation shows. */
 const SHOWN = 200;
 
@@ -36,10 +45,38 @@ async function conversation(prisma: PrismaClient, userId: string): Promise<Suppo
   return rows.reverse();
 }
 
-/** The user's conversation; the team's answers become read. */
+/**
+ * Deletes every exchange the team answered more than a day ago: in each
+ * conversation, the latest answer older than SUPPORT_KEEP_AFTER_ANSWER_MS and
+ * everything before it. Messages sent after that answer — still waiting —
+ * stay. Run before each read, so no schedule is needed (Vercel Hobby).
+ */
+export async function purgeAnsweredMessages(
+  prisma: PrismaClient,
+  now = new Date(),
+): Promise<number> {
+  const cut = new Date(now.getTime() - SUPPORT_KEEP_AFTER_ANSWER_MS);
+  return prisma.$executeRaw`
+    DELETE FROM "SupportMessage" m
+    USING (
+      SELECT "userId", MAX("createdAt") AS "until"
+      FROM "SupportMessage"
+      WHERE "fromAdmin" = true AND "createdAt" <= ${cut}
+      GROUP BY "userId"
+    ) a
+    WHERE m."userId" = a."userId" AND m."createdAt" <= a."until"`;
+}
+
+/** The user's conversation; the team's answers — and their bell notifications — become read. */
 export async function readUserConversation(prisma: PrismaClient, userId: string, now = new Date()) {
+  await purgeAnsweredMessages(prisma, now);
   await prisma.supportMessage.updateMany({
     where: { userId, fromAdmin: true, readAt: null },
+    data: { readAt: now },
+  });
+  // Seen in the panel = seen: the bell must not keep announcing it.
+  await prisma.notification.updateMany({
+    where: { userId, type: 'SUPPORT_REPLY', readAt: null },
     data: { readAt: now },
   });
   return conversation(prisma, userId);
@@ -81,7 +118,11 @@ export interface SupportThread {
 }
 
 /** Every conversation, the latest first, for /admin/messages. */
-export async function listThreads(prisma: PrismaClient): Promise<SupportThread[]> {
+export async function listThreads(
+  prisma: PrismaClient,
+  now = new Date(),
+): Promise<SupportThread[]> {
+  await purgeAnsweredMessages(prisma, now);
   const [latest, unread] = await Promise.all([
     prisma.supportMessage.findMany({
       distinct: ['userId'],
@@ -137,6 +178,7 @@ export async function readThreadAsAdmin(prisma: PrismaClient, userId: string, no
     },
   });
   if (!user) return null;
+  await purgeAnsweredMessages(prisma, now);
   await prisma.supportMessage.updateMany({
     where: { userId, fromAdmin: false, readAt: null },
     data: { readAt: now },
@@ -151,8 +193,26 @@ export async function replyAsAdmin(
 ): Promise<SupportMessageView | null> {
   const { adminId, userId, body } = input;
   return prisma.$transaction(async (tx) => {
-    const user = await tx.user.findUnique({ where: { id: userId }, select: { id: true } });
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true },
+    });
     if (!user) return null;
+    // The messages this answer covers: the user's, since the team's last answer.
+    const previous = await tx.supportMessage.findFirst({
+      where: { userId, fromAdmin: true },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    });
+    const answered = await tx.supportMessage.findMany({
+      where: {
+        userId,
+        fromAdmin: false,
+        ...(previous ? { createdAt: { gt: previous.createdAt } } : {}),
+      },
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true },
+    });
     const message = await tx.supportMessage.create({
       data: { userId, body, fromAdmin: true, adminId },
       select: VIEW,
@@ -172,8 +232,76 @@ export async function replyAsAdmin(
       action: 'support.reply',
       targetType: 'User',
       targetId: userId,
-      metadata: { messageId: message.id, length: body.length },
+      metadata: {
+        messageId: message.id,
+        length: body.length,
+        from: user.email,
+        answeredSentAt: (answered ?? []).map((m) => m.createdAt.toISOString()),
+      },
     });
     return message;
   });
+}
+
+export interface PendingMessage {
+  id: string;
+  createdAt: Date;
+  body: string;
+  readAt: Date | null;
+  user: { id: string; name: string | null; email: string };
+}
+
+/**
+ * The users' messages still waiting for an answer — those sent after the
+ * team's last answer in their conversation (or with no answer at all), read
+ * or not. The admin's « Exporter les nouveaux messages ».
+ */
+export async function listPendingMessages(
+  prisma: PrismaClient,
+  now = new Date(),
+): Promise<PendingMessage[]> {
+  await purgeAnsweredMessages(prisma, now);
+  const [userMessages, answers] = await Promise.all([
+    prisma.supportMessage.findMany({
+      where: { fromAdmin: false },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        createdAt: true,
+        body: true,
+        readAt: true,
+        userId: true,
+        user: { select: { id: true, name: true, email: true } },
+      },
+    }),
+    prisma.supportMessage.groupBy({
+      by: ['userId'],
+      where: { fromAdmin: true },
+      _max: { createdAt: true },
+    }),
+  ]);
+  const lastAnswer = new Map((answers ?? []).map((a) => [a.userId, a._max.createdAt]));
+  return (userMessages ?? [])
+    .filter((m) => {
+      const answered = lastAnswer.get(m.userId);
+      return !answered || m.createdAt > answered;
+    })
+    .map(({ userId: _userId, ...m }) => m);
+}
+
+/** One CSV cell: quoted, inner quotes doubled, and no formula a spreadsheet would run. */
+function csvCell(value: string): string {
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return `"${safe.replace(/"/g, '""')}"`;
+}
+
+/** The pending messages as a CSV file (UTF-8 with a BOM, so Excel reads the accents). */
+export function pendingMessagesCsv(rows: PendingMessage[]): string {
+  const head = ['date', 'nom', 'email', 'lu', 'message'].map(csvCell).join(';');
+  const lines = rows.map((m) =>
+    [m.createdAt.toISOString(), m.user.name ?? '', m.user.email, m.readAt ? 'oui' : 'non', m.body]
+      .map(csvCell)
+      .join(';'),
+  );
+  return '﻿' + [head, ...lines].join('\r\n') + '\r\n';
 }

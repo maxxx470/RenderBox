@@ -34,9 +34,9 @@ describe('engine versions', () => {
     expect(versionsOf('gpt_image')).toContain(DEFAULT_ENGINE_VERSION.gpt_image);
   });
 
-  it('engineDisplayName: the version when known, else the engine', () => {
-    expect(engineDisplayName('nanobanana', 'visio-2-1', 'fr')).toBe('Visio 2.1');
-    expect(engineDisplayName('gpt_image', 'pixel-2-5', 'en')).toBe('Pixel AI 2.5');
+  it('engineDisplayName: the engine alone, never a version (2026-10-17)', () => {
+    expect(engineDisplayName('nanobanana', 'visio-2-1', 'fr')).toBe('Visio');
+    expect(engineDisplayName('gpt_image', 'pixel-2-5', 'en')).toBe('Pixel AI');
     expect(engineDisplayName('gpt_image', null, 'fr')).toBe('Pixel IA');
     expect(engineDisplayName(null, 'not-a-version', 'fr')).toBe('Visio');
   });
@@ -87,7 +87,7 @@ describe('parseEngineVersions', () => {
   it("keeps a chosen version, ignores an unknown one or another engine's", () => {
     expect(
       parseEngineVersions({ nanobanana: 'visio-2-1', gpt_image: 'visio-1', other: 'pixel-2' }),
-    ).toEqual({ nanobanana: 'visio-2-1', gpt_image: 'pixel-2' });
+    ).toEqual({ nanobanana: 'visio-2-1', gpt_image: 'pixel-2-5' });
     expect(parseEngineVersions({ nanobanana: 'visio-9' }).nanobanana).toBe('visio-pro');
   });
 });

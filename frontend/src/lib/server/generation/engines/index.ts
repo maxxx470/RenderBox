@@ -13,7 +13,7 @@ import { ENGINE_DEADLINE_MS, EngineTimeoutError } from './types';
 import { generateWithNanobanana } from './nanobanana';
 import { generateWithGptImage } from './gpt-image';
 import { generateWithKie, isKieAccountError, isKieConfigured } from './kie';
-import { DEFAULT_ENGINE_VERSION, ENGINE_VERSIONS, type EngineVersionKey } from '../engine-versions';
+import { DEFAULT_ENGINE_VERSION, type EngineVersionKey } from '../engine-versions';
 import { shapeOutput } from '../output-shape';
 import { withDeadline } from '@/lib/server/deadline';
 import { log } from '@/lib/server/observability/log';
@@ -54,16 +54,16 @@ export function isEngineConfigured(engine: EngineName): boolean {
 }
 
 /**
- * The version a request runs on: the one asked for (the route has checked it
- * belongs to the engine), else the engine's default — or none while Kie is
- * not configured, which runs the direct API.
+ * The version a request runs on: the engine's one version
+ * (DEFAULT_ENGINE_VERSION) — or none while Kie is not configured, which runs
+ * the direct API. A version sent by an older page is ignored (2026-10-17: no
+ * choice any more).
  */
 export function resolveEngineVersion(
   engine: EngineName,
-  asked: EngineVersionKey | null | undefined,
+  _asked?: EngineVersionKey | null,
 ): EngineVersionKey | undefined {
   if (!isKieConfigured()) return undefined;
-  if (asked && ENGINE_VERSIONS[asked].engine === engine) return asked;
   return DEFAULT_ENGINE_VERSION[engine];
 }
 

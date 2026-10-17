@@ -24,9 +24,11 @@ export async function AppLayoutShell({ children }: { children: ReactNode }) {
       userEmail={auth.user.email ?? ''}
       initialQuota={{ tier: quota.tier, max: quota.max, remaining: quota.remaining }}
       initialCollapsed={jar.get(SIDEBAR_COOKIE)?.value === '1'}
-      // The engines' versions run through Kie: without its key the routes
-      // use the direct APIs and no version chip is shown.
-      versionsEnabled={Boolean(process.env.KIE_API_KEY)}
+      // No version choice any more (owner, 2026-10-17: « garde la dernière
+      // version la plus performante de chaque modèle »): each engine runs on
+      // the one version the server picks (DEFAULT_ENGINE_VERSION), so the
+      // chips stay hidden everywhere. The plumbing is kept, switched off here.
+      versionsEnabled={false}
       initialVersions={quota.engineVersions}
     >
       {children}

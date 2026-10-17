@@ -1,12 +1,12 @@
 'use client';
 
 // The header's bell, after Metrio's (src/layouts/AppLayout.tsx): a round
-// button with a dot when something is unread. Metrio sends it to a page; here
+// button with the unread count on it. Metrio sends it to a page; here
 // it opens a panel in place, since the list is short and a page would take
 // the user away from what they were doing.
 //
 // It reads the existing notification API: GET /api/notifications/count for
-// the dot, GET /api/notifications for the list, PATCH { ids: 'all' } to mark
+// the count, GET /api/notifications for the list, PATCH { ids: 'all' } to mark
 // everything read. Nothing new on the server.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -31,6 +31,14 @@ function relativeTime(iso: string, locale: 'fr' | 'en'): string {
   return rtf.format(-Math.round(diff / 86400), 'day');
 }
 
+const REFRESH_EVENT = 'rb:notifications-refresh';
+
+/** Asks the bell to count again — e.g. once the message panel has marked the
+ *  team's answers (and their notifications) read. */
+export function refreshNotifications() {
+  window.dispatchEvent(new Event(REFRESH_EVENT));
+}
+
 export function NotificationsBell() {
   const { t, locale } = useLocale();
   const [open, setOpen] = useState(false);
@@ -39,12 +47,16 @@ export function NotificationsBell() {
   const [failed, setFailed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // The dot, once on arrival. Failing quietly is right: a missing dot is not
-  // worth an error toast on every page.
+  // The count, on arrival and whenever asked (refreshNotifications). Failing
+  // quietly is right: a missing badge is not worth an error toast on every page.
   useEffect(() => {
-    api<{ count: number }>('/api/notifications/count')
-      .then((r) => setUnread(r.count))
-      .catch(() => undefined);
+    const count = () =>
+      api<{ count: number }>('/api/notifications/count')
+        .then((r) => setUnread(r.count))
+        .catch(() => undefined);
+    void count();
+    window.addEventListener(REFRESH_EVENT, count);
+    return () => window.removeEventListener(REFRESH_EVENT, count);
   }, []);
 
   const load = useCallback(async () => {
@@ -106,11 +118,14 @@ export function NotificationsBell() {
         }`}
       >
         <Notification set="curved" size={20} primaryColor="#2948FC" />
+        {/* The number of unread notifications, not a bare dot (owner, 2026-10-17). */}
         {unread > 0 && (
           <span
             aria-hidden
-            className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-[1.5px] border-white bg-[#DC2626]"
-          />
+            className="absolute -right-0.5 -top-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full border-[1.5px] border-white bg-[#DC2626] px-1 font-[family-name:var(--font-mono)] text-[9.5px] font-semibold leading-none text-white"
+          >
+            {unread > 99 ? '99+' : unread}
+          </span>
         )}
       </button>
 

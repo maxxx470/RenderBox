@@ -99,13 +99,13 @@ describe('generateRender — engine versions (Kie)', () => {
     expect(mockNanobanana).not.toHaveBeenCalled();
   });
 
-  it('resolveEngineVersion: none without Kie; the asked one, else the default', () => {
+  it('resolveEngineVersion: none without Kie; else the engine one version, whatever is asked', () => {
     expect(resolveEngineVersion('nanobanana', 'visio-2')).toBeUndefined();
     vi.stubEnv('KIE_API_KEY', 'key');
-    expect(resolveEngineVersion('nanobanana', 'visio-2')).toBe('visio-2');
+    // No choice since 2026-10-17: a version sent by an older page is ignored.
+    expect(resolveEngineVersion('nanobanana', 'visio-2')).toBe('visio-pro');
     expect(resolveEngineVersion('nanobanana', undefined)).toBe('visio-pro');
-    // A version of the other engine (annotate forces Pixel IA): the default.
-    expect(resolveEngineVersion('gpt_image', 'visio-2')).toBe('pixel-2');
+    expect(resolveEngineVersion('gpt_image', 'pixel-2')).toBe('pixel-2-5');
   });
 
   it('isEngineConfigured: the Kie key alone is enough', () => {

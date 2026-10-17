@@ -17,11 +17,6 @@ import {
   DEFAULT_ENHANCE_OPTIONS,
 } from '@/lib/server/generation/enhance';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
-import {
-  DEFAULT_ENGINE_VERSION,
-  ENGINE_VERSIONS,
-  versionsOf,
-} from '@/lib/server/generation/engine-versions';
 import { MAX_ANNOTATIONS } from '@/lib/server/generation/annotations';
 
 const TIER_NAME: Record<string, string> = {
@@ -40,12 +35,6 @@ export function buildRenderBoxDoc(): string {
   ).join(' ; ');
   const m1 = ENGINE_LABELS.nanobanana;
   const m2 = ENGINE_LABELS.gpt_image;
-  const versionList = (engine: 'nanobanana' | 'gpt_image') =>
-    versionsOf(engine)
-      .map((k) => `${ENGINE_VERSIONS[k].name.fr} (${ENGINE_VERSIONS[k].description.fr})`)
-      .join(', ');
-  const v1 = ENGINE_VERSIONS[DEFAULT_ENGINE_VERSION.nanobanana].name.fr;
-  const v2 = ENGINE_VERSIONS[DEFAULT_ENGINE_VERSION.gpt_image].name.fr;
   const ratios = RATIO_KEYS.map((r) => (r === 'auto' ? 'Auto' : r)).join(', ');
   const res = RESOLUTION_KEYS.map((r) => RESOLUTIONS[r].label).join(', ');
   const enhance = ENHANCE_OPTION_KEYS.map(
@@ -59,7 +48,7 @@ NAVIGATION
 - En haut de chaque page, la barre d'en-tête : le titre de la page à gauche (avec le logo sur téléphone) ; à droite la cloche des notifications (un point rouge signale du non-lu, « Tout marquer comme lu » dans le panneau), le sélecteur FR / EN et la pastille bleue des crédits restants (ouvre Abonnement). Sur téléphone, le titre est raccourci et le sélecteur FR / EN se trouve dans le menu « Plus » de la barre du bas.
 - Sur ordinateur, une barre latérale à gauche, en carte blanche : en haut le bouton qui replie la barre (une icône de panneau animée) puis le nom RenderPro ; « Général » (Accueil, Galerie, Générateur d’images, Améliorer — Enhance en anglais) ; « Aide » (Info, Assistant) ; en bas « Profil » (Paramètres, Abonnement, Se déconnecter) puis votre compte (ouvre Paramètres). La page ouverte est surlignée en bleu pâle. Repliée, il ne reste que les icônes ; le même bouton la déplie. La barre et l'en-tête restent en place quand on change de page.
 - Sur téléphone, une barre flottante en bas : Accueil, Générer, Améliorer, Galerie et « Plus » (Info, Paramètres, Abonnement, Assistant, la langue FR / EN, Se déconnecter). Les exemples d'images des pages Générateur et Améliorer défilent seuls, une image à la fois : on les fait glisser du doigt, et un toucher arrête le défilement. Sur la page Info, « Plein écran » ouvre un film en grand.
-- Le bouton « Assistant » ouvre une messagerie avec l'équipe RenderPro (depuis le 17 octobre 2026) : vous écrivez votre question, l'équipe la lit et vous répond dans la même fenêtre, et une notification vous prévient de la réponse. Ce ne sont pas des réponses automatiques. Le sélecteur FR / EN change la langue de l'interface. À la première visite, la langue suit le pays : français depuis un pays francophone, anglais ailleurs ; le choix fait avec FR / EN reste ensuite mémorisé.
+- Le bouton « Assistant » ouvre une messagerie avec l'équipe RenderPro (depuis le 17 octobre 2026) : vous écrivez votre question, l'équipe la lit et vous répond dans la même fenêtre, et une notification vous prévient de la réponse (le chiffre sur la cloche compte les notifications non lues ; il disparaît quand vous avez lu la réponse). Un échange est effacé 24 h après la réponse de l'équipe ; un message qui attend encore sa réponse reste. Ce ne sont pas des réponses automatiques. Le sélecteur FR / EN change la langue de l'interface. À la première visite, la langue suit le pays : français depuis un pays francophone, anglais ailleurs ; le choix fait avec FR / EN reste ensuite mémorisé.
 - « Se déconnecter » ferme la session et ramène sur la page d'accueil du site.
 
 ACCUEIL (tableau de bord)
@@ -83,7 +72,7 @@ LES DEUX MOTEURS
 - ${m1.name.fr} (pastille rouge) : ${m1.description.fr}.
 - ${m2.name.fr} (pastille jaune) : ${m2.description.fr}.
 - On change de moteur à chaque rendu, d'un clic dans la barre de commande (les deux y sont toujours affichés). Le moteur par défaut se règle dans Paramètres. Les deux moteurs reçoivent les mêmes matériaux (ceux de l'image de départ) et partagent le même historique du projet.
-- Chaque moteur a plusieurs versions, choisies avec la puce « Version du moteur », la première des réglages de la barre de commande (sous les deux moteurs sur la page Améliorer). ${m1.name.fr} : ${versionList('nanobanana')}. ${m2.name.fr} : ${versionList('gpt_image')}. Par défaut ${v1} et ${v2}. La version choisie pour chaque moteur est retenue sur le compte pour les rendus suivants (aussi réglable dans Paramètres), l'image indique la version qui l'a faite, et toutes les versions coûtent les mêmes crédits.
+- Il n'y a pas de version à choisir : depuis le 17 octobre 2026, ${m1.name.fr} et ${m2.name.fr} tournent chacun sur leur version la plus performante, choisie par l'équipe RenderPro pour l'architecture.
 - Ne jamais citer de fournisseur ou de marque d'IA : les moteurs s'appellent ${m1.name.fr} et ${m2.name.fr}.
 
 DANS UN PROJET
@@ -118,8 +107,7 @@ COMPTE ET CONNEXION
 - Juste après la première connexion, quatre courts écrans font connaissance : nom et téléphone, métier, entreprise et taille de l'équipe, types de projets, usage principal et moteur préféré, puis pays, ville et comment vous avez connu RenderPro. Le nom, le métier et le pays sont obligatoires. Tout est enregistré sur le compte au fil des écrans, et le moteur choisi devient le moteur par défaut.
 
 PARAMÈTRES
-- Deux colonnes (une seule sur téléphone, la formule en premier). À gauche : « Profil », les réponses de l’inscription (nom, téléphone, métier, entreprise, taille de l’équipe, usage principal, pays, ville), modifiables puis « Enregistrer » ; « Préférences de génération » : le moteur par défaut (pré-sélectionné dans la barre de commande), la version de chaque moteur et la langue de l’interface (Français / English, aussi en haut des pages). À droite : la formule (crédits restants sur le total, date de fin, nombre d’images approximatif, « Gérer mon abonnement »), « Connexion et sécurité » (l’e-mail du compte, Google lié ou « Lier Google », si un mot de passe est défini), les trois derniers paiements (« Tout voir » mène à Abonnement), puis « Se déconnecter ».
-- La version choisie pour chaque moteur est enregistrée sur le compte : elle suit l’utilisateur sur tous ses appareils, qu’elle soit choisie dans Paramètres ou dans la barre de commande.
+- Deux colonnes (une seule sur téléphone, la formule en premier). À gauche : « Profil », les réponses de l’inscription (nom, téléphone, métier, entreprise, taille de l’équipe, usage principal, pays, ville), modifiables puis « Enregistrer » ; « Préférences de génération » : le moteur par défaut (pré-sélectionné dans la barre de commande) et la langue de l’interface (Français / English, aussi en haut des pages). À droite : la formule (crédits restants sur le total, date de fin, nombre d’images approximatif, « Gérer mon abonnement »), « Connexion et sécurité » (l’e-mail du compte, Google lié ou « Lier Google », si un mot de passe est défini), les trois derniers paiements (« Tout voir » mène à Abonnement), puis « Se déconnecter ».
 
 INFO
 - La page « Info » de l'application : en haut « Restez informé », avec la chaîne WhatsApp de RenderPro dans la langue de l'interface (française ou anglaise) et la chaîne YouTube (démonstrations, tutoriels, nouveautés) ; puis les films qui montrent les fonctions, deux par ligne, chacun avec un titre qui dit ce qu'il montre (« Plein écran » sur téléphone). Les nouveautés datées, elles, sont sur la page Info publique du site.

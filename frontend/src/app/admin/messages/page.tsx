@@ -9,7 +9,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Send } from 'react-iconly';
+import { ArrowLeft, Download, Send } from 'react-iconly';
 import { api } from '@/lib/api';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 
@@ -71,6 +71,8 @@ function Messages() {
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   const loadThreads = useCallback(async () => {
@@ -140,6 +142,31 @@ function Messages() {
     }
   }
 
+  // The CSV comes through fetch, not a plain link: api() first renews an
+  // expired session, which a bare <a href> could not do.
+  async function exportPending() {
+    setExporting(true);
+    setExportError(false);
+    try {
+      await api('/api/admin/me');
+      const res = await fetch('/api/admin/support/export', { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(String(res.status));
+      const name =
+        /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1] ??
+        'renderpro-messages.csv';
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setExportError(true);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   const pick = (userId: string | null) =>
     router.replace(userId ? `/admin/messages?u=${userId}` : '/admin/messages');
 
@@ -147,9 +174,24 @@ function Messages() {
     <section
       className={`flex min-h-0 flex-col overflow-hidden rounded-2xl bg-white ${selected ? 'max-[999px]:hidden' : ''}`}
     >
-      <div className="border-b border-[#ECECF2] px-4 py-3 text-[12px] text-[#8A8896]">
-        {threads ? t('admin.msg.count', { n: String(threads.length) }) : ''}
+      <div className="flex items-center justify-between gap-3 border-b border-[#ECECF2] px-4 py-2.5 text-[12px] text-[#8A8896]">
+        <span>{threads ? t('admin.msg.count', { n: String(threads.length) }) : ''}</span>
+        <button
+          type="button"
+          onClick={() => void exportPending()}
+          disabled={exporting}
+          title={t('admin.msg.exportHint')}
+          className="flex h-8 items-center gap-1.5 rounded-lg bg-[#F2F2F5] px-2.5 text-[12px] font-medium text-[#17161F] transition-colors hover:bg-[#E9E9EE] disabled:opacity-50"
+        >
+          <Download set="curved" size={15} primaryColor="#2948FC" />
+          {t('admin.msg.export')}
+        </button>
       </div>
+      {exportError && (
+        <p className="border-b border-[#ECECF2] px-4 py-2 text-[12px] text-[#E5484D]">
+          {t('admin.msg.exportError')}
+        </p>
+      )}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {listError && <p className="p-4 text-[13px] text-[#B8710B]">{t('admin.msg.loadError')}</p>}
         {threads && threads.length === 0 && (

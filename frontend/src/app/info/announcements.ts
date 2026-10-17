@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'engines-best-version',
+    date: '2026-10-17',
+    kind: 'shipped',
+    title: {
+      fr: 'Visio et Pixel IA sur leur meilleure version',
+      en: 'Visio and Pixel AI on their best version',
+    },
+    body: {
+      fr: 'Plus de version à choisir : chaque moteur tourne sur la version la plus performante pour l’architecture, choisie par l’équipe.',
+      en: 'No version to pick any more: each engine runs on the version that performs best for architecture, chosen by the team.',
+    },
+  },
+  {
     id: 'assistant-team-messages',
     date: '2026-10-17',
     kind: 'shipped',

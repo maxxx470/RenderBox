@@ -233,7 +233,8 @@ const en: Record<keyof typeof fr, string> = {
   'assistant.loading': 'Loading the conversation…',
   'assistant.placeholder': 'Write your message…',
   'assistant.send': 'Send',
-  'assistant.foot': 'Your messages are read by the RenderPro team, not by an AI.',
+  'assistant.foot':
+    'Read by the RenderPro team, not by an AI. An exchange is erased 24 h after our answer.',
   'assistant.limited': 'You have sent many messages in a short time. Try again in an hour.',
   'assistant.error': 'The message did not go out. Try again.',
   'assistant.loadError': 'The conversation could not load. Close and reopen the window.',
@@ -577,7 +578,10 @@ const en: Record<keyof typeof fr, string> = {
   'admin.ov.revYear': 'This year',
   'admin.ov.revPayments': '{n} payment(s)',
   'admin.msg.subtitle':
-    'The messages users send from the app’s Assistant panel. Your answer reaches them in that same panel, with a notification.',
+    'The messages users send from the app’s Assistant panel. Your answer reaches them in that same panel, with a notification. An exchange you answered is deleted 24 h after your answer; the journal keeps who wrote and when.',
+  'admin.msg.export': 'Export new messages',
+  'admin.msg.exportHint': 'The messages still unanswered, as a CSV file',
+  'admin.msg.exportError': 'The export failed. Try again.',
   'admin.msg.count': '{n} conversation(s)',
   'admin.msg.empty':
     'No message yet. They will land here as soon as a user writes from the Assistant panel.',

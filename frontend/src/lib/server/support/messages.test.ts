@@ -2,7 +2,10 @@ import { prismaMock } from '@/test-utils/prisma-mock';
 import { describe, it, expect, type Mock } from 'vitest';
 import {
   SUPPORT_HOURLY_LIMIT,
+  SUPPORT_KEEP_AFTER_ANSWER_MS,
+  listPendingMessages,
   listThreads,
+  pendingMessagesCsv,
   postUserMessage,
   readThreadAsAdmin,
   readUserConversation,
@@ -134,5 +137,84 @@ describe('support messages', () => {
       dedupeKey: 'support-reply:r1',
     });
     expect(prismaMock.adminAction.create).toHaveBeenCalled();
+  });
+
+  it('reading the panel first deletes exchanges answered over a day ago, and clears the bell', async () => {
+    prismaMock.supportMessage.findMany.mockResolvedValueOnce([] as never);
+    await readUserConversation(prismaMock, 'u1', NOW);
+    const purge = mock(prismaMock.$executeRaw).mock.calls[0]!;
+    expect(String(purge[0])).toMatch(/DELETE FROM "SupportMessage"/);
+    expect(purge[1]).toEqual(new Date(NOW.getTime() - SUPPORT_KEEP_AFTER_ANSWER_MS));
+    expect(prismaMock.notification.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'u1', type: 'SUPPORT_REPLY', readAt: null },
+      data: { readAt: NOW },
+    });
+  });
+
+  it('the export keeps only the messages sent after the team’s last answer, read or not', async () => {
+    const um = (id: string, userId: string, at: string, read = false) => ({
+      id,
+      userId,
+      body: id,
+      createdAt: new Date(at),
+      readAt: read ? NOW : null,
+      user: { id: userId, name: null, email: userId + '@x' },
+    });
+    prismaMock.supportMessage.findMany.mockResolvedValueOnce([
+      um('answered', 'u1', '2026-10-17T07:00:00Z'),
+      um('waiting-read', 'u1', '2026-10-17T09:00:00Z', true),
+      um('never-answered', 'u2', '2026-10-17T06:00:00Z'),
+    ] as never);
+    mock(prismaMock.supportMessage.groupBy).mockResolvedValueOnce([
+      { userId: 'u1', _max: { createdAt: new Date('2026-10-17T08:00:00Z') } },
+    ] as never);
+    const out = await listPendingMessages(prismaMock, NOW);
+    expect(out.map((m) => m.id)).toEqual(['waiting-read', 'never-answered']);
+  });
+
+  it('the CSV opens in Excel with its accents and runs no formula', () => {
+    const csv = pendingMessagesCsv([
+      {
+        id: 'm',
+        createdAt: new Date('2026-10-17T09:00:00Z'),
+        body: '=HYPERLINK("x") « été »',
+        readAt: null,
+        user: { id: 'u', name: 'Awa', email: 'a@x' },
+      },
+    ]);
+    expect(
+      csv.startsWith(
+        String.fromCharCode(0xfeff) +
+          ['date', 'nom', 'email', 'lu', 'message'].map((h) => `"${h}"`).join(';'),
+      ),
+    ).toBe(true);
+    expect(csv).toContain('"' + String.fromCharCode(39) + '=HYPERLINK(""x"") « été »"');
+    expect(csv).toContain('"non"');
+  });
+
+  it('an answer’s journal row says who wrote the messages it answers, and when', async () => {
+    prismaMock.$transaction.mockImplementation(((cb: (tx: typeof prismaMock) => unknown) =>
+      cb(prismaMock)) as never);
+    prismaMock.user.findUnique.mockResolvedValueOnce({ id: 'u1', email: 'a@x' } as never);
+    prismaMock.supportMessage.findFirst.mockResolvedValueOnce({
+      createdAt: new Date('2026-10-16T08:00:00Z'),
+    } as never);
+    prismaMock.supportMessage.findMany.mockResolvedValueOnce([
+      { createdAt: new Date('2026-10-17T08:00:00Z') },
+    ] as never);
+    prismaMock.supportMessage.create.mockResolvedValueOnce(
+      msg('r2', true, '2026-10-17T10:00:00Z') as never,
+    );
+    await replyAsAdmin(prismaMock, { adminId: 'adm', userId: 'u1', body: 'Réponse' });
+    expect(prismaMock.supportMessage.findMany.mock.calls[0]![0]!.where).toEqual({
+      userId: 'u1',
+      fromAdmin: false,
+      createdAt: { gt: new Date('2026-10-16T08:00:00Z') },
+    });
+    expect(prismaMock.adminAction.create.mock.calls[0]![0]!.data).toMatchObject({
+      actorId: 'adm',
+      action: 'support.reply',
+      metadata: { from: 'a@x', answeredSentAt: ['2026-10-17T08:00:00.000Z'] },
+    });
   });
 });

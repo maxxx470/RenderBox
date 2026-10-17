@@ -236,7 +236,8 @@ const fr = {
   'assistant.loading': 'Chargement de la conversation…',
   'assistant.placeholder': 'Écrivez votre message…',
   'assistant.send': 'Envoyer',
-  'assistant.foot': 'Vos messages sont lus par l’équipe RenderPro, pas par une IA.',
+  'assistant.foot':
+    'Lus par l’équipe RenderPro, pas par une IA. Un échange s’efface 24 h après notre réponse.',
   'assistant.limited':
     'Vous avez envoyé beaucoup de messages en peu de temps. Réessayez dans une heure.',
   'assistant.error': 'Le message n’est pas parti. Réessayez.',
@@ -594,7 +595,10 @@ const fr = {
   'admin.ov.revYear': 'Cette année',
   'admin.ov.revPayments': '{n} paiement(s)',
   'admin.msg.subtitle':
-    'Les messages que les utilisateurs envoient depuis le panneau Assistant de l’application. Votre réponse leur arrive dans ce même panneau, avec une notification.',
+    'Les messages que les utilisateurs envoient depuis le panneau Assistant de l’application. Votre réponse leur arrive dans ce même panneau, avec une notification. Un échange auquel vous avez répondu est supprimé 24 h après votre réponse ; le journal garde qui a écrit et quand.',
+  'admin.msg.export': 'Exporter les nouveaux messages',
+  'admin.msg.exportHint': 'Les messages encore sans réponse, en fichier CSV',
+  'admin.msg.exportError': 'L’export n’a pas abouti. Réessayez.',
   'admin.msg.count': '{n} conversation(s)',
   'admin.msg.empty':
     'Aucun message pour le moment. Ils arriveront ici dès qu’un utilisateur écrira depuis le panneau Assistant.',

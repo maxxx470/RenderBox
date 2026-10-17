@@ -37,7 +37,7 @@ describe('getCreditStatus', () => {
 
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
       onboarded: false,
-      engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2' },
+      engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2-5' },
       reason: 'NO_ACTIVE_TIER',
       tier: null,
       max: null,
@@ -61,7 +61,7 @@ describe('getCreditStatus', () => {
 
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
       onboarded: false,
-      engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2' },
+      engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2-5' },
       reason: 'TIER_EXPIRED',
       tier: null,
       max: null,
@@ -80,7 +80,7 @@ describe('getCreditStatus', () => {
 
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
       onboarded: false,
-      engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2' },
+      engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2-5' },
       tier: 'standard',
       max: 3000,
       remaining: 2350,
