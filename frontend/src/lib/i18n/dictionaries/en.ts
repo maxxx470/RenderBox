@@ -474,6 +474,8 @@ const en: Record<keyof typeof fr, string> = {
   'info.whatsappLine': 'Announcements and updates, in English',
   'info.youtubeTitle': 'YouTube channel',
   'info.youtubeLine': 'Demos, tutorials and what is new, on video',
+  'info.tiktokTitle': 'TikTok account',
+  'info.tiktokLine': 'Short videos: renders and tips',
   'info.filmEtapesTitle': 'Generate a render in 3 steps',
   'info.filmCommenterTitle': 'Edit an image by commenting on it',
   'info.filmArbreTitle': 'Explore several directions with the project tree',

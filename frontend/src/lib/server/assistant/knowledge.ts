@@ -110,7 +110,7 @@ PARAMÈTRES
 - Deux colonnes (une seule sur téléphone, la formule en premier). À gauche : « Profil », les réponses de l’inscription (nom, téléphone, métier, entreprise, taille de l’équipe, usage principal, pays, ville), modifiables puis « Enregistrer » ; « Préférences de génération » : le moteur par défaut (pré-sélectionné dans la barre de commande) et la langue de l’interface (Français / English, aussi en haut des pages). À droite : la formule (crédits restants sur le total, date de fin, nombre d’images approximatif, « Gérer mon abonnement »), « Connexion et sécurité » (l’e-mail du compte, Google lié ou « Lier Google », si un mot de passe est défini), les trois derniers paiements (« Tout voir » mène à Abonnement), puis « Se déconnecter ».
 
 INFO
-- La page « Info » de l'application : en haut « Restez informé », avec la chaîne WhatsApp de RenderPro dans la langue de l'interface (française ou anglaise) et la chaîne YouTube (démonstrations, tutoriels, nouveautés) ; puis les films qui montrent les fonctions, deux par ligne, chacun avec un titre qui dit ce qu'il montre (« Plein écran » sur téléphone). Les nouveautés datées, elles, sont sur la page Info publique du site.
+- La page « Info » de l'application : en haut « Restez informé », avec la chaîne WhatsApp de RenderPro dans la langue de l'interface (française ou anglaise) la chaîne YouTube (démonstrations, tutoriels, nouveautés) et le compte TikTok (vidéos courtes : rendus et astuces ; aussi dans le pied de page du site public) ; puis les films qui montrent les fonctions, deux par ligne, chacun avec un titre qui dit ce qu'il montre (« Plein écran » sur téléphone). Les nouveautés datées, elles, sont sur la page Info publique du site.
 
 FORMATS ACCEPTÉS
 - Images JPEG, PNG ou WebP.`;

@@ -490,6 +490,8 @@ const fr = {
   'info.whatsappLine': 'Les annonces et les mises à jour, en français',
   'info.youtubeTitle': 'Chaîne YouTube',
   'info.youtubeLine': 'Démonstrations, tutoriels et nouveautés en vidéo',
+  'info.tiktokTitle': 'Compte TikTok',
+  'info.tiktokLine': 'Des vidéos courtes : rendus et astuces',
   'info.filmEtapesTitle': 'Générer un rendu en 3 étapes',
   'info.filmCommenterTitle': 'Modifier une image en la commentant',
   'info.filmArbreTitle': "Explorer plusieurs pistes avec l'arbre du projet",

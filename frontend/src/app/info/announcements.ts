@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'tiktok-dashboard',
+    date: '2026-10-17',
+    kind: 'shipped',
+    title: {
+      fr: 'RenderPro sur TikTok, et un tableau de bord plus compact',
+      en: 'RenderPro on TikTok, and a more compact dashboard',
+    },
+    body: {
+      fr: 'La page Info mène aussi à notre compte TikTok. Sur le tableau de bord, les deux films « Premier pas » sont côte à côte, à côté de nouvelles images en vitrine, et « Lancer un rendu » se voit dès l’arrivée.',
+      en: 'The Info page now also leads to our TikTok account. On the dashboard, the two “First steps” films sit side by side, next to new showcase pictures, and “Start a render” shows as soon as you arrive.',
+    },
+  },
+  {
     id: 'engines-best-version',
     date: '2026-10-17',
     kind: 'shipped',

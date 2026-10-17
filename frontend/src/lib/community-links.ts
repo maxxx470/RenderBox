@@ -12,3 +12,7 @@ export const WHATSAPP_CHANNEL: Record<Locale, string> = {
 };
 
 export const YOUTUBE_CHANNEL = 'https://www.youtube.com/@ai4architectstv';
+
+// The owner's TikTok account (2026-10-17: « comme avec la chaîne YouTube »),
+// on the Info page and in the public footer.
+export const TIKTOK_ACCOUNT = 'https://www.tiktok.com/@ma.sado';
