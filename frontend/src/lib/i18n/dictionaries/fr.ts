@@ -870,7 +870,8 @@ const fr = {
   'landing.proofUsers': 'Plus de 5 000 personnes utilisent RenderPro',
   'landing.videoEyebrow': 'Présentation',
   'landing.videoTitle': 'RenderPro en vidéo',
-  'landing.videoLabel': 'Film de présentation de RenderPro, avec le son',
+  'landing.videoLabel': 'Film de présentation de RenderPro',
+  'landing.videoSoundOn': 'Activer le son',
 
   'landing.beforeAfterTitlePrefix': "De l'esquisse au ",
   'landing.beforeAfterTitleAccent': 'rendu photoréaliste',

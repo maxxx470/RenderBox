@@ -847,7 +847,8 @@ const en: Record<keyof typeof fr, string> = {
   'landing.proofUsers': 'More than 5,000 people use RenderPro',
   'landing.videoEyebrow': 'Overview',
   'landing.videoTitle': 'RenderPro on video',
-  'landing.videoLabel': 'RenderPro presentation film, with sound',
+  'landing.videoLabel': 'RenderPro presentation film',
+  'landing.videoSoundOn': 'Turn the sound on',
 
   'landing.beforeAfterTitlePrefix': 'From sketch to ',
   'landing.beforeAfterTitleAccent': 'photorealistic render',
