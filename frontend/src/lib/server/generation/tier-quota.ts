@@ -62,6 +62,13 @@ export interface CreditStatus {
    * hands it to the command bar on every page.
    */
   engineVersions: Record<EngineName, EngineVersionKey>;
+  /**
+   * Since when the in-app Info page counts a film as new for this account:
+   * its last visit there (User.infoSeenAt), or its creation date when it
+   * never opened it; null for an unknown account. Same one-round-trip reason:
+   * the rail shows the « Info » badge on every page.
+   */
+  infoSince: Date | null;
 }
 
 const NONE = { tier: null, max: null, remaining: null, periodEndsAt: null } as const;
@@ -80,6 +87,8 @@ export async function getCreditStatus(prisma: PrismaClient, userId: string): Pro
       creditsBalance: true,
       onboardedAt: true,
       engineVersions: true,
+      infoSeenAt: true,
+      createdAt: true,
     },
   });
 
@@ -88,7 +97,9 @@ export async function getCreditStatus(prisma: PrismaClient, userId: string): Pro
   const tier = user?.currentTier ? getPricingTier(user.currentTier) : undefined;
   const onboarded = Boolean(user?.onboardedAt);
   const engineVersions = parseEngineVersions(user?.engineVersions);
-  if (!user || !tier) return { reason: 'NO_ACTIVE_TIER', ...NONE, onboarded, engineVersions };
+  const infoSince = user?.infoSeenAt ?? user?.createdAt ?? null;
+  if (!user || !tier)
+    return { reason: 'NO_ACTIVE_TIER', ...NONE, onboarded, engineVersions, infoSince };
 
   if (!user.tierPeriodStart || Date.now() - user.tierPeriodStart.getTime() >= TIER_PERIOD_MS) {
     // Period lapsed without a renewal: the plan ends and its unused credits
@@ -97,12 +108,13 @@ export async function getCreditStatus(prisma: PrismaClient, userId: string): Pro
       where: { id: userId },
       data: { currentTier: null, tierPeriodStart: null, creditsBalance: 0 },
     });
-    return { reason: 'TIER_EXPIRED', ...NONE, onboarded, engineVersions };
+    return { reason: 'TIER_EXPIRED', ...NONE, onboarded, engineVersions, infoSince };
   }
 
   return {
     onboarded,
     engineVersions,
+    infoSince,
     tier: tier.id,
     max: tier.creditsPerMonth,
     remaining: Math.max(0, user.creditsBalance),

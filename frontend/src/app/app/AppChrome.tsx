@@ -121,6 +121,7 @@ export function AppChrome({
   initialCollapsed,
   versionsEnabled = false,
   initialVersions = DEFAULT_ENGINE_VERSION,
+  initialInfoNew = 0,
   children,
 }: {
   userEmail: string;
@@ -129,6 +130,8 @@ export function AppChrome({
   versionsEnabled?: boolean;
   /** The account's chosen versions (User.engineVersions), read by the layout. */
   initialVersions?: Record<EngineName, EngineVersionKey>;
+  /** Films published on the Info page since the account last opened it. */
+  initialInfoNew?: number;
   children: ReactNode;
 }) {
   const t = useTranslations();
@@ -161,6 +164,21 @@ export function AppChrome({
   useEffect(() => {
     setPendingPage(null);
   }, [pathname]);
+
+  // The badge on « Info » (owner, 2026-10-17): the films published there
+  // since the account last opened the page. Opening it clears the badge at
+  // once and records the visit on the account (« lié au compte »), so the
+  // other devices lose it too; the page itself has already been read, so its
+  // « Nouveau » tags stay for this visit. Free access saves nothing.
+  const [infoNew, setInfoNew] = useState(initialInfoNew);
+  useEffect(() => {
+    if (infoNew === 0 || railPageFor(pathname) !== 'info') return;
+    setInfoNew(0);
+    if (isPlaceholderAccount(userEmail)) return;
+    api('/api/users/me', { method: 'PATCH', body: { infoSeen: true } }).catch(() => {
+      // Non-fatal — the badge comes back on the next load and clears again.
+    });
+  }, [pathname, infoNew, userEmail]);
 
   const register = useCallback((next: PageRegistration | null) => {
     setPage(next);
@@ -197,6 +215,7 @@ export function AppChrome({
         <HomeSidebar
           current={current}
           userEmail={userEmail}
+          infoNew={infoNew}
           collapsed={collapsed}
           onToggleCollapsed={toggleCollapsed}
           onNavigateTo={(p) => {
@@ -220,7 +239,7 @@ export function AppChrome({
           />
           <div className="relative flex min-h-0 flex-1">{children}</div>
         </div>
-        <MobileNav current={current} />
+        <MobileNav current={current} infoNew={infoNew} />
       </div>
       {plans && (
         <PlansDialog

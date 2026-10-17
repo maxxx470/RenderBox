@@ -90,6 +90,10 @@ function RailTile({ src }: { src: string }) {
   );
 }
 
+/** The bell's count badge (NotificationsBell), for a rail entry. */
+export const INFO_BADGE =
+  'flex h-[17px] min-w-[17px] flex-shrink-0 items-center justify-center rounded-full border-[1.5px] border-white bg-[#DC2626] px-1 font-[family-name:var(--font-mono)] text-[9.5px] font-semibold leading-none text-white';
+
 function RailLink({
   href,
   label,
@@ -97,6 +101,8 @@ function RailLink({
   active,
   collapsed,
   onNavigate,
+  badge = 0,
+  badgeLabel,
 }: {
   href: string;
   label: string;
@@ -104,16 +110,21 @@ function RailLink({
   active: boolean;
   collapsed: boolean;
   onNavigate: () => void;
+  /** A count of news, drawn as the bell's red badge (Info, 2026-10-17). */
+  badge?: number;
+  /** Read after the label by screen readers while there is a badge. */
+  badgeLabel?: string;
 }) {
   const tile = RAIL_TILES[icon];
+  const name = badge > 0 && badgeLabel ? `${label}, ${badgeLabel}` : label;
   return (
     <Link
       href={href}
-      {...(collapsed ? { title: label } : {})}
+      {...(collapsed ? { title: name } : {})}
       onClick={onNavigate}
-      aria-label={label}
+      aria-label={name}
       {...(active ? { 'aria-current': 'page' as const } : {})}
-      className={`${ROW} ${collapsed ? ROW_ROUND : ROW_WIDE} ${active ? ROW_ACTIVE : ROW_IDLE} text-left`}
+      className={`relative ${ROW} ${collapsed ? ROW_ROUND : ROW_WIDE} ${active ? ROW_ACTIVE : ROW_IDLE} text-left`}
     >
       <NavPendingIcon>
         {tile ? (
@@ -123,6 +134,14 @@ function RailLink({
         )}
       </NavPendingIcon>
       {!collapsed && <span className="truncate">{label}</span>}
+      {badge > 0 && (
+        <span
+          aria-hidden
+          className={`${INFO_BADGE} ${collapsed ? 'absolute right-0.5 top-0.5' : 'ml-auto'}`}
+        >
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
     </Link>
   );
 }
@@ -131,6 +150,7 @@ export function HomeSidebar({
   current,
   onModeChange,
   userEmail,
+  infoNew = 0,
   collapsed,
   onToggleCollapsed,
   onNavigateTo,
@@ -145,6 +165,8 @@ export function HomeSidebar({
   onModeChange?: (mode: AppMode) => void;
   /** The account shown at the foot (free access has a placeholder one). */
   userEmail: string;
+  /** Films published on the Info page since the account last opened it. */
+  infoNew?: number;
   /** Folded to icons only. Owned by AppChrome, remembered in a cookie. */
   collapsed: boolean;
   onToggleCollapsed: () => void;
@@ -171,7 +193,7 @@ export function HomeSidebar({
   // a 76px drawer with no labels would be useless.
   const folded = mobileOpen ? false : collapsed;
 
-  function link(href: string, label: string, icon: RailIconName, page: RailPage) {
+  function link(href: string, label: string, icon: RailIconName, page: RailPage, badge = 0) {
     return (
       <RailLink
         href={href}
@@ -179,6 +201,8 @@ export function HomeSidebar({
         icon={icon}
         active={current === page}
         collapsed={folded}
+        badge={badge}
+        badgeLabel={t('app.infoNewCount', { n: String(badge) })}
         onNavigate={() => {
           onNavigateTo(page);
           onMobileClose?.();
@@ -269,7 +293,7 @@ export function HomeSidebar({
             <nav className="flex flex-col gap-1">
               {/* /app/info, not /info: the public changelog wears the landing's
                 header, and nothing inside the app may lead back there. */}
-              {link('/app/info', t('app.railInfo'), 'info', 'info')}
+              {link('/app/info', t('app.railInfo'), 'info', 'info', infoNew)}
               <button
                 type="button"
                 onClick={() => {

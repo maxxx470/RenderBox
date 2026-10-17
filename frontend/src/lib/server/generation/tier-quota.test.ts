@@ -38,12 +38,30 @@ describe('getCreditStatus', () => {
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
       onboarded: false,
       engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2-5' },
+      infoSince: null,
       reason: 'NO_ACTIVE_TIER',
       tier: null,
       max: null,
       remaining: null,
       periodEndsAt: null,
     });
+  });
+
+  it('counts Info news from the last visit, or from the sign-up when the page was never opened', async () => {
+    const createdAt = new Date('2026-10-01T00:00:00.000Z');
+    const infoSeenAt = new Date('2026-10-15T09:00:00.000Z');
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      currentTier: null,
+      createdAt,
+      infoSeenAt: null,
+    } as never);
+    expect((await getCreditStatus(prismaMock, 'user-1')).infoSince).toEqual(createdAt);
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      currentTier: null,
+      createdAt,
+      infoSeenAt,
+    } as never);
+    expect((await getCreditStatus(prismaMock, 'user-1')).infoSince).toEqual(infoSeenAt);
   });
 
   it('treats a retired tier id like no tier', async () => {
@@ -62,6 +80,7 @@ describe('getCreditStatus', () => {
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
       onboarded: false,
       engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2-5' },
+      infoSince: null,
       reason: 'TIER_EXPIRED',
       tier: null,
       max: null,
@@ -81,6 +100,7 @@ describe('getCreditStatus', () => {
     expect(await getCreditStatus(prismaMock, 'user-1')).toEqual({
       onboarded: false,
       engineVersions: { nanobanana: 'visio-pro', gpt_image: 'pixel-2-5' },
+      infoSince: null,
       tier: 'standard',
       max: 3000,
       remaining: 2350,

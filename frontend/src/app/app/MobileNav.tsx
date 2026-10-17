@@ -17,7 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { RailIcon, type RailIconName } from './RailIcon';
-import type { RailPage } from './HomeSidebar';
+import { INFO_BADGE, type RailPage } from './HomeSidebar';
 import { AssistantWidget, openAssistant } from './AssistantWidget';
 
 /** Bottom padding for a page that mounts MobileNav: the pill (64px) plus its
@@ -26,7 +26,15 @@ export const MOBILE_NAV_PAD = 'pb-[calc(104px+env(safe-area-inset-bottom))] min-
 
 const MORE_PAGES: RailPage[] = ['info', 'settings', 'pricing', 'admin'];
 
-export function MobileNav({ current }: { current: RailPage }) {
+export function MobileNav({
+  current,
+  infoNew = 0,
+}: {
+  current: RailPage;
+  /** Films published on the Info page since the account last opened it:
+   *  the badge on « Plus » and on « Info » inside it (owner, 2026-10-17). */
+  infoNew?: number;
+}) {
   const t = useTranslations();
   const { logout, loggingOut, user } = useAuth();
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
@@ -123,8 +131,18 @@ export function MobileNav({ current }: { current: RailPage }) {
                 onClick={() => setMoreOpen((v) => !v)}
                 aria-haspopup="menu"
                 aria-expanded={moreOpen}
-                className={item(moreActive)}
+                {...(infoNew > 0
+                  ? {
+                      'aria-label': `${t('app.mobileMore')}, ${t('app.infoNewCount', { n: String(infoNew) })}`,
+                    }
+                  : {})}
+                className={`relative ${item(moreActive)}`}
               >
+                {infoNew > 0 && (
+                  <span aria-hidden className={`absolute right-2 top-1 ${INFO_BADGE}`}>
+                    {infoNew > 99 ? '99+' : infoNew}
+                  </span>
+                )}
                 <MoreCircle set="curved" size={20} primaryColor="#2948FC" />
                 <span>{t('app.mobileMore')}</span>
               </button>
@@ -151,6 +169,11 @@ export function MobileNav({ current }: { current: RailPage }) {
                       >
                         <RailIcon name={m.icon} />
                         {m.label}
+                        {m.page === 'info' && infoNew > 0 && (
+                          <span aria-hidden className={`ml-auto ${INFO_BADGE}`}>
+                            {infoNew > 99 ? '99+' : infoNew}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}

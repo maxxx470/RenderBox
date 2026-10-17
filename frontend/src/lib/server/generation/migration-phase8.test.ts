@@ -37,6 +37,7 @@ describe(`migration ${NAME}`, () => {
       '9_phase9b_engine_versions',
       '9_phase9c_user_engine_versions',
       '9_phase9d_support_messages',
+      '9_phase9e_user_info_seen',
     ]);
     expect(sorted.indexOf('20260829225539_tier_quota')).toBeLessThan(sorted.indexOf(NAME));
   });

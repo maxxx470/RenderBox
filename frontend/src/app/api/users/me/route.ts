@@ -3,7 +3,9 @@
 // version chosen for an engine (from /parametres and the command bar's
 // version chip; it lived in the browser's localStorage before — owner:
 // « liée au compte »). Either or both; the profile itself goes through
-// /api/users/me/profile.
+// /api/users/me/profile. Since 2026-10-17 also `infoSeen: true`, sent when
+// the in-app Info page is opened: it clears the rail's « Info » badge on
+// every device (User.infoSeenAt; owner: « lié au compte »).
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -25,9 +27,13 @@ const Body = z
     defaultEngine: z.enum(ENGINE_NAMES).optional(),
     /** One version; it replaces the chosen version of ITS engine. */
     engineVersion: z.enum(ENGINE_VERSION_KEYS).optional(),
+    /** The Info page was opened now. */
+    infoSeen: z.literal(true).optional(),
   })
   .strict()
-  .refine((b) => b.defaultEngine !== undefined || b.engineVersion !== undefined);
+  .refine(
+    (b) => b.defaultEngine !== undefined || b.engineVersion !== undefined || b.infoSeen === true,
+  );
 
 export async function PATCH(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
@@ -46,7 +52,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
         { status: 400, headers },
       );
     }
-    const { defaultEngine, engineVersion } = parsed.data;
+    const { defaultEngine, engineVersion, infoSeen } = parsed.data;
 
     let engineVersions: ReturnType<typeof parseEngineVersions> | undefined;
     if (engineVersion) {
@@ -65,6 +71,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
       data: {
         ...(defaultEngine ? { defaultEngine } : {}),
         ...(engineVersions ? { engineVersions } : {}),
+        ...(infoSeen ? { infoSeenAt: new Date() } : {}),
       },
       select: { defaultEngine: true, engineVersions: true },
     });

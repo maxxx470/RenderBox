@@ -1,8 +1,8 @@
 // Support messages migration — offline shape checks. Reads files only.
 //
 // What a reviewer of 9_phase9d_support_messages must be sure of before it runs
-// on the shared database (local = production): it sorts last (Prisma applies
-// folders in byte order of the name), and it only creates the new table, its
+// on the shared database (local = production): it sorts after the folders before it (Prisma
+// applies folders in byte order of the name), and it only creates the new table, its
 // indexes and its foreign key — nothing existing is altered, dropped or changed.
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -25,9 +25,10 @@ const statements = sql
   .filter(Boolean);
 
 describe(`migration ${NAME}`, () => {
-  it('sorts after every existing migration folder', () => {
+  it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
-    expect(sorted[sorted.length - 1]).toBe(NAME);
+    // Only 9_phase9e_user_info_seen (same day) may come after it.
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9e_user_info_seen']);
   });
 
   it('only creates the SupportMessage table, its indexes and its link to User', () => {

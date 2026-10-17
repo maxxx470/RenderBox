@@ -5,6 +5,7 @@ import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { AppChrome } from './AppChrome';
 import { SIDEBAR_COOKIE } from './sidebar-cookie';
 import { loadShell } from './shell-data';
+import { newInfoCount } from './info/info-films';
 
 /**
  * The server half of the app chrome, shared by the two layouts that wear it
@@ -30,6 +31,9 @@ export async function AppLayoutShell({ children }: { children: ReactNode }) {
       // chips stay hidden everywhere. The plumbing is kept, switched off here.
       versionsEnabled={false}
       initialVersions={quota.engineVersions}
+      // Films published on the Info page since the account last opened it:
+      // the badge on « Info » (owner, 2026-10-17).
+      initialInfoNew={newInfoCount(quota.infoSince)}
     >
       {children}
     </AppChrome>

@@ -43,6 +43,11 @@ model User {
   // version chip and from /parametres; kept on the account since 2026-10-16
   // (owner), in the browser before.
   engineVersions          Json?
+  // When the user last opened the in-app Info page (2026-10-17, owner: a
+  // badge on « Info » when something new is published there, « lié au
+  // compte »). A film added after it counts as new; NULL = never opened,
+  // the account's creation date stands in (app/app/info/info-films.ts).
+  infoSeenAt              DateTime?
   // Real, paid monthly quota (see lib/pricing-tiers.ts for the tier→quota
   // mapping) — distinct from GENERATION_RATE_LIMIT_MAX_PER_DAY's anti-abuse
   // hourly/daily cap; both gates must pass, neither replaces the other (see

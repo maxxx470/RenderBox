@@ -8,9 +8,13 @@
 // and the quota; the frame and the list are client components, which is why
 // the titles are resolved one level down rather than here.
 import { loadAppSurface } from '../surface-data';
+import { loadShell } from '../shell-data';
 import { InfoClient } from './InfoClient';
 
 export default async function AppInfoPage() {
-  const surface = await loadAppSurface('info');
-  return <InfoClient surface={surface} />;
+  // loadShell is cached: the same read as the frame's, no second query.
+  const [surface, { quota }] = await Promise.all([loadAppSurface('info'), loadShell()]);
+  // Read before the visit is recorded (AppChrome does it once the page is
+  // shown), so the films new since the last visit wear « Nouveau » now.
+  return <InfoClient surface={surface} since={quota.infoSince?.toISOString() ?? null} />;
 }

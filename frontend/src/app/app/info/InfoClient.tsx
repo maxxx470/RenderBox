@@ -8,19 +8,7 @@ import { TikTokMark } from '@/app/HeroProof';
 import { AppSurface, type AppSurfaceProps } from '../AppSurface';
 import { MotionFilm } from '@/app/MotionFilm';
 import { motionFilm } from '@/app/motion-media';
-
-/** The landing's feature films, shown here too so the features are explained
- *  inside the app, not only to visitors (owner's brief, 2026-10-06). Same
- *  files as the landing (see motion-media.ts). A new film is one
- *  more line here; the grid takes it in, two per row. */
-const FILMS = [
-  { id: 'etapes', title: 'info.filmEtapesTitle', alt: 'dashboard.filmAlt' },
-  { id: 'commenter', title: 'info.filmCommenterTitle', alt: 'landing.commentAlt' },
-  { id: 'arbre', title: 'info.filmArbreTitle', alt: 'landing.treeAlt' },
-  { id: 'moteurs', title: 'info.filmMoteursTitle', alt: 'landing.enginesAlt' },
-  { id: 'ajouter', title: 'info.filmAjouterTitle', alt: 'landing.addAlt' },
-  { id: 'ameliorer', title: 'info.filmAmeliorerTitle', alt: 'landing.enhanceAlt' },
-] as const;
+import { INFO_FILMS, isNewInfoFilm } from './info-films';
 
 /**
  * 2026-10-08 (owner): the films two per row, each introduced by a short
@@ -28,7 +16,14 @@ const FILMS = [
  * changelog below ("les utilisateurs comprendront mieux que du texte
  * écrit"). The changelog still lives on the public /info page.
  */
-export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
+export function InfoClient({
+  surface,
+  since,
+}: {
+  surface: AppSurfaceProps;
+  /** Since when a film counts as new for this account (ISO), see info-films.ts. */
+  since: string | null;
+}) {
   const { t, locale } = useLocale();
 
   return (
@@ -73,10 +68,16 @@ export function InfoClient({ surface }: { surface: AppSurfaceProps }) {
       </section>
 
       <div className="grid grid-cols-1 gap-4 min-[900px]:grid-cols-2 min-[900px]:gap-5">
-        {FILMS.map((f) => (
+        {INFO_FILMS.map((f) => (
           <figure key={f.id} className="flex flex-col gap-2.5">
-            <h2 className="px-1 font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
+            <h2 className="flex items-center gap-2 px-1 font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
               {t(f.title)}
+              {/* Published since the last visit (owner, 2026-10-17). */}
+              {isNewInfoFilm(f.addedAt, since) && (
+                <span className="rounded-md bg-[#FFE4E7] px-1.5 py-0.5 font-[family-name:var(--font-sans)] text-[10.5px] font-bold uppercase tracking-wide text-[#C21F33]">
+                  {t('info.filmNew')}
+                </span>
+              )}
             </h2>
             <MotionFilm
               {...motionFilm(f.id, locale)}

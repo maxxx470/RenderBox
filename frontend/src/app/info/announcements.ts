@@ -47,8 +47,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
       en: 'RenderPro on TikTok, and a more compact dashboard',
     },
     body: {
-      fr: 'La page Info mène aussi à notre compte TikTok. Sur le tableau de bord, les deux films « Premier pas » sont côte à côte, à côté de nouvelles images en vitrine, et « Lancer un rendu » se voit dès l’arrivée.',
-      en: 'The Info page now also leads to our TikTok account. On the dashboard, the two “First steps” films sit side by side, next to new showcase pictures, and “Start a render” shows as soon as you arrive.',
+      fr: 'La page Info mène aussi à notre compte TikTok. Sur le tableau de bord, les deux films « Premier pas » sont côte à côte, à côté de nouvelles images en vitrine, et « Lancer un rendu » se voit dès l’arrivée. Et quand un nouveau film arrive sur la page Info, un badge rouge vous le signale sur « Info ».',
+      en: 'The Info page now also leads to our TikTok account. On the dashboard, the two “First steps” films sit side by side, next to new showcase pictures, and “Start a render” shows as soon as you arrive. And when a new film lands on the Info page, a red badge on “Info” tells you.',
     },
   },
   {

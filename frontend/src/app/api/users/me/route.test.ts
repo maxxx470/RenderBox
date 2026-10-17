@@ -62,6 +62,22 @@ describe('PATCH /api/users/me', () => {
     });
   });
 
+  it('records that the Info page was opened (clears the rail badge on every device)', async () => {
+    prismaMock.user.update.mockResolvedValueOnce({
+      defaultEngine: null,
+      engineVersions: null,
+    } as never);
+    const res = await PATCH(makeReq({ infoSeen: true }));
+    expect(res.status).toBe(200);
+    expect(prismaMock.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      data: { infoSeenAt: expect.any(Date) },
+      select: { defaultEngine: true, engineVersions: true },
+    });
+    // Only `true` means anything.
+    expect((await PATCH(makeReq({ infoSeen: false }))).status).toBe(400);
+  });
+
   it('400 on an unknown version, or on an empty body', async () => {
     expect((await PATCH(makeReq({ engineVersion: 'visio-9' }))).status).toBe(400);
     expect((await PATCH(makeReq({}))).status).toBe(400);
