@@ -314,7 +314,7 @@ function Messages() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-[13px] text-[#6B6878]">{t('admin.msg.subtitle')}</p>
-      <div className="grid h-[calc(100dvh-190px)] min-h-[420px] grid-cols-1 gap-3 min-[1000px]:grid-cols-[340px_1fr]">
+      <div className="grid h-[calc(100dvh-190px)] min-h-[420px] max-[899px]:h-[calc(100dvh-280px-env(safe-area-inset-bottom))] grid-cols-1 gap-3 min-[1000px]:grid-cols-[340px_1fr]">
         {list}
         {conversation}
       </div>

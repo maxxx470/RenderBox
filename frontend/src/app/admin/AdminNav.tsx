@@ -158,7 +158,7 @@ export function AdminMobileNav() {
                 key={href}
                 href={href}
                 {...(active ? { 'aria-current': 'page' as const } : {})}
-                className={`flex h-[52px] w-[60px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-medium ${
+                className={`relative flex h-[52px] w-[60px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-medium ${
                   active ? 'bg-[#EEF1FF] text-[#1E36D6]' : 'text-[#3D3B49]'
                 }`}
               >
