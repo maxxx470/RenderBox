@@ -210,7 +210,10 @@ function ratioValue(r: string): number {
  * = auto), `sourceAspect` the source image's width / height. A ratio the model
  * does not take (or not at that size) goes to the nearest one it does — the
  * image is cropped to the exact ratio afterwards (output-shape.ts). Returns
- * undefined to send none.
+ * undefined to send none. On auto, a known `sourceAspect` pins the nearest
+ * ratio to the source: kie.ts gives it when reference images go with the
+ * source, since left on 'auto' Visio framed an Ajouter on the portrait
+ * reference instead of the landscape render (paid test, 2026-10-17).
  */
 export function kieRatioFor(
   version: EngineVersion,
@@ -228,8 +231,9 @@ export function kieRatioFor(
     );
 
   if (!asked || asked === 'auto') {
+    if (sourceAspect && sourceAspect > 0) return nearest(sourceAspect);
     if (!version.ratioRequired) return version.ratios.includes('auto') ? 'auto' : undefined;
-    return nearest(sourceAspect && sourceAspect > 0 ? sourceAspect : 1);
+    return nearest(1);
   }
   if (usable.includes(asked)) return asked;
   return nearest(ratioValue(asked));

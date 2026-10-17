@@ -59,6 +59,11 @@ describe('kieRatioFor', () => {
     expect(kieRatioFor(p2, 'auto', null, '1K')).toBe('auto');
   });
 
+  it("pins auto to the source's nearest ratio once its shape is given", () => {
+    expect(kieRatioFor(pro, 'auto', 1.6, '2K')).toBe('3:2');
+    expect(kieRatioFor(p25, undefined, 0.56, '2K')).toBe('9:16');
+  });
+
   it("picks the source image's nearest ratio when the model needs one and has no auto", () => {
     expect(kieRatioFor(p15, undefined, 1.6, undefined)).toBe('3:2');
     expect(kieRatioFor(p15, 'auto', 0.7, undefined)).toBe('2:3');

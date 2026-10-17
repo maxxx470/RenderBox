@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import sharp from 'sharp';
 import { generateWithKie, getKieBalance, isKieAccountError, KieError, readCredits } from './kie';
+
+// Taken before the fake timers replace it (see run).
+const realImmediate = globalThis.setImmediate;
 
 // No network: every Kie endpoint is answered by this fake.
 type Call = { url: string; init: RequestInit | undefined };
@@ -69,11 +73,17 @@ const INPUT = {
 
 async function run(version: Parameters<typeof generateWithKie>[0], input = INPUT) {
   // Settled before the timers run, so a rejection is never left unhandled.
+  let settled = false;
   const p = generateWithKie(version, input).then(
-    (value) => ({ ok: true as const, value }),
-    (error: unknown) => ({ ok: false as const, error }),
+    (value) => ((settled = true), { ok: true as const, value }),
+    (error: unknown) => ((settled = true), { ok: false as const, error }),
   );
-  await vi.runAllTimersAsync();
+  // Reading the source's shape (sharp) runs on real threads: keep running the
+  // fake timers until the call is done.
+  for (let i = 0; i < 200 && !settled; i++) {
+    await vi.runAllTimersAsync();
+    if (!settled) await new Promise((res) => realImmediate(res));
+  }
   const r = await p;
   if (!r.ok) throw r.error;
   return r.value;
@@ -121,6 +131,32 @@ describe('generateWithKie', () => {
         quality: 'high',
       },
     });
+  });
+
+  // A landscape render (1.6) and a portrait reference: Visio left on 'auto'
+  // framed the result on the reference (paid test, 2026-10-17).
+  const landscape = () =>
+    sharp({ create: { width: 160, height: 100, channels: 3, background: '#ffffff' } })
+      .png()
+      .toBuffer();
+
+  it('frames on the source, not on a reference, when the ratio is auto', async () => {
+    await run('visio-pro', {
+      ...INPUT,
+      sourceImageBuffer: await landscape(),
+      aspectRatio: 'auto' as never,
+    });
+    expect(created().input.aspect_ratio).toBe('3:2');
+  });
+
+  it("keeps 'auto' for a source sent alone", async () => {
+    await run('visio-pro', {
+      ...INPUT,
+      referenceImages: [],
+      sourceImageBuffer: await landscape(),
+      aspectRatio: 'auto' as never,
+    });
+    expect(created().input.aspect_ratio).toBe('auto');
   });
 
   it('sends no resolution to a model without one', async () => {

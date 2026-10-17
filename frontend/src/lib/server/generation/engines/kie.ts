@@ -146,7 +146,13 @@ export async function generateWithKie(
 
   const size = input.resolution ? RESOLUTIONS[input.resolution].gemini : undefined;
   let sourceAspect: number | null = null;
-  if (version.ratioRequired && (!input.aspectRatio || input.aspectRatio === 'auto')) {
+  // On auto the source's own shape is sent whenever the model needs a ratio
+  // or references go along: a reference must never set the frame.
+  const withReferences = (input.referenceImages?.length ?? 0) > 0;
+  if (
+    (version.ratioRequired || withReferences) &&
+    (!input.aspectRatio || input.aspectRatio === 'auto')
+  ) {
     const meta = await sharp(input.sourceImageBuffer).metadata();
     sourceAspect = meta.width && meta.height ? meta.width / meta.height : null;
   }
