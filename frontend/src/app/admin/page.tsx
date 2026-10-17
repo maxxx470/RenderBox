@@ -5,7 +5,8 @@
 // this month), the revenue in detail (today, week, month, year — 2026-10-17), the sign-ups of the last 30 days, the renders per engine, what
 // the onboarding says (professions, countries, how they heard), the latest
 // accounts. Data: GET /api/admin/insights (lib/server/admin/insights.ts).
-// Above it all, the Kie API usage (ApiUsageCard, 2026-10-17).
+// Above it all, the Kie API usage (ApiUsageCard, 2026-10-17), then the
+// accounts — revenue against expenses (AccountingCard, 2026-10-17).
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
@@ -16,6 +17,7 @@ import type { EngineName } from '@/lib/server/generation/engines/types';
 import { TIER_NAME_KEY } from '../PricingCard';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ApiUsageCard } from './ApiUsageCard';
+import { AccountingCard } from './AccountingCard';
 
 interface Count {
   key: string;
@@ -88,6 +90,9 @@ export default function AdminOverviewPage() {
       {/* The Kie account behind the engines first: when it runs dry, renders
           fall back to the direct engines (owner, 2026-10-17). */}
       <ApiUsageCard />
+
+      {/* What came in against what went out (owner, 2026-10-17). */}
+      <AccountingCard />
 
       <div className="grid grid-cols-2 gap-3 min-[1100px]:grid-cols-4">
         <Figure
