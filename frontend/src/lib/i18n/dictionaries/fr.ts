@@ -149,6 +149,7 @@ const fr = {
   'app.notificationsEmptyHint': 'Les paiements et les nouvelles de votre compte apparaîtront ici.',
   'app.notificationsEmpty': 'Aucune notification pour l’instant',
   'app.notificationsError': 'Impossible de charger les notifications. Réessayez dans un instant.',
+  'app.notificationsReply': 'Répondre',
   'app.notificationsMarkAll': 'Tout marquer comme lu',
   'app.notificationsUnread': 'Notifications ({n} non lues)',
   'app.notifications': 'Notifications',

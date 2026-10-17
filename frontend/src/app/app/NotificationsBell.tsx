@@ -13,9 +13,11 @@ import Link from 'next/link';
 import { Notification } from 'react-iconly';
 import { api } from '@/lib/api';
 import { useLocale } from '@/lib/i18n/LocaleContext';
+import { openAssistant } from './AssistantWidget';
 
 interface Item {
   id: string;
+  type: string;
   title: string;
   body: string;
   readAt: string | null;
@@ -37,6 +39,18 @@ const REFRESH_EVENT = 'rb:notifications-refresh';
  *  team's answers (and their notifications) read. */
 export function refreshNotifications() {
   window.dispatchEvent(new Event(REFRESH_EVENT));
+}
+
+function NotificationText({ n, locale }: { n: Item; locale: 'fr' | 'en' }) {
+  return (
+    <>
+      <span className="block text-[13px] font-semibold text-[#17161F]">{n.title}</span>
+      <span className="mt-0.5 block text-[12.5px] leading-snug text-[#6B6878]">{n.body}</span>
+      <span className="mt-1 block font-[family-name:var(--font-mono)] text-[10.5px] text-[#8A8896]">
+        {relativeTime(n.createdAt, locale)}
+      </span>
+    </>
+  );
 }
 
 export function NotificationsBell() {
@@ -188,13 +202,27 @@ export function NotificationsBell() {
                         n.readAt ? 'bg-transparent' : 'bg-[#DC2626]'
                       }`}
                     />
-                    <div className="min-w-0">
-                      <p className="text-[13px] font-semibold text-[#17161F]">{n.title}</p>
-                      <p className="mt-0.5 text-[12.5px] leading-snug text-[#6B6878]">{n.body}</p>
-                      <p className="mt-1 font-[family-name:var(--font-mono)] text-[10.5px] text-[#8A8896]">
-                        {relativeTime(n.createdAt, locale)}
-                      </p>
-                    </div>
+                    {/* A team answer opens the message panel, ready to reply
+                        (owner, 2026-10-17); reading it there marks it read. */}
+                    {n.type === 'SUPPORT_REPLY' ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpen(false);
+                          openAssistant();
+                        }}
+                        className="min-w-0 text-left"
+                      >
+                        <NotificationText n={n} locale={locale} />
+                        <span className="mt-1 block text-[11.5px] font-semibold text-[#1E36D6]">
+                          {t('app.notificationsReply')}
+                        </span>
+                      </button>
+                    ) : (
+                      <div className="min-w-0">
+                        <NotificationText n={n} locale={locale} />
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -147,6 +147,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.notificationsEmptyHint': 'Payments and news about your account will show up here.',
   'app.notificationsEmpty': 'No notifications yet',
   'app.notificationsError': 'Could not load notifications. Try again in a moment.',
+  'app.notificationsReply': 'Reply',
   'app.notificationsMarkAll': 'Mark all as read',
   'app.notificationsUnread': 'Notifications ({n} unread)',
   'app.notifications': 'Notifications',
