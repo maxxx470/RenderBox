@@ -13,14 +13,18 @@ const json = (body: unknown, status = 503) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
 describe('readErrorCode', () => {
-  it('prefers `error`, falls back to `code`, else empty', async () => {
+  it('prefers `error`, falls back to `code`, else the HTTP status', async () => {
     expect(await readErrorCode(json({ error: 'QUOTA_EXCEEDED', code: 'X' }))).toBe(
       'QUOTA_EXCEEDED',
     );
     expect(await readErrorCode(json({ code: 'STORAGE_NOT_CONFIGURED' }))).toBe(
       'STORAGE_NOT_CONFIGURED',
     );
-    expect(await readErrorCode(new Response('not json', { status: 500 }))).toBe('');
+    expect(await readErrorCode(new Response('not json', { status: 500 }))).toBe('HTTP_500');
+    // Vercel's own refusal of a body over 4.5 MB.
+    expect(await readErrorCode(new Response('Request Entity Too Large', { status: 413 }))).toBe(
+      'FILE_TOO_LARGE',
+    );
   });
 });
 

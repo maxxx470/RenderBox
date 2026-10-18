@@ -78,7 +78,13 @@ export async function POST(
       );
     }
 
+    // Every refusal below is logged with the file's type and size: an upload
+    // that failed in production left no trace until 2026-10-17.
+    const refused = (code: string) =>
+      log.warn('upload: refused', { code, type: file.type, size: file.size });
+
     if (file.size > maxBytes) {
+      refused('FILE_TOO_LARGE');
       return NextResponse.json(
         { code: 'FILE_TOO_LARGE', message: `Max ${maxBytes} bytes` },
         { status: 413, headers: { 'x-request-id': ctx.requestId } },
@@ -86,6 +92,7 @@ export async function POST(
     }
 
     if (!allowedMime.includes(file.type)) {
+      refused('INVALID_MIME');
       return NextResponse.json(
         { code: 'INVALID_MIME', message: `MIME ${file.type} not allowed` },
         { status: 415, headers: { 'x-request-id': ctx.requestId } },
@@ -96,6 +103,7 @@ export async function POST(
     let buf = Buffer.from(ab);
     const { match, sniffed } = verifyMagicBytes(buf, file.type);
     if (sniffed && !match) {
+      refused('MAGIC_BYTE_MISMATCH');
       return NextResponse.json(
         { code: 'MAGIC_BYTE_MISMATCH', message: 'File bytes do not match declared MIME' },
         { status: 415, headers: { 'x-request-id': ctx.requestId } },

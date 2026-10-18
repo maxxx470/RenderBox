@@ -26,6 +26,7 @@ import {
   isGenerationTimeout,
   isMaterialsUnavailable,
   isServiceNotConfigured,
+  errorCodeOf,
 } from './request-error';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -285,7 +286,10 @@ export function GenerationHome({
     } else if (isMaterialsUnavailable(err)) {
       toast(t('app.materialsUnavailableError'), 'error');
     } else {
-      toast(t(isGenerationTimeout(err) ? 'app.generationTimeout' : fallback), 'error');
+      // The code after the message says which step failed, on any screenshot.
+      const code = errorCodeOf(err);
+      const message = t(isGenerationTimeout(err) ? 'app.generationTimeout' : fallback);
+      toast(code ? `${message} (${code})` : message, 'error');
     }
   }
 

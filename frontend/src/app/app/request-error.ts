@@ -25,7 +25,21 @@ export async function readErrorCode(res: Response): Promise<string> {
   const body = (await res.json().catch(() => ({}))) as { error?: unknown; code?: unknown };
   if (typeof body.error === 'string') return body.error;
   if (typeof body.code === 'string') return body.code;
-  return '';
+  return res.ok ? '' : `HTTP_${res.status}`;
+}
+
+/**
+ * A short code for a failure, shown after the generic message (2026-10-17:
+ * the « création rapide a échoué » left no trace to read). Never a secret:
+ * a server code, an HTTP status or the error's type.
+ */
+export function errorCodeOf(err: unknown): string {
+  if (err instanceof RequestError) return err.code;
+  if (err instanceof ApiError) {
+    const body = typeof err.body.code === 'string' ? err.body.code : '';
+    return err.code || body || (err.status ? `HTTP_${err.status}` : 'NETWORK');
+  }
+  return err instanceof Error ? err.name : '';
 }
 
 /**
