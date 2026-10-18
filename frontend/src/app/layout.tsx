@@ -1,14 +1,12 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Mono, Inter, Poppins } from 'next/font/google';
-import { cookies, headers } from 'next/headers';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocaleProvider } from '@/lib/i18n/LocaleContext';
-import type { Locale } from '@/lib/i18n/dictionaries';
-import { resolveLocale } from '@/lib/i18n/geo-locale';
+import { requestLocale } from '@/lib/i18n/request-locale';
+import { OG_IMAGE, SEO_COPY, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { VisitorCountryProvider } from '@/lib/visitor-country';
-import { COOKIE_PREFIX } from '@/lib/constants';
 
 // Site-wide type (2026-10-06, owner: "la même police que sur Metrio"):
 // Metrio's pairing — Inter for body text, Poppins for titles, IBM Plex Mono
@@ -34,10 +32,20 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'RenderPro',
-  description: 'Rendu architectural par IA — cohérent d’une vue à l’autre.',
-};
+// What every page tells search engines and link previews unless it says more
+// (lib/seo.ts; the public pages set their own title, address and languages).
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale } = await requestLocale();
+  const { title, description } = SEO_COPY.home[locale];
+  return {
+    metadataBase: new URL(SITE_URL),
+    applicationName: SITE_NAME,
+    title: { default: title, template: `%s · ${SITE_NAME}` },
+    description,
+    openGraph: { type: 'website', siteName: SITE_NAME, title, description, images: [OG_IMAGE] },
+    twitter: { card: 'summary_large_image', title, description, images: [OG_IMAGE.url] },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -46,13 +54,7 @@ export default async function RootLayout({
 }>) {
   // The visitor's own FR / EN choice first; otherwise the language of the
   // country their IP is in (French-speaking → fr, anything else → en).
-  const [store, head] = await Promise.all([cookies(), headers()]);
-  const country = head.get('x-vercel-ip-country');
-  const locale: Locale = resolveLocale({
-    cookie: store.get(`${COOKIE_PREFIX}-locale`)?.value,
-    country,
-    region: head.get('x-vercel-ip-country-region'),
-  });
+  const { locale, country } = await requestLocale();
 
   return (
     // suppressHydrationWarning: browser extensions inject attributes on <html>

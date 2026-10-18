@@ -1078,20 +1078,20 @@ const fr = {
   'landing.faqTitle': "Tout ce qu'il faut savoir avant de commencer",
   'landing.faq1Q': 'Que se passe-t-il si je change de palier en cours de mois ?',
   'landing.faq1A':
-    "Le nouveau quota s'applique immédiatement et remplace l'ancien — sans cumul, sans report.",
+    'Les crédits de la nouvelle formule remplacent aussitôt ceux qui vous restaient, pour 30 jours — sans cumul, sans report.',
   'landing.faq2Q': 'Les rendus m’appartiennent-ils ?',
   'landing.faq2A': "Oui. Chaque rendu généré est votre propriété, sans limite d'usage commercial.",
   'landing.faq3Q': 'Quelle est la différence entre les deux moteurs IA ?',
   'landing.faq3A':
     'Visio (rouge) rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail ; Pixel IA (jaune) suit mieux les instructions précises. Vous choisissez celui qui convient à chaque rendu, à tout moment. Les modifications par commentaires utilisent toujours Pixel IA.',
-  'landing.faq4Q': "Que se passe-t-il si j'atteins mon quota mensuel ?",
+  'landing.faq4Q': "Que se passe-t-il quand je n'ai plus de crédits ?",
   'landing.faq4A':
-    'Les générations sont bloquées jusqu’au renouvellement ou jusqu’à ce que vous changiez de palier — jamais de facturation surprise.',
+    'Les générations s’arrêtent jusqu’à votre prochain achat : l’application vous propose alors les formules. Rien n’est prélevé automatiquement — jamais de facturation surprise.',
   'landing.faq5Q': 'Puis-je annuler à tout moment ?',
   'landing.faq5A':
     'Oui, aucun engagement. Votre accès reste actif jusqu’à la fin de la période déjà payée.',
   'landing.faq7A':
-    "Le bouton Assistant ouvre un chat qui connaît tout RenderPro et vous guide pas à pas. Il répond aussi à vos questions d'architecture et de matériaux.",
+    "Le bouton Assistant ouvre une messagerie avec l'équipe RenderPro : écrivez votre question, la réponse arrive dans l'application et une notification vous prévient. Les films de la page Info montrent aussi chaque fonction pas à pas.",
   'landing.faq7Q': "Et si je suis perdu dans l'application ?",
   'landing.faq6A':
     "Avec le mode Commenter : cliquez sur le rendu à l'endroit à changer, écrivez la modification (jusqu'à 8 commentaires), puis Appliquer. Le reste de l'image est conservé et l'original reste dans l'arbre du projet.",

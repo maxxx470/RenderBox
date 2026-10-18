@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { buildCsp } from '@/lib/csp';
+import { COOKIE_PREFIX as LOCALE_COOKIE_PREFIX } from '@/lib/constants';
 
 // Silent-refresh gate for protected pages.
 //
@@ -27,6 +28,8 @@ import { buildCsp } from '@/lib/csp';
 const COOKIE_PREFIX = process.env.COOKIE_PREFIX || 'app';
 const ACCESS_COOKIE = `${COOKIE_PREFIX}-token`;
 const CSRF_COOKIE = `${COOKIE_PREFIX}-csrf`;
+// Named as the locale code names it (lib/constants, LocaleContext, layout).
+const LOCALE_COOKIE = `${LOCALE_COOKIE_PREFIX}-locale`;
 const DEFAULT_PROTECTED = '/app,/parametres,/bienvenue,/admin';
 
 // Read per request (not at module load) so the switch takes effect as set.
@@ -79,6 +82,19 @@ export function proxy(req: NextRequest): NextResponse {
   requestHeaders.set('x-nonce', csp.nonce);
   requestHeaders.set('Content-Security-Policy', csp.policy);
 
+  // `?lang=fr|en` (2026-10-18, lib/seo.ts): each language's own address, for
+  // search engines and shared links. It is the visitor's choice, as a click
+  // on FR / EN would be: the page is served in it now and the cookie keeps it.
+  const lang = req.nextUrl.searchParams.get('lang');
+  const askedLocale = lang === 'fr' || lang === 'en' ? lang : null;
+  if (askedLocale) {
+    const others = (req.headers.get('cookie') ?? '')
+      .split(';')
+      .map((c) => c.trim())
+      .filter((c) => c && !c.startsWith(`${LOCALE_COOKIE}=`));
+    requestHeaders.set('cookie', [...others, `${LOCALE_COOKIE}=${askedLocale}`].join('; '));
+  }
+
   const nextResponse = () => NextResponse.next({ request: { headers: requestHeaders } });
 
   const res = ((): NextResponse => {
@@ -105,6 +121,14 @@ export function proxy(req: NextRequest): NextResponse {
 
   res.headers.set(csp.headerName, csp.policy);
   ensureCsrfCookieWhenAuthDisabled(req, res);
+  if (askedLocale) {
+    // Same cookie as LocaleContext's FR / EN switch (read by JS too).
+    res.cookies.set(LOCALE_COOKIE, askedLocale, {
+      path: '/',
+      maxAge: 365 * 24 * 60 * 60,
+      sameSite: 'lax',
+    });
+  }
   return res;
 }
 

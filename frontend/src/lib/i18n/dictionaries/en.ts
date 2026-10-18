@@ -1041,20 +1041,20 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faqTitle': 'Everything you need to know before you start',
   'landing.faq1Q': 'What happens if I switch tiers mid-month?',
   'landing.faq1A':
-    'The new quota applies immediately and replaces the old one — no stacking, no carryover.',
+    "The new plan's credits replace the ones you had left right away, for 30 days — no stacking, no carryover.",
   'landing.faq2Q': 'Do I own the renders?',
   'landing.faq2A': 'Yes. Every render you generate is yours, with no commercial-use limit.',
   'landing.faq3Q': "What's the difference between the two AI engines?",
   'landing.faq3A':
     'Visio (red) renders straight at the chosen size, up to 4K, with the most detail; Pixel AI (yellow) follows precise instructions more closely. You pick whichever fits each render best, any time. Edits by comment always use Pixel AI.',
-  'landing.faq4Q': 'What happens when I hit my monthly quota?',
+  'landing.faq4Q': 'What happens when I run out of credits?',
   'landing.faq4A':
-    'Generations are blocked until renewal or until you switch tiers — never a surprise charge.',
+    'Generations stop until your next purchase: the app then offers you the plans. Nothing is charged automatically — never a surprise charge.',
   'landing.faq5Q': 'Can I cancel any time?',
   'landing.faq5A':
     'Yes, no commitment. Your access stays active until the already-paid period ends.',
   'landing.faq7A':
-    'The Assistant button opens a chat that knows all of RenderPro and guides you step by step. It also answers your architecture and materials questions.',
+    'The Assistant button opens a message box to the RenderPro team: write your question, the answer arrives in the app and a notification lets you know. The films on the Info page also show each feature step by step.',
   'landing.faq7Q': 'What if I get lost in the app?',
   'landing.faq6A':
     'With the Comment mode: click the render where it should change, write the change (up to 8 comments), then Apply. The rest of the image is kept and the original stays in the project tree.',

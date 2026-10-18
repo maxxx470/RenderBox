@@ -1,3 +1,6 @@
+import type { Metadata } from 'next';
+import { requestLocale } from '@/lib/i18n/request-locale';
+import { pageMetadata } from '@/lib/seo';
 import { redirect } from 'next/navigation';
 import { isAuthDisabled } from '@/lib/server/auth-disabled';
 import { optionalAuth } from '@/lib/server/middleware';
@@ -15,6 +18,11 @@ import { ConnexionForm } from './ConnexionForm';
 function safeNext(raw: string | undefined): string {
   if (!raw || !raw.startsWith('/') || raw.startsWith('//') || raw.startsWith('/\\')) return '/app';
   return raw.length > 500 ? '/app' : raw;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale } = await requestLocale();
+  return pageMetadata('connexion', locale);
 }
 
 export default async function ConnexionPage({
