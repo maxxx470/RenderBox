@@ -354,6 +354,8 @@ const en: Record<keyof typeof fr, string> = {
   'app.uploadError': 'Upload failed. Try again.',
   'app.serviceNotConfigured':
     "This server has no image storage or AI engine configured yet. Retrying won't help.",
+  'app.moderationNotConfigured':
+    "Reference images can't be checked yet: Add and Enhance references are unavailable for now. No credits were kept.",
   'app.generateError': 'Generation failed. Try again.',
   'app.generationTimeout':
     'Generation took too long. Please try again, possibly with a smaller image size.',

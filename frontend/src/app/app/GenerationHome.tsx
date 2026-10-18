@@ -27,6 +27,7 @@ import {
   isMaterialsUnavailable,
   isServiceNotConfigured,
   errorCodeOf,
+  notConfiguredKey,
 } from './request-error';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -282,7 +283,7 @@ export function GenerationHome({
     } else if (creditKey) {
       toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
     } else if (isServiceNotConfigured(err)) {
-      toast(t('app.serviceNotConfigured'), 'error');
+      toast(t(notConfiguredKey(err)), 'error');
     } else if (isMaterialsUnavailable(err)) {
       toast(t('app.materialsUnavailableError'), 'error');
     } else {

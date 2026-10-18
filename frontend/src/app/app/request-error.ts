@@ -75,6 +75,24 @@ export function isServiceNotConfigured(err: unknown): boolean {
 }
 
 /**
+ * Which message a not-configured failure gets: a reference image that could
+ * not be moderated (no OPENAI_API_KEY) is not a missing storage or engine.
+ */
+export function notConfiguredKey(
+  err: unknown,
+): 'app.moderationNotConfigured' | 'app.serviceNotConfigured' {
+  const code =
+    err instanceof RequestError
+      ? err.code
+      : err instanceof ApiError
+        ? err.code || String(err.body.code ?? '')
+        : '';
+  return code === 'MODERATION_NOT_CONFIGURED'
+    ? 'app.moderationNotConfigured'
+    : 'app.serviceNotConfigured';
+}
+
+/**
  * The message for a generation the credits refused (generate / edit /
  * enhance: 403 NO_ACTIVE_TIER or TIER_EXPIRED, 402 INSUFFICIENT_CREDITS), or
  * null for any other failure. The caller shows it with a button to the

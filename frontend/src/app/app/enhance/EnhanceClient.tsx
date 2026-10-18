@@ -59,6 +59,7 @@ import {
   readErrorCode,
   isGenerationTimeout,
   isServiceNotConfigured,
+  notConfiguredKey,
 } from '../request-error';
 import { EnhanceBar } from './EnhanceBar';
 import { fitForUpload, UPLOAD_FIT } from '../fit-upload';
@@ -362,7 +363,7 @@ export function EnhanceClient({
       else if (creditKey)
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       else if (code === 'CONTENT_FLAGGED') toast(t('enhance.refFlagged'), 'error');
-      else if (isServiceNotConfigured(err)) toast(t('app.serviceNotConfigured'), 'error');
+      else if (isServiceNotConfigured(err)) toast(t(notConfiguredKey(err)), 'error');
       else if (isGenerationTimeout(err)) toast(t('app.generationTimeout'), 'error');
       else toast(t('enhance.error'), 'error');
       // A project that never produced anything would sit empty in Mes images

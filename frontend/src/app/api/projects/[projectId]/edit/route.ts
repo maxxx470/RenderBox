@@ -286,12 +286,19 @@ export async function POST(
         referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];
       }
       // Optional: without it the prompt still places each comment by its
-      // coordinates and region name.
+      // coordinates and region name. So when moderation cannot run (no
+      // OPENAI_API_KEY in production, 2026-10-18) the copy is left out —
+      // never forwarded unchecked — instead of refusing every comment.
       const markedFile = form.get('markedImage');
       if (editType === 'annotate' && markedFile instanceof File) {
         const checked = await checkImageFile(markedFile, ctx.requestId, 'Marked image');
-        if (!checked.ok) return checked.res;
-        referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];
+        if (checked.ok) {
+          referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];
+        } else if (checked.code === 'MODERATION_NOT_CONFIGURED') {
+          log.warn('edit: marked copy left out, moderation not configured');
+        } else {
+          return checked.res;
+        }
       }
 
       // The project's old sheet, kept whole in Generation.materialsSnapshot (its

@@ -9,7 +9,7 @@ import { log } from '@/lib/server/observability/log';
 
 export type ImageCheck =
   | { ok: true; buffer: Buffer; mimeType: string }
-  | { ok: false; res: NextResponse };
+  | { ok: false; res: NextResponse; code: string };
 
 /**
  * Size, MIME allow-list, magic bytes, then moderation — the gate for every
@@ -34,6 +34,7 @@ export async function checkImageFile(
   if (file.size > maxBytes) {
     return {
       ok: false,
+      code: 'FILE_TOO_LARGE',
       res: NextResponse.json(
         { code: 'FILE_TOO_LARGE', message: `Max ${maxBytes} bytes` },
         { status: 413, headers },
@@ -43,6 +44,7 @@ export async function checkImageFile(
   if (!allowedMime.includes(file.type)) {
     return {
       ok: false,
+      code: 'INVALID_MIME',
       res: NextResponse.json(
         { code: 'INVALID_MIME', message: `MIME ${file.type} not allowed` },
         { status: 415, headers },
@@ -55,6 +57,7 @@ export async function checkImageFile(
   if (sniffed && !match) {
     return {
       ok: false,
+      code: 'MAGIC_BYTE_MISMATCH',
       res: NextResponse.json(
         { code: 'MAGIC_BYTE_MISMATCH', message: 'File bytes do not match declared MIME' },
         { status: 415, headers },
@@ -69,6 +72,7 @@ export async function checkImageFile(
     if (e instanceof ModerationNotConfiguredError) {
       return {
         ok: false,
+        code: 'MODERATION_NOT_CONFIGURED',
         res: NextResponse.json(
           { code: 'MODERATION_NOT_CONFIGURED', message: 'Content moderation is not configured' },
           { status: 503, headers },
@@ -84,6 +88,7 @@ export async function checkImageFile(
     });
     return {
       ok: false,
+      code: 'CONTENT_FLAGGED',
       res: NextResponse.json(
         { code: 'CONTENT_FLAGGED', message: `${what} was flagged by content moderation` },
         { status: 422, headers },

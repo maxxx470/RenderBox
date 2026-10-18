@@ -46,6 +46,7 @@ import {
   isGenerationTimeout,
   isMaterialsUnavailable,
   isServiceNotConfigured,
+  notConfiguredKey,
 } from './request-error';
 import { fitForUpload, UPLOAD_FIT } from './fit-upload';
 
@@ -370,7 +371,7 @@ export function AppShell({
       } else if (creditKey) {
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       } else if (isServiceNotConfigured(err)) {
-        toast(t('app.serviceNotConfigured'), 'error');
+        toast(t(notConfiguredKey(err)), 'error');
       } else if (isMaterialsUnavailable(err)) {
         // The image's materials could not be read: nothing was started.
         toast(t('app.materialsUnavailableError'), 'error');
@@ -460,7 +461,7 @@ export function AppShell({
       } else if (creditKey) {
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       } else if (isServiceNotConfigured(err)) {
-        toast(t('app.serviceNotConfigured'), 'error');
+        toast(t(notConfiguredKey(err)), 'error');
       } else if (isMaterialsUnavailable(err)) {
         toast(t('app.materialsUnavailableError'), 'error');
         setRetryable(true);

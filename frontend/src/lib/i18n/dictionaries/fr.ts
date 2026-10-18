@@ -363,6 +363,8 @@ const fr = {
   'app.uploadError': "L'envoi a échoué. Réessayez.",
   'app.serviceNotConfigured':
     "Ce serveur n'a pas encore de stockage d'images ou de moteur IA configuré. Réessayer ne changera rien.",
+  'app.moderationNotConfigured':
+    "Les images de référence ne peuvent pas encore être vérifiées : Ajouter et les références d'Améliorer sont indisponibles pour le moment. Aucun crédit n'a été retenu.",
   'app.generateError': 'La génération a échoué. Réessayez.',
   'app.generationTimeout':
     'La génération a pris trop de temps. Réessayez, éventuellement avec une taille plus petite.',

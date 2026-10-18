@@ -491,6 +491,21 @@ describe('POST /api/projects/[projectId]/edit — annotate (point-and-comment)',
     expect(input.prompt).toContain('numbered markers');
   });
 
+  // 2026-10-18: production has no OPENAI_API_KEY; every comment was refused.
+  it('leaves the marked copy out, unsent, when moderation cannot run — the comment still runs', async () => {
+    const { ModerationNotConfiguredError } = await import('@/lib/server/moderation/moderate-image');
+    mockModerateImage.mockRejectedValue(new ModerationNotConfiguredError());
+    const res = await POST(annotateReq(fields, pngFile('marked.png')), ctx());
+    expect(res.status).toBe(201);
+    const input = mockGenerate.mock.calls[0]?.[1] as {
+      referenceImages?: unknown[];
+      prompt: string;
+    };
+    expect(input.referenceImages).toBeUndefined();
+    expect(input.prompt).not.toContain('numbered markers');
+    expect(input.prompt).toContain('1. At 20% from the left, 40% from the top');
+  });
+
   it('refuses a marked copy whose bytes are not an image', async () => {
     const bad = new File([Buffer.from('not a png')], 'marked.png', { type: 'image/png' });
     const res = await POST(annotateReq(fields, bad), ctx());

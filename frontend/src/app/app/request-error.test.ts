@@ -7,6 +7,7 @@ import {
   isGenerationTimeout,
   isMaterialsUnavailable,
   isServiceNotConfigured,
+  notConfiguredKey,
 } from './request-error';
 
 const json = (body: unknown, status = 503) =>
@@ -112,6 +113,21 @@ describe('isMaterialsUnavailable (étape 3C.4)', () => {
     );
     expect(isMaterialsUnavailable(new RequestError('AI_ENGINE_NOT_CONFIGURED'))).toBe(false);
     expect(isMaterialsUnavailable(new Error('MATERIALS_UNAVAILABLE'))).toBe(false);
+  });
+});
+
+describe('notConfiguredKey', () => {
+  it('names a reference that could not be moderated apart from a missing storage or engine', () => {
+    expect(notConfiguredKey(new RequestError('MODERATION_NOT_CONFIGURED'))).toBe(
+      'app.moderationNotConfigured',
+    );
+    expect(notConfiguredKey(new ApiError(503, 'x', { code: 'MODERATION_NOT_CONFIGURED' }))).toBe(
+      'app.moderationNotConfigured',
+    );
+    expect(notConfiguredKey(new RequestError('STORAGE_NOT_CONFIGURED'))).toBe(
+      'app.serviceNotConfigured',
+    );
+    expect(notConfiguredKey(new Error('x'))).toBe('app.serviceNotConfigured');
   });
 });
 
