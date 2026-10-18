@@ -518,6 +518,7 @@ export function EnhanceClient({
 
         {
           <EnhanceBar
+            engine={engine}
             instruction={instruction}
             onInstructionChange={setInstruction}
             onAttach={pickFile}

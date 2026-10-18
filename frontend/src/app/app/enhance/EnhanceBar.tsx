@@ -17,6 +17,8 @@ import { RatioSelect } from '../RatioSelect';
 import { ResolutionSelect } from '../ResolutionSelect';
 import { ACCEPTED_UPLOAD_TYPES } from '../upload-types';
 import { renderCost } from '@/lib/pricing-tiers';
+import type { EngineName } from '@/lib/server/generation/engines/types';
+import { AdminCostNote } from '../AdminCostNote';
 
 export function EnhanceBar({
   instruction,
@@ -31,6 +33,7 @@ export function EnhanceBar({
   sendDisabled,
   sendHint,
   working,
+  engine,
 }: {
   instruction: string;
   onInstructionChange: (v: string) => void;
@@ -46,6 +49,8 @@ export function EnhanceBar({
   /** Why the send button is off. */
   sendHint?: string | undefined;
   working: boolean;
+  /** The engine chosen in the right column: an admin sees its real cost. */
+  engine: EngineName;
 }) {
   const { t } = useLocale();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -126,6 +131,7 @@ export function EnhanceBar({
                 >
                   {showHint ? sendHint : pinned ? '' : t('enhance.attach')}
                 </span>
+                <AdminCostNote engine={engine} resolution={resolution} />
                 {send(false)}
               </div>
             </div>

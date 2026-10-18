@@ -11,8 +11,8 @@ import { KieError } from '@/lib/server/generation/engines/kie';
 // subscription, the owner tops it up on kie.ai.
 
 const DAY = 24 * 60 * 60 * 1000;
-/** Kie's public price: 200 credits for 1 $ (its pricing page, 2026-10-17). */
-export const KIE_USD_PER_CREDIT = 0.005;
+import { KIE_USD_PER_CREDIT } from '@/lib/provider-cost';
+export { KIE_USD_PER_CREDIT };
 /** Below these balances the page warns (≈ 2.5 $ and ≈ 10 $). */
 export const KIE_CRITICAL_CREDITS = 500;
 export const KIE_LOW_CREDITS = 2_000;

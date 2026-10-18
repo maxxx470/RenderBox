@@ -156,6 +156,9 @@ const en: Record<keyof typeof fr, string> = {
   'app.creditsUnit': 'credits',
   'app.creditsCount': '{count} credits',
   'app.sendWithCost': '{verb} · {cost}',
+  'app.adminRealCost': 'Real cost: {credits} Kie cr. · ${usd} · {xof} FCFA',
+  'app.adminRealCostHint':
+    'Admins only: what Kie charges for this engine at this size (prices measured on 17 October 2026, 200 Kie credits = $1). The customer pays the RenderPro credits shown on the button.',
   'app.railInfo': 'Info',
   'app.infoNewCount': 'new: {n}',
   'app.railNavigation': 'Navigation',

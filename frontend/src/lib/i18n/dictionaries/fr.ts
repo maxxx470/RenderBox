@@ -158,6 +158,9 @@ const fr = {
   'app.creditsUnit': 'crédits',
   'app.creditsCount': '{count} crédits',
   'app.sendWithCost': '{verb} · {cost}',
+  'app.adminRealCost': 'Coût réel : {credits} cr. Kie · {usd} $ · {xof} FCFA',
+  'app.adminRealCostHint':
+    'Visible par les administrateurs seulement : ce que Kie facture pour ce moteur à cette taille (prix mesurés le 17 octobre 2026, 200 crédits Kie = 1 $). Le client paie les crédits RenderPro affichés sur le bouton.',
   'app.railInfo': 'Info',
   'app.infoNewCount': 'nouveautés : {n}',
   'app.railNavigation': 'Navigation',
