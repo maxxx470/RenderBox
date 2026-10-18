@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Image as ImageIcon, Upload, Delete } from 'react-iconly';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
 import { useLocale } from '@/lib/i18n/LocaleContext';
@@ -22,6 +23,46 @@ export function nodeTitle(
   const preset = node.preset;
   if (preset && isPresetKey(preset)) return PRESETS[preset].label[locale];
   return t('app.treeNodeRender');
+}
+
+/**
+ * Each row shows its image (2026-10-18, owner: « que l'utilisateur sache …
+ * quelle image est dans l'arbre »): a small thumbnail from the image proxy's
+ * `?size=thumb`, lazy, kept by the browser for good. The old glyph comes back
+ * if the picture cannot load. A blue ring marks the selected row.
+ */
+function NodeThumb({
+  id,
+  generated,
+  selected,
+}: {
+  id: string;
+  generated: boolean;
+  selected: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  const ring = selected ? 'ring-2 ring-[#2948FC]' : 'ring-1 ring-[#ECECF2]';
+  if (failed) {
+    const Glyph = generated ? ImageIcon : Upload;
+    return (
+      <span
+        className={`flex h-[30px] w-10 flex-shrink-0 items-center justify-center rounded-md bg-[#F7F7FA] ${ring}`}
+      >
+        <Glyph set="curved" size={13} primaryColor={selected ? '#2948FC' : '#8A8896'} />
+      </span>
+    );
+  }
+  return (
+    <img
+      src={`/api/render-nodes/${id}/image?size=thumb`}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      onError={() => setFailed(true)}
+      className={`h-[30px] w-10 flex-shrink-0 rounded-md bg-[#F7F7FA] object-cover ${ring}`}
+    />
+  );
 }
 
 /**
@@ -75,25 +116,11 @@ function TreeLevel({
                 type="button"
                 onClick={() => onSelect(node.id)}
                 title={label}
-                className={`flex min-w-0 flex-1 items-center gap-2 py-2 pl-2.5 text-left text-[13px] ${
+                className={`flex min-w-0 flex-1 items-center gap-2.5 py-1.5 pl-1.5 text-left text-[13px] ${
                   selected ? 'font-medium text-[#17161F]' : 'text-[#8A8896]'
                 }`}
               >
-                <span className="flex-shrink-0">
-                  {generated ? (
-                    <ImageIcon
-                      set="curved"
-                      size={13}
-                      primaryColor={selected ? '#2948FC' : '#8A8896'}
-                    />
-                  ) : (
-                    <Upload
-                      set="curved"
-                      size={13}
-                      primaryColor={selected ? '#2948FC' : '#8A8896'}
-                    />
-                  )}
-                </span>
+                <NodeThumb id={node.id} generated={generated} selected={selected} />
                 <span className="truncate">{label}</span>
               </button>
               <button

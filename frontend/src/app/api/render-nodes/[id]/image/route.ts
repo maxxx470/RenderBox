@@ -9,8 +9,18 @@
 export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from 'next/server';
+import sharp from 'sharp';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
+
+/** `?size=thumb` (2026-10-18, owner: a picture on each row of the project
+ *  tree): the image shrunk to this long edge, as WebP — a few kB instead of
+ *  the 2–4 MB original. One fixed size, so the parameter cannot be used to
+ *  make the server resize to arbitrary dimensions. */
+const THUMB_EDGE = 192;
+
+// The browser keeps a node's bytes for good (see below), the thumbnail too.
+const CACHE = 'private, max-age=31536000, immutable';
 
 export async function GET(
   req: NextRequest,
@@ -38,6 +48,19 @@ export async function GET(
     return NextResponse.json({ error: 'IMAGE_FETCH_FAILED' }, { status: 502 });
   }
 
+  if (req.nextUrl.searchParams.get('size') === 'thumb') {
+    const original = Buffer.from(await upstream.arrayBuffer());
+    const thumb = await sharp(original)
+      .rotate()
+      .resize(THUMB_EDGE, THUMB_EDGE, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 72 })
+      .toBuffer();
+    return new Response(new Uint8Array(thumb), {
+      status: 200,
+      headers: { 'Content-Type': 'image/webp', 'Cache-Control': CACHE },
+    });
+  }
+
   return new Response(upstream.body, {
     status: 200,
     headers: {
@@ -50,7 +73,7 @@ export async function GET(
       // and the ownership check above is the only thing standing between it
       // and another account. A year of `max-age=60` meant every dashboard
       // visit re-fetched every thumbnail through this proxy.
-      'Cache-Control': 'private, max-age=31536000, immutable',
+      'Cache-Control': CACHE,
     },
   });
 }
