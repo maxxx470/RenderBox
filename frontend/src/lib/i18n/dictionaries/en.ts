@@ -188,7 +188,7 @@ const en: Record<keyof typeof fr, string> = {
   'enhance.pickOne': 'Tick an improvement or describe it in the bar.',
   'enhance.projectName': 'Enhance {date}',
   'enhance.tag': 'Enhance',
-  'enhance.costNote': '1 render taken from your quota',
+  'enhance.costNote': 'This enhancement costs {cost} credits',
   'app.elementsChip': 'Elements',
   'app.elementsHint': 'Reuse an image from this project as the reference',
   'app.elementsError': 'Could not load that element',

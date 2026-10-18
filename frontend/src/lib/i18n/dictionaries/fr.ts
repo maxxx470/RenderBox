@@ -190,7 +190,7 @@ const fr = {
   'enhance.pickOne': 'Cochez une amélioration ou décrivez-la dans la barre.',
   'enhance.projectName': 'Amélioration du {date}',
   'enhance.tag': 'Améliorée',
-  'enhance.costNote': '1 rendu décompté de votre quota',
+  'enhance.costNote': 'Cette amélioration coûte {cost} crédits',
   'app.elementsChip': 'Éléments',
   'app.elementsHint': 'Réutilise une image de ce projet comme référence',
   'app.elementsError': 'Impossible de charger cet élément',

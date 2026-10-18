@@ -642,7 +642,7 @@ export function EnhanceClient({
             )}
 
             <p className="mt-auto pt-3 text-center text-[11.5px] text-[#6B6878]">
-              {t('enhance.costNote')}
+              {t('enhance.costNote', { cost: priceOf(engine, resolution) })}
               {remaining !== null && surface.creditsMax !== null
                 ? ` · ${remaining}/${surface.creditsMax}`
                 : ''}
