@@ -7,13 +7,18 @@
 // single visitor looping the upload button. Keying on IP instead gives each
 // visitor their own bucket regardless of the shared identity underneath.
 //
-// Mirrors rate-limit-by-userid.ts's fail-open-in-dev / fail-closed-in-prod
-// posture (WR-03) when Redis is absent: a misconfigured deploy must not
-// silently disable this guard in production.
+// Without Redis in production (no Upstash on Vercel, 2026-10-18) it counts
+// the account's uploads of the last hour in the database instead of refusing
+// every upload with a 503 — that refusal was the « création rapide a échoué »
+// the owner saw. The guard stays on, shared by every instance, keyed on the
+// account rather than the IP (AUTH_DISABLED only runs on Preview); two
+// uploads at the same moment can each pass and a deleted upload no longer
+// counts. Without Redis in development it is off, as before.
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { redis } from '@/lib/server/redis';
 import { RedisRateLimitStore } from '@/lib/server/rate-limit-store';
+import { prisma } from '@/lib/server/prisma';
 
 const PREFIX = 'rl:upload:ip:';
 const WINDOW_MS = 60 * 60 * 1000;
@@ -26,35 +31,38 @@ function clientIp(req: NextRequest): string {
   return 'unknown';
 }
 
-export async function enforceUploadRateLimit(req: NextRequest): Promise<NextResponse | null> {
+export async function enforceUploadRateLimit(
+  req: NextRequest,
+  userId: string,
+): Promise<NextResponse | null> {
   const max = Number(process.env.UPLOAD_RATE_LIMIT_MAX_PER_HOUR ?? 20);
 
   if (!redis) {
-    if (process.env.NODE_ENV === 'production') {
-      return NextResponse.json(
-        { error: 'RATE_LIMIT_BACKEND_UNAVAILABLE', message: 'Rate-limit backend unavailable.' },
-        { status: 503 },
-      );
-    }
-    return null;
+    if (process.env.NODE_ENV !== 'production') return null;
+    const since = new Date(Date.now() - WINDOW_MS);
+    const uploaded = await prisma.renderNode.count({
+      where: { kind: 'UPLOADED', project: { userId }, createdAt: { gte: since } },
+    });
+    return uploaded >= max ? tooManyUploads(max, new Date(Date.now() + WINDOW_MS)) : null;
   }
 
   const store = new RedisRateLimitStore({ redis, prefix: '', windowMs: WINDOW_MS });
   const { totalHits, resetTime } = await store.increment(`${PREFIX}${clientIp(req)}`);
-  if (totalHits > max) {
-    const retryAfter = Math.max(1, Math.ceil((resetTime.getTime() - Date.now()) / 1000));
-    return NextResponse.json(
-      { error: 'UPLOAD_RATE_LIMIT_EXCEEDED', message: 'Too many uploads. Try again later.' },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': String(retryAfter),
-          'X-RateLimit-Limit': String(max),
-          'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': String(Math.ceil(resetTime.getTime() / 1000)),
-        },
+  return totalHits > max ? tooManyUploads(max, resetTime) : null;
+}
+
+function tooManyUploads(max: number, resetTime: Date): NextResponse {
+  const retryAfter = Math.max(1, Math.ceil((resetTime.getTime() - Date.now()) / 1000));
+  return NextResponse.json(
+    { error: 'UPLOAD_RATE_LIMIT_EXCEEDED', message: 'Too many uploads. Try again later.' },
+    {
+      status: 429,
+      headers: {
+        'Retry-After': String(retryAfter),
+        'X-RateLimit-Limit': String(max),
+        'X-RateLimit-Remaining': '0',
+        'X-RateLimit-Reset': String(Math.ceil(resetTime.getTime() / 1000)),
       },
-    );
-  }
-  return null;
+    },
+  );
 }

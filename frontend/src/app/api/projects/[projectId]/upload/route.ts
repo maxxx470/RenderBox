@@ -40,7 +40,7 @@ export async function POST(
     const auth = await requireAuth(req.headers.get('authorization'));
     if (auth instanceof NextResponse) return auth;
 
-    const limited = await enforceUploadRateLimit(req);
+    const limited = await enforceUploadRateLimit(req, auth.user.sub);
     if (limited) return limited;
 
     const { projectId } = await ctx0.params;

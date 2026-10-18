@@ -41,33 +41,33 @@ beforeEach(() => {
 
 describe('enforceUploadRateLimit', () => {
   it('allows requests under the per-IP max', async () => {
-    const res = await enforceUploadRateLimit(reqFromIp('1.2.3.4'));
+    const res = await enforceUploadRateLimit(reqFromIp('1.2.3.4'), 'user-1');
     expect(res).toBeNull();
   });
 
   it('rejects with 429 once an IP exceeds the max', async () => {
-    await enforceUploadRateLimit(reqFromIp('1.2.3.4'));
-    await enforceUploadRateLimit(reqFromIp('1.2.3.4'));
-    await enforceUploadRateLimit(reqFromIp('1.2.3.4'));
-    const res = await enforceUploadRateLimit(reqFromIp('1.2.3.4'));
+    await enforceUploadRateLimit(reqFromIp('1.2.3.4'), 'user-1');
+    await enforceUploadRateLimit(reqFromIp('1.2.3.4'), 'user-1');
+    await enforceUploadRateLimit(reqFromIp('1.2.3.4'), 'user-1');
+    const res = await enforceUploadRateLimit(reqFromIp('1.2.3.4'), 'user-1');
     expect(res?.status).toBe(429);
   });
 
   it('gives each IP its own independent bucket', async () => {
-    await enforceUploadRateLimit(reqFromIp('1.2.3.4'));
-    await enforceUploadRateLimit(reqFromIp('1.2.3.4'));
-    await enforceUploadRateLimit(reqFromIp('1.2.3.4'));
+    await enforceUploadRateLimit(reqFromIp('1.2.3.4'), 'user-1');
+    await enforceUploadRateLimit(reqFromIp('1.2.3.4'), 'user-1');
+    await enforceUploadRateLimit(reqFromIp('1.2.3.4'), 'user-1');
     // IP .4 is now at the max — a different IP must still be allowed. This
     // is the whole point of the limiter: under AUTH_DISABLED every visitor
     // shares one demo userId, so per-user limiting alone would let one
     // visitor exhaust the shared bucket for everyone else.
-    const res = await enforceUploadRateLimit(reqFromIp('9.9.9.9'));
+    const res = await enforceUploadRateLimit(reqFromIp('9.9.9.9'), 'user-1');
     expect(res).toBeNull();
   });
 
   it('falls back to an "unknown" bucket when no IP header is present', async () => {
     const req = new NextRequest('http://localhost/api/projects/p1/upload', { method: 'POST' });
-    const res = await enforceUploadRateLimit(req);
+    const res = await enforceUploadRateLimit(req, 'user-1');
     expect(res).toBeNull();
     expect(store.get('rl:upload:ip:unknown')).toBe(1);
   });
