@@ -46,7 +46,7 @@ import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/
 import { BeforeAfterSlider } from '@/app/BeforeAfterSlider';
 import { AppFrame } from '../AppFrame';
 import { useAppChrome } from '../AppChrome';
-import { renderCost } from '@/lib/pricing-tiers';
+import { useRenderPrice } from '../use-render-price';
 import type { AppSurfaceProps } from '../AppSurface';
 import { useObjectUrl } from '../CommandBar';
 import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from '../fan';
@@ -214,6 +214,7 @@ export function EnhanceClient({
   const { user } = useAuth();
   const { toast } = useToast();
   const chrome = useAppChrome();
+  const priceOf = useRenderPrice();
 
   const [file, setFile] = useState<File | null>(null);
   const [session, setSession] = useState<Session | null>(initialSession);
@@ -320,7 +321,7 @@ export function EnhanceClient({
     // No plan, or not enough credits: the plans open over the page (owner,
     // 2026-10-15), before anything is uploaded.
     if (!surface.tier && !remaining) return chrome?.openPlans('noTier');
-    if (remaining !== null && remaining < renderCost(resolution))
+    if (remaining !== null && remaining < priceOf(engine, resolution))
       return chrome?.openPlans('noCredits');
     setWorking(true);
     let current = session;

@@ -36,7 +36,7 @@ import {
   debitCredits,
   refundCredits,
 } from '@/lib/server/generation/tier-quota';
-import { renderCost } from '@/lib/pricing-tiers';
+import { renderPriceFor } from '@/lib/server/generation/render-price';
 import {
   generateRender,
   isEngineConfigured,
@@ -152,7 +152,7 @@ export async function POST(
 
     // One image at the size asked for, priced by the server, debited
     // atomically before the engine call — see generate/route.ts.
-    const cost = renderCost(resolution);
+    const cost = await renderPriceFor(prisma, auth.user.sub, engine, resolution);
     const debit = await debitCredits(prisma, auth.user.sub, cost);
     if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);
 

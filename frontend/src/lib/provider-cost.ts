@@ -2,13 +2,15 @@
 // l'administrateur, le prix exact que ça prend pour la génération … pour
 // chaque modèle »): the Kie credits each engine's default version charges per
 // image, as Kie billed them in the paid tests of 2026-10-17 (its recordInfo
-// `creditsConsumed`), in dollars and in FCFA. Shown to admins beside the send
-// button; customers pay the RenderPro credits on the button whatever this is.
-// Not `server-only`: the command bar reads it. The accounts read the real
-// cost of each image instead (RenderNode.providerCredits).
+// `creditsConsumed`), in dollars and in FCFA. An admin's image costs exactly
+// that many RenderPro credits (owner, same day: « au lieu que le rendu lui
+// coûte 50 crédits … le prix exact que le modèle prend »); customers keep
+// RENDER_COST. Not `server-only`: the command bar shows the price. The
+// accounts read the real cost of each image instead (providerCredits).
+import { renderCost } from '@/lib/pricing-tiers';
 import { XOF_PER_EUR } from '@/lib/local-currency';
 import type { EngineName } from '@/lib/server/generation/engines/types';
-import type { ResolutionKey } from '@/lib/server/generation/resolutions';
+import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/resolutions';
 
 /** Kie's public price: 200 credits for 1 $ (its pricing page, 2026-10-17). */
 export const KIE_USD_PER_CREDIT = 0.005;
@@ -27,6 +29,23 @@ export interface RealCost {
   kieCredits: number;
   usd: number;
   xof: number;
+}
+
+/** Accounts that pay Kie's price: the site's administrators. */
+export function paysAtCost(role: string | null | undefined): boolean {
+  return role === 'ADMIN' || role === 'SUPERADMIN';
+}
+
+/** The RenderPro credits `count` images cost this account. */
+export function renderPrice(
+  role: string | null | undefined,
+  engine: EngineName,
+  resolution: ResolutionKey | null | undefined,
+  count = 1,
+): number {
+  return paysAtCost(role)
+    ? realImageCost(engine, resolution ?? DEFAULT_RESOLUTION, count).kieCredits
+    : renderCost(resolution, count);
 }
 
 /** What `count` images of this engine at this size cost on Kie. */

@@ -16,9 +16,8 @@ import { Glyph } from '../RailIcon';
 import { RatioSelect } from '../RatioSelect';
 import { ResolutionSelect } from '../ResolutionSelect';
 import { ACCEPTED_UPLOAD_TYPES } from '../upload-types';
-import { renderCost } from '@/lib/pricing-tiers';
 import type { EngineName } from '@/lib/server/generation/engines/types';
-import { AdminCostNote } from '../AdminCostNote';
+import { useRenderPrice } from '../use-render-price';
 
 export function EnhanceBar({
   instruction,
@@ -49,10 +48,11 @@ export function EnhanceBar({
   /** Why the send button is off. */
   sendHint?: string | undefined;
   working: boolean;
-  /** The engine chosen in the right column: an admin sees its real cost. */
+  /** The engine chosen in the right column: an admin pays its Kie price. */
   engine: EngineName;
 }) {
   const { t } = useLocale();
+  const priceOf = useRenderPrice();
   const fileRef = useRef<HTMLInputElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const showHint = Boolean(sendHint && sendDisabled && !working);
@@ -69,7 +69,7 @@ export function EnhanceBar({
     <SendButton
       big={big}
       label={t('enhance.submit')}
-      cost={renderCost(resolution)}
+      cost={priceOf(engine, resolution)}
       disabled={sendDisabled}
       busy={working}
       onClick={onSubmit}
@@ -131,7 +131,6 @@ export function EnhanceBar({
                 >
                   {showHint ? sendHint : pinned ? '' : t('enhance.attach')}
                 </span>
-                <AdminCostNote engine={engine} resolution={resolution} />
                 {send(false)}
               </div>
             </div>

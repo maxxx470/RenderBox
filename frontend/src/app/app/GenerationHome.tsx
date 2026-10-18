@@ -40,7 +40,7 @@ import type { RatioKey } from '@/lib/server/generation/ratios';
 import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/resolutions';
 import { AppFrame } from './AppFrame';
 import { useAppChrome } from './AppChrome';
-import { renderCost } from '@/lib/pricing-tiers';
+import { useRenderPrice } from './use-render-price';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { SideColumn } from './SideColumn';
 import { NodeMaterialsPanel } from './NodeMaterialsPanel';
@@ -165,6 +165,7 @@ export function GenerationHome({
   const { user } = useAuth();
   const { toast } = useToast();
   const chrome = useAppChrome();
+  const priceOf = useRenderPrice();
 
   const [mode, setMode] = useState<AppMode>('generate');
   const [engine, setEngine] = useState<EngineName>('nanobanana');
@@ -642,7 +643,11 @@ export function GenerationHome({
               if (!photoFile || sendDisabled) return;
               // No plan, or not enough credits for this render: the plans
               // open over the page, before anything is uploaded.
-              const cost = renderCost(resolution, mode === 'generate' ? 1 : (variantCount ?? 1));
+              const cost = priceOf(
+                mode === 'retouch' ? ANNOTATE_ENGINE : engine,
+                resolution,
+                mode === 'generate' ? 1 : (variantCount ?? 1),
+              );
               if (!tier && !remaining) return chrome?.openPlans('noTier');
               if (remaining !== null && remaining < cost) return chrome?.openPlans('noCredits');
               if (mode === 'generate') void quickStart(photoFile);

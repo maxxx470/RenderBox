@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { KIE_CREDITS_PER_IMAGE, realImageCost, XOF_PER_USD } from './provider-cost';
+import { KIE_CREDITS_PER_IMAGE, realImageCost, renderPrice, XOF_PER_USD } from './provider-cost';
 import { ENGINE_NAMES } from '@/lib/server/generation/engines/types';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 
@@ -22,5 +22,16 @@ describe('realImageCost', () => {
     expect(realImageCost('nanobanana', '1k').xof).toBe(53);
     // Pixel IA at 4K, three variants.
     expect(realImageCost('gpt_image', '4k', 3).kieCredits).toBe(48);
+  });
+});
+
+describe('renderPrice', () => {
+  it("charges an administrator Kie's price, everyone else the RenderPro price", () => {
+    expect(renderPrice('SUPERADMIN', 'nanobanana', '1k')).toBe(18);
+    expect(renderPrice('ADMIN', 'gpt_image', '2k')).toBe(10);
+    expect(renderPrice('SUPERADMIN', 'gpt_image', '4k', 2)).toBe(32);
+    expect(renderPrice('USER', 'nanobanana', '1k')).toBe(50);
+    expect(renderPrice('USER', 'gpt_image', '4k', 2)).toBe(140);
+    expect(renderPrice(undefined, 'gpt_image', '1k')).toBe(50);
   });
 });

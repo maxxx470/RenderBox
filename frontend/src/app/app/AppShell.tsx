@@ -22,7 +22,7 @@ import type { PricingTierId } from '@/lib/pricing-tiers';
 import { Category, Download, Swap } from 'react-iconly';
 import { AppFrame } from './AppFrame';
 import { useAppChrome } from './AppChrome';
-import { renderCost } from '@/lib/pricing-tiers';
+import { useRenderPrice } from './use-render-price';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from './fan';
 import { EXAMPLE_RENDERS } from './generer-examples';
@@ -111,6 +111,7 @@ export function AppShell({
   const { locale } = useLocale();
   const { toast } = useToast();
   const chrome = useAppChrome();
+  const priceOf = useRenderPrice();
   const { user } = useAuth();
   const searchParams = useSearchParams();
 
@@ -480,7 +481,11 @@ export function AppShell({
   function handleSubmit() {
     // No plan, or not enough credits for this render: the plans open over
     // the page (owner, 2026-10-15) instead of a refused request.
-    const cost = renderCost(resolution, mode === 'generate' ? 1 : variantCount);
+    const cost = priceOf(
+      mode === 'retouch' ? ANNOTATE_ENGINE : engine,
+      resolution,
+      mode === 'generate' ? 1 : variantCount,
+    );
     if (!tier && !remaining) return chrome?.openPlans('noTier');
     if (remaining !== null && remaining < cost) return chrome?.openPlans('noCredits');
     if (mode === 'generate') void handleGenerate();

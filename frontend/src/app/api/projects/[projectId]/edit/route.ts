@@ -36,7 +36,7 @@ import {
   debitCredits,
   refundCredits,
 } from '@/lib/server/generation/tier-quota';
-import { renderCost } from '@/lib/pricing-tiers';
+import { renderPriceFor } from '@/lib/server/generation/render-price';
 import {
   generateRender,
   isEngineConfigured,
@@ -260,7 +260,7 @@ export async function POST(
     // Each variant is a distinct AI call and a distinct image: N variants
     // cost N times one image at the size asked for, priced by the server and
     // debited in full, atomically, before any engine call (tier-quota.ts).
-    const unitCost = renderCost(resolution);
+    const unitCost = await renderPriceFor(prisma, auth.user.sub, engine, resolution);
     const cost = unitCost * variantCount;
     const debit = await debitCredits(prisma, auth.user.sub, cost);
     if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);

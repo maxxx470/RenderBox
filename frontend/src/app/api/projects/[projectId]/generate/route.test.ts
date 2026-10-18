@@ -354,6 +354,20 @@ describe('POST /api/projects/[projectId]/generate — credits', () => {
     expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
   });
 
+  // 2026-10-18 (owner): an administrator pays what Kie charges for the model.
+  it("debits an administrator Kie's price for the engine and size, the role read from the database", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'owner@test.local',
+      tokenVersion: 0,
+      role: 'SUPERADMIN',
+    } as never);
+    await POST(makeReq(validBody({ resolution: '2k' })), ctx());
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 18);
+    await POST(makeReq(validBody({ engine: 'gpt_image', resolution: '4k' })), ctx());
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 16);
+  });
+
   it('prices the request itself: a cost sent by the client is ignored', async () => {
     const res = await POST(makeReq({ ...validBody({ resolution: '4k' }), cost: 1 }), ctx());
     expect(res.status).toBe(201);

@@ -45,8 +45,7 @@ import { ContextChip, type ContextMaterial } from './ContextChip';
 import { ElementsPicker } from './ElementsPicker';
 import { Glyph, type RailIconName } from './RailIcon';
 import { CHIP_ACTIVE, CHIP_BASE, CHIP_STATIC } from './chip';
-import { renderCost } from '@/lib/pricing-tiers';
-import { AdminCostNote } from './AdminCostNote';
+import { useRenderPrice } from './use-render-price';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
 
@@ -330,6 +329,7 @@ export function CommandBar({
   const { t, locale } = useLocale();
   const fileRef = useRef<HTMLInputElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const priceOf = useRenderPrice();
   // Phone only: the settings tray. From 640px the settings are always inline.
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -532,7 +532,7 @@ export function CommandBar({
     <SendButton
       big={big}
       label={submitLabel}
-      cost={renderCost(resolution, mode === 'generate' ? 1 : (variantCount ?? 1))}
+      cost={priceOf(engine, resolution, mode === 'generate' ? 1 : (variantCount ?? 1))}
       disabled={sendDisabled}
       busy={generating}
       onClick={onSubmit}
@@ -638,11 +638,6 @@ export function CommandBar({
                   />
                 </button>
                 <div className="ml-auto flex min-w-0 items-center gap-2">
-                  <AdminCostNote
-                    engine={engine}
-                    resolution={resolution}
-                    count={mode === 'generate' ? 1 : (variantCount ?? 1)}
-                  />
                   <span className="hidden text-[11.5px] text-[#8A8896] min-[900px]:inline">
                     {t('app.engineLabel')}
                   </span>
