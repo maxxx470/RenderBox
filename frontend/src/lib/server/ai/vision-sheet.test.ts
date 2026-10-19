@@ -86,9 +86,9 @@ describe('analyzeRenderSheet', () => {
   it('turns a provider failure into a fixed code, never its message', async () => {
     vi.stubEnv('ANTHROPIC_API_KEY', 'sk-test');
     mockCreate.mockRejectedValue(Object.assign(new Error('secret detail'), { status: 429 }));
-    expect(await run()).toEqual({ kind: 'error', code: 'rate_limited' });
+    expect(await run()).toEqual({ kind: 'error', code: 'rate_limited', status: 429 });
     mockCreate.mockRejectedValue(Object.assign(new Error('x'), { status: 401 }));
-    expect(await run()).toEqual({ kind: 'error', code: 'auth' });
+    expect(await run()).toEqual({ kind: 'error', code: 'auth', status: 401 });
   });
 
   it('uses OpenAI vision when only its key is set (the GPT image API can do it too)', async () => {
@@ -150,13 +150,30 @@ describe('analyzeRenderSheet', () => {
     expect(body.messages[0]!.content.map((c) => c.type)).toEqual(['image', 'image', 'text']);
   });
 
+  it('reads the array when the model writes a sentence around it', () => {
+    expect(parseSheetLines('Voici : [{"color":"a","material":"b"}] Voilà.')).toEqual([
+      { color: 'a', material: 'b' },
+    ]);
+  });
+
+  it('a Kie error returned as 200 with a code is an error with that code', async () => {
+    vi.stubEnv('KIE_API_KEY', 'kie-test');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () => new Response(JSON.stringify({ code: 402, msg: 'credits' }), { status: 200 }),
+      ),
+    );
+    expect(await run()).toEqual({ kind: 'error', code: 'unknown', status: 402 });
+  });
+
   it('a Kie refusal becomes a fixed code', async () => {
     vi.stubEnv('KIE_API_KEY', 'kie-test');
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response('{}', { status: 402 })),
     );
-    expect(await run()).toEqual({ kind: 'error', code: 'unknown' });
+    expect(await run()).toEqual({ kind: 'error', code: 'unknown', status: 402 });
   });
 
   it('prefers Claude when both keys are set', async () => {

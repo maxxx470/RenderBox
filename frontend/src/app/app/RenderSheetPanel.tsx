@@ -30,6 +30,7 @@ interface SheetAnswer {
     lines: { color: string; material: string }[];
     ambiance: { key: string; sky: 'hazy' | 'sun' | null } | null;
     sourceCode: string | null;
+    failure?: string;
   } | null;
 }
 
@@ -211,7 +212,14 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
           ) : sheet.status === 'unavailable' ? (
             <p className="text-[12px] leading-snug text-[#8A8896]">{t('app.sheetUnavailable')}</p>
           ) : sheet.status === 'failed' ? (
-            <p className="text-[12px] leading-snug text-[#8A8896]">{t('app.sheetFailed')}</p>
+            <p className="text-[12px] leading-snug text-[#8A8896]">
+              {t('app.sheetFailed')}
+              {sheet.failure && (
+                <span className="ml-1 font-[family-name:var(--font-mono)] text-[11px]">
+                  ({sheet.failure})
+                </span>
+              )}
+            </p>
           ) : sheet.lines.length === 0 ? (
             <p className="text-[12px] leading-snug text-[#8A8896]">{t('app.sheetNoLines')}</p>
           ) : (

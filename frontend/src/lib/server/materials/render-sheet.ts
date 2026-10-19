@@ -43,6 +43,8 @@ export interface StoredSheet {
   ambiance: { key: string; sky: 'hazy' | 'sun' | null } | null;
   /** The code of the source image the render came from. */
   sourceCode: string | null;
+  /** Why an analysis did not produce a sheet (a short code, never a message). */
+  failure?: string;
 }
 
 export function generateImageCode(): string {
@@ -104,6 +106,7 @@ export function readSheet(value: unknown): StoredSheet | null {
     lines,
     ambiance: v.ambiance && typeof v.ambiance.key === 'string' ? v.ambiance : null,
     sourceCode: typeof v.sourceCode === 'string' ? v.sourceCode : null,
+    ...(typeof v.failure === 'string' ? { failure: v.failure.slice(0, 40) } : {}),
   };
 }
 
@@ -163,7 +166,14 @@ export async function completeSheet(input: {
   const next: StoredSheet =
     answer.kind === 'lines'
       ? { ...current, status: 'ready', lines: answer.lines }
-      : { ...current, status: answer.kind === 'not_configured' ? 'unavailable' : 'failed' };
+      : {
+          ...current,
+          status: answer.kind === 'not_configured' ? 'unavailable' : 'failed',
+          failure:
+            answer.kind === 'error'
+              ? `${answer.code}${answer.status ? `_${answer.status}` : ''}`
+              : answer.kind,
+        };
   await prisma.renderNode.update({
     where: { id: input.nodeId },
     data: { sheet: next as unknown as Prisma.InputJsonObject },
@@ -313,18 +323,30 @@ export async function requestSheetAnalysis(input: {
   const renderUrl = node.blobUrl;
   runAfterResponse(async () => {
     let produced = false;
+    let wrote = false;
     try {
       const [source, render] = await Promise.all([fetchBuffer(sourceUrl), fetchBuffer(renderUrl)]);
       if (source && render) {
         produced = await completeSheet({ nodeId: input.nodeId, source, render, locale });
+        wrote = true;
       }
     } finally {
       if (!produced) {
         await refundCredits(prisma, input.userId, SHEET_COST);
-        await prisma.renderNode.update({
-          where: { id: input.nodeId },
-          data: { sheet: { ...sheet, status: 'failed' } as unknown as Prisma.InputJsonObject },
-        });
+        // completeSheet already wrote the reason; otherwise (images not read, an
+        // exception) say so.
+        if (!wrote) {
+          await prisma.renderNode.update({
+            where: { id: input.nodeId },
+            data: {
+              sheet: {
+                ...sheet,
+                status: 'failed',
+                failure: 'images',
+              } as unknown as Prisma.InputJsonObject,
+            },
+          });
+        }
       }
     }
   });

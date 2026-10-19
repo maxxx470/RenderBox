@@ -21,7 +21,12 @@ export type SheetAnalysis =
   | { kind: 'lines'; lines: SheetLine[] }
   | { kind: 'not_configured' }
   | { kind: 'invalid_response' }
-  | { kind: 'error'; code: 'timeout' | 'rate_limited' | 'auth' | 'unavailable' | 'unknown' };
+  | {
+      kind: 'error';
+      code: 'timeout' | 'rate_limited' | 'auth' | 'unavailable' | 'unknown';
+      /** The HTTP status or provider code, when there was one (never a message). */
+      status?: number;
+    };
 
 /** The whole call, retries included, is cut at this. */
 export const SHEET_DEADLINE_MS = 60_000;
@@ -47,10 +52,16 @@ Rules: at most 10 lines; "color" names the colour of the SOURCE and where it is 
 
 /** The array in the model's text, fences and all, or null when unusable. */
 export function parseSheetLines(text: string): SheetLine[] | null {
-  const raw = text
+  let raw = text
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/```\s*$/, '');
+  // A model sometimes writes a sentence around the array: take the array.
+  if (!raw.startsWith('[')) {
+    const open = raw.indexOf('[');
+    const close = raw.lastIndexOf(']');
+    if (open !== -1 && close > open) raw = raw.slice(open, close + 1);
+  }
   let json: unknown;
   try {
     json = JSON.parse(raw);
@@ -150,7 +161,16 @@ async function askKie(
     }),
   });
   if (!res.ok) throw Object.assign(new Error('kie vision'), { status: res.status });
-  const body = (await res.json()) as { content?: { type?: string; text?: string }[] };
+  const body = (await res.json()) as {
+    content?: { type?: string; text?: string }[];
+    code?: number;
+    error?: unknown;
+  };
+  // Kie's own errors can come back as 200 with a `code` (402 no credits, 4xx…).
+  if (typeof body.code === 'number' && body.code !== 200 && !body.content) {
+    throw Object.assign(new Error('kie vision'), { status: body.code });
+  }
+  if (body.error && !body.content) throw Object.assign(new Error('kie vision'), { status: 400 });
   const block = body.content?.find((b) => b.type === 'text');
   return block?.text ?? '';
 }
@@ -222,8 +242,12 @@ export async function analyzeRenderSheet(input: {
     return { kind: 'lines', lines };
   } catch (err) {
     const code = classify(err, controller.signal.aborted);
-    log.warn('analyzeRenderSheet: provider error', { code });
-    return { kind: 'error', code };
+    const status =
+      typeof err === 'object' && err !== null && 'status' in err
+        ? (err as { status: unknown }).status
+        : undefined;
+    log.warn('analyzeRenderSheet: provider error', { code, status });
+    return typeof status === 'number' ? { kind: 'error', code, status } : { kind: 'error', code };
   } finally {
     clearTimeout(timer);
   }
