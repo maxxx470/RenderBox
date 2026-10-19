@@ -43,6 +43,7 @@ import {
   type EngineVersionKey,
 } from '@/lib/server/generation/engine-versions';
 import { api } from '@/lib/api';
+import { useCreditsWatcher } from './fresh-credits';
 
 export interface ChromeQuota {
   tier: PricingTierId | null;
@@ -141,6 +142,12 @@ export function AppChrome({
   // render knows the new count before the layout (which never re-renders on
   // a client navigation) could.
   const [quota, setQuota] = useState<ChromeQuota>(initialQuota);
+  // The balance stays right without a reload (see fresh-credits.ts).
+  const onFreshCredits = useCallback(
+    (remaining: number) => setQuota((q) => (q.remaining === remaining ? q : { ...q, remaining })),
+    [],
+  );
+  useCreditsWatcher(onFreshCredits);
   const handlers = useRef<PageHandlers>({});
   const [treeSlot, setTreeSlot] = useState<HTMLElement | null>(null);
   const [collapsed, setCollapsed] = useState(initialCollapsed);

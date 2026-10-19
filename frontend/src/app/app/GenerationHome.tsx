@@ -58,6 +58,7 @@ import {
 } from '@/lib/server/generation/resolutions';
 import { AppFrame } from './AppFrame';
 import { useAppChrome } from './AppChrome';
+import { creditsChanged, useSyncedCredits } from './fresh-credits';
 import { useRenderPrice } from './use-render-price';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { SideColumn } from './SideColumn';
@@ -142,6 +143,7 @@ export function GenerationHome({
   const [recent, setRecent] = useState<RecentRenderCardData[]>(recentRenders);
   useFreshRecent(setRecent);
   const [remaining, setRemaining] = useState<number | null>(initialRemaining);
+  useSyncedCredits(setRemaining);
   // Ajouter only: a photo of the element to add.
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [pins, setPins] = useState<Pin[]>([]);
@@ -319,6 +321,8 @@ export function GenerationHome({
   }
 
   function errorToast(err: unknown, fallback: TranslationKey) {
+    // A failed render gives its credits back: read the balance again.
+    creditsChanged();
     const creditKey = creditErrorKey(err);
     const plansReason = plansReasonFor(err);
     if (plansReason && chrome) {

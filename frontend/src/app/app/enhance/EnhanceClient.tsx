@@ -63,6 +63,7 @@ import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from '../fan';
 import { ENHANCE_EXAMPLES } from '../generer-examples';
 import { MOBILE_NAV_PAD } from '../MobileNav';
 import { RecentImages, recentImageLabel, useFreshRecent } from '../RecentImages';
+import { creditsChanged, useSyncedCredits } from '../fresh-credits';
 import { SourceResultStage } from '../SourceResultStage';
 import type { RecentRenderCardData } from '../GenerationHome';
 import {
@@ -208,6 +209,7 @@ export function EnhanceClient({
   const [ratio, setRatio] = useState<RatioKey>('auto');
   const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
   const [remaining, setRemaining] = useState(surface.creditsBalance);
+  useSyncedCredits(setRemaining);
   const [panelOpen, setPanelOpen] = useState(false);
   const preview = useObjectUrl(file);
   // Either a file attached here, or an image that already lives in a project.
@@ -327,6 +329,8 @@ export function EnhanceClient({
         ].slice(0, 15),
       );
     } catch (err) {
+      // A failed enhancement gives its credits back: read the balance again.
+      creditsChanged();
       const code = err instanceof RequestError ? err.code : '';
       const creditKey = creditErrorKey(err);
       const plansReason = plansReasonFor(err);

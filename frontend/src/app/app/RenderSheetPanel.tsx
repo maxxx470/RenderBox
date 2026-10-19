@@ -11,7 +11,6 @@
 // The lines come from the render's analysis, which runs after the render is
 // delivered: the panel asks again every few seconds while it is "pending".
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -19,6 +18,7 @@ import { formatSheetBlock } from '@/lib/render-sheet';
 import { SHEET_COST } from '@/lib/pricing-tiers';
 import { errorCodeOf, plansReasonFor } from './request-error';
 import { useAppChrome } from './AppChrome';
+import { creditsChanged } from './fresh-credits';
 import { PRESETS, isPresetKey } from '@/lib/server/generation/presets';
 
 interface SheetAnswer {
@@ -68,7 +68,6 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
   const [answer, setAnswer] = useState<SheetAnswer | null>(null);
   const [failed, setFailed] = useState(false);
   const [tick, setTick] = useState(0);
-  const router = useRouter();
   const chrome = useAppChrome();
   // True once THIS user asked for the analysis (copying an unanalysed sheet).
   const asked = useRef(false);
@@ -90,12 +89,13 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
             timer = setTimeout(read, POLL_MS);
           } else if (asked.current && (status === 'ready' || status === 'failed')) {
             asked.current = false;
+            // Ready, or failed and refunded: the balance is read again.
+            creditsChanged();
             if (status === 'ready') {
               toast(t('app.sheetDone'), 'success');
               void navigator.clipboard?.writeText(blockOf(a, locale, t)).catch(() => undefined);
             } else {
               toast(t('app.sheetFailedRefunded'), 'error');
-              router.refresh();
             }
           }
         })
@@ -134,7 +134,7 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
       });
       asked.current = true;
       setTick((n) => n + 1);
-      router.refresh();
+      creditsChanged();
     } catch (err) {
       const reason = plansReasonFor(err);
       if (reason) chrome?.openPlans(reason);
