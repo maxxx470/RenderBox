@@ -1,0 +1,13 @@
+1. LOCK
+This is an edit of the first image, not a new design.
+Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+2. DRAWING
+- Medium: pencil on off-white paper, visible pencil lines, light shading, neutral light.
+- Volumes: simplified, same outline and openings as the source.
+- Tones: graphite, at most one or two soft accent tints.
+- Materials: recognisable by line and hatching only.
+- Keep it a design drawing, not a photograph.
+3. AVOID
+Photographic look, dense color fill, 3D render look, heavy textures.
+4. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, no new objects, the result is a drawing, not a photograph.

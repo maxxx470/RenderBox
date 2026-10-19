@@ -31,5 +31,5 @@ export function describeZone(zone: EditZone): string {
   const h = centerX < 100 / 3 ? 'left' : centerX < 200 / 3 ? 'center' : 'right';
   const v = centerY < 100 / 3 ? 'top' : centerY < 200 / 3 ? 'middle' : 'bottom';
 
-  return `Modify ONLY ${regionLabel(h, v)} of the image, and preserve everything else pixel-identical to the source.`;
+  return `Modify ONLY ${regionLabel(h, v)} of the image, and keep everything else as it is in the source.`;
 }

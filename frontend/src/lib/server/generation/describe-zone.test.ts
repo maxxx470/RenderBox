@@ -31,7 +31,9 @@ describe('describeZone', () => {
   });
 
   it('always instructs to preserve the rest of the image', () => {
-    expect(describeZone({ x: 0, y: 0, width: 10, height: 10 })).toContain('pixel-identical');
+    expect(describeZone({ x: 0, y: 0, width: 10, height: 10 })).toContain(
+      'keep everything else as it is in the source',
+    );
   });
 });
 

@@ -1,0 +1,4 @@
+This is an edit of the provided image, not a new design.
+Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+Drawing: architectural design sketch on off-white paper, visible pencil lines, simplified volumes, light shading, neutral light, graphite tones with at most one or two soft accent tints. Each material stays recognisable by its line and hatching. Keep it a design drawing, not a photograph.
+Avoid: photographic look, dense color fill, 3D render look, heavy textures.

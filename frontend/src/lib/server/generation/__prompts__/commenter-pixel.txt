@@ -1,0 +1,13 @@
+1. LOCK
+This is an edit of the first image, not a new design.
+Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+Apply only the numbered changes below, each one at its own place.
+The second attached image is the same picture with numbered markers drawn on it: each number shows exactly where the matching change applies. Do not reproduce the markers in the result.
+2. CHANGES
+- Marker 1, at 20% from the left, 40% from the top (the middle-left): enduit gris
+- Marker 2, at 70% from the left, 85% from the top (the bottom-right): retirer la voiture
+- Overall note: plus chaud
+3. KEEP
+Keep everything else identical to the first image: composition, camera, framing, geometry, lighting and every material not mentioned.
+4. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, materials unchanged, no new objects, except where a numbered change says otherwise; no marker drawn in the result.

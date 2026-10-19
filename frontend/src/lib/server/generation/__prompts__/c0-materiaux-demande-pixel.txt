@@ -1,0 +1,19 @@
+1. LOCK
+This is an edit of the first image, not a new design.
+Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+Only modify what this request explicitly names: "façade en bois". Everything else must remain faithful to the source image. Words such as improve, modernise or make it nicer are not permission to change the design.
+2. LIGHT
+- Keep the source's light direction, time of day and color balance.
+- Correct exposure and white balance only where needed.
+- No new ambiance: no sunset, no cinematic or artistic look.
+3. MATERIALS
+Apart from what the request above explicitly names, keep every material, color, finish and pattern exactly as in the source image, and do not replace, restyle, recolor or reinterpret any other material. Only render each existing material more realistically, with physically accurate response to light. Where such materials are present: lime plaster, render and polished concrete with subtle tonal variation, fine grain and micro-patina, never a uniform plastic surface; wood with visible grain and soft satin reflection; fabric, linen and bouclé with visible weave, natural wrinkles and soft shadow in the folds; marble, travertine and stone with sharp veining, soft reflection and fine regular joints; tiles and zellige with glaze variation, small tone differences and visible joints; glass with believable reflections of sky and surroundings, a slight green or blue tint, never a perfect mirror; metal with sharp controlled reflections and a light patina; brick with brick-to-brick color variation and recessed joints; vegetation with varied foliage and natural green, never a uniform mass or neon green. Add subtle imperfections for a lived-in realism. No excessive gloss, no plastic or smooth-3D look. The same material keeps the same appearance on every face within a view.
+Recorded materials of this source image (keep each one unless the request explicitly changes it):
+- facade_principale: Enduit blanc taloché
+- toiture: Tuile terre cuite
+4. PHOTO LOOK
+High-end architectural photography, full-frame camera, 35 mm lens, natural exposure, subtle depth of field, fine film grain, no oversharpening, photorealistic.
+5. AVOID
+HDR look, oversaturation, blown highlights, crushed blacks, plastic surfaces.
+6. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, materials unchanged, no new objects, except what the request explicitly names.

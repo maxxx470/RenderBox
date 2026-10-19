@@ -36,7 +36,12 @@ import {
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
-import { TEMPLATE_KEYS, TEMPLATES, type TemplateKey } from '@/lib/server/generation/templates';
+import {
+  TEMPLATE_KEYS,
+  TEMPLATES,
+  type SkyOption,
+  type TemplateKey,
+} from '@/lib/server/generation/templates';
 import { FAN_SLOTS, FanCarousel, TemplateFanCard } from './fan';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
@@ -126,9 +131,11 @@ export function GenerationHome({
   const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
   const [prompt, setPrompt] = useState('');
   const [preset, setPreset] = useState<PresetKey | null>(null);
-  // A template picked in the fan (owner, 2026-10-10): its prompt is in the
-  // bar, and the render is asked for without an ambiance.
+  // A template picked in the fan (owner, 2026-10-10): the server builds its
+  // prompt from the key (2026-10-19, D1); the bar holds the user's own note.
   const [template, setTemplate] = useState<TemplateKey | null>(null);
+  // Exterior day's sky (D2): lightly hazy unless the user asks for sun.
+  const [sky, setSky] = useState<SkyOption>('hazy');
   // The source: a new photo through the paperclip (stored on the first
   // render, then `stored` too), or a recent image picked in the column.
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -171,7 +178,7 @@ export function GenerationHome({
     setTemplate(null);
   }
 
-  // "Utiliser ce modèle": the template's prompt goes in the bar, then the
+  // "Utiliser ce modèle": the template's chip goes in the bar, then the
   // paperclip asks for the plan or photo it will work on (unless one is
   // already pinned).
   function applyTemplate(key: TemplateKey) {
@@ -181,7 +188,6 @@ export function GenerationHome({
       setReferenceFile(null);
     }
     setTemplate(key);
-    setPrompt(TEMPLATES[key].prompt[locale]);
     if (!sourceSrc) fileInputRef.current?.click();
   }
 
@@ -301,6 +307,7 @@ export function GenerationHome({
             engine,
             customPrompt: prompt.trim() || undefined,
             template: template ?? undefined,
+            sky: template === 'jour_ext' ? sky : undefined,
             // 'auto' is the absence of a request, so it is not sent at all.
             ratio: ratio === 'auto' ? undefined : ratio,
             resolution,
@@ -711,10 +718,8 @@ export function GenerationHome({
               ? {
                   label: TEMPLATES[template].label[locale],
                   image: TEMPLATES[template].image,
-                  onClear: () => {
-                    setTemplate(null);
-                    setPrompt('');
-                  },
+                  onClear: () => setTemplate(null),
+                  sky: template === 'jour_ext' ? { value: sky, onChange: setSky } : undefined,
                 }
               : null
           }

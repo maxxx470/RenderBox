@@ -9,7 +9,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { collectBranch, type RenderTreeNode } from '@/lib/server/render-tree';
 import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
-import { TEMPLATES, isTemplateKey, type TemplateKey } from '@/lib/server/generation/templates';
+import {
+  TEMPLATES,
+  isTemplateKey,
+  type SkyOption,
+  type TemplateKey,
+} from '@/lib/server/generation/templates';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { isRatioKey, type RatioKey } from '@/lib/server/generation/ratios';
 import {
@@ -150,11 +155,13 @@ export function AppShell({
     return p && isPresetKey(p) ? p : null;
   });
   // A template from the image generator page (?template=), sent with the
-  // first render and then dropped, like the prompt it filled.
+  // first render and then dropped; the server builds its prompt (D1).
   const [template, setTemplate] = useState<TemplateKey | null>(() => {
     const p = searchParams.get('template');
     return p && isTemplateKey(p) ? p : null;
   });
+  // Exterior day's sky (2026-10-19, D2): lightly hazy unless asked for sun.
+  const [sky, setSky] = useState<SkyOption>('hazy');
   const [engine, setEngine] = useState<EngineName>('nanobanana');
   const [mode, setMode] = useState<AppMode>('generate');
   // Carried over from the /app quick-start bar (?ratio=), like prompt/preset.
@@ -353,6 +360,7 @@ export function AppShell({
           engine,
           customPrompt: prompt.trim() || undefined,
           template: template ?? undefined,
+          sky: template === 'jour_ext' ? sky : undefined,
           // 'auto' is the absence of a request, so it is not sent at all.
           ratio: ratio === 'auto' ? undefined : ratio,
           resolution,
@@ -921,10 +929,8 @@ export function AppShell({
               ? {
                   label: TEMPLATES[template].label[locale],
                   image: TEMPLATES[template].image,
-                  onClear: () => {
-                    setTemplate(null);
-                    setPrompt('');
-                  },
+                  onClear: () => setTemplate(null),
+                  sky: template === 'jour_ext' ? { value: sky, onChange: setSky } : undefined,
                 }
               : null
           }

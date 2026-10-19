@@ -50,15 +50,15 @@ import { ENGINE_VERSION_KEYS } from '@/lib/server/generation/engine-versions';
 import { uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
 import { checkImageFile } from '@/lib/server/upload/check-image-file';
 import { buildRenderTree } from '@/lib/server/render-tree';
-import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
-import { describeZone, ZoneSchema } from '@/lib/server/generation/describe-zone';
-import { log } from '@/lib/server/observability/log';
-import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
+import { ZoneSchema } from '@/lib/server/generation/describe-zone';
 import {
-  ANNOTATE_ENGINE,
-  AnnotationsSchema,
+  buildAddElementPrompt,
   buildAnnotationPrompt,
-} from '@/lib/server/generation/annotations';
+  buildZonePrompt,
+} from '@/lib/server/generation/edit-prompts';
+import { log } from '@/lib/server/observability/log';
+import { isPresetKey } from '@/lib/server/generation/presets';
+import { ANNOTATE_ENGINE, AnnotationsSchema } from '@/lib/server/generation/annotations';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
@@ -219,32 +219,21 @@ export async function POST(
       );
     }
 
-    // Materials + preset are inherited from the node being edited, not
-    // re-specified by the caller — an edit is a refinement of an already
-    // materials-tagged render, not a new generation.
-    //
-    // A render carries the ambiance it was made with; an uploaded photo has
-    // none, and relighting it as "jour_ext" would change far more than the
-    // one thing asked for — so no preset at all. Nor for a transformation
-    // (a 3D plan, an exploded view…, reapplyOnEdit false): run again on its
-    // own result it would transform the picture a second time.
-    const sourcePreset =
-      sourceNode.preset && isPresetKey(sourceNode.preset) ? sourceNode.preset : null;
-    const promptPreset: PresetKey | null =
-      sourcePreset && PRESETS[sourcePreset].reapplyOnEdit ? sourcePreset : null;
     // The result still is what its source was (a 3D plan stays a 3D plan):
-    // the node keeps the source's ambiance, so the tree names it.
-    const preset = sourcePreset;
+    // the node keeps the source's ambiance, so the tree names it. The prompt
+    // no longer re-sends it (2026-10-19, the owner's prompt audit): an edit
+    // keeps the image's own light, on one path whatever the source — see
+    // edit-prompts.ts.
+    const preset = sourceNode.preset && isPresetKey(sourceNode.preset) ? sourceNode.preset : null;
 
-    // The source image's own materials (étape 3C.3) go into the prompt only
-    // where the ambiance is re-applied: an Ajouter or a retouch on a render
-    // whose ambiance comes back. Commenter and the edits that keep the photo's
-    // own light send none, and read none. Every variant starts from this one
-    // source node, so they share this one list. Read before the credits, the
-    // rate limit and the engine; unreadable, the edit stops here rather than
-    // run on a partial list or on the project's old sheet.
+    // The source image's own materials (étape 3C.3) go into the prompt of an
+    // Ajouter or a retouch, to be kept. Commenter sends none and reads none: a
+    // comment typically asks for a material to CHANGE. Every variant starts
+    // from this one source node, so they share this one list. Read before the
+    // credits, the rate limit and the engine; unreadable, the edit stops here
+    // rather than run on a partial list or on the project's old sheet.
     let promptMaterials: ResolvedMaterial[] = [];
-    if (editType !== 'annotate' && promptPreset) {
+    if (editType !== 'annotate') {
       try {
         promptMaterials = await loadPromptMaterials(sourceNode.id);
       } catch (e) {
@@ -317,30 +306,18 @@ export async function POST(
       }
       const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
-      let assembledPrompt: string;
-      if (editType === 'annotate') {
-        // Neither the image's materials ("keep these materials") nor the preset
-        // (a full relighting) belongs here: a comment typically asks for a
-        // material to CHANGE, and everything else is held by the prompt itself.
-        assembledPrompt = buildAnnotationPrompt({
-          annotations: annotations!,
-          instruction,
-          withMarkedImage: referenceImages !== undefined,
-        });
-      } else {
-        const editInstruction =
-          editType === 'add_element'
-            ? `Add the following element into the scene, using the attached reference image for its appearance: ${instruction}`
-            : `${describeZone(zone!)} Requested change: ${instruction}`;
-        assembledPrompt = promptPreset
-          ? buildGenerationPrompt({
-              materialsSnapshot: toPromptEntries(promptMaterials),
-              preset: promptPreset,
-              customPrompt: editInstruction,
+      const promptEntries = toPromptEntries(promptMaterials);
+      const assembledPrompt =
+        editType === 'annotate'
+          ? buildAnnotationPrompt({
+              engine,
+              annotations: annotations!,
+              instruction,
+              withMarkedImage: referenceImages !== undefined,
             })
-          : `${editInstruction}\nKeep everything else in the image exactly as it is: framing, light, materials.`;
-      }
-
+          : editType === 'add_element'
+            ? buildAddElementPrompt({ engine, instruction, materials: promptEntries })
+            : buildZonePrompt({ engine, zone: zone!, instruction, materials: promptEntries });
       const settled = await Promise.allSettled(
         Array.from({ length: variantCount }, () =>
           generateRender(engine, {

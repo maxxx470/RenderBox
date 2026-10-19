@@ -31,6 +31,7 @@ export const PRESET_THUMB: Record<PresetKey, string> = {
   analyse: '/presets/thumb/analyse.webp',
   isometrie: '/presets/thumb/isometrie.webp',
   esquisse: '/presets/thumb/esquisse.webp',
+  croquis: '/presets/thumb/croquis.webp',
   jour_ext: '/presets/thumb/jour-ext.jpg',
   jour_int: '/presets/thumb/jour-int.jpg',
   nuit_ext: '/presets/thumb/nuit-ext.jpg',

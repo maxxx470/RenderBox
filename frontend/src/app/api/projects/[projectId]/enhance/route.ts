@@ -10,12 +10,14 @@
 // RenderBox itself produced is the main use, but an architect's own render
 // from another tool is just as valid an input.
 //
-// Multipart since 2026-10-08 (owner): each ticked improvement may carry ONE
-// reference image (file field `ref_<option>`, e.g. ref_materials) that the
-// engine uses as a guide for that aspect only; the free-text instruction can
-// stand alone, with nothing ticked; and a ratio may be asked for ('auto', the
-// default, keeps the framing). References go through the same gate as the
-// edit route's (size, MIME, magic bytes, moderation) — check-image-file.ts.
+// Multipart since 2026-10-08 (owner): the free-text instruction can stand
+// alone, with nothing ticked, and a ratio may be asked for ('auto', the
+// default, keeps the framing). Since 2026-10-19 (the owner's prompt audit,
+// D6, D8): eight improvements, Lumière's « pièce sombre » sub-option
+// (`darkRoom`), the profile « Ambiance » harmonises towards (`ambiance`),
+// three intensities — and only the source image is sent: a reference image
+// (`ref_<option>`, accepted until then) is refused with 400
+// REFERENCES_NOT_ACCEPTED, never forwarded.
 export const runtime = 'nodejs';
 // The engine call may take up to ENGINE_DEADLINE_MS (180 s); the rest of the
 // request fits in what is left. 300 s is the ceiling on Vercel Hobby with
@@ -48,15 +50,13 @@ import {
 import { ENGINE_VERSION_KEYS, ENGINE_VERSIONS } from '@/lib/server/generation/engine-versions';
 import { StorageNotConfiguredError, uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
 import {
-  buildEnhancePrompt,
+  ENHANCE_AMBIANCE_KEYS,
   ENHANCE_OPTION_KEYS,
   ENHANCE_STRENGTHS,
-  type EnhanceOptionKey,
 } from '@/lib/server/generation/enhance';
+import { buildEnhancePrompt } from '@/lib/server/generation/enhance-prompt';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
-import { checkImageFile } from '@/lib/server/upload/check-image-file';
-import type { ReferenceImage } from '@/lib/server/generation/engines/types';
 
 const Fields = z
   .object({
@@ -64,6 +64,8 @@ const Fields = z
     engine: z.enum(ENGINE_NAMES),
     options: z.array(z.enum(ENHANCE_OPTION_KEYS)).max(ENHANCE_OPTION_KEYS.length),
     strength: z.enum(ENHANCE_STRENGTHS),
+    darkRoom: z.boolean().default(false),
+    ambiance: z.enum(ENHANCE_AMBIANCE_KEYS).optional(),
     instruction: z.string().trim().max(2000).optional(),
     ratio: z.enum(RATIO_KEYS).default('auto'),
     resolution: z.enum(RESOLUTION_KEYS).default('1k'),
@@ -77,6 +79,10 @@ const Fields = z
   .refine((v) => v.options.length > 0 || Boolean(v.instruction), {
     message: 'tick an improvement or describe one',
     path: ['options'],
+  })
+  .refine((v) => !v.options.includes('ambiance') || v.ambiance !== undefined, {
+    message: 'ambiance needs its profile',
+    path: ['ambiance'],
   });
 
 export async function POST(
@@ -120,6 +126,8 @@ export async function POST(
       engine: text('engine'),
       options: form.getAll('options').filter((v): v is string => typeof v === 'string'),
       strength: text('strength'),
+      darkRoom: text('darkRoom') === '1',
+      ambiance: text('ambiance'),
       instruction: text('instruction'),
       ratio: text('ratio'),
       resolution: text('resolution'),
@@ -131,23 +139,20 @@ export async function POST(
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
-    const { sourceNodeId, engine, options, strength, instruction, ratio, resolution } = parsed.data;
+    const { sourceNodeId, engine, options, strength, darkRoom, ambiance, instruction } =
+      parsed.data;
+    const { ratio, resolution } = parsed.data;
     const version = resolveEngineVersion(engine, parsed.data.version);
 
-    // One reference per ticked improvement, in the options' fixed order so the
-    // prompt numbers them the way they are sent. A reference for an option
-    // that is not ticked is refused rather than silently dropped.
-    const refFiles: { key: EnhanceOptionKey; file: File }[] = [];
-    for (const key of ENHANCE_OPTION_KEYS) {
-      const file = form.get(`ref_${key}`);
-      if (!(file instanceof File) || file.size === 0) continue;
-      if (!options.includes(key)) {
+    // No reference image of any kind reaches the engine (D8): refused, not
+    // silently dropped, so a stale client learns it at once.
+    for (const [key, value] of form.entries()) {
+      if (key.startsWith('ref_') && value instanceof File) {
         return NextResponse.json(
-          { error: 'VALIDATION_FAILED', message: `ref_${key} needs its option ticked` },
+          { error: 'REFERENCES_NOT_ACCEPTED', message: 'Only the source image is sent' },
           { status: 400, headers: { 'x-request-id': ctx.requestId } },
         );
       }
-      refFiles.push({ key, file });
     }
 
     // One image at the size asked for, priced by the server, debited
@@ -198,18 +203,13 @@ export async function POST(
       }
       const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
-      const referenceImages: ReferenceImage[] = [];
-      for (const { key, file } of refFiles) {
-        const checked = await checkImageFile(file, ctx.requestId, `Reference image (${key})`);
-        if (!checked.ok) return checked.res;
-        referenceImages.push({ buffer: checked.buffer, mimeType: checked.mimeType });
-      }
-
       const prompt = buildEnhancePrompt({
+        engine,
         options,
         strength,
+        darkRoom: options.includes('lighting') && darkRoom,
+        ambiance: options.includes('ambiance') ? ambiance : undefined,
         instruction,
-        references: refFiles.map((r) => r.key),
       });
 
       let result;
@@ -220,7 +220,6 @@ export async function POST(
           sourceImageBuffer,
           sourceMimeType: sourceNode.mimeType,
           prompt,
-          ...(referenceImages.length > 0 ? { referenceImages } : {}),
           ...(ratio !== 'auto' ? { aspectRatio: ratio } : {}),
           resolution,
           ...(version ? { version } : {}),

@@ -1,0 +1,9 @@
+This is an edit of the provided image, not a new design.
+Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+Only add: un olivier en pot. The second image is a reference for that element's appearance only: never copy its background, framing, light or any other object.
+Place it at a believable scale and position, in the existing perspective. Everything else must remain faithful to the source image.
+Light: keep the image's existing light, time of day and color balance unchanged; light the change with that same light, with matching shadows and reflections.
+Keep every other material, color and finish exactly as in the source image.
+Recorded materials of this source image (keep each one unless the request explicitly changes it):
+- toiture: Tuile
+Avoid: copying the reference image's background or light, changing the framing, relighting the scene, adding anything else.

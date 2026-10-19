@@ -1,21 +1,31 @@
-// Single source of truth for the render ambiances — labels (fr/en, consumed
-// by CommandBar) and prompt modifiers (consumed by build-prompt.ts). No
+// Single source of truth for the render ambiances — their labels (fr/en,
+// consumed by the command bar) and what kind of prompt each one gets. No
 // secrets here, so this file is safe to import from a client component; it
 // deliberately has no I/O and no `server-only` tag.
 //
-// 2026-10-10 (owner): the ambiance menu of the command bar now offers four
-// kinds of picture — Plan 3D aménagé, Axonométrie éclatée, Planche
-// d'analyse, Maquette isométrique — plus Esquisse. The four lights (day and
-// night, exterior and interior) moved to the image generator page's fan, as
-// templates with their own prompt (templates.ts). They stay valid keys here:
-// older renders carry them, the landing names them, and an edit of such a
-// render relights it the same way.
+// 2026-10-10 (owner): the ambiance menu of the command bar offers four kinds
+// of picture — Plan 3D aménagé, Axonométrie éclatée, Planche d'analyse,
+// Maquette isométrique — plus a drawing. The four lights (day and night,
+// exterior and interior) moved to the image generator page's fan, as
+// templates (templates.ts). They stay valid keys here: older renders carry
+// them and the landing names them.
+//
+// 2026-10-19 (owner's prompt audit, decisions D1–D4): the photo profiles —
+// the four lights, the pencil sketch and C0 — are written on the server only
+// (render-profiles.ts), with their figures, and laid out for each engine.
+// What is left here is the text of the modules that change the KIND of
+// picture, which never was a secret (the menu's thumbnails show it).
+// « Esquisse » is now the pencil sketch the specification describes
+// (`croquis`); the labelled white diagram that carried that name since
+// 2026-10-10 keeps its key, `esquisse`, and is called « Schéma d'accès » —
+// older renders keep their key, so an edit never mistakes one for the other.
 export const PRESET_KEYS = [
   'plan_3d',
   'eclate',
   'analyse',
   'isometrie',
   'esquisse',
+  'croquis',
   'jour_ext',
   'jour_int',
   'nuit_ext',
@@ -31,18 +41,28 @@ export const AMBIANCE_KEYS = [
   'analyse',
   'isometrie',
   'esquisse',
+  'croquis',
 ] as const satisfies readonly PresetKey[];
+
+/**
+ * How the server builds the prompt of a preset:
+ * - `look`: a photo profile or the pencil sketch, assembled by
+ *   render-profiles.ts (geometry lock, light, materials, photo look);
+ * - `transform`: a module that changes the kind of picture, its own text
+ *   under the transform lock; `keepsMaterials` when the module keeps the
+ *   building's real materials (the model and the diagram have their own
+ *   palette, so recorded materials would contradict them);
+ * - `board`: the analysis board, sent as it was — its rework is a separate
+ *   project (specification, section 2).
+ */
+export type PresetPrompt =
+  | { kind: 'look' }
+  | { kind: 'transform'; modifier: string; keepsMaterials: boolean }
+  | { kind: 'board'; modifier: string };
 
 interface PresetDef {
   label: { fr: string; en: string };
-  promptModifier: string;
-  /**
-   * Whether an edit (Ajouter, a zone change) of a render made with this
-   * ambiance applies it again. True for a light or a drawing style; false
-   * for a transformation ("turn the plan into a 3D view") — run again on its
-   * own result it would transform a second time.
-   */
-  reapplyOnEdit: boolean;
+  prompt: PresetPrompt;
 }
 
 // The modifiers ask for real 3D and, where a picture means nothing without
@@ -51,79 +71,74 @@ interface PresetDef {
 export const PRESETS: Record<PresetKey, PresetDef> = {
   plan_3d: {
     label: { fr: 'Plan 3D aménagé', en: 'Furnished 3D plan' },
-    reapplyOnEdit: false,
-    promptModifier:
-      'Turn the attached 2D floor plan into a photorealistic top-down 3D render of the furnished home, seen from directly above with the roof removed. Keep exactly the walls, doors, windows and room layout of the plan. Furnish every room in a warm, premium contemporary style: herringbone oak floors, a bedroom with a made bed and bedside lamps, a bathroom with a walk-in shower and a vanity, a kitchen with worktops, a dining table, a living room with a sofa, an armchair and a rug. Soft natural light with gentle shadows and warm accent lighting. Add three or four people seen from above, to scale and naturally placed. Walls cut and shown in solid black. No text, no labels, no dimensions, no room names.',
+    prompt: {
+      kind: 'transform',
+      keepsMaterials: true,
+      modifier:
+        'Turn the attached 2D floor plan into a photorealistic top-down 3D render of the furnished home, seen from directly above with the roof removed. Keep exactly the walls, doors, windows and room layout of the plan. Furnish every room in a warm, premium contemporary style: herringbone oak floors, a bedroom with a made bed and bedside lamps, a bathroom with a walk-in shower and a vanity, a kitchen with worktops, a dining table, a living room with a sofa, an armchair and a rug. Soft natural light with gentle shadows and warm accent lighting. Add three or four people seen from above, to scale and naturally placed. Walls cut and shown in solid black. No text, no labels, no dimensions, no room names.',
+    },
   },
   eclate: {
     label: { fr: 'Axonométrie éclatée', en: 'Exploded axonometric' },
-    reapplyOnEdit: false,
-    promptModifier:
-      'Turn the building in the attached image into a highly detailed exploded axonometric 3D illustration: a realistic 3D model, not a flat drawing, seen from a high 30-degree angle on a clean white background. Pull the building apart vertically into its construction layers, stacked one above another with even gaps and thin dashed alignment lines between them, from bottom to top: foundations and ground slab, structural frame (columns and beams), each floor slab with its interior walls, stairs and furniture, insulation, facade cladding, windows and glazing, roof structure, roof covering. Keep the building’s real shape, proportions, materials and colours, rendered realistically with soft shadows and ambient occlusion. Add clean architectural labels: thin black leader lines from each layer to a short uppercase label in a clean sans-serif font, aligned in a neat column on the right (for example ROOF, ROOF STRUCTURE, GLAZING, CLADDING, INSULATION, FIRST FLOOR, GROUND FLOOR, STRUCTURAL FRAME, FOUNDATIONS). Every label crisp, legible and spelled correctly, each word written once. High-end technical cutaway illustration style.',
+    prompt: {
+      kind: 'transform',
+      keepsMaterials: true,
+      modifier:
+        'Turn the building in the attached image into a highly detailed exploded axonometric 3D illustration: a realistic 3D model, not a flat drawing, seen from a high 30-degree angle on a clean white background. Pull the building apart vertically into its construction layers, stacked one above another with even gaps and thin dashed alignment lines between them, from bottom to top: foundations and ground slab, structural frame (columns and beams), each floor slab with its interior walls, stairs and furniture, insulation, facade cladding, windows and glazing, roof structure, roof covering. Keep the building’s real shape, proportions, materials and colours, rendered realistically with soft shadows and ambient occlusion. Add clean architectural labels: thin black leader lines from each layer to a short uppercase label in a clean sans-serif font, aligned in a neat column on the right (for example ROOF, ROOF STRUCTURE, GLAZING, CLADDING, INSULATION, FIRST FLOOR, GROUND FLOOR, STRUCTURAL FRAME, FOUNDATIONS). Every label crisp, legible and spelled correctly, each word written once. High-end technical cutaway illustration style.',
+    },
   },
   analyse: {
     label: { fr: 'Planche d’analyse', en: 'Concept board' },
-    reapplyOnEdit: false,
-    promptModifier:
-      'Create an architecture concept analysis board of the building in the attached image, on a clean white background, in the style of an international architecture competition presentation. Precise grid layout with generous white space: a bold title CONCEPT ANALYSIS with the project’s name under it; a large realistic 3D view of the building; its characteristic floor plan in fine black linework labelled FLOOR PLAN, with a north arrow and a scale bar; a long section through the building and the ground labelled SECTION; a row of five small white 3D massing models showing step by step how the form evolved, each numbered with a one-word caption; a strip of five square samples of the building’s real materials, each with a small label. Thin hairline dividers and no other text: no small annotations, no dimensions. All text crisp, legible and spelled correctly in a clean sans-serif font, each word written once. Muted palette: white, light grey, concrete, warm wood, one soft accent colour. Professional, print-ready.',
+    prompt: {
+      kind: 'board',
+      modifier:
+        'Create an architecture concept analysis board of the building in the attached image, on a clean white background, in the style of an international architecture competition presentation. Precise grid layout with generous white space: a bold title CONCEPT ANALYSIS with the project’s name under it; a large realistic 3D view of the building; its characteristic floor plan in fine black linework labelled FLOOR PLAN, with a north arrow and a scale bar; a long section through the building and the ground labelled SECTION; a row of five small white 3D massing models showing step by step how the form evolved, each numbered with a one-word caption; a strip of five square samples of the building’s real materials, each with a small label. Thin hairline dividers and no other text: no small annotations, no dimensions. All text crisp, legible and spelled correctly in a clean sans-serif font, each word written once. Muted palette: white, light grey, concrete, warm wood, one soft accent colour. Professional, print-ready.',
+    },
   },
   isometrie: {
     label: { fr: 'Maquette isométrique', en: 'Isometric model' },
-    reapplyOnEdit: false,
-    promptModifier:
-      'Turn the project in the attached image into a clean isometric 3D architectural model, seen from a high 30-degree isometric angle on a very light grey ground crossed by subtle dotted halftone bands. Keep the building’s real volumes, layout, stairs and terraces. Render it like a high-end physical competition model: light birch and pine timber for the structure and slats, smooth pale grey concrete for plinths, walkways and stairs, frosted white glass for roofs and glazing, crisp edges. About fifteen tiny white abstract human figures walking and standing, to scale. Soft even daylight from the top left, gentle ambient occlusion and soft shadows. Muted palette of warm wood, white and light grey only. No trees, no background scenery, no text.',
+    prompt: {
+      kind: 'transform',
+      keepsMaterials: false,
+      modifier:
+        'Turn the project in the attached image into a clean isometric 3D architectural model, seen from a high 30-degree isometric angle on a very light grey ground crossed by subtle dotted halftone bands. Keep the building’s real volumes, layout, stairs and terraces. Render it like a high-end physical competition model: light birch and pine timber for the structure and slats, smooth pale grey concrete for plinths, walkways and stairs, frosted white glass for roofs and glazing, crisp edges. About fifteen tiny white abstract human figures walking and standing, to scale. Soft even daylight from the top left, gentle ambient occlusion and soft shadows. Muted palette of warm wood, white and light grey only. No trees, no background scenery, no text.',
+    },
   },
-  // The picture on the menu (public/presets/thumb/esquisse.webp) is a white
-  // axonometric diagram with labelled arrows; since 2026-10-10 the modifier
-  // asks for exactly that (owner: the ambiance must make the image it shows).
-  // It was a loose pencil sketch before.
+  // The white axonometric diagram with labelled arrows of the menu's picture
+  // (public/presets/thumb/esquisse.webp). Since 2026-10-19 its arrows may
+  // only point at entrances the source shows: it used to place them freely.
   esquisse: {
+    label: { fr: 'Schéma d’accès', en: 'Access diagram' },
+    prompt: {
+      kind: 'transform',
+      keepsMaterials: false,
+      modifier:
+        'Render the building in the attached image as a clean architectural presentation diagram: an all-white matte 3D massing model seen from a high axonometric angle, crisp edges, soft ambient-occlusion shadows, on a very light grey ground. Keep the building’s real shape, openings, terraces and roof. Show the site in the same white and light grey: the street, the plot, a few simple trees and tiny white human figures to scale. Add thin black arrows with short labels in a clean sans-serif font pointing to the entrances and the main outdoor spaces (for example MAIN ENTRANCE, CAR ENTRANCE, BACK YARD, ROOF GARDEN), and STREET ACCESS written along the street; point only at entrances and spaces visible in the source image, never at invented ones. No photorealistic materials or textures, no colours except a touch of warm wood or terracotta on the ground floor. Every label crisp, legible and spelled correctly.',
+    },
+  },
+  // The pencil sketch of the specification (annex A « Esquisse »), same view
+  // as the source — text in render-profiles.ts.
+  croquis: {
     label: { fr: 'Esquisse', en: 'Sketch' },
-    reapplyOnEdit: true,
-    promptModifier:
-      'Render the building in the attached image as a clean architectural presentation diagram: an all-white matte 3D massing model seen from a high axonometric angle, crisp edges, soft ambient-occlusion shadows, on a very light grey ground. Keep the building’s real shape, openings, terraces and roof. Show the site in the same white and light grey: the street, the plot, a few simple trees and tiny white human figures to scale. Add thin black arrows with short labels in a clean sans-serif font pointing to the entrances and the main outdoor spaces (for example MAIN ENTRANCE, CAR ENTRANCE, BACK YARD, ROOF GARDEN), and STREET ACCESS written along the street. No photorealistic materials or textures, no colours except a touch of warm wood or terracotta on the ground floor. Every label crisp, legible and spelled correctly.',
+    prompt: { kind: 'look' },
   },
   jour_ext: {
     label: { fr: 'Jour extérieur', en: 'Exterior day' },
-    reapplyOnEdit: true,
-    promptModifier:
-      'Render in full daylight: natural sunlight, crisp cast shadows, clear sky, exterior viewpoint.',
+    prompt: { kind: 'look' },
   },
   jour_int: {
     label: { fr: 'Jour intérieur', en: 'Interior day' },
-    reapplyOnEdit: true,
-    promptModifier:
-      'Render an interior viewpoint lit by natural daylight through the windows, soft ambient fill, no artificial lighting.',
+    prompt: { kind: 'look' },
   },
   nuit_ext: {
     label: { fr: 'Nuit extérieur', en: 'Exterior night' },
-    reapplyOnEdit: true,
-    promptModifier:
-      'Render at night, exterior viewpoint: controlled architectural lighting (facade spotlights, warm window glow), dark sky, no direct sunlight.',
+    prompt: { kind: 'look' },
   },
   nuit_int: {
     label: { fr: 'Nuit intérieur', en: 'Interior night' },
-    reapplyOnEdit: true,
-    promptModifier:
-      'Render an interior viewpoint at night: warm artificial lighting (ceiling fixtures, lamps), dark windows, no daylight.',
+    prompt: { kind: 'look' },
   },
 };
-
-/**
- * Sent when the user picked no ambiance and no template: a faithful photo
- * render of their image. From the "render from any 3D software" prompt the
- * owner pointed at (aifordesigners.online, 2026-10-10): the geometry is
- * already right, the engine adds light and texture, not opinions.
- *
- * 2026-10-10 (étape 3A): it used to say "do not alter … the materials shown;
- * match every material exactly", which fought a request such as "façade en
- * bois" sent right after it. It now says what is kept by default, that an
- * explicit request wins for the element it names and for that element only,
- * and that nothing else is redrawn. The user's text follows it in the prompt
- * (build-prompt.ts), hence "the user's request".
- */
-export const PHOTO_RENDER_MODIFIER =
-  "Create a photorealistic architectural photograph of the attached image. Preserve the source by default. Keep the exact point of view and the exact proportions, the composition, the camera angle and the framing, the geometry and volumes, the openings, the position of the building on its site and every existing architectural element. Keep the materials, colours and finishes shown unless the user's request explicitly changes them. If the user's request explicitly asks to change an element — replace a material, change a colour or a finish, modify the geometry, or add or remove an element — apply that change to that element only: for that element, the request takes precedence over these preservation rules. A requested change is not permission to redesign the image: everything the request does not mention stays as faithful to the source as possible. Do not add an ambiance that was not asked for: no cinematic lighting, no sunset, no artistic style or aesthetic transformation. Use natural, believable light consistent with the source and real-world textures.";
 
 export function isPresetKey(value: string): value is PresetKey {
   return (PRESET_KEYS as readonly string[]).includes(value);

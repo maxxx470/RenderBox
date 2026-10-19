@@ -1,35 +1,38 @@
-// Assembles the final prompt sent to the AI engine, in a fixed order:
-// 1) the materials of the source image (étape 3C.3: its detections and the
-//    user's corrections on it, resolved) — consistency constraints; the
-//    header says so ("…for this source image")
-// 2) the preset's ambiance/style modifier (Phase 3) — none for a template
-//    (templates.ts): its prompt already says what the image is. With neither
-//    an ambiance nor a template (the menu's "Sans ambiance", 2026-10-10), a
-//    faithful photo render instead (PHOTO_RENDER_MODIFIER)
-// 3) the user's optional free-text detail
+// Assembles the prompt of a generation (Générer) on the server, from
+// structured parameters only — the client sends a preset or template key, an
+// optional sky, an engine and the user's own words, never a prompt
+// (2026-10-19, the owner's prompt audit, D1).
 //
-// The materials section is ALWAYS included, even for the "esquisse" preset —
-// a sketch of a timber-clad wall must still read as timber, just drawn
-// differently. Only the rendering style changes with the preset, never the
-// building's material memory.
+// - A light profile (a fan template or an old light ambiance), no ambiance
+//   (C0) or the pencil sketch: render-profiles.ts's lookSpec — geometry
+//   lock, the request, the light, the materials, the photo look, what to
+//   avoid, the final check.
+// - A module that changes the kind of picture (3D plan, exploded view,
+//   model, access diagram): transformSpec — the transform lock, the request,
+//   the module's own text, the recorded materials where the module keeps
+//   them.
+// - The analysis board: the text it always had (materials, modifier, the
+//   user's words), untouched — its rework is a separate project.
+// Then formatPrompt lays the spec out for the engine that will read it.
 //
 // A material is data, never an instruction: its face and its value are each
 // put on ONE line (toPromptLine), so a line break typed or detected inside a
 // value cannot start a line of its own in the prompt. A material whose face
-// or value is blank once flattened says nothing and is left out (the same
-// rule as resolve.ts for a blank detection); with no line left, the header
-// goes too.
-import { PHOTO_RENDER_MODIFIER, PRESETS, type PresetKey } from './presets';
+// or value is blank once flattened says nothing and is left out; with no line
+// left, the header goes too.
+import 'server-only';
+import type { EngineName } from './engines/types';
+import { PRESETS, type PresetKey } from './presets';
+import {
+  formatPrompt,
+  lookSpec,
+  toPromptLine,
+  transformSpec,
+  type LookKey,
+  type SkyKey,
+} from './render-profiles';
 
-// Every character a model may read as a line break — LF, CR (alone or in
-// CRLF), vertical tab, form feed, NEL, LINE SEPARATOR, PARAGRAPH SEPARATOR —
-// with the spaces or tabs around it; a run of them counts as one.
-const LINE_BREAKS = /[\t ]*(?:[\n\r\v\f\u0085\u2028\u2029][\t ]*)+/g;
-
-/** A material field as one line of prompt text: each run of line breaks becomes one space, ends trimmed. */
-export function toPromptLine(text: string): string {
-  return text.replace(LINE_BREAKS, ' ').trim();
-}
+export { toPromptLine };
 
 export interface MaterialSnapshotEntry {
   face: string;
@@ -38,33 +41,69 @@ export interface MaterialSnapshotEntry {
   confidence: number | null;
 }
 
-export function buildGenerationPrompt(input: {
-  materialsSnapshot: MaterialSnapshotEntry[];
-  /** null for a generation started from a template. */
-  preset: PresetKey | null;
-  customPrompt?: string | undefined;
-  /** No ambiance and no template: ask for a faithful photo render. */
-  photoRender?: boolean;
-}): string {
-  const parts: string[] = [];
+/** The analysis board's own header, as it was before the audit. */
+const BOARD_MATERIALS_HEADER =
+  "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:";
 
-  const materialLines = input.materialsSnapshot
+function boardPrompt(
+  modifier: string,
+  materials: readonly MaterialSnapshotEntry[],
+  customPrompt: string | undefined,
+): string {
+  const parts: string[] = [];
+  const lines = materials
     .map((m) => ({ face: toPromptLine(m.face), valeur: toPromptLine(m.valeur) }))
     .filter((m) => m.face !== '' && m.valeur !== '')
     .map((m) => `- ${m.face}: ${m.valeur}`);
-  if (materialLines.length > 0) {
-    parts.push(
-      "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:",
-      ...materialLines,
+  if (lines.length > 0) parts.push(BOARD_MATERIALS_HEADER, ...lines);
+  parts.push(modifier);
+  if (customPrompt?.trim()) parts.push(customPrompt.trim());
+  return parts.join('\n');
+}
+
+export function buildGenerationPrompt(input: {
+  engine: EngineName;
+  materialsSnapshot: readonly MaterialSnapshotEntry[];
+  /** The ambiance or the template's key; null: no ambiance (C0). */
+  preset: PresetKey | null;
+  /** Exterior day only: lightly hazy (default) or direct sun. */
+  sky?: SkyKey | undefined;
+  customPrompt?: string | undefined;
+}): string {
+  const { engine, materialsSnapshot: materials, customPrompt } = input;
+  const def = input.preset ? PRESETS[input.preset].prompt : null;
+
+  if (def?.kind === 'board') return boardPrompt(def.modifier, materials, customPrompt);
+
+  if (def?.kind === 'transform') {
+    return formatPrompt(
+      engine,
+      transformSpec({
+        representation: def.modifier,
+        request: customPrompt,
+        materials: def.keepsMaterials ? materials : [],
+      }),
     );
   }
 
-  if (input.preset) parts.push(PRESETS[input.preset].promptModifier);
-  else if (input.photoRender) parts.push(PHOTO_RENDER_MODIFIER);
+  const look: LookKey =
+    input.preset === null
+      ? 'source'
+      : input.preset === 'croquis'
+        ? 'sketch'
+        : lookKey(input.preset);
+  return formatPrompt(engine, lookSpec({ look, sky: input.sky, request: customPrompt, materials }));
+}
 
-  if (input.customPrompt?.trim()) {
-    parts.push(input.customPrompt.trim());
+function lookKey(preset: PresetKey): LookKey {
+  switch (preset) {
+    case 'jour_ext':
+    case 'jour_int':
+    case 'nuit_ext':
+    case 'nuit_int':
+      return preset;
+    default:
+      // Every other `look` preset is listed above; a new one must be mapped.
+      throw new Error(`no look for preset ${preset}`);
   }
-
-  return parts.join('\n');
 }

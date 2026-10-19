@@ -34,12 +34,18 @@ import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-lab
 import { EngineLogo } from '@/components/EngineLogo';
 import { VersionSelect } from '../VersionSelect';
 import {
+  DARK_ROOM_HINT,
+  DARK_ROOM_LABEL,
   DEFAULT_ENHANCE_OPTIONS,
+  DEFAULT_ENHANCE_STRENGTH,
+  ENHANCE_AMBIANCE_KEYS,
+  ENHANCE_AMBIANCE_LABELS,
   ENHANCE_OPTIONS,
   ENHANCE_OPTION_KEYS,
   ENHANCE_STRENGTHS,
   ENHANCE_STRENGTH_HINTS,
   ENHANCE_STRENGTH_LABELS,
+  type EnhanceAmbianceKey,
   type EnhanceOptionKey,
   type EnhanceStrength,
 } from '@/lib/server/generation/enhance';
@@ -69,8 +75,10 @@ import { fitForUpload } from '../fit-upload';
 const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
 const HEADING =
   'font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]';
-/** The two-way toggles of the column (intensity, engine). */
+/** The two-way toggle of the column (engine). */
 const SEGMENT = 'grid grid-cols-2 gap-1 rounded-xl bg-[#F7F7FA] p-1';
+/** The three intensities (2026-10-19, D6). */
+const SEGMENT_3 = 'grid grid-cols-3 gap-1 rounded-xl bg-[#F7F7FA] p-1';
 const SEGMENT_ITEM =
   'flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-[12.5px] font-semibold transition-colors';
 
@@ -175,7 +183,11 @@ export function EnhanceClient({
   const [working, setWorking] = useState(false);
 
   const [options, setOptions] = useState<EnhanceOptionKey[]>(DEFAULT_ENHANCE_OPTIONS);
-  const [strength, setStrength] = useState<EnhanceStrength>('subtle');
+  const [strength, setStrength] = useState<EnhanceStrength>(DEFAULT_ENHANCE_STRENGTH);
+  // Lumière's sub-option and the profile « Ambiance » harmonises towards
+  // (2026-10-19, D6) — sent only while their option is ticked.
+  const [darkRoom, setDarkRoom] = useState(false);
+  const [ambiance, setAmbiance] = useState<EnhanceAmbianceKey>('jour_ext');
   const [engine, setEngine] = useState<EngineName>('nanobanana');
   const [instruction, setInstruction] = useState('');
   const [ratio, setRatio] = useState<RatioKey>('auto');
@@ -273,6 +285,8 @@ export function EnhanceClient({
       form.append('ratio', ratio);
       form.append('resolution', resolution);
       for (const key of options) form.append('options', key);
+      if (options.includes('lighting') && darkRoom) form.append('darkRoom', '1');
+      if (options.includes('ambiance')) form.append('ambiance', ambiance);
       if (instruction.trim()) form.append('instruction', instruction.trim());
       const csrf = getCsrfTokenForUpload();
       const res = await fetch(`/api/projects/${current.projectId}/enhance`, {
@@ -482,18 +496,63 @@ export function EnhanceClient({
             <h3 className={`${HEADING} mb-3`}>{t('enhance.optionsHeading')}</h3>
             <div className="flex flex-col gap-1">
               {ENHANCE_OPTION_KEYS.map((key) => (
-                <OptionRow
-                  key={key}
-                  optionKey={key}
-                  on={options.includes(key)}
-                  disabled={working}
-                  onToggle={() => toggleOption(key)}
-                />
+                <div key={key} className="flex flex-col gap-1">
+                  <OptionRow
+                    optionKey={key}
+                    on={options.includes(key)}
+                    disabled={working}
+                    onToggle={() => toggleOption(key)}
+                  />
+                  {key === 'lighting' && options.includes('lighting') && (
+                    <label className="ml-7 flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-[12px] text-[#3D3B49] hover:bg-[#F7F7FA]">
+                      <input
+                        type="checkbox"
+                        checked={darkRoom}
+                        disabled={working}
+                        onChange={(e) => setDarkRoom(e.target.checked)}
+                        className="h-3.5 w-3.5 accent-[#2948FC]"
+                      />
+                      <span className="min-w-0">
+                        <span className="block font-semibold leading-tight">
+                          {DARK_ROOM_LABEL[locale]}
+                        </span>
+                        <span className="block truncate text-[11px] text-[#6B6878]">
+                          {DARK_ROOM_HINT[locale]}
+                        </span>
+                      </span>
+                    </label>
+                  )}
+                  {key === 'ambiance' && options.includes('ambiance') && (
+                    <div
+                      role="radiogroup"
+                      aria-label={t('enhance.ambianceProfile')}
+                      className="ml-7 grid grid-cols-2 gap-1"
+                    >
+                      {ENHANCE_AMBIANCE_KEYS.map((k) => (
+                        <button
+                          key={k}
+                          type="button"
+                          role="radio"
+                          aria-checked={ambiance === k}
+                          disabled={working}
+                          onClick={() => setAmbiance(k)}
+                          className={`rounded-lg px-2 py-1 text-[11.5px] font-semibold transition-colors disabled:cursor-not-allowed ${
+                            ambiance === k
+                              ? 'bg-[#EEF1FF] text-[#1E36D6]'
+                              : 'bg-[#F7F7FA] text-[#3D3B49] hover:bg-[#F2F2F5]'
+                          }`}
+                        >
+                          {ENHANCE_AMBIANCE_LABELS[k][locale]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
 
             <h3 className={`${HEADING} mb-1.5 mt-3.5`}>{t('enhance.strengthHeading')}</h3>
-            <div className={SEGMENT}>
+            <div className={SEGMENT_3}>
               {ENHANCE_STRENGTHS.map((s) => (
                 <button
                   key={s}

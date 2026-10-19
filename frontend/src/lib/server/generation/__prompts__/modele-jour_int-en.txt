@@ -1,4 +1,0 @@
-Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:
-- facade_principale: Enduit blanc taloché
-- toiture: Tuile terre cuite
-Create a photorealistic interior photograph of the space in the attached image, lit by natural daylight through the windows: soft ambient light, gentle shadows, no artificial lighting. Keep the exact point of view, the proportions, the walls, the openings and the materials. Keep the existing furniture; if the room is empty, furnish it in a warm contemporary style. Add a few objects so the space feels lived-in: a throw on the sofa, books, a plant, a vase. High-end interior photography.

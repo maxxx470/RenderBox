@@ -45,8 +45,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'sharp',
       'upscale',
     ],
-    fr: "La page Enhance améliore un rendu existant sans changer le cadrage ni le bâtiment : joignez l'image avec le trombone de la barre, cochez ce qu'il faut améliorer (netteté, détail, lumière, matériaux, ciel, végétation, vie et ambiance) — le « + » de chaque élément ajoute une image de référence — ou décrivez-le vous-même dans la barre, choisissez l'intensité Léger ou Marqué, puis lancez.",
-    en: 'The Enhance page improves an existing render without changing the framing or the building: attach the image with the paperclip in the bar, tick what to improve (sharpness, detail, lighting, materials, sky, planting, life and atmosphere) — the "+" of each item adds a reference image — or describe it yourself in the bar, pick Subtle or Strong, then run it.',
+    fr: "La page Enhance améliore un rendu existant sans changer le cadrage ni le bâtiment : joignez l'image avec le trombone de la barre, cochez ce qu'il faut améliorer (netteté, détails, lumière — avec l’option « Pièce sombre » —, matériaux, ciel, végétation, vie et éléments de scène, ambiance) ou décrivez-le vous-même dans la barre, choisissez l'intensité Léger, Moyen ou Fort, puis lancez.",
+    en: 'The Enhance page improves an existing render without changing the framing or the building: attach the image with the paperclip in the bar, tick what to improve (sharpness, details, lighting — with its "Dark room" option —, materials, sky, planting, life and scene elements, atmosphere) or describe it yourself in the bar, pick Subtle, Medium or Strong, then run it.',
   },
   {
     keys: ['moteur', 'engine', 'rouge', 'jaune', 'red', 'yellow'],
@@ -119,8 +119,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'planche',
       'isométrique',
     ],
-    fr: 'Dans la barre de commande, le menu Ambiance propose Plan 3D aménagé, Axonométrie éclatée, Planche d’analyse, Maquette isométrique et Esquisse (un schéma blanc légendé) ; par défaut, aucune ambiance n’est choisie et vous obtenez un rendu photo fidèle à votre image ; pour retirer une ambiance, cliquez à nouveau dessus. Les lumières Jour extérieur, Jour intérieur, Nuit extérieur et Nuit intérieur sont des modèles de la page Générateur d’images : survolez-en un et cliquez sur « Utiliser ce modèle ».',
-    en: 'In the command bar, the Ambiance menu offers Furnished 3D plan, Exploded axonometric, Concept board, Isometric model and Sketch (a labelled white diagram); by default no ambiance is chosen and you get a faithful photo render of your image; to remove one, click it again. The Exterior day, Interior day, Exterior night and Interior night lights are templates on the Image generator page: hover one and click "Use this template".',
+    fr: 'Dans la barre de commande, le menu Ambiance propose Plan 3D aménagé, Axonométrie éclatée, Planche d’analyse, Maquette isométrique, Schéma d’accès (un schéma blanc légendé) et Esquisse (un croquis au crayon) ; par défaut, aucune ambiance n’est choisie et vous obtenez un rendu photo fidèle à votre image ; pour retirer une ambiance, cliquez à nouveau dessus. Les lumières Jour extérieur, Jour intérieur, Nuit extérieur et Nuit intérieur sont des modèles de la page Générateur d’images : survolez-en un et cliquez sur « Utiliser ce modèle ».',
+    en: 'In the command bar, the Ambiance menu offers Furnished 3D plan, Exploded axonometric, Concept board, Isometric model, Access diagram (a labelled white diagram) and Sketch (a pencil sketch); by default no ambiance is chosen and you get a faithful photo render of your image; to remove one, click it again. The Exterior day, Interior day, Exterior night and Interior night lights are templates on the Image generator page: hover one and click "Use this template".',
   },
   {
     keys: [

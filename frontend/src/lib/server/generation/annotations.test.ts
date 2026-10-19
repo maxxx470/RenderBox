@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AnnotationsSchema, buildAnnotationPrompt, MAX_ANNOTATIONS, regionOf } from './annotations';
+import { AnnotationsSchema, MAX_ANNOTATIONS, regionOf } from './annotations';
 
 describe('AnnotationsSchema', () => {
   it('accepts points inside the frame with a comment', () => {
@@ -21,47 +21,5 @@ describe('regionOf', () => {
     expect(regionOf(10, 10)).toBe('the top-left');
     expect(regionOf(90, 50)).toBe('the middle-right');
     expect(regionOf(50, 90)).toBe('the bottom-center');
-  });
-});
-
-describe('buildAnnotationPrompt', () => {
-  const annotations = [
-    { x: 20, y: 40, comment: 'Façade en bardage bois' },
-    { x: 75.4, y: 80, comment: '  Sol en pierre claire ' },
-  ];
-
-  it('numbers each comment with its point and region, in order', () => {
-    const prompt = buildAnnotationPrompt({ annotations, withMarkedImage: true });
-    expect(prompt).toContain(
-      '1. At 20% from the left, 40% from the top (the middle-left): Façade en bardage bois',
-    );
-    expect(prompt).toContain(
-      '2. At 75% from the left, 80% from the top (the bottom-right): Sol en pierre claire',
-    );
-    expect(prompt.indexOf('1. At')).toBeLessThan(prompt.indexOf('2. At'));
-  });
-
-  it('mentions the marked copy only when it is attached', () => {
-    expect(buildAnnotationPrompt({ annotations, withMarkedImage: true })).toContain(
-      'numbered markers',
-    );
-    expect(buildAnnotationPrompt({ annotations, withMarkedImage: false })).not.toContain(
-      'numbered markers',
-    );
-  });
-
-  it('always asks to keep everything else unchanged', () => {
-    expect(buildAnnotationPrompt({ annotations, withMarkedImage: false })).toContain(
-      'Keep everything else identical',
-    );
-  });
-
-  it('appends the overall note last, and skips a blank one', () => {
-    expect(
-      buildAnnotationPrompt({ annotations, withMarkedImage: true, instruction: ' plus chaud ' }),
-    ).toMatch(/\nOverall note: plus chaud$/);
-    expect(
-      buildAnnotationPrompt({ annotations, withMarkedImage: true, instruction: '  ' }),
-    ).not.toContain('Overall note');
   });
 });

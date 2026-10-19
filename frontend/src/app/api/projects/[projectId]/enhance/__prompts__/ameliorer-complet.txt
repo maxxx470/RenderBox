@@ -1,9 +1,0 @@
-Enhance this architectural render. Keep the exact same composition, camera angle, framing, geometry, proportions, design and colours — do not add, remove or move any building element.
-Increase sharpness: crisp edges and clean lines, remove noise, blur and compression artefacts.
-Make every material more photorealistic without changing what it is: believable texture, grain, roughness and reflectivity for each surface.
-Replace a flat or empty sky with a natural, realistic one matching the existing light.
-The first image is the render to enhance. The other images are references only: use each one solely as a guide for the aspect named below, and never copy its building, composition or camera.
-Image 2 is a reference for the look of the materials and finishes (texture, grain, colour, reflectivity).
-Image 3 is a reference for the sky.
-Apply the improvements clearly, aiming for a high-end photorealistic architectural visualisation, while still preserving the design exactly.
-Ambiance de fin de journée

@@ -65,8 +65,33 @@ vi.mock('@/lib/server/materials/detect-and-merge', () => ({
 import { verifyToken } from '@/lib/server/auth';
 import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
-import { PHOTO_RENDER_MODIFIER, PRESETS } from '@/lib/server/generation/presets';
-import { TEMPLATES } from '@/lib/server/generation/templates';
+import type { PresetKey } from '@/lib/server/generation/presets';
+import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
+import { GEOMETRY_LOCK } from '@/lib/server/generation/render-profiles';
+
+/**
+ * What the route must send: the server's own builder on the same inputs
+ * (the texts themselves are frozen in generation/build-prompt.test.ts).
+ */
+function sent(
+  preset: PresetKey | null,
+  rows: [string, string][] = [],
+  customPrompt?: string,
+  extra: { engine?: 'nanobanana' | 'gpt_image'; sky?: 'hazy' | 'sun' } = {},
+): string {
+  return buildGenerationPrompt({
+    engine: extra.engine ?? 'nanobanana',
+    materialsSnapshot: rows.map(([face, valeur]) => ({
+      face,
+      valeur,
+      source: '',
+      confidence: null,
+    })),
+    preset,
+    sky: extra.sky,
+    customPrompt,
+  });
+}
 
 const USER_ID = 'user-1';
 const PROJECT_ID = 'project-1';
@@ -230,22 +255,23 @@ describe('POST /api/projects/[projectId]/generate — presets', () => {
   it('assembles the prompt sent to the engine with the source image materials + preset modifier', async () => {
     imageMaterials([], [correction(SOURCE_NODE_ID, 'toiture', 'Tuile terre cuite')]);
 
-    await POST(makeReq(validBody({ preset: 'esquisse' })), ctx());
+    await POST(makeReq(validBody({ preset: 'eclate' })), ctx());
 
     const call = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
     expect(call.prompt).toContain('Tuile terre cuite');
-    expect(call.prompt.toLowerCase()).toContain('diagram');
+    expect(call.prompt.toLowerCase()).toContain('exploded axonometric');
   });
 
   it('asks for a faithful photo render when no ambiance is chosen', async () => {
     const res = await POST(makeReq(validBody({ preset: null })), ctx());
     expect(res.status).toBe(201);
     const call = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-    expect(call.prompt).toContain('Keep the exact point of view');
+    expect(call.prompt).toBe(sent(null));
+    expect(call.prompt).toContain(GEOMETRY_LOCK);
     expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({ preset: null });
   });
 
-  it("sends a template's prompt alone and records the template on the node", async () => {
+  it("builds the template's prompt on the server and records the template on the node", async () => {
     const res = await POST(
       makeReq(validBody({ preset: 'esquisse', template: 'nuit_ext', customPrompt: 'de nuit' })),
       ctx(),
@@ -253,8 +279,7 @@ describe('POST /api/projects/[projectId]/generate — presets', () => {
     expect(res.status).toBe(201);
     const call = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
     expect(call.prompt.toLowerCase()).not.toContain('diagram');
-    expect(call.prompt).not.toContain('photorealistic architectural photograph of the attached');
-    expect(call.prompt).toContain('de nuit');
+    expect(call.prompt).toBe(sent('nuit_ext', [], 'de nuit'));
     expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({
       preset: 'nuit_ext',
     });
@@ -403,10 +428,6 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
       confidence: null,
     },
   ];
-  const MATERIAL_LINES = [
-    "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:",
-    '- facade_principale: Enduit blanc taloché',
-  ];
 
   function engineInput() {
     return mockGenerate.mock.calls[0]?.[1] as Record<string, unknown> & {
@@ -421,21 +442,25 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
       ctx(),
     );
     expect(res.status).toBe(201);
-    expect(engineInput().prompt).toBe([PHOTO_RENDER_MODIFIER, 'façade en bois'].join('\n'));
+    expect(engineInput().prompt).toBe(sent(null, [], 'façade en bois'));
   });
 
   it('sends C0 when the preset field is left out entirely', async () => {
     const body = validBody();
     delete (body as Record<string, unknown>).preset;
     await POST(makeReq(body), ctx());
-    expect(engineInput().prompt).toBe(PHOTO_RENDER_MODIFIER);
+    expect(engineInput().prompt).toBe(sent(null));
   });
 
   it('sends materials, ambiance and free text in that order', async () => {
     imageMaterials([], [correction(SOURCE_NODE_ID, 'facade_principale', 'Enduit blanc taloché')]);
     await POST(makeReq(validBody({ preset: 'isometrie', customPrompt: 'vue aérienne' })), ctx());
+    // The model keeps its own palette: the recorded material is not listed.
+    expect(engineInput().prompt).toBe(sent('isometrie', [], 'vue aérienne'));
+    mockGenerate.mockClear();
+    await POST(makeReq(validBody({ preset: 'eclate', customPrompt: 'vue aérienne' })), ctx());
     expect(engineInput().prompt).toBe(
-      [...MATERIAL_LINES, PRESETS.isometrie.promptModifier, 'vue aérienne'].join('\n'),
+      sent('eclate', [['facade_principale', 'Enduit blanc taloché']], 'vue aérienne'),
     );
   });
 
@@ -481,22 +506,44 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     expect(engineInput()).not.toHaveProperty('referenceImages');
   });
 
-  it("sends a template's text as the client typed it, with no ambiance and no C0", async () => {
-    const text = TEMPLATES.jour_int.prompt.fr;
+  it("a template's prompt comes from the server; the bar's text is only the user's request (D1)", async () => {
     await POST(
-      makeReq(validBody({ preset: 'plan_3d', template: 'jour_int', customPrompt: text })),
+      makeReq(validBody({ preset: 'plan_3d', template: 'jour_int', customPrompt: 'plus chaud' })),
       ctx(),
     );
-    expect(engineInput().prompt).toBe(text);
+    expect(engineInput().prompt).toBe(sent('jour_int', [], 'plus chaud'));
+    expect(engineInput().prompt).not.toContain('top-down');
   });
 
-  it('documents an emptied template: the engine receives an empty prompt (audit F7, not fixed)', async () => {
+  it('a template with no note still sends its whole profile (audit F7, fixed)', async () => {
     const res = await POST(
       makeReq(validBody({ preset: null, template: 'nuit_ext', customPrompt: '' })),
       ctx(),
     );
     expect(res.status).toBe(201);
-    expect(engineInput().prompt).toBe('');
+    expect(engineInput().prompt).toBe(sent('nuit_ext'));
+    expect(engineInput().prompt).toContain('2800 K');
+  });
+
+  it("exterior day's sky: lightly hazy by default, direct sun when asked (D2)", async () => {
+    await POST(makeReq(validBody({ template: 'jour_ext' })), ctx());
+    expect(engineInput().prompt).toBe(sent('jour_ext'));
+    mockGenerate.mockClear();
+    await POST(makeReq(validBody({ template: 'jour_ext', sky: 'sun' })), ctx());
+    expect(engineInput().prompt).toBe(sent('jour_ext', [], undefined, { sky: 'sun' }));
+    expect(engineInput().prompt).toContain('clear sky');
+  });
+
+  it('refuses an unknown sky', async () => {
+    const res = await POST(makeReq(validBody({ template: 'jour_ext', sky: 'pink' })), ctx());
+    expect(res.status).toBe(400);
+    expect(mockGenerate).not.toHaveBeenCalled();
+  });
+
+  it('lays the prompt out for the chosen engine', async () => {
+    await POST(makeReq(validBody({ engine: 'gpt_image', preset: null })), ctx());
+    expect(engineInput().prompt).toBe(sent(null, [], undefined, { engine: 'gpt_image' }));
+    expect(engineInput().prompt).toContain('6. FINAL CHECK');
   });
 
   it('scopes the materials to the source image: the project sheet is read for the snapshot only (audit F3, étape 3C.3)', async () => {
@@ -511,12 +558,12 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     expect(prismaMock.materialDetection.findMany.mock.calls[0]?.[0]?.where).toEqual({
       nodeId: SOURCE_NODE_ID,
     });
-    expect(engineInput().prompt).toBe(PHOTO_RENDER_MODIFIER);
+    expect(engineInput().prompt).toBe(sent(null));
 
     imageMaterials([], [correction(SOURCE_NODE_ID, 'facade_principale', 'Enduit blanc taloché')]);
     mockGenerate.mockClear();
     await POST(makeReq(validBody({ preset: null })), ctx());
-    expect(engineInput().prompt).toBe([...MATERIAL_LINES, PHOTO_RENDER_MODIFIER].join('\n'));
+    expect(engineInput().prompt).toBe(sent(null, [['facade_principale', 'Enduit blanc taloché']]));
   });
 
   it('re-reads the materials from the GENERATED image, not from the source', async () => {
@@ -551,8 +598,6 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
 // (étape 3D sent its manual rows) stays whole in materialsSnapshot only: an
 // old project correction counts again only once attached to an image.
 describe('POST /api/projects/[projectId]/generate — materials of the source image (étape 3C.3)', () => {
-  const HEADER =
-    "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:";
   const OTHER_NODE_ID = 'node-other';
   const SHEET = [
     { face: 'toiture', valeur: 'Zinc', source: 'manuel', confidence: null },
@@ -589,12 +634,8 @@ describe('POST /api/projects/[projectId]/generate — materials of the source im
       sourceIs(OTHER_NODE_ID);
       await POST(makeReq(validBody({ preset: null, sourceNodeId: OTHER_NODE_ID })), ctx());
 
-      expect(prompt(0)).toBe(
-        [HEADER, '- facade_principale: Bardage bois', PHOTO_RENDER_MODIFIER].join('\n'),
-      );
-      expect(prompt(1)).toBe(
-        [HEADER, '- facade_principale: Enduit blanc', PHOTO_RENDER_MODIFIER].join('\n'),
-      );
+      expect(prompt(0)).toBe(sent(null, [['facade_principale', 'Bardage bois']]));
+      expect(prompt(1)).toBe(sent(null, [['facade_principale', 'Enduit blanc']]));
       const asked = (calls: readonly (readonly unknown[])[]) =>
         calls.map((c) => (c[0] as { where: unknown }).where);
       expect(asked(prismaMock.materialCorrection.findMany.mock.calls)).toEqual([
@@ -631,7 +672,7 @@ describe('POST /api/projects/[projectId]/generate — materials of the source im
         ctx(),
       );
       expect(res.status).toBe(201);
-      expect(prompt()).toBe([PHOTO_RENDER_MODIFIER, 'vue de face'].join('\n'));
+      expect(prompt()).toBe(sent(null, [], 'vue de face'));
       expect(prompt()).not.toContain('Zinc');
       expect(prompt()).not.toContain('Ardoise');
       expect(stored().promptMaterials).toEqual([]);
@@ -651,13 +692,11 @@ describe('POST /api/projects/[projectId]/generate — materials of the source im
       imageMaterials(DETECTED, [correction(SOURCE_NODE_ID, 'toiture', 'Ardoise')]);
       await POST(makeReq(validBody({ preset: null })), ctx());
       expect(prompt()).toBe(
-        [
-          HEADER,
-          '- facade_principale: Enduit blanc',
-          '- toiture: Ardoise',
-          '- sol: Parquet',
-          PHOTO_RENDER_MODIFIER,
-        ].join('\n'),
+        sent(null, [
+          ['facade_principale', 'Enduit blanc'],
+          ['toiture', 'Ardoise'],
+          ['sol', 'Parquet'],
+        ]),
       );
       expect(stored().promptMaterials).toEqual([
         {
@@ -682,9 +721,10 @@ describe('POST /api/projects/[projectId]/generate — materials of the source im
       imageMaterials(DETECTED, [correction(SOURCE_NODE_ID, 'toiture', null)]);
       await POST(makeReq(validBody({ preset: null })), ctx());
       expect(prompt()).toBe(
-        [HEADER, '- facade_principale: Enduit blanc', '- sol: Parquet', PHOTO_RENDER_MODIFIER].join(
-          '\n',
-        ),
+        sent(null, [
+          ['facade_principale', 'Enduit blanc'],
+          ['sol', 'Parquet'],
+        ]),
       );
       expect(prompt()).not.toContain('Tuile');
       expect(stored().promptMaterials.map((m) => m.face)).toEqual(['facade_principale', 'sol']);
@@ -715,12 +755,11 @@ describe('POST /api/projects/[projectId]/generate — materials of the source im
       const data = stored();
       expect(data.prompt).toBe(prompt());
       expect(prompt()).toBe(
-        [
-          HEADER,
-          ...data.promptMaterials.map((m) => `- ${m.face}: ${m.valeur}`),
-          PRESETS.eclate.promptModifier,
+        sent(
+          'eclate',
+          data.promptMaterials.map((m) => [m.face, m.valeur]),
           'vue aérienne',
-        ].join('\n'),
+        ),
       );
       expect(data.promptMaterials.map((m) => m.face)).toEqual(['sol', 'menuiseries']);
     });
@@ -728,18 +767,14 @@ describe('POST /api/projects/[projectId]/generate — materials of the source im
     it('no material at all: no header in the prompt, [] in promptMaterials — never null, never invented', async () => {
       const res = await POST(makeReq(validBody({ preset: null })), ctx());
       expect(res.status).toBe(201);
-      expect(prompt()).toBe(PHOTO_RENDER_MODIFIER);
+      expect(prompt()).toBe(sent(null));
       expect(stored().promptMaterials).toEqual([]);
     });
 
     it('the same list goes with a template of the fan', async () => {
       imageMaterials([], [correction(SOURCE_NODE_ID, 'toiture', 'Zinc')]);
-      const text = TEMPLATES.nuit_ext.prompt.en;
-      await POST(
-        makeReq(validBody({ preset: null, template: 'nuit_ext', customPrompt: text })),
-        ctx(),
-      );
-      expect(prompt()).toBe([HEADER, '- toiture: Zinc', text].join('\n'));
+      await POST(makeReq(validBody({ preset: null, template: 'nuit_ext' })), ctx());
+      expect(prompt()).toBe(sent('nuit_ext', [['toiture', 'Zinc']]));
       expect(stored().promptMaterials).toEqual([
         { face: 'toiture', valeur: 'Zinc', origin: 'correction', nodeId: SOURCE_NODE_ID },
       ]);

@@ -1,4 +1,0 @@
-Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:
-- facade_principale: Enduit blanc taloché
-- toiture: Tuile terre cuite
-Créez une photographie intérieure photoréaliste de l’espace de l’image jointe, éclairé par la lumière du jour qui entre par les fenêtres : lumière douce, ombres légères, aucun éclairage artificiel. Gardez exactement le point de vue, les proportions, les murs, les ouvertures et les matériaux. Gardez le mobilier existant ; si la pièce est vide, meublez-la dans un style contemporain chaleureux. Ajoutez quelques objets pour que l’espace paraisse habité : un plaid sur le canapé, des livres, une plante, un vase. Photographie d’intérieur haut de gamme.

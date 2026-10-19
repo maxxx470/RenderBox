@@ -38,7 +38,7 @@ import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge
 import { loadPromptMaterials, toPromptEntries } from '@/lib/server/materials/node-materials';
 import type { ResolvedMaterial } from '@/lib/server/materials/resolve';
 import { PRESET_KEYS } from '@/lib/server/generation/presets';
-import { TEMPLATE_KEYS } from '@/lib/server/generation/templates';
+import { SKY_OPTIONS, TEMPLATE_KEYS } from '@/lib/server/generation/templates';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
@@ -47,14 +47,18 @@ import { log } from '@/lib/server/observability/log';
 const Body = z
   .object({
     sourceNodeId: z.string().min(1),
-    // Null or absent: no ambiance — a faithful photo render (PHOTO_RENDER_MODIFIER).
+    // Null or absent: no ambiance — a faithful photo render (C0, render-profiles.ts).
     preset: z.enum(PRESET_KEYS).nullish(),
     engine: z.enum(ENGINE_NAMES),
     customPrompt: z.string().trim().max(2000).optional(),
-    // Started from a template (the image generator page): the prompt is the
-    // template's, sent without any ambiance, and the node keeps the template's
-    // key as its preset (the four lights, named in the tree).
+    // Started from a template (the image generator page): the server builds
+    // that light profile's prompt from the key (render-profiles.ts) — the
+    // client never sends it — and the node keeps the key as its preset (the
+    // four lights, named in the tree). customPrompt is then the user's own
+    // note, sent as their request.
     template: z.enum(TEMPLATE_KEYS).optional(),
+    // Exterior day's sky (2026-10-19, D2): lightly hazy unless 'sun'.
+    sky: z.enum(SKY_OPTIONS).optional(),
     ratio: z.enum(RATIO_KEYS).optional(),
     resolution: z.enum(RESOLUTION_KEYS).optional(),
     // The engine's version (engine-versions.ts); absent: the engine's default.
@@ -99,12 +103,11 @@ export async function POST(
       );
     }
     // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
-    const { sourceNodeId, engine, customPrompt, ratio, resolution, template } = parsed.data;
+    const { sourceNodeId, engine, customPrompt, ratio, resolution, template, sky } = parsed.data;
     const version = resolveEngineVersion(engine, parsed.data.version);
-    // The ambiance whose modifier goes into the prompt — none for a template.
-    const promptPreset = template ? null : (parsed.data.preset ?? null);
-    // What the node records: the template's key or the ambiance.
-    const preset = template ?? promptPreset;
+    // What the prompt is built on and the node records: the template's key
+    // (a light profile) or the ambiance; neither: a faithful photo render.
+    const preset = template ?? parsed.data.preset ?? null;
 
     const sourceNode = await prisma.renderNode.findUnique({
       where: { id: sourceNodeId },
@@ -188,10 +191,11 @@ export async function POST(
       const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
       const assembledPrompt = buildGenerationPrompt({
+        engine,
         materialsSnapshot: toPromptEntries(promptMaterials),
-        preset: promptPreset,
+        preset,
+        sky,
         customPrompt,
-        photoRender: !template && !promptPreset,
       });
 
       let result;

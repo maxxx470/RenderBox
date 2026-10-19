@@ -1,5 +1,5 @@
-// Enhance (2026-10-08): multipart, one reference image per ticked
-// improvement, the free text alone allowed, an explicit ratio passed on.
+// Enhance: multipart, the free text alone allowed, an explicit ratio passed
+// on; since 2026-10-19 eight boxes, three intensities and no reference image.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { prismaMock } from '@/test-utils/prisma-mock';
@@ -71,6 +71,7 @@ import { verifyToken } from '@/lib/server/auth';
 import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
 import { ENHANCE_OPTION_KEYS } from '@/lib/server/generation/enhance';
+import { buildEnhancePrompt } from '@/lib/server/generation/enhance-prompt';
 
 const USER_ID = 'user-1';
 const PROJECT_ID = 'project-1';
@@ -177,35 +178,38 @@ describe('POST /api/projects/[projectId]/enhance', () => {
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 
-  it('runs on the free text alone, nothing ticked', async () => {
+  it('runs on the free text alone, nothing ticked, as a request limited to what it names', async () => {
     const res = await POST(
       makeReq(baseFields({ options: [], instruction: 'brighter interior' })),
       ctx(),
     );
     expect(res.status).toBe(201);
     const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-    expect(input.prompt.endsWith('brighter interior')).toBe(true);
-  });
-
-  it('refuses a reference for an improvement that is not ticked', async () => {
-    const res = await POST(makeReq(baseFields(), { ref_sky: pngFile() }), ctx());
-    expect(res.status).toBe(400);
-    expect(mockGenerate).not.toHaveBeenCalled();
-  });
-
-  it('sends each reference to the engine and names it in the prompt', async () => {
-    const res = await POST(
-      makeReq(baseFields({ options: ['lighting', 'materials'] }), { ref_materials: pngFile() }),
-      ctx(),
+    expect(input.prompt).toBe(
+      buildEnhancePrompt({
+        engine: 'nanobanana',
+        options: [],
+        strength: 'subtle',
+        instruction: 'brighter interior',
+      }),
     );
-    expect(res.status).toBe(201);
-    const input = mockGenerate.mock.calls[0]?.[1] as {
-      prompt: string;
-      referenceImages?: unknown[];
-    };
-    expect(input.referenceImages).toHaveLength(1);
-    expect(input.prompt).toContain('Image 2 is a reference for');
+    expect(input.prompt).toContain('Only modify what this request explicitly names');
   });
+
+  it.each(['ref_sky', 'ref_materials'])(
+    'refuses any reference image (%s): only the source is sent (D8)',
+    async (field) => {
+      const res = await POST(
+        makeReq(baseFields({ options: ['sky', 'materials'] }), { [field]: pngFile() }),
+        ctx(),
+      );
+      expect(res.status).toBe(400);
+      expect(((await res.json()) as { error: string }).error).toBe('REFERENCES_NOT_ACCEPTED');
+      expect(mockGenerate).not.toHaveBeenCalled();
+      expect(mockDebitCredits).not.toHaveBeenCalled();
+      expect(mockModerateImage).not.toHaveBeenCalled();
+    },
+  );
 
   it('keeps the framing on auto and passes an explicit ratio on', async () => {
     await POST(makeReq(baseFields()), ctx());
@@ -214,28 +218,32 @@ describe('POST /api/projects/[projectId]/enhance', () => {
     expect(mockGenerate.mock.calls[1]?.[1]).toMatchObject({ aspectRatio: '1:1' });
   });
 
-  it('422s when moderation flags a reference, before any generation', async () => {
-    mockModerateImage.mockResolvedValueOnce({ flagged: true, categories: ['violence'] });
-    const res = await POST(
-      makeReq(baseFields({ options: ['materials'] }), { ref_materials: pngFile() }),
+  it('accepts the three intensities and refuses another', async () => {
+    for (const strength of ['subtle', 'medium', 'strong']) {
+      const res = await POST(makeReq(baseFields({ strength })), ctx());
+      expect(res.status).toBe(201);
+    }
+    const res = await POST(makeReq(baseFields({ strength: 'extreme' })), ctx());
+    expect(res.status).toBe(400);
+  });
+
+  it('« Ambiance » needs its profile', async () => {
+    const res = await POST(makeReq(baseFields({ options: ['ambiance'] })), ctx());
+    expect(res.status).toBe(400);
+    expect(mockGenerate).not.toHaveBeenCalled();
+    const ok = await POST(
+      makeReq(baseFields({ options: ['ambiance'], ambiance: 'nuit_ext' })),
       ctx(),
     );
-    expect(res.status).toBe(422);
-    expect(mockGenerate).not.toHaveBeenCalled();
+    expect(ok.status).toBe(201);
   });
 });
 
-// Étape 2B (non-regression): what the engine actually receives from Améliorer —
-// the exact prompt for each improvement, references in their real order,
-// ratio, size and engine. Behaviour frozen as it is, nothing fixed.
+// What the engine actually receives from Améliorer (2026-10-19, the owner's
+// prompt audit): the prompt built by the server from the ticked boxes, only
+// the source image, ratio, size and engine.
 describe('POST /api/projects/[projectId]/enhance — what reaches the engine', () => {
   const SOURCE_BYTES = Buffer.from('source-node-bytes');
-
-  /** A PNG header (passes the magic-byte check) followed by a marker. */
-  const pngWith = (marker: string) =>
-    new File([Buffer.concat([PNG_BYTES.subarray(0, 8), Buffer.from(marker)])], `${marker}.png`, {
-      type: 'image/png',
-    });
 
   function engineCall(index = 0) {
     const [engine, input] = mockGenerate.mock.calls[index] as [
@@ -262,58 +270,58 @@ describe('POST /api/projects/[projectId]/enhance — what reaches the engine', (
     }) as unknown as typeof fetch;
   });
 
-  it('freezes the prompt of each improvement on its own (subtle, no text)', async () => {
-    const blocks: string[] = [];
-    for (const [i, key] of ENHANCE_OPTION_KEYS.entries()) {
-      await POST(makeReq(baseFields({ options: [key] })), ctx());
-      blocks.push(`--- ${key} ---\n${engineCall(i).input.prompt}`);
-    }
-    expect(mockGenerate).toHaveBeenCalledTimes(ENHANCE_OPTION_KEYS.length);
-    await expect(`${blocks.join('\n\n')}\n`).toMatchFileSnapshot(
-      './__prompts__/ameliorer-chaque-case.txt',
-    );
-  });
-
-  it('freezes a full prompt: several boxes, references, strong, and a free text', async () => {
+  it('builds the prompt from the boxes, « pièce sombre » and the profile', async () => {
     await POST(
       makeReq(
         baseFields({
-          options: ['sky', 'materials', 'sharpness'],
-          strength: 'strong',
+          options: ['sky', 'lighting', 'ambiance'],
+          strength: 'medium',
+          darkRoom: '1',
+          ambiance: 'jour_int',
           instruction: 'Ambiance de fin de journée',
         }),
-        // Sent sky first on purpose: the route orders them by the boxes' fixed order.
-        { ref_sky: pngWith('SKY'), ref_materials: pngWith('MATERIALS') },
       ),
       ctx(),
     );
-    const { input } = engineCall();
-    await expect(input.prompt).toMatchFileSnapshot('./__prompts__/ameliorer-complet.txt');
-    expect(input.prompt.endsWith('\nAmbiance de fin de journée')).toBe(true);
+    expect(engineCall().input.prompt).toBe(
+      buildEnhancePrompt({
+        engine: 'nanobanana',
+        options: ['sky', 'lighting', 'ambiance'],
+        strength: 'medium',
+        darkRoom: true,
+        ambiance: 'jour_int',
+        instruction: 'Ambiance de fin de journée',
+      }),
+    );
   });
 
-  it("sends the source first, then the references in the boxes' order (materials before sky), each named in the prompt", async () => {
+  it('ignores « pièce sombre » and the profile when their box is not ticked', async () => {
     await POST(
-      makeReq(baseFields({ options: ['sky', 'materials'] }), {
-        ref_sky: pngWith('SKY'),
-        ref_materials: pngWith('MATERIALS'),
-      }),
+      makeReq(baseFields({ options: ['sharpness'], darkRoom: '1', ambiance: 'nuit_int' })),
+      ctx(),
+    );
+    expect(engineCall().input.prompt).toBe(
+      buildEnhancePrompt({ engine: 'nanobanana', options: ['sharpness'], strength: 'subtle' }),
+    );
+  });
+
+  it('lays the prompt out for the chosen engine', async () => {
+    await POST(makeReq(baseFields({ engine: 'gpt_image' })), ctx());
+    expect(engineCall().input.prompt).toBe(
+      buildEnhancePrompt({ engine: 'gpt_image', options: ['lighting'], strength: 'subtle' }),
+    );
+  });
+
+  it('sends the source image only: no reference field', async () => {
+    await POST(
+      makeReq(baseFields({ options: [...ENHANCE_OPTION_KEYS], ambiance: 'jour_ext' })),
       ctx(),
     );
     const { input } = engineCall();
     expect(global.fetch).toHaveBeenCalledWith('https://blob.test/source.png');
     expect(input.sourceImageBuffer.equals(SOURCE_BYTES)).toBe(true);
-    const markers = (input.referenceImages ?? []).map((r) => r.buffer.subarray(8).toString());
-    expect(markers).toEqual(['MATERIALS', 'SKY']);
-    expect(input.prompt).toContain('Image 2 is a reference for the look of the materials');
-    expect(input.prompt).toContain('Image 3 is a reference for the sky.');
-  });
-
-  it('sends no reference field and no reference sentence when no reference is attached', async () => {
-    await POST(makeReq(baseFields({ options: ['lighting'] })), ctx());
-    const { input } = engineCall();
     expect(input).not.toHaveProperty('referenceImages');
-    expect(input.prompt).not.toContain('references only');
+    expect(input.prompt.toLowerCase()).not.toContain('reference');
   });
 
   it('passes the engine, an explicit ratio and the size on', async () => {
@@ -329,12 +337,12 @@ describe('POST /api/projects/[projectId]/enhance — what reaches the engine', (
     expect(engineCall().input).not.toHaveProperty('aspectRatio');
   });
 
-  it('never adds the materials sheet nor re-reads the materials', async () => {
+  it('never adds the project sheet nor re-reads the materials', async () => {
     prismaMock.material.findMany.mockResolvedValue([
       { face: 'toiture', valeur: 'Tuile', source: 'auto', confidence: 80 },
     ] as never);
     await POST(makeReq(baseFields()), ctx());
-    expect(engineCall().input.prompt).not.toContain('Materials recorded for this source image');
+    expect(engineCall().input.prompt).not.toContain('Tuile');
     expect(mockDetectMaterials).not.toHaveBeenCalled();
   });
 });

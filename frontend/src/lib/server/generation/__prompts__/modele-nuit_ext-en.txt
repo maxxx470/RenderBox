@@ -1,4 +1,0 @@
-Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:
-- facade_principale: Enduit blanc taloché
-- toiture: Tuile terre cuite
-Create a photorealistic exterior photograph of the building in the attached image at night: deep blue night sky, no sunlight, warm light glowing from every window, controlled architectural lighting with facade uplights and soft path lights, warm reflections on the ground. Keep the exact point of view and the exact proportions. Do not alter the building shape, openings, architectural details or materials. A few people to scale, planting softly lit. High-end architectural night photography.

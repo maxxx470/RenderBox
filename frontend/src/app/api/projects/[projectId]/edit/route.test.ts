@@ -72,7 +72,24 @@ vi.mock('@/lib/server/moderation/moderate-image', async () => {
 import { verifyToken } from '@/lib/server/auth';
 import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
-import { PRESETS } from '@/lib/server/generation/presets';
+import { buildAddElementPrompt, buildZonePrompt } from '@/lib/server/generation/edit-prompts';
+import { GEOMETRY_LOCK } from '@/lib/server/generation/render-profiles';
+
+/**
+ * What the route must send for an Ajouter: the server's own builder on the
+ * same inputs (the text itself is frozen in generation/edit-prompts.test.ts).
+ */
+function added(
+  rows: [string, string][] = [],
+  instruction = 'Un banc en bois',
+  engine: 'nanobanana' | 'gpt_image' = 'nanobanana',
+): string {
+  return buildAddElementPrompt({
+    engine,
+    instruction,
+    materials: rows.map(([face, valeur]) => ({ face, valeur })),
+  });
+}
 
 const USER_ID = 'user-1';
 const PROJECT_ID = 'project-1';
@@ -258,8 +275,8 @@ describe('POST /api/projects/[projectId]/edit — validation', () => {
     );
     expect(res.status).toBe(201);
     const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-    expect(input.prompt).toContain('Add the following element');
-    expect(input.prompt).not.toContain('full daylight');
+    expect(input.prompt).toBe(added([], 'ajoute une fenetre'));
+    expect(input.prompt).not.toContain('5600 K');
     expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({
       parentId: SOURCE_NODE_ID,
       preset: null,
@@ -284,20 +301,21 @@ describe('POST /api/projects/[projectId]/edit — ambiance of the source', () =>
     expect(res.status).toBe(201);
     const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
     expect(input.prompt).not.toContain('2D floor plan');
-    expect(input.prompt).toContain('Keep everything else in the image exactly as it is');
+    expect(input.prompt).toContain(GEOMETRY_LOCK);
     expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({
       preset: 'plan_3d',
     });
   });
 
-  it('relights an edit of a day render the same way', async () => {
+  it('keeps the light of a day render instead of sending its light again (audit R6, R7)', async () => {
     const res = await POST(
       makeReq(baseFields({ editType: 'add_element', zone: '' }), pngFile()),
       ctx(),
     );
     expect(res.status).toBe(201);
     const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-    expect(input.prompt).toContain('full daylight');
+    expect(input.prompt).not.toContain('5600 K');
+    expect(input.prompt).toContain("keep the image's existing light");
   });
 });
 
@@ -463,7 +481,7 @@ describe('POST /api/projects/[projectId]/edit — annotate (point-and-comment)',
     expect(mockGenerate.mock.calls[0]?.[0]).toBe('gpt_image');
     expect(mockIsEngineConfigured).toHaveBeenCalledWith('gpt_image');
     const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-    expect(input.prompt).toContain('1. At 20% from the left, 40% from the top');
+    expect(input.prompt).toContain('- Marker 1, at 20% from the left, 40% from the top');
     expect(input.prompt).toContain('Sol en pierre claire');
     expect(prismaMock.renderNode.create.mock.calls[0]?.[0]?.data).toMatchObject({
       engine: 'gpt_image',
@@ -503,7 +521,7 @@ describe('POST /api/projects/[projectId]/edit — annotate (point-and-comment)',
     };
     expect(input.referenceImages).toBeUndefined();
     expect(input.prompt).not.toContain('numbered markers');
-    expect(input.prompt).toContain('1. At 20% from the left, 40% from the top');
+    expect(input.prompt).toContain('- Marker 1, at 20% from the left, 40% from the top');
   });
 
   it('refuses a marked copy whose bytes are not an image', async () => {
@@ -544,15 +562,6 @@ describe('POST /api/projects/[projectId]/edit — what reaches the engine', () =
       confidence: null,
     },
   ];
-  const MATERIAL_LINES = [
-    "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:",
-    '- facade_principale: Enduit blanc taloché',
-  ];
-  const ADD_LINE =
-    'Add the following element into the scene, using the attached reference image for its appearance: Un banc en bois';
-  const PRESERVE_LINE =
-    'Keep everything else in the image exactly as it is: framing, light, materials.';
-
   function sourceNode(preset: string | null, kind: 'UPLOADED' | 'GENERATED' = 'GENERATED') {
     prismaMock.renderNode.findUnique.mockResolvedValue({
       id: SOURCE_NODE_ID,
@@ -600,20 +609,33 @@ describe('POST /api/projects/[projectId]/edit — what reaches the engine', () =
     imageMaterials([], [correction(SOURCE_NODE_ID, 'facade_principale', 'Enduit blanc taloché')]);
   });
 
-  describe('Ajouter without a re-applied ambiance', () => {
+  describe('Ajouter: one path, whatever the source (2026-10-19)', () => {
     it.each([
       ['an uploaded photo', null, 'UPLOADED'],
       ['a render made with no ambiance (C0)', null, 'GENERATED'],
-      ['a 3D plan (a transformation, never re-applied)', 'plan_3d', 'GENERATED'],
+      ['a 3D plan', 'plan_3d', 'GENERATED'],
+      ['a jour_ext render', 'jour_ext', 'GENERATED'],
+      ['a nuit_int render', 'nuit_int', 'GENERATED'],
+      ['an access diagram', 'esquisse', 'GENERATED'],
     ] as const)(
-      'on %s: the request, then the preservation sentence — no materials',
+      'on %s: lock, the element, the light kept, the image’s materials',
       async (_l, preset, kind) => {
         sourceNode(preset, kind);
         const res = await POST(makeReq(addFields(), pngFile()), ctx());
         expect(res.status).toBe(201);
-        expect(engineCall().input.prompt).toBe([ADD_LINE, PRESERVE_LINE].join('\n'));
+        expect(engineCall().input.prompt).toBe(
+          added([['facade_principale', 'Enduit blanc taloché']]),
+        );
       },
     );
+
+    it('lays the prompt out for the engine the client chose', async () => {
+      sourceNode('jour_ext');
+      await POST(makeReq(addFields({ engine: 'gpt_image' }), pngFile()), ctx());
+      expect(engineCall().input.prompt).toBe(
+        added([['facade_principale', 'Enduit blanc taloché']], 'Un banc en bois', 'gpt_image'),
+      );
+    });
 
     it('sends the source node image first and the reference as the only reference image', async () => {
       sourceNode(null, 'UPLOADED');
@@ -647,31 +669,15 @@ describe('POST /api/projects/[projectId]/edit — what reaches the engine', () =
     });
   });
 
-  describe('Ajouter with a re-applied ambiance', () => {
-    it.each([['jour_ext'], ['nuit_int'], ['esquisse']] as const)(
-      'on a %s render: materials, the ambiance, then the request — and NO preservation sentence (audit F4, not fixed)',
-      async (preset) => {
-        sourceNode(preset);
-        await POST(makeReq(addFields(), pngFile()), ctx());
-        const { prompt } = engineCall().input;
-        expect(prompt).toBe(
-          [...MATERIAL_LINES, PRESETS[preset].promptModifier, ADD_LINE].join('\n'),
-        );
-        expect(prompt).not.toContain(PRESERVE_LINE);
-      },
-    );
-
-    it('differs from the other path only by the materials, the ambiance and the missing preservation sentence', async () => {
+  describe('Ajouter on a render with an ambiance', () => {
+    it('sends the same prompt as on a photo: one path, the same protections (audit R6)', async () => {
       sourceNode(null, 'UPLOADED');
       await POST(makeReq(addFields(), pngFile()), ctx());
-      const without = engineCall().input.prompt;
+      const onPhoto = engineCall().input.prompt;
       mockGenerate.mockClear();
       sourceNode('jour_ext');
       await POST(makeReq(addFields(), pngFile()), ctx());
-      const withAmbiance = engineCall().input.prompt;
-      await expect(
-        `--- sans ambiance réappliquée ---\n${without}\n\n--- avec ambiance réappliquée (jour_ext) ---\n${withAmbiance}\n`,
-      ).toMatchFileSnapshot('./__prompts__/ajouter-deux-chemins.txt');
+      expect(engineCall().input.prompt).toBe(onPhoto);
     });
 
     it('keeps the source ambiance on the new node, and sends the same images', async () => {
@@ -725,8 +731,8 @@ describe('POST /api/projects/[projectId]/edit — what reaches the engine', () =
       expect(input.referenceImages).toHaveLength(1);
       expect(input.referenceImages?.[0]?.buffer.equals(PNG_BYTES)).toBe(true);
       // Neither the materials nor the ambiance are part of a comment edit.
-      expect(input.prompt).not.toContain('Materials recorded for this source image');
-      expect(input.prompt).not.toContain(PRESETS.jour_ext.promptModifier);
+      expect(input.prompt).not.toContain('Recorded materials');
+      expect(input.prompt).not.toContain('5600 K');
       await expect(input.prompt).toMatchFileSnapshot('./__prompts__/commenter-avec-copie.txt');
     });
 
@@ -745,7 +751,7 @@ describe('POST /api/projects/[projectId]/edit — what reaches the engine', () =
         ctx(),
       );
       const { prompt } = engineCall().input;
-      expect(prompt.endsWith('\nOverall note: Lumière du soir')).toBe(true);
+      expect(prompt).toContain('- Overall note: Lumière du soir\n3. KEEP');
     });
 
     it('passes an explicit ratio and size on, and keeps the coordinates as sent', async () => {
@@ -754,28 +760,22 @@ describe('POST /api/projects/[projectId]/edit — what reaches the engine', () =
       const { input } = engineCall();
       expect(input).toMatchObject({ aspectRatio: '1:1', resolution: '4k' });
       expect(input.prompt).toContain(
-        '1. At 20% from the left, 40% from the top (the middle-left): Façade en bardage bois',
+        '- Marker 1, at 20% from the left, 40% from the top (the middle-left): Façade en bardage bois',
       );
       expect(input.prompt).toContain(
-        '2. At 70% from the left, 85% from the top (the bottom-right): Sol en pierre claire',
+        '- Marker 2, at 70% from the left, 85% from the top (the bottom-right): Sol en pierre claire',
       );
     });
   });
 });
 
-// Étape 3C.3: where the ambiance is re-applied (Ajouter or a retouch on a
-// render whose ambiance comes back), the prompt lists the materials of the
-// SOURCE image — its detections and the user's corrections on it, resolved —
-// and every variant's Generation.promptMaterials keeps exactly that list.
-// Commenter and the edits that keep the photo's own light read none and send
-// none ([]). The project's old sheet stays whole in materialsSnapshot only.
+// Étape 3C.3: an Ajouter or a retouch lists the materials of the SOURCE
+// image — its detections and the user's corrections on it, resolved — to be
+// kept, and every variant's Generation.promptMaterials keeps exactly that
+// list; since 2026-10-19 whatever the source's ambiance (one path). Commenter
+// reads none and sends none ([]). The project's old sheet stays whole in
+// materialsSnapshot only.
 describe('POST /api/projects/[projectId]/edit — materials of the source image (étape 3C.3)', () => {
-  const HEADER =
-    "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:";
-  const ADD_LINE =
-    'Add the following element into the scene, using the attached reference image for its appearance: Un banc en bois';
-  const PRESERVE_LINE =
-    'Keep everything else in the image exactly as it is: framing, light, materials.';
   const OTHER_NODE_ID = 'node-other';
   const SHEET = [
     { face: 'facade_principale', valeur: 'Bardage bois', source: 'auto', confidence: 92 },
@@ -847,12 +847,8 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
       sourceIs(OTHER_NODE_ID, 'jour_ext');
       await POST(makeReq(addFields({ sourceNodeId: OTHER_NODE_ID }), pngFile()), ctx());
 
-      expect(prompt(0)).toBe(
-        [HEADER, '- toiture: Ardoise', PRESETS.jour_ext.promptModifier, ADD_LINE].join('\n'),
-      );
-      expect(prompt(1)).toBe(
-        [HEADER, '- toiture: Tuile', PRESETS.jour_ext.promptModifier, ADD_LINE].join('\n'),
-      );
+      expect(prompt(0)).toBe(added([['toiture', 'Ardoise']]));
+      expect(prompt(1)).toBe(added([['toiture', 'Tuile']]));
       expect(
         prismaMock.materialCorrection.findMany.mock.calls.map(
           (c) => (c[0] as { where: unknown }).where,
@@ -873,14 +869,14 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
       imageMaterials([], [correction(OTHER_NODE_ID, 'toiture', 'Ardoise')]);
       const res = await POST(makeReq(addFields(), pngFile()), ctx());
       expect(res.status).toBe(201);
-      expect(prompt()).toBe([PRESETS.nuit_int.promptModifier, ADD_LINE].join('\n'));
+      expect(prompt()).toBe(added());
       expect(stored()[0]?.promptMaterials).toEqual([]);
       expect(stored()[0]?.materialsSnapshot).toEqual(SHEET);
       expect(prismaMock.material.findMany).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('priority, on an edit that re-applies the ambiance', () => {
+  describe('priority, on Ajouter and the retouch', () => {
     it('a correction replaces its detected face, a null correction removes one, the others stay', async () => {
       sourceIs(SOURCE_NODE_ID, 'esquisse');
       imageMaterials(
@@ -896,13 +892,10 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
       );
       await POST(makeReq(addFields(), pngFile()), ctx());
       expect(prompt()).toBe(
-        [
-          HEADER,
-          '- facade_principale: Bardage bois',
-          '- sol: Parquet',
-          PRESETS.esquisse.promptModifier,
-          ADD_LINE,
-        ].join('\n'),
+        added([
+          ['facade_principale', 'Bardage bois'],
+          ['sol', 'Parquet'],
+        ]),
       );
       expect(stored()[0]?.promptMaterials).toEqual([
         {
@@ -925,9 +918,14 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
       sourceIs(SOURCE_NODE_ID, 'jour_ext');
       imageMaterials([detection(SOURCE_NODE_ID, 'sol', 'Parquet')], []);
       await POST(makeReq(baseFields()), ctx());
-      expect(
-        prompt().startsWith([HEADER, '- sol: Parquet', PRESETS.jour_ext.promptModifier].join('\n')),
-      ).toBe(true);
+      expect(prompt()).toBe(
+        buildZonePrompt({
+          engine: 'nanobanana',
+          zone: { x: 10, y: 10, width: 20, height: 20 },
+          instruction: 'ajoute une fenetre',
+          materials: [{ face: 'sol', valeur: 'Parquet' }],
+        }),
+      );
       expect(stored()[0]?.promptMaterials.map((m) => m.face)).toEqual(['sol']);
     });
   });
@@ -970,7 +968,7 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
     });
   });
 
-  describe('edits that do not re-apply the ambiance', () => {
+  describe('Commenter reads none; Ajouter reads them whatever the source', () => {
     it('Commenter reads no material and sends none: [] on every variant', async () => {
       sourceIs(SOURCE_NODE_ID, 'jour_ext');
       imageMaterials([], [correction(SOURCE_NODE_ID, 'toiture', 'Ardoise')]);
@@ -980,7 +978,7 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
       expect(prismaMock.materialCorrection.findMany).not.toHaveBeenCalled();
       expect(prismaMock.materialDetection.findMany).not.toHaveBeenCalled();
       for (let i = 0; i < 2; i++) {
-        expect(prompt(i)).not.toContain('Materials recorded for this source image');
+        expect(prompt(i)).not.toContain('Recorded materials');
         expect(prompt(i)).not.toContain('Ardoise');
         expect(prompt(i)).not.toContain('Zinc');
       }
@@ -997,16 +995,18 @@ describe('POST /api/projects/[projectId]/edit — materials of the source image 
     it.each([
       ['an uploaded photo', null, 'UPLOADED'],
       ['a render made with no ambiance (C0)', null, 'GENERATED'],
-      ['a 3D plan (a transformation, never re-applied)', 'plan_3d', 'GENERATED'],
+      ['a 3D plan', 'plan_3d', 'GENERATED'],
     ] as const)(
-      'Ajouter on %s reads no material: the request, the preservation sentence, []',
+      'Ajouter on %s reads the image’s materials and keeps them',
       async (_l, preset, kind) => {
         sourceIs(SOURCE_NODE_ID, preset, kind);
         imageMaterials([], [correction(SOURCE_NODE_ID, 'toiture', 'Ardoise')]);
         await POST(makeReq(addFields(), pngFile()), ctx());
-        expect(prompt()).toBe([ADD_LINE, PRESERVE_LINE].join('\n'));
-        expect(prismaMock.materialCorrection.findMany).not.toHaveBeenCalled();
-        expect(stored()[0]?.promptMaterials).toEqual([]);
+        expect(prompt()).toBe(added([['toiture', 'Ardoise']]));
+        expect(prismaMock.materialCorrection.findMany).toHaveBeenCalledTimes(1);
+        expect(stored()[0]?.promptMaterials).toEqual([
+          { face: 'toiture', valeur: 'Ardoise', origin: 'correction', nodeId: SOURCE_NODE_ID },
+        ]);
       },
     );
   });

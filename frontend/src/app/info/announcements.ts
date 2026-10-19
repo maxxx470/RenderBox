@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'faithful-renders',
+    date: '2026-10-19',
+    kind: 'shipped',
+    title: {
+      fr: 'Des rendus plus fidèles à votre projet',
+      en: 'Renders more faithful to your project',
+    },
+    body: {
+      fr: 'Les modèles jour et nuit gardent la géométrie, les ouvertures et les matériaux de votre image, avec une lumière réglée comme par un photographe d’architecture, et n’ajoutent plus rien de leur propre chef. Jour extérieur propose un ciel voilé ou un soleil franc. Nouvelle ambiance Esquisse, un croquis au crayon ; l’ancien schéma blanc légendé s’appelle désormais Schéma d’accès. Améliorer compte huit améliorations, une option « Pièce sombre » et trois intensités.',
+      en: 'The day and night templates keep your image’s geometry, openings and materials, with light set the way an architectural photographer would, and no longer add anything on their own. Exterior day offers a hazy sky or full sun. New Sketch ambiance, a pencil sketch; the former labelled white diagram is now called Access diagram. Enhance has eight improvements, a “Dark room” option and three intensities.',
+    },
+  },
+  {
     id: 'tiktok-dashboard',
     date: '2026-10-17',
     kind: 'shipped',
