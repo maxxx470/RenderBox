@@ -1,0 +1,14 @@
+1. LOCK
+This is an edit of the first image, not a new design.
+Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+2. DRAWING
+- Medium: watercolour on textured cold-press paper, fine ink outline of the building.
+- Washes: transparent, soft bleeding edges; the white of the paper left in the highlights.
+- Colours: natural and muted, true to the source materials; the sky as a light loose wash.
+- Volumes: same outline and openings as the source.
+- Materials: recognisable by colour and brushwork.
+- Keep it a hand-painted illustration, not a photograph.
+3. AVOID
+Photographic look, 3D render look, heavy opaque paint, oversaturated colours, digital gradients.
+4. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, no new objects, the result is a watercolour illustration, not a photograph.

@@ -15,7 +15,7 @@
 // beside its source.
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Category, Download, Image as ImageIcon } from 'react-iconly';
+import { Category, Download } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -61,7 +61,8 @@ import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './Comm
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
 import { fitForUpload, UPLOAD_FIT } from './fit-upload';
-import { RecentImages, recentImageLabel } from './RecentImages';
+import { RecentImages, recentImageLabel, useFreshRecent } from './RecentImages';
+import { SourceResultStage } from './SourceResultStage';
 
 export interface RecentRenderCardData {
   id: string;
@@ -91,18 +92,6 @@ interface ResultImage extends StoredImage {
 const GENERATE_TIMEOUT_MS = 310_000;
 
 const imageUrl = (nodeId: string) => `/api/render-nodes/${nodeId}/image`;
-
-/** One side of the stage: a picture on the grey ground, its tag in a corner. */
-function StagePane({ tag, children }: { tag: string; children: React.ReactNode }) {
-  return (
-    <div className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-[#F7F7FA] p-3">
-      <span className="absolute left-3 top-3 z-10 rounded-md bg-white px-2 py-1 font-[family-name:var(--font-mono)] text-[10px] font-medium text-[#6B6878] shadow-[0_1px_2px_rgba(23,22,31,0.08)]">
-        {tag}
-      </span>
-      {children}
-    </div>
-  );
-}
 
 export function GenerationHome({
   recentRenders,
@@ -142,6 +131,7 @@ export function GenerationHome({
   const [stored, setStored] = useState<StoredImage | null>(null);
   const [result, setResult] = useState<ResultImage | null>(null);
   const [recent, setRecent] = useState<RecentRenderCardData[]>(recentRenders);
+  useFreshRecent(setRecent);
   const [remaining, setRemaining] = useState<number | null>(initialRemaining);
   // Ajouter only: a photo of the element to add.
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
@@ -307,7 +297,8 @@ export function GenerationHome({
             engine,
             customPrompt: prompt.trim() || undefined,
             template: template ?? undefined,
-            sky: template === 'jour_ext' ? sky : undefined,
+            // The sky of Exterior day, picked as a template or in the menu.
+            sky: (template ?? preset) === 'jour_ext' ? sky : undefined,
             // 'auto' is the absence of a request, so it is not sent at all.
             ratio: ratio === 'auto' ? undefined : ratio,
             resolution,
@@ -580,49 +571,17 @@ export function GenerationHome({
               </div>
             ) : sourceSrc ? (
               // Générer with a source: the source on the left, the render on
-              // the right (owner, 2026-10-19); one above the other on a phone.
-              <div className="flex min-h-0 flex-1 flex-col gap-3 pb-2 min-[640px]:flex-row">
-                <StagePane tag={t('app.genSourceTag')}>
-                  <img
-                    src={sourceSrc}
-                    alt=""
-                    draggable={false}
-                    className="max-h-full max-w-full rounded-lg object-contain"
-                  />
-                </StagePane>
-                <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-                  <StagePane tag={t('app.genResultTag')}>
-                    {result ? (
-                      <img
-                        key={result.nodeId}
-                        src={imageUrl(result.nodeId)}
-                        alt=""
-                        draggable={false}
-                        className="rb-card-in max-h-full max-w-full rounded-lg object-contain"
-                      />
-                    ) : creating ? (
-                      <div className="flex flex-col items-center gap-3 text-center">
-                        <span className="rb-spin h-8 w-8 rounded-full border-[3px] border-[#D5DCFF] border-t-[#2948FC]" />
-                        <span className="max-w-[220px] text-[12.5px] text-[#6B6878]">
-                          {t('app.genResultWorking')}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex max-w-[240px] flex-col items-center gap-2.5 text-center">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white">
-                          <ImageIcon set="curved" size={20} primaryColor="#C9C7D1" />
-                        </span>
-                        <span className="text-[12.5px] leading-snug text-[#8A8896]">
-                          {t('app.genResultEmpty')}
-                        </span>
-                      </div>
-                    )}
-                  </StagePane>
-                  {result && (
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="mr-auto min-w-0 truncate font-[family-name:var(--font-mono)] text-[11px] text-[#6B6878]">
-                        {resultInfo}
-                      </span>
+              // the right, then « Comparer » (owner, 2026-10-19).
+              <SourceResultStage
+                sourceSrc={sourceSrc}
+                resultSrc={result ? imageUrl(result.nodeId) : null}
+                working={creating}
+                workingText={t('app.genResultWorking')}
+                emptyText={t('app.genResultEmpty')}
+                info={resultInfo}
+                actions={
+                  result && (
+                    <>
                       <button
                         type="button"
                         onClick={() =>
@@ -648,10 +607,10 @@ export function GenerationHome({
                       >
                         {t('app.genOpenProject')}
                       </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
+                    </>
+                  )
+                }
+              />
             ) : (
               // No source yet: the owner's four templates, always — the
               // account's renders live in the right column (owner, 2026-10-19:
@@ -723,6 +682,7 @@ export function GenerationHome({
                 }
               : null
           }
+          presetSky={preset === 'jour_ext' ? { value: sky, onChange: setSky } : undefined}
           onSubmit={() => {
             if (!sourceSrc || sendDisabled) return;
             // No plan, or not enough credits for this render: the plans

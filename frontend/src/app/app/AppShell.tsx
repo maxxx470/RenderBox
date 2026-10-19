@@ -360,7 +360,8 @@ export function AppShell({
           engine,
           customPrompt: prompt.trim() || undefined,
           template: template ?? undefined,
-          sky: template === 'jour_ext' ? sky : undefined,
+          // The sky of Exterior day, picked as a template or in the menu.
+          sky: (template ?? preset) === 'jour_ext' ? sky : undefined,
           // 'auto' is the absence of a request, so it is not sent at all.
           ratio: ratio === 'auto' ? undefined : ratio,
           resolution,
@@ -934,6 +935,7 @@ export function AppShell({
                 }
               : null
           }
+          presetSky={preset === 'jour_ext' ? { value: sky, onChange: setSky } : undefined}
           fill
         />
       </div>

@@ -392,6 +392,10 @@ const en: Record<keyof typeof fr, string> = {
   'app.genResultWorking': 'Generating… up to 2 to 3 minutes in 4K.',
   'app.genUseAsSource': 'Use as source image',
   'app.genOpenProject': 'Open in the project',
+  'app.viewSide': 'Side by side',
+  'app.viewCompare': 'Compare',
+  'app.compareSlider': 'Drag to compare the source and the render',
+  'enhance.resultEmpty': 'The enhanced image will appear here. Tick what to improve, then run it.',
   'app.recentTitle': 'Recent images',
   'app.recentEmpty':
     'Your generated images will appear here. Click one to use it again as a source image.',

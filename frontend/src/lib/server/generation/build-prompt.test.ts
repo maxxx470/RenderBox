@@ -23,9 +23,28 @@ const MATERIALS = [
   { face: 'toiture', valeur: 'Tuile terre cuite', source: 'manuel', confidence: null },
 ];
 
-const LOOKS = ['jour_ext', 'jour_int', 'nuit_ext', 'nuit_int', 'croquis', null] as const;
-const PHOTO_LOOKS = ['jour_ext', 'jour_int', 'nuit_ext', 'nuit_int', null] as const;
-const TRANSFORMS = ['plan_3d', 'eclate', 'isometrie', 'esquisse'] as const;
+const LOOKS = [
+  'jour_ext',
+  'jour_int',
+  'nuit_ext',
+  'nuit_int',
+  'heure_doree',
+  'pluie',
+  'croquis',
+  'aquarelle',
+  null,
+] as const;
+const PHOTO_LOOKS = [
+  'jour_ext',
+  'jour_int',
+  'nuit_ext',
+  'nuit_int',
+  'heure_doree',
+  'pluie',
+  null,
+] as const;
+const DRAWINGS = ['croquis', 'aquarelle'] as const;
+const TRANSFORMS = ['plan_3d', 'eclate', 'isometrie', 'maquette_blanche', 'esquisse'] as const;
 const VISIO: EngineName = 'nanobanana';
 const PIXEL: EngineName = 'gpt_image';
 
@@ -126,7 +145,10 @@ describe('Visio and Pixel IA keep the same essential constraints', () => {
     ],
     nuit_ext: ['blue hour', '2800 K', '-0.7 to -0.3 EV', '0 to +5 percent', 'flat black sky'],
     nuit_int: ['2700 K', '7500 K', 'never black', '-0.3 to 0 EV', '5 percent'],
+    heure_doree: ['golden hour', '5 to 15 degrees', '3500 K', '-0.3 to 0 EV', 'never orange'],
+    pluie: ['overcast', '6500 K', 'wet', 'puddles', '-10 to -5 percent'],
     croquis: ['pencil', 'off-white paper', 'graphite', 'not a photograph'],
+    aquarelle: ['watercolour', 'cold-press paper', 'washes', 'not a photograph'],
     c0: ['time of day', 'no sunset'],
   };
 
@@ -251,9 +273,9 @@ describe('No contradictory instructions in the final prompt', () => {
     }
   });
 
-  it('the sketch carries no photographic instruction', () => {
+  it.each(DRAWINGS)('the drawing %s carries no photographic instruction', (drawing) => {
     for (const e of ENGINE_NAMES) {
-      const p = build(e, 'croquis', { materials: MATERIALS });
+      const p = build(e, drawing, { materials: MATERIALS });
       for (const term of [
         PHOTO_LOOK,
         MATERIALS_BLOCK,
@@ -349,14 +371,22 @@ describe('Built on the server from keys only (D1)', () => {
     }
   });
 
-  it('the menu offers the four modules, the access diagram and the pencil sketch', () => {
+  it('the menu offers the modules, the drawings, then the lights', () => {
     expect(AMBIANCE_KEYS).toEqual([
       'plan_3d',
       'eclate',
       'analyse',
       'isometrie',
+      'maquette_blanche',
       'esquisse',
       'croquis',
+      'aquarelle',
+      'jour_ext',
+      'jour_int',
+      'nuit_ext',
+      'nuit_int',
+      'heure_doree',
+      'pluie',
     ]);
     expect(PRESETS.esquisse.label.fr).toBe('Schéma d’accès');
     expect(PRESETS.croquis.label.fr).toBe('Esquisse');

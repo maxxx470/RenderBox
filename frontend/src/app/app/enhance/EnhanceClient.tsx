@@ -22,7 +22,7 @@
 // scatter a project per attempt.
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Category, Download, Paper } from 'react-iconly';
+import { Category, Download } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -50,8 +50,11 @@ import {
   type EnhanceStrength,
 } from '@/lib/server/generation/enhance';
 import type { RatioKey } from '@/lib/server/generation/ratios';
-import { DEFAULT_RESOLUTION, type ResolutionKey } from '@/lib/server/generation/resolutions';
-import { BeforeAfterSlider } from '@/app/BeforeAfterSlider';
+import {
+  DEFAULT_RESOLUTION,
+  RESOLUTIONS,
+  type ResolutionKey,
+} from '@/lib/server/generation/resolutions';
 import { AppFrame } from '../AppFrame';
 import { useAppChrome } from '../AppChrome';
 import { useRenderPrice } from '../use-render-price';
@@ -60,7 +63,8 @@ import { useObjectUrl } from '../CommandBar';
 import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from '../fan';
 import { ENHANCE_EXAMPLES } from '../generer-examples';
 import { MOBILE_NAV_PAD } from '../MobileNav';
-import { RecentImages, recentImageLabel } from '../RecentImages';
+import { RecentImages, recentImageLabel, useFreshRecent } from '../RecentImages';
+import { SourceResultStage } from '../SourceResultStage';
 import type { RecentRenderCardData } from '../GenerationHome';
 import {
   creditErrorKey,
@@ -187,6 +191,12 @@ export function EnhanceClient({
   const [resultId, setResultId] = useState<string | null>(initialResultId);
   const [working, setWorking] = useState(false);
   const [recent, setRecent] = useState<RecentRenderCardData[]>(recentRenders);
+  useFreshRecent(setRecent);
+  // What made the result on the right (engine · size), for the line under it.
+  const [resultMeta, setResultMeta] = useState<{
+    engine: EngineName;
+    resolution: ResolutionKey;
+  } | null>(null);
 
   const [options, setOptions] = useState<EnhanceOptionKey[]>(DEFAULT_ENHANCE_OPTIONS);
   const [strength, setStrength] = useState<EnhanceStrength>(DEFAULT_ENHANCE_STRENGTH);
@@ -275,6 +285,7 @@ export function EnhanceClient({
     if (remaining !== null && remaining < priceOf(engine, resolution))
       return chrome?.openPlans('noCredits');
     setWorking(true);
+    setResultId(null);
     let current = session;
     const fresh = !current;
     try {
@@ -304,6 +315,7 @@ export function EnhanceClient({
       if (!res.ok) throw new RequestError(await readErrorCode(res));
       const data = (await res.json()) as { nodeId: string; creditsBalance: number | null };
       setResultId(data.nodeId);
+      setResultMeta({ engine, resolution });
       setRemaining(data.creditsBalance);
       const made = current;
       setRecent((cur) =>
@@ -342,6 +354,10 @@ export function EnhanceClient({
   }
 
   const beforeSrc = session ? nodeImage(session.sourceNodeId) : preview;
+  const resultInfo =
+    resultId && resultMeta
+      ? `${ENGINE_LABELS[resultMeta.engine].name[locale]} · ${RESOLUTIONS[resultMeta.resolution].label}`
+      : '';
   const sendHint = !hasSource
     ? t('enhance.needImage')
     : options.length === 0 && !instruction.trim()
@@ -398,68 +414,55 @@ export function EnhanceClient({
               }))}
             />
           ) : (
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 pb-2">
-              {/* 16:10 like the slider, as large as the stage allows. */}
-              <div className="flex aspect-[16/10] max-h-full min-h-0 w-full max-w-full items-center">
-                {resultId && beforeSrc ? (
-                  <div className="w-full">
-                    <BeforeAfterSlider
-                      before={<img src={beforeSrc} alt="" className="h-full w-full object-cover" />}
-                      after={
-                        <img
-                          src={nodeImage(resultId)}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      }
-                      beforeLabel={t('enhance.before')}
-                      afterLabel={t('enhance.after')}
-                    />
-                  </div>
-                ) : (
-                  <div className="relative h-full w-full overflow-hidden rounded-[22px] bg-[#F7F7FA]">
-                    {beforeSrc && (
-                      <img src={beforeSrc} alt="" className="h-full w-full object-contain" />
-                    )}
-                    {working && (
-                      <div
-                        role="status"
-                        className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 px-6 text-center backdrop-blur-[2px]"
+            // The image pinned on the left, the enhanced one on the right,
+            // then « Comparer » (owner, 2026-10-19, as on the generator).
+            beforeSrc && (
+              <SourceResultStage
+                sourceSrc={beforeSrc}
+                resultSrc={resultId ? nodeImage(resultId) : null}
+                working={working}
+                workingText={t('enhance.working')}
+                emptyText={t('enhance.resultEmpty')}
+                info={resultInfo}
+                actions={
+                  resultId && (
+                    <>
+                      {session && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFile(null);
+                            setSession({ projectId: session.projectId, sourceNodeId: resultId });
+                            setResultId(null);
+                          }}
+                          disabled={working}
+                          className={`rounded-lg ${GRADIENT} px-3 py-1.5 text-[12px] font-semibold text-white transition-[filter] hover:brightness-110 disabled:opacity-50`}
+                        >
+                          {t('app.genUseAsSource')}
+                        </button>
+                      )}
+                      <a
+                        href={nodeImage(resultId)}
+                        download="renderpro-enhance.png"
+                        title={t('enhance.download')}
+                        aria-label={t('enhance.download')}
+                        className="flex h-[30px] w-[30px] items-center justify-center rounded-lg bg-[#F2F2F5] hover:bg-[#E9E9EE]"
                       >
-                        <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-[#D5DCFF] border-t-[#2948FC]" />
-                        <span className="text-[14px] font-semibold text-[#17161F]">
-                          {t('enhance.working')}
-                        </span>
-                        <span className="max-w-[36ch] text-[12.5px] text-[#6B6878]">
-                          {t('enhance.workingHint')}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              {resultId && (
-                <div className="flex flex-wrap items-center justify-center gap-2.5">
-                  <a
-                    href={nodeImage(resultId)}
-                    download="renderbox-enhance.png"
-                    className={`inline-flex items-center gap-2 rounded-xl ${GRADIENT} px-4 py-2 text-[13px] font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
-                  >
-                    <Download set="curved" size={16} primaryColor="#ffffff" />
-                    {t('enhance.download')}
-                  </a>
-                  {imageProjectId && session?.projectId === imageProjectId && (
-                    <Link
-                      href={`/app/${imageProjectId}`}
-                      className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-[13px] font-semibold text-[#17161F] transition-colors hover:bg-[#F2F2F5]"
-                    >
-                      <Paper set="curved" size={16} primaryColor="#6B6878" />
-                      {t('enhance.openProject')}
-                    </Link>
-                  )}
-                </div>
-              )}
-            </div>
+                        <Download set="curved" size={15} primaryColor="#3D3B49" />
+                      </a>
+                      {imageProjectId && session?.projectId === imageProjectId && (
+                        <Link
+                          href={`/app/${imageProjectId}`}
+                          className="rounded-lg bg-[#F2F2F5] px-3 py-1.5 text-[12px] font-medium text-[#3D3B49] hover:bg-[#E9E9EE]"
+                        >
+                          {t('enhance.openProject')}
+                        </Link>
+                      )}
+                    </>
+                  )
+                }
+              />
+            )
           )}
         </section>
 

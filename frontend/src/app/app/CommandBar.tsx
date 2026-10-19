@@ -260,6 +260,7 @@ export function CommandBar({
   onPickElement,
   pickingElement,
   template = null,
+  presetSky,
   fill = false,
   versions,
   onVersionChange,
@@ -324,6 +325,8 @@ export function CommandBar({
     onClear: () => void;
     sky?: { value: SkyOption; onChange: (v: SkyOption) => void } | undefined;
   } | null;
+  /** Exterior day picked in the ambiance menu: the same sky choice. */
+  presetSky?: { value: SkyOption; onChange: (v: SkyOption) => void } | undefined;
   /**
    * Take the column's full width instead of the centred 920px — the project
    * editor lines the bar up with the canvas above it (owner, 2026-10-08).
@@ -419,6 +422,33 @@ export function CommandBar({
       />,
     );
   }
+  // Exterior day's sky (2026-10-19, D2), beside its template or its ambiance.
+  const skyChip = (sky: { value: SkyOption; onChange: (v: SkyOption) => void }) => (
+    <span
+      key="sky"
+      role="group"
+      aria-label={t('app.skyLabel')}
+      className={`${CHIP_STATIC} gap-0.5 px-1 text-[#3D3B49]`}
+    >
+      <span className="px-1 text-[#8A8896]">{t('app.skyLabel')}</span>
+      {SKY_OPTIONS.map((v) => (
+        <button
+          key={v}
+          type="button"
+          aria-pressed={sky.value === v}
+          disabled={inputDisabled}
+          onClick={() => sky.onChange(v)}
+          className={`h-6 rounded-md px-2 transition-colors disabled:cursor-not-allowed ${
+            sky.value === v
+              ? 'bg-white font-semibold text-[#1E36D6] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
+              : 'hover:bg-[#E9E9EE]'
+          }`}
+        >
+          {t(v === 'hazy' ? 'app.skyHazy' : 'app.skySun')}
+        </button>
+      ))}
+    </span>
+  );
   if (mode === 'generate' && template) {
     settings.push(
       <span key="template" className={`${CHIP_BASE} pl-1`} title={t('app.templateChip')}>
@@ -451,34 +481,7 @@ export function CommandBar({
       </span>,
     );
     const sky = template.sky;
-    if (sky) {
-      settings.push(
-        <span
-          key="sky"
-          role="group"
-          aria-label={t('app.skyLabel')}
-          className={`${CHIP_STATIC} gap-0.5 px-1 text-[#3D3B49]`}
-        >
-          <span className="px-1 text-[#8A8896]">{t('app.skyLabel')}</span>
-          {SKY_OPTIONS.map((v) => (
-            <button
-              key={v}
-              type="button"
-              aria-pressed={sky.value === v}
-              disabled={inputDisabled}
-              onClick={() => sky.onChange(v)}
-              className={`h-6 rounded-md px-2 transition-colors disabled:cursor-not-allowed ${
-                sky.value === v
-                  ? 'bg-white font-semibold text-[#1E36D6] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
-                  : 'hover:bg-[#E9E9EE]'
-              }`}
-            >
-              {t(v === 'hazy' ? 'app.skyHazy' : 'app.skySun')}
-            </button>
-          ))}
-        </span>,
-      );
-    }
+    if (sky) settings.push(skyChip(sky));
   } else if (mode === 'generate') {
     settings.push(
       <PresetSelect
@@ -488,6 +491,7 @@ export function CommandBar({
         disabled={inputDisabled}
       />,
     );
+    if (presetSky) settings.push(skyChip(presetSky));
   }
   // Every mode chooses its ratio since 2026-10-08 (owner: every format, in
   // generation and in edits alike); 'auto' keeps the image's own framing.

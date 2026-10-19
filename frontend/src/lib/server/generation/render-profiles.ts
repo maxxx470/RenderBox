@@ -177,6 +177,42 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
   },
 };
 
+// Two more lights for the ambiance menu (2026-10-19, owner: « ajoute 4
+// autres ambiances »), written like annex A: figure + plain words, the same
+// constraints for both engines. They add nothing to the scene either: rain
+// wets what is there, it brings no people, umbrellas or cars.
+const EXTRA_LIGHTS: Record<'golden' | 'rain', Light> = {
+  golden: {
+    visio:
+      'Golden hour, sun low at 5 to 15 degrees elevation, warm raking light around 3500 K on the facades and through the windows, long soft shadows, sky graded from warm amber near the horizon to soft blue above. Exposure -0.3 to 0 EV, sunlit highlights kept, shadows open with a cool natural fill. Medium filmic contrast. Saturation 0 to +5 percent, warm but natural, never orange overall.',
+    pixel: [
+      '- Time: golden hour, sun low at 5 to 15 degrees elevation.',
+      '- Light: warm raking light around 3500 K on the facades and through the windows; long soft shadows.',
+      '- Sky: graded from warm amber near the horizon to soft blue above.',
+      '- Exposure: -0.3 to 0 EV (target -0.15 EV); sunlit highlights kept; shadows open with a cool natural fill.',
+      '- Contrast: medium, filmic.',
+      '- Saturation: 0 to +5 percent (target +3 percent); warm but natural, never orange overall.',
+    ],
+    avoid:
+      'orange cast over the whole image, blown sun, fake lens flare, oversaturated sky, black shadows, HDR look',
+  },
+  rain: {
+    visio:
+      'Rainy overcast day, soft even light from a grey sky, neutral to slightly cool white balance around 6500 K. Wet ground and wet horizontal surfaces with true reflections of the building, a few shallow puddles, darker and richer tones where surfaces are wet, a light drizzle barely visible, a little mist in the distance. Warm interior light glowing softly in the existing windows around 3000 K. Exposure -0.3 to 0 EV, facade still readable. Soft contrast. Saturation -10 to -5 percent.',
+    pixel: [
+      '- Sky: rainy overcast, soft even grey light.',
+      '- White balance: neutral to slightly cool, around 6500 K; warm interior light in the existing windows around 3000 K.',
+      '- Wet surfaces: wet ground with true reflections of the building, a few shallow puddles, darker and richer tones where wet.',
+      '- Atmosphere: light drizzle barely visible, a little mist in the distance.',
+      '- Exposure: -0.3 to 0 EV (target -0.15 EV); facade still readable.',
+      '- Contrast: soft.',
+      '- Saturation: -10 to -5 percent (target -8 percent).',
+    ],
+    avoid:
+      'heavy rain streaks across the image, flooded ground, gloomy dark image, blue cast, blurred building, HDR look',
+  },
+};
+
 export function profileLight(profile: ProfileKey, sky: SkyKey = 'hazy'): Light {
   return profile === 'jour_ext' ? exteriorDay(sky) : LIGHTS[profile];
 }
@@ -205,6 +241,22 @@ const SKETCH: Light = {
     '- Keep it a design drawing, not a photograph.',
   ],
   avoid: 'photographic look, dense color fill, 3D render look, heavy textures',
+};
+
+/** The watercolour (2026-10-19): a hand-painted drawing, like the sketch. */
+const WATERCOLOUR: Light = {
+  visio:
+    'Drawing: architectural watercolour illustration on textured cold-press paper, fine ink outline of the building, transparent washes with soft bleeding edges, the white of the paper left in the highlights, natural muted colours true to the source materials, the sky as a light loose wash. Each material stays recognisable by its colour and brushwork. Keep it a hand-painted illustration, not a photograph.',
+  pixel: [
+    '- Medium: watercolour on textured cold-press paper, fine ink outline of the building.',
+    '- Washes: transparent, soft bleeding edges; the white of the paper left in the highlights.',
+    '- Colours: natural and muted, true to the source materials; the sky as a light loose wash.',
+    '- Volumes: same outline and openings as the source.',
+    '- Materials: recognisable by colour and brushwork.',
+    '- Keep it a hand-painted illustration, not a photograph.',
+  ],
+  avoid:
+    'photographic look, 3D render look, heavy opaque paint, oversaturated colours, digital gradients',
 };
 
 // ── Spec and layouts ──────────────────────────────────────────────────────
@@ -281,7 +333,7 @@ export function formatPrompt(engine: EngineName, spec: PromptSpec): string {
 
 // ── The photo profiles, C0 and the sketch ─────────────────────────────────
 
-export type LookKey = ProfileKey | 'source' | 'sketch';
+export type LookKey = ProfileKey | 'golden' | 'rain' | 'source' | 'sketch' | 'watercolour';
 
 /**
  * Générer on a light profile (a fan template, D1), on no ambiance (C0) or on
@@ -298,9 +350,18 @@ export function lookSpec(input: {
   const hasRequest = request !== null;
   const project = projectMaterialLines(input.materials);
   const { look } = input;
-  const sketch = look === 'sketch';
+  // The pencil sketch and the watercolour are drawings: no photo settings.
+  const sketch = look === 'sketch' || look === 'watercolour';
   const light =
-    look === 'source' ? SOURCE_LIGHT : look === 'sketch' ? SKETCH : profileLight(look, input.sky);
+    look === 'source'
+      ? SOURCE_LIGHT
+      : look === 'sketch'
+        ? SKETCH
+        : look === 'watercolour'
+          ? WATERCOLOUR
+          : look === 'golden' || look === 'rain'
+            ? EXTRA_LIGHTS[look]
+            : profileLight(look, input.sky);
 
   const sections: PromptSection[] = [
     {
@@ -336,7 +397,9 @@ export function lookSpec(input: {
     avoid: light.avoid,
     check: sketch
       ? checkFor(
-          'geometry unchanged, openings unchanged, no new objects, the result is a drawing, not a photograph',
+          look === 'watercolour'
+            ? 'geometry unchanged, openings unchanged, no new objects, the result is a watercolour illustration, not a photograph'
+            : 'geometry unchanged, openings unchanged, no new objects, the result is a drawing, not a photograph',
           hasRequest,
         )
       : checkFor(BASE_CHECK, hasRequest),

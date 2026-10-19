@@ -102,6 +102,12 @@ function lookKey(preset: PresetKey): LookKey {
     case 'nuit_ext':
     case 'nuit_int':
       return preset;
+    case 'heure_doree':
+      return 'golden';
+    case 'pluie':
+      return 'rain';
+    case 'aquarelle':
+      return 'watercolour';
     default:
       // Every other `look` preset is listed above; a new one must be mapped.
       throw new Error(`no look for preset ${preset}`);

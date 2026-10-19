@@ -32,10 +32,16 @@ export const PRESET_THUMB: Record<PresetKey, string> = {
   isometrie: '/presets/thumb/isometrie.webp',
   esquisse: '/presets/thumb/esquisse.webp',
   croquis: '/presets/thumb/croquis.webp',
-  jour_ext: '/presets/thumb/jour-ext.jpg',
-  jour_int: '/presets/thumb/jour-int.jpg',
-  nuit_ext: '/presets/thumb/nuit-ext.jpg',
-  nuit_int: '/presets/thumb/nuit-int.jpg',
+  // The lights wear their template's portrait picture (2026-10-19).
+  jour_ext: '/modeles/jour-ext.webp',
+  jour_int: '/modeles/jour-int.webp',
+  nuit_ext: '/modeles/nuit-ext.webp',
+  nuit_int: '/modeles/nuit-int.webp',
+  // 2026-10-19: the owner's four pictures (image/), cropped to 360 × 480.
+  maquette_blanche: '/presets/thumb/maquette-blanche.webp',
+  aquarelle: '/presets/thumb/aquarelle.webp',
+  heure_doree: '/presets/thumb/heure-doree.webp',
+  pluie: '/presets/thumb/pluie.webp',
 };
 
 const NO_AMBIANCE_TILE = (
@@ -93,7 +99,8 @@ export function PresetSelect({
 
       {open && (
         <div
-          className={`${popoverPanelClass({ placement })} w-[320px] max-w-[calc(100vw-32px)]`}
+          // Ten entries since 2026-10-19: on a short screen the menu scrolls.
+          className={`${popoverPanelClass({ placement })} max-h-[calc(100dvh-180px)] w-[320px] max-w-[calc(100vw-32px)] overflow-y-auto`}
           role="menu"
         >
           <p className={POPOVER_HEADING}>{t('app.presetLabel')}</p>

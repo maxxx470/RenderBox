@@ -402,6 +402,11 @@ const fr = {
   'app.genResultWorking': 'Génération en cours… jusqu’à 2 à 3 minutes en 4K.',
   'app.genUseAsSource': 'Utiliser comme image source',
   'app.genOpenProject': 'Ouvrir dans le projet',
+  'app.viewSide': 'Côte à côte',
+  'app.viewCompare': 'Comparer',
+  'app.compareSlider': 'Glissez pour comparer la source et le rendu',
+  'enhance.resultEmpty':
+    'L’image améliorée apparaîtra ici. Cochez ce qu’il faut améliorer, puis lancez.',
   'app.recentTitle': 'Images récentes',
   'app.recentEmpty':
     'Vos images générées apparaîtront ici. Cliquez sur l’une d’elles pour la reprendre comme image source.',

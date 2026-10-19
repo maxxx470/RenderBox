@@ -5,7 +5,9 @@
 // images récentes »): small thumbnails (the image proxy's `?size=thumb`),
 // newest first; a click makes one the source in the command bar. The one in
 // use is ringed blue.
+import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import { Image as ImageIcon } from 'react-iconly';
+import { api } from '@/lib/api';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RecentRenderCardData } from './GenerationHome';
 import { PRESETS, isPresetKey } from '@/lib/server/generation/presets';
@@ -18,6 +20,45 @@ export function recentImageLabel(image: RecentRenderCardData, locale: 'fr' | 'en
     return ENGINE_LABELS[image.engine].name[locale];
   }
   return '';
+}
+
+/**
+ * Reads the list again from the server each time the page comes back on
+ * screen (opened, tab focused, back button): a render made on another page or
+ * in another tab shows up without a reload. Images this page added since,
+ * still unknown to that answer, stay first.
+ */
+export function useFreshRecent(setRecent: Dispatch<SetStateAction<RecentRenderCardData[]>>) {
+  useEffect(() => {
+    let alive = true;
+    const read = () => {
+      if (document.visibilityState !== 'visible') return;
+      api<{ images: RecentRenderCardData[] }>('/api/render-nodes/recent')
+        .then(({ images }) => {
+          if (!alive) return;
+          setRecent((cur) => {
+            const known = new Set(images.map((i) => i.id));
+            const newer: RecentRenderCardData[] = [];
+            for (const image of cur) {
+              if (known.has(image.id)) break;
+              newer.push(image);
+            }
+            return [...newer, ...images].slice(0, 15);
+          });
+        })
+        .catch(() => undefined);
+    };
+    read();
+    window.addEventListener('focus', read);
+    window.addEventListener('pageshow', read);
+    document.addEventListener('visibilitychange', read);
+    return () => {
+      alive = false;
+      window.removeEventListener('focus', read);
+      window.removeEventListener('pageshow', read);
+      document.removeEventListener('visibilitychange', read);
+    };
+  }, [setRecent]);
 }
 
 export function RecentImages({

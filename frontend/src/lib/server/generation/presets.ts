@@ -30,18 +30,37 @@ export const PRESET_KEYS = [
   'jour_int',
   'nuit_ext',
   'nuit_int',
+  'maquette_blanche',
+  'aquarelle',
+  'heure_doree',
+  'pluie',
 ] as const;
 
 export type PresetKey = (typeof PRESET_KEYS)[number];
 
-/** What the ambiance menu offers, in order. */
+/**
+ * What the ambiance menu offers, in order. The four lights joined the modules
+ * on 2026-10-19 (owner: « ajoute 4 autres ambiances aux autres »): the fan's
+ * templates leave the page as soon as an image is pinned, so the menu is
+ * where a light is chosen for it. Four new ones the same evening (owner:
+ * « go »): Maquette blanche, Aquarelle, Heure dorée, Temps de pluie — read
+ * in rows of three, the modules, then the drawings, then the lights.
+ */
 export const AMBIANCE_KEYS = [
   'plan_3d',
   'eclate',
   'analyse',
   'isometrie',
+  'maquette_blanche',
   'esquisse',
   'croquis',
+  'aquarelle',
+  'jour_ext',
+  'jour_int',
+  'nuit_ext',
+  'nuit_int',
+  'heure_doree',
+  'pluie',
 ] as const satisfies readonly PresetKey[];
 
 /**
@@ -116,10 +135,36 @@ export const PRESETS: Record<PresetKey, PresetDef> = {
         'Render the building in the attached image as a clean architectural presentation diagram: an all-white matte 3D massing model seen from a high axonometric angle, crisp edges, soft ambient-occlusion shadows, on a very light grey ground. Keep the building’s real shape, openings, terraces and roof. Show the site in the same white and light grey: the street, the plot, a few simple trees and tiny white human figures to scale. Add thin black arrows with short labels in a clean sans-serif font pointing to the entrances and the main outdoor spaces (for example MAIN ENTRANCE, CAR ENTRANCE, BACK YARD, ROOF GARDEN), and STREET ACCESS written along the street; point only at entrances and spaces visible in the source image, never at invented ones. No photorealistic materials or textures, no colours except a touch of warm wood or terracotta on the ground floor. Every label crisp, legible and spelled correctly.',
     },
   },
+  // A photograph of a white card-and-plaster competition model, same
+  // viewpoint as the source (2026-10-19): its own palette, like the
+  // isometric model, so the recorded materials are not sent.
+  maquette_blanche: {
+    label: { fr: 'Maquette blanche', en: 'White model' },
+    prompt: {
+      kind: 'transform',
+      keepsMaterials: false,
+      modifier:
+        'Turn the building in the attached image into a photograph of a physical white architectural presentation model, seen from the same viewpoint and framing as the source: matte white card and plaster for every volume, wall and roof, clear acrylic for the glazing, crisp laser-cut edges with fine visible joints, every opening cut out where the source has it. Set it on a light grey base with the plot in pale birch wood, a few small abstract white trees and tiny white human figures to scale. Soft studio light from the top left, gentle shadows and ambient occlusion, plain light grey studio background, shallow depth of field like a close-up photograph of a model. No colours, no realistic materials, no text.',
+    },
+  },
   // The pencil sketch of the specification (annex A « Esquisse »), same view
   // as the source — text in render-profiles.ts.
   croquis: {
     label: { fr: 'Esquisse', en: 'Sketch' },
+    prompt: { kind: 'look' },
+  },
+  // A watercolour illustration of the same view (render-profiles.ts).
+  aquarelle: {
+    label: { fr: 'Aquarelle', en: 'Watercolour' },
+    prompt: { kind: 'look' },
+  },
+  // Two more lights, same view, nothing added (render-profiles.ts).
+  heure_doree: {
+    label: { fr: 'Heure dorée', en: 'Golden hour' },
+    prompt: { kind: 'look' },
+  },
+  pluie: {
+    label: { fr: 'Temps de pluie', en: 'Rainy day' },
     prompt: { kind: 'look' },
   },
   jour_ext: {

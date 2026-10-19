@@ -1,0 +1,7 @@
+1. LOCK
+This is a new representation of the building in the first image, not a new design.
+Keep the building's real footprint, volumes, proportions, roof shape and the number and position of its openings; only the kind of representation changes, as described below. Do not add, remove, move, resize or redesign any architectural element unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+2. REPRESENTATION
+Turn the building in the attached image into a photograph of a physical white architectural presentation model, seen from the same viewpoint and framing as the source: matte white card and plaster for every volume, wall and roof, clear acrylic for the glazing, crisp laser-cut edges with fine visible joints, every opening cut out where the source has it. Set it on a light grey base with the plot in pale birch wood, a few small abstract white trees and tiny white human figures to scale. Soft studio light from the top left, gentle shadows and ambient occlusion, plain light grey studio background, shallow depth of field like a close-up photograph of a model. No colours, no realistic materials, no text.
+3. FINAL CHECK
+Before answering, verify: footprint and proportions unchanged, openings unchanged, no invented volume, the representation is the one described.
