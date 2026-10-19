@@ -20,7 +20,7 @@ import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/server/prisma';
 import { log } from '@/lib/server/observability/log';
 import { analyzeRenderSheet, sheetAnalysisConfigured } from '@/lib/server/ai/vision-sheet';
-import { debitCredits, refundCredits, type DebitResult } from '@/lib/server/generation/tier-quota';
+import { debitCredits, type DebitResult } from '@/lib/server/generation/tier-quota';
 import { SHEET_COST } from '@/lib/pricing-tiers';
 import {
   CODE_ALPHABET,
@@ -45,6 +45,8 @@ export interface StoredSheet {
   sourceCode: string | null;
   /** Why an analysis did not produce a sheet (a short code, never a message). */
   failure?: string;
+  /** When the paid analysis started (ms): a pending sheet older than STALL_MS is given up. */
+  startedAt?: number;
 }
 
 export function generateImageCode(): string {
@@ -107,6 +109,7 @@ export function readSheet(value: unknown): StoredSheet | null {
     ambiance: v.ambiance && typeof v.ambiance.key === 'string' ? v.ambiance : null,
     sourceCode: typeof v.sourceCode === 'string' ? v.sourceCode : null,
     ...(typeof v.failure === 'string' ? { failure: v.failure.slice(0, 40) } : {}),
+    ...(typeof v.startedAt === 'number' ? { startedAt: v.startedAt } : {}),
   };
 }
 
@@ -145,40 +148,109 @@ export function runAfterResponse(task: () => Promise<void>): void {
   }
 }
 
-/** The analysis of the render against its source, written on the sheet. */
+/**
+ * The analysis of the render against its source. It writes the lines when it
+ * has them; when it has none it only says why — ending the paid request (the
+ * "failed" sheet and the refund, together) is failAndRefund's job.
+ */
 export async function completeSheet(input: {
   nodeId: string;
   source: Buffer;
   render: Buffer;
   locale: 'fr' | 'en';
-}): Promise<boolean> {
+}): Promise<{ ok: true } | { ok: false; failure: string }> {
   const node = await prisma.renderNode.findUnique({
     where: { id: input.nodeId },
     select: { sheet: true },
   });
   const current = readSheet(node?.sheet);
-  if (!current) return false;
+  if (!current) return { ok: false, failure: 'no_sheet' };
   const answer = await analyzeRenderSheet({
     source: input.source,
     render: input.render,
     locale: input.locale,
   });
-  const next: StoredSheet =
-    answer.kind === 'lines'
-      ? { ...current, status: 'ready', lines: answer.lines }
-      : {
-          ...current,
-          status: answer.kind === 'not_configured' ? 'unavailable' : 'failed',
-          failure:
-            answer.kind === 'error'
-              ? `${answer.code}${answer.status ? `_${answer.status}` : ''}`
-              : answer.kind,
-        };
+  if (answer.kind !== 'lines') {
+    return {
+      ok: false,
+      failure:
+        answer.kind === 'error'
+          ? `${answer.code}${answer.status ? `_${answer.status}` : ''}`
+          : answer.kind,
+    };
+  }
+  const ready: StoredSheet = { ...current, status: 'ready', lines: answer.lines };
+  delete ready.failure;
   await prisma.renderNode.update({
     where: { id: input.nodeId },
-    data: { sheet: next as unknown as Prisma.InputJsonObject },
+    data: { sheet: ready as unknown as Prisma.InputJsonObject },
   });
-  return next.status === 'ready';
+  return { ok: true };
+}
+
+/**
+ * Ends a paid analysis that produced nothing: the sheet turns "failed" and the
+ * credits go back in ONE transaction, and only while the sheet is still
+ * "pending" — so they come back exactly once, never twice and never not at
+ * all (2026-10-19, owner: « si ça n'a pas marché, tu ne me prélèves rien »).
+ */
+export async function failAndRefund(
+  nodeId: string,
+  userId: string,
+  failure: string,
+): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
+    const node = await tx.renderNode.findUnique({ where: { id: nodeId }, select: { sheet: true } });
+    const current = readSheet(node?.sheet);
+    if (!current || current.status !== 'pending') return false;
+    const { count } = await tx.renderNode.updateMany({
+      where: { id: nodeId, sheet: { path: ['status'], equals: 'pending' } },
+      data: {
+        sheet: { ...current, status: 'failed', failure } as unknown as Prisma.InputJsonObject,
+      },
+    });
+    if (count !== 1) return false;
+    await tx.user.update({
+      where: { id: userId },
+      data: { creditsBalance: { increment: SHEET_COST } },
+    });
+    return true;
+  });
+}
+
+/** A paid analysis still "pending" after this long was cut off with its task. */
+export const STALL_MS = 4 * 60_000;
+
+/**
+ * Called when the sheet is read: an analysis whose task died (the platform cut
+ * it) is given up and refunded, so credits are never left taken for nothing.
+ * Returns the sheet as it should be shown.
+ */
+export async function recoverStalledSheet(
+  nodeId: string,
+  userId: string,
+  stored: unknown,
+): Promise<unknown> {
+  const sheet = readSheet(stored);
+  if (
+    !sheet ||
+    sheet.status !== 'pending' ||
+    typeof sheet.startedAt !== 'number' ||
+    Date.now() - sheet.startedAt < STALL_MS
+  ) {
+    return stored;
+  }
+  try {
+    await failAndRefund(nodeId, userId, 'stalled');
+  } catch (err) {
+    log.warn('sheet: could not give up a stalled analysis', { err: String(err) });
+    return stored;
+  }
+  const again = await prisma.renderNode.findUnique({
+    where: { id: nodeId },
+    select: { sheet: true },
+  });
+  return again?.sheet ?? stored;
 }
 
 /** One line of a sheet, as one line of prompt (see toPromptLine). */
@@ -303,7 +375,13 @@ export async function requestSheetAnalysis(input: {
 
   const claimed = await prisma.renderNode.updateMany({
     where: { id: input.nodeId, sheet: { path: ['status'], equals: sheet.status } },
-    data: { sheet: { ...sheet, status: 'pending' } as unknown as Prisma.InputJsonObject },
+    data: {
+      sheet: {
+        ...sheet,
+        status: 'pending',
+        startedAt: Date.now(),
+      } as unknown as Prisma.InputJsonObject,
+    },
   });
   if (claimed.count === 0) return { kind: 'already', status: 'pending' };
 
@@ -322,33 +400,18 @@ export async function requestSheetAnalysis(input: {
   const sourceUrl = node.parent.blobUrl;
   const renderUrl = node.blobUrl;
   runAfterResponse(async () => {
-    let produced = false;
-    let wrote = false;
+    let failure: string | null = 'images';
     try {
       const [source, render] = await Promise.all([fetchBuffer(sourceUrl), fetchBuffer(renderUrl)]);
       if (source && render) {
-        produced = await completeSheet({ nodeId: input.nodeId, source, render, locale });
-        wrote = true;
+        const done = await completeSheet({ nodeId: input.nodeId, source, render, locale });
+        failure = done.ok ? null : done.failure;
       }
-    } finally {
-      if (!produced) {
-        await refundCredits(prisma, input.userId, SHEET_COST);
-        // completeSheet already wrote the reason; otherwise (images not read, an
-        // exception) say so.
-        if (!wrote) {
-          await prisma.renderNode.update({
-            where: { id: input.nodeId },
-            data: {
-              sheet: {
-                ...sheet,
-                status: 'failed',
-                failure: 'images',
-              } as unknown as Prisma.InputJsonObject,
-            },
-          });
-        }
-      }
+    } catch (err) {
+      log.warn('sheet: analysis task failed', { err: String(err) });
+      failure = 'exception';
     }
+    if (failure) await failAndRefund(input.nodeId, input.userId, failure);
   });
   return { kind: 'started', balance: debit.balance };
 }

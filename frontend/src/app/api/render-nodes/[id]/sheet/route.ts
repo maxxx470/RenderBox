@@ -11,7 +11,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
-import { ensureNodeCode, readSheet } from '@/lib/server/materials/render-sheet';
+import {
+  ensureNodeCode,
+  readSheet,
+  recoverStalledSheet,
+} from '@/lib/server/materials/render-sheet';
 
 export async function GET(
   req: NextRequest,
@@ -31,8 +35,9 @@ export async function GET(
       return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
     }
     const code = await ensureNodeCode(id);
+    const sheet = await recoverStalledSheet(id, auth.user.sub, node.sheet);
     return NextResponse.json(
-      { code, kind: node.kind, preset: node.preset, sheet: readSheet(node.sheet) },
+      { code, kind: node.kind, preset: node.preset, sheet: readSheet(sheet) },
       { headers: { 'Cache-Control': 'no-store' } },
     );
   });

@@ -29,7 +29,7 @@ export type SheetAnalysis =
     };
 
 /** The whole call, retries included, is cut at this. */
-export const SHEET_DEADLINE_MS = 60_000;
+export const SHEET_DEADLINE_MS = 110_000;
 /** Both pictures are sent no larger than this: enough to read a colour. */
 const SEND_EDGE = 1280;
 

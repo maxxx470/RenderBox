@@ -59,7 +59,7 @@ function blockOf(
 }
 
 const POLL_MS = 4000;
-const POLL_MAX = 30;
+const POLL_MAX = 60;
 
 export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
   const t = useTranslations();

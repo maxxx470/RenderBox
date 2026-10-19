@@ -5,7 +5,7 @@
 // is charged when the sheet is already analysed or running, when no analysis
 // key exists, or when the balance does not cover it.
 export const runtime = 'nodejs';
-export const maxDuration = 120;
+export const maxDuration = 150;
 
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
