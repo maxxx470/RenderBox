@@ -244,6 +244,15 @@ const fr = {
   'app.closeMenu': 'Fermer le menu',
   'app.materialsTitle': 'Matériaux de cette image',
   'app.materialsEmptyBody': "Les matériaux d'une image s'affichent ici dès qu'elle est ouverte.",
+  'app.sheetCredits': 'crédits',
+  'app.sheetCopiedAsking':
+    'Fiche copiée. L’analyse des matériaux est lancée : vous serez prévenu quand elle sera prête.',
+  'app.sheetDone':
+    'Analyse et fiche copiées avec succès. Vous pouvez la coller sur le prochain rendu.',
+  'app.sheetFailedRefunded': 'L’analyse n’a pas abouti. Vos crédits vous ont été rendus.',
+  'app.sheetAskFailed': 'L’analyse n’a pas pu être lancée. Réessayez dans un instant.',
+  'app.sheetIdle':
+    'La fiche se remplit quand vous la copiez : l’analyse est alors lancée et débitée de vos crédits.',
   'app.sheetCopy': 'Copier',
   'app.sheetCopied': 'Fiche copiée. Collez-la sous le prompt d’un nouveau rendu.',
   'app.sheetCopyFailed': 'Copie impossible : sélectionnez le texte à la main.',

@@ -19,7 +19,9 @@ import { after } from 'next/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/server/prisma';
 import { log } from '@/lib/server/observability/log';
-import { analyzeRenderSheet } from '@/lib/server/ai/vision-sheet';
+import { analyzeRenderSheet, sheetAnalysisConfigured } from '@/lib/server/ai/vision-sheet';
+import { debitCredits, refundCredits, type DebitResult } from '@/lib/server/generation/tier-quota';
+import { SHEET_COST } from '@/lib/pricing-tiers';
 import {
   CODE_ALPHABET,
   IMAGE_CODE_RE,
@@ -31,7 +33,7 @@ import {
 import { toPromptLine } from '@/lib/server/generation/render-profiles';
 import { requestLocale } from '@/lib/i18n/request-locale';
 
-export type SheetStatus = 'pending' | 'ready' | 'unavailable' | 'failed';
+export type SheetStatus = 'idle' | 'pending' | 'ready' | 'unavailable' | 'failed';
 
 export interface StoredSheet {
   v: 1;
@@ -105,7 +107,7 @@ export function readSheet(value: unknown): StoredSheet | null {
   };
 }
 
-/** The render has just been stored: its sheet starts, "pending". */
+/** The render has just been stored: its sheet starts, "idle" — the analysis only runs when the user copies the sheet (and pays for it). */
 export async function startSheet(input: {
   nodeId: string;
   sourceNodeId: string;
@@ -117,7 +119,7 @@ export async function startSheet(input: {
   ]);
   const sheet: StoredSheet = {
     v: 1,
-    status: 'pending',
+    status: 'idle',
     lines: [],
     ambiance: input.ambiance,
     sourceCode,
@@ -146,13 +148,13 @@ export async function completeSheet(input: {
   source: Buffer;
   render: Buffer;
   locale: 'fr' | 'en';
-}): Promise<void> {
+}): Promise<boolean> {
   const node = await prisma.renderNode.findUnique({
     where: { id: input.nodeId },
     select: { sheet: true },
   });
   const current = readSheet(node?.sheet);
-  if (!current) return;
+  if (!current) return false;
   const answer = await analyzeRenderSheet({
     source: input.source,
     render: input.render,
@@ -166,6 +168,7 @@ export async function completeSheet(input: {
     where: { id: input.nodeId },
     data: { sheet: next as unknown as Prisma.InputJsonObject },
   });
+  return next.status === 'ready';
 }
 
 /** One line of a sheet, as one line of prompt (see toPromptLine). */
@@ -230,29 +233,100 @@ async function sheetLocale(): Promise<'fr' | 'en'> {
 }
 
 /**
- * A render has just been stored: its sheet starts now and is completed once
- * the response is gone. Never throws — a sheet that cannot start leaves the
- * render exactly as it is.
+ * A render has just been stored: its sheet starts now, "idle" — no analysis
+ * and no charge until the user copies the sheet (requestSheetAnalysis). Never
+ * throws — a sheet that cannot start leaves the render exactly as it is.
  */
 export async function scheduleSheet(input: {
   nodeId: string;
   sourceNodeId: string;
   ambiance: { key: string; sky: 'hazy' | 'sun' | null } | null;
-  source: Buffer;
-  render: Buffer;
 }): Promise<void> {
   try {
     await startSheet(input);
-    const locale = await sheetLocale();
-    runAfterResponse(() =>
-      completeSheet({
-        nodeId: input.nodeId,
-        source: input.source,
-        render: input.render,
-        locale,
-      }),
-    );
   } catch (err) {
     log.warn('sheet: could not start (non-fatal)', { err: String(err) });
   }
+}
+
+export type SheetRequestOutcome =
+  | { kind: 'not_found' }
+  | { kind: 'no_sheet' }
+  | { kind: 'already'; status: SheetStatus }
+  | { kind: 'not_configured' }
+  | { kind: 'refused'; refusal: Extract<DebitResult, { ok: false }> }
+  | { kind: 'started'; balance: number };
+
+async function fetchBuffer(url: string): Promise<Buffer | null> {
+  const res = await fetch(url);
+  return res.ok ? Buffer.from(await res.arrayBuffer()) : null;
+}
+
+/**
+ * The user copied the sheet of a render that has no analysis yet (2026-10-19,
+ * owner): the analysis is asked now and SHEET_COST credits are taken — only
+ * then, never before. The claim on the sheet ("pending") is one conditional
+ * UPDATE, so two quick clicks pay once. The credits come back if the analysis
+ * does not produce a sheet. The work runs after the response.
+ */
+export async function requestSheetAnalysis(input: {
+  nodeId: string;
+  userId: string;
+}): Promise<SheetRequestOutcome> {
+  const node = await prisma.renderNode.findUnique({
+    where: { id: input.nodeId },
+    select: {
+      kind: true,
+      blobUrl: true,
+      sheet: true,
+      parent: { select: { blobUrl: true } },
+      project: { select: { userId: true } },
+    },
+  });
+  if (!node || node.project.userId !== input.userId) return { kind: 'not_found' };
+  const sheet = readSheet(node.sheet);
+  if (!sheet || node.kind !== 'GENERATED' || !node.parent) return { kind: 'no_sheet' };
+  if (sheet.status === 'ready' || sheet.status === 'pending') {
+    return { kind: 'already', status: sheet.status };
+  }
+  if (!sheetAnalysisConfigured()) return { kind: 'not_configured' };
+
+  const claimed = await prisma.renderNode.updateMany({
+    where: { id: input.nodeId, sheet: { path: ['status'], equals: sheet.status } },
+    data: { sheet: { ...sheet, status: 'pending' } as unknown as Prisma.InputJsonObject },
+  });
+  if (claimed.count === 0) return { kind: 'already', status: 'pending' };
+
+  const restore = () =>
+    prisma.renderNode.update({
+      where: { id: input.nodeId },
+      data: { sheet: sheet as unknown as Prisma.InputJsonObject },
+    });
+  const debit = await debitCredits(prisma, input.userId, SHEET_COST);
+  if (!debit.ok) {
+    await restore();
+    return { kind: 'refused', refusal: debit };
+  }
+
+  const locale = await sheetLocale();
+  const sourceUrl = node.parent.blobUrl;
+  const renderUrl = node.blobUrl;
+  runAfterResponse(async () => {
+    let produced = false;
+    try {
+      const [source, render] = await Promise.all([fetchBuffer(sourceUrl), fetchBuffer(renderUrl)]);
+      if (source && render) {
+        produced = await completeSheet({ nodeId: input.nodeId, source, render, locale });
+      }
+    } finally {
+      if (!produced) {
+        await refundCredits(prisma, input.userId, SHEET_COST);
+        await prisma.renderNode.update({
+          where: { id: input.nodeId },
+          data: { sheet: { ...sheet, status: 'failed' } as unknown as Prisma.InputJsonObject },
+        });
+      }
+    }
+  });
+  return { kind: 'started', balance: debit.balance };
 }

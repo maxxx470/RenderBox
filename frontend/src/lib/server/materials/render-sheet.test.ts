@@ -3,8 +3,20 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { prismaMock } from '@/test-utils/prisma-mock';
 
-const { mockAnalyze } = vi.hoisted(() => ({ mockAnalyze: vi.fn() }));
-vi.mock('@/lib/server/ai/vision-sheet', () => ({ analyzeRenderSheet: mockAnalyze }));
+const { mockAnalyze, mockConfigured, mockDebit, mockRefund } = vi.hoisted(() => ({
+  mockAnalyze: vi.fn(),
+  mockConfigured: vi.fn(),
+  mockDebit: vi.fn(),
+  mockRefund: vi.fn(),
+}));
+vi.mock('@/lib/server/ai/vision-sheet', () => ({
+  analyzeRenderSheet: mockAnalyze,
+  sheetAnalysisConfigured: mockConfigured,
+}));
+vi.mock('@/lib/server/generation/tier-quota', () => ({
+  debitCredits: mockDebit,
+  refundCredits: mockRefund,
+}));
 // `after` only exists inside a request: the tasks run at once here.
 vi.mock('next/server', async (importOriginal) => ({
   ...(await importOriginal<typeof import('next/server')>()),
@@ -19,6 +31,7 @@ import {
   ensureNodeCode,
   generateImageCode,
   readSheet,
+  requestSheetAnalysis,
   resolvePastedSheet,
   scheduleSheet,
   startSheet,
@@ -36,6 +49,9 @@ const READY = {
 
 beforeEach(() => {
   mockAnalyze.mockReset();
+  mockConfigured.mockReset().mockReturnValue(true);
+  mockDebit.mockReset().mockResolvedValue({ ok: true, balance: 92 });
+  mockRefund.mockReset();
 });
 
 describe('generateImageCode', () => {
@@ -92,7 +108,7 @@ describe('readSheet', () => {
 });
 
 describe('startSheet and completeSheet', () => {
-  it('starts "pending", with the ambiance and the source image’s code', async () => {
+  it('starts "idle" (no analysis, no charge), with the ambiance and the source image’s code', async () => {
     prismaMock.renderNode.findUnique
       .mockResolvedValueOnce({ code: 'RP-NNNNNN' } as never)
       .mockResolvedValueOnce({ code: 'RP-3D9F1A' } as never);
@@ -106,7 +122,7 @@ describe('startSheet and completeSheet', () => {
       data: {
         sheet: {
           v: 1,
-          status: 'pending',
+          status: 'idle',
           lines: [],
           ambiance: { key: 'nuit_ext', sky: null },
           sourceCode: 'RP-3D9F1A',
@@ -171,32 +187,113 @@ describe('startSheet and completeSheet', () => {
     expect(mockAnalyze).not.toHaveBeenCalled();
   });
 
-  it('scheduleSheet starts it, then runs the analysis after the response — and never throws', async () => {
-    prismaMock.renderNode.findUnique.mockResolvedValue({
-      code: 'RP-AAAAAA',
-      sheet: { ...READY, status: 'pending', lines: [] },
-    } as never);
-    mockAnalyze.mockResolvedValue({ kind: 'lines', lines: LINES });
-    await scheduleSheet({
-      nodeId: 'n2',
-      sourceNodeId: 'n1',
-      ambiance: null,
-      source: Buffer.from('a'),
-      render: Buffer.from('b'),
-    });
-    await vi.waitFor(() => expect(mockAnalyze).toHaveBeenCalledTimes(1));
-    expect(mockAnalyze).toHaveBeenCalledWith(expect.objectContaining({ locale: 'fr' }));
+  it('scheduleSheet only starts the sheet — no analysis, no charge — and never throws', async () => {
+    prismaMock.renderNode.findUnique.mockResolvedValue({ code: 'RP-AAAAAA' } as never);
+    await scheduleSheet({ nodeId: 'n2', sourceNodeId: 'n1', ambiance: null });
+    expect(mockAnalyze).not.toHaveBeenCalled();
+    expect(mockDebit).not.toHaveBeenCalled();
 
     prismaMock.renderNode.findUnique.mockRejectedValue(new Error('db down'));
     await expect(
-      scheduleSheet({
-        nodeId: 'n2',
-        sourceNodeId: 'n1',
-        ambiance: null,
-        source: Buffer.from('a'),
-        render: Buffer.from('b'),
-      }),
+      scheduleSheet({ nodeId: 'n2', sourceNodeId: 'n1', ambiance: null }),
     ).resolves.toBeUndefined();
+  });
+});
+
+describe('requestSheetAnalysis — asked when the sheet is copied, paid by the user', () => {
+  const IDLE = { ...READY, status: 'idle', lines: [] };
+  const node = (sheet: unknown, over: Record<string, unknown> = {}) =>
+    ({
+      kind: 'GENERATED',
+      blobUrl: 'https://blob/render',
+      sheet,
+      parent: { blobUrl: 'https://blob/source' },
+      project: { userId: 'u1' },
+      ...over,
+    }) as never;
+
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(new Uint8Array([1, 2, 3]), { status: 200 })),
+    );
+  });
+
+  it('charges 8 credits to the user, claims the sheet once and analyses in the background', async () => {
+    prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
+    prismaMock.renderNode.updateMany.mockResolvedValue({ count: 1 } as never);
+    mockAnalyze.mockResolvedValue({ kind: 'lines', lines: LINES });
+    const out = await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' });
+    expect(out).toEqual({ kind: 'started', balance: 92 });
+    expect(mockDebit).toHaveBeenCalledWith(expect.anything(), 'u1', 8);
+    expect(prismaMock.renderNode.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'n2', sheet: { path: ['status'], equals: 'idle' } },
+      }),
+    );
+    await vi.waitFor(() => expect(mockAnalyze).toHaveBeenCalledTimes(1));
+    expect(mockRefund).not.toHaveBeenCalled();
+  });
+
+  it('gives the credits back when the analysis produces nothing', async () => {
+    prismaMock.renderNode.findUnique
+      .mockResolvedValueOnce(node(IDLE))
+      .mockResolvedValue({ sheet: { ...IDLE, status: 'pending' } } as never);
+    prismaMock.renderNode.updateMany.mockResolvedValue({ count: 1 } as never);
+    mockAnalyze.mockResolvedValue({ kind: 'invalid_response' });
+    await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' });
+    await vi.waitFor(() => expect(mockRefund).toHaveBeenCalledWith(expect.anything(), 'u1', 8));
+  });
+
+  it('charges nothing when the sheet is already analysed or running', async () => {
+    prismaMock.renderNode.findUnique.mockResolvedValue(node(READY));
+    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toEqual({
+      kind: 'already',
+      status: 'ready',
+    });
+    prismaMock.renderNode.findUnique.mockResolvedValue(node({ ...READY, status: 'pending' }));
+    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toMatchObject({
+      kind: 'already',
+    });
+    expect(mockDebit).not.toHaveBeenCalled();
+  });
+
+  it('charges nothing without an analysis key, for another account’s image or an upload', async () => {
+    mockConfigured.mockReturnValue(false);
+    prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
+    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toEqual({
+      kind: 'not_configured',
+    });
+    mockConfigured.mockReturnValue(true);
+    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'someone-else' })).toEqual({
+      kind: 'not_found',
+    });
+    prismaMock.renderNode.findUnique.mockResolvedValue(node(null, { kind: 'UPLOADED' }));
+    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toEqual({
+      kind: 'no_sheet',
+    });
+    expect(mockDebit).not.toHaveBeenCalled();
+  });
+
+  it('puts the sheet back and charges nothing when the balance does not cover it', async () => {
+    prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
+    prismaMock.renderNode.updateMany.mockResolvedValue({ count: 1 } as never);
+    mockDebit.mockResolvedValue({ ok: false, reason: 'INSUFFICIENT_CREDITS', balance: 3 });
+    const out = await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' });
+    expect(out).toMatchObject({ kind: 'refused' });
+    expect(prismaMock.renderNode.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { sheet: IDLE } }),
+    );
+    expect(mockAnalyze).not.toHaveBeenCalled();
+  });
+
+  it('a second click while the first claim stands pays nothing', async () => {
+    prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
+    prismaMock.renderNode.updateMany.mockResolvedValue({ count: 0 } as never);
+    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toMatchObject({
+      kind: 'already',
+    });
+    expect(mockDebit).not.toHaveBeenCalled();
   });
 });
 

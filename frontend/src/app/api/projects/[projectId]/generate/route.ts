@@ -308,8 +308,6 @@ export async function POST(
           ambiance: preset
             ? { key: preset, sky: preset === 'jour_ext' ? (sky ?? 'hazy') : null }
             : null,
-          source: sourceImageBuffer,
-          render: result.imageBuffer,
         });
       } catch (e) {
         log.warn('generate: sheet could not start (non-fatal)', { err: String(e) });

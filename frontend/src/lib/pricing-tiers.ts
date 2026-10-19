@@ -41,6 +41,10 @@ export const PLAN_FEATURES: readonly TranslationKey[] = [
 export const RENDER_COST = 50;
 /** One image produced at 4K. */
 export const RENDER_COST_4K = 70;
+/** The analysis behind a materials sheet, asked when the sheet is copied
+ *  (2026-10-19, owner: 7.5 credits, 5 being the plain cost; balances are whole
+ *  numbers, so 8). Paid by the user, whatever their role. */
+export const SHEET_COST = 8;
 /** A message to the built-in assistant. */
 export const ASSISTANT_COST: number = 0;
 

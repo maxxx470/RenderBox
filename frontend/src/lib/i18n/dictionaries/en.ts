@@ -240,6 +240,14 @@ const en: Record<keyof typeof fr, string> = {
   'app.closeMenu': 'Close the menu',
   'app.materialsTitle': 'Materials of this image',
   'app.materialsEmptyBody': "An image's materials show here once it is open.",
+  'app.sheetCredits': 'credits',
+  'app.sheetCopiedAsking':
+    'Sheet copied. The materials analysis has started: you will be told when it is ready.',
+  'app.sheetDone': 'Analysis and sheet copied successfully. You can paste it on the next render.',
+  'app.sheetFailedRefunded': 'The analysis did not complete. Your credits were given back.',
+  'app.sheetAskFailed': 'The analysis could not be started. Try again in a moment.',
+  'app.sheetIdle':
+    'The sheet is filled when you copy it: the analysis then starts and is charged to your credits.',
   'app.sheetCopy': 'Copy',
   'app.sheetCopied': 'Sheet copied. Paste it under the prompt of a new render.',
   'app.sheetCopyFailed': 'Could not copy: select the text by hand.',

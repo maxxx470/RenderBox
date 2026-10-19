@@ -10,11 +10,15 @@
 //     render so it keeps the same materials and the same ambiance.
 // The lines come from the render's analysis, which runs after the render is
 // delivered: the panel asks again every few seconds while it is "pending".
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { formatSheetBlock } from '@/lib/render-sheet';
+import { SHEET_COST } from '@/lib/pricing-tiers';
+import { errorCodeOf, plansReasonFor } from './request-error';
+import { useAppChrome } from './AppChrome';
 import { PRESETS, isPresetKey } from '@/lib/server/generation/presets';
 
 interface SheetAnswer {
@@ -22,11 +26,35 @@ interface SheetAnswer {
   kind: string;
   preset: string | null;
   sheet: {
-    status: 'pending' | 'ready' | 'unavailable' | 'failed';
+    status: 'idle' | 'pending' | 'ready' | 'unavailable' | 'failed';
     lines: { color: string; material: string }[];
     ambiance: { key: string; sky: 'hazy' | 'sun' | null } | null;
     sourceCode: string | null;
   } | null;
+}
+
+/** The sheet as text, with the lines only once they exist. */
+function blockOf(
+  answer: SheetAnswer,
+  locale: 'fr' | 'en',
+  t: ReturnType<typeof useTranslations>,
+): string {
+  const sheet = answer.sheet;
+  const ambianceKey = sheet?.ambiance?.key ?? null;
+  const sky = sheet?.ambiance?.sky ?? null;
+  return formatSheetBlock(
+    {
+      code: answer.code,
+      sourceCode: sheet?.sourceCode ?? null,
+      ambianceKey,
+      ambianceLabel:
+        ambianceKey && isPresetKey(ambianceKey) ? PRESETS[ambianceKey].label[locale] : null,
+      sky,
+      skyLabel: sky ? t(sky === 'hazy' ? 'app.skyHazy' : 'app.skySun') : null,
+      lines: sheet?.status === 'ready' ? sheet.lines : [],
+    },
+    locale,
+  );
 }
 
 const POLL_MS = 4000;
@@ -38,6 +66,11 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
   const { toast } = useToast();
   const [answer, setAnswer] = useState<SheetAnswer | null>(null);
   const [failed, setFailed] = useState(false);
+  const [tick, setTick] = useState(0);
+  const router = useRouter();
+  const chrome = useAppChrome();
+  // True once THIS user asked for the analysis (copying an unanalysed sheet).
+  const asked = useRef(false);
 
   useEffect(() => {
     setAnswer(null);
@@ -51,8 +84,18 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
         .then((a) => {
           if (!alive) return;
           setAnswer(a);
-          if (a.sheet?.status === 'pending' && ++tries < POLL_MAX) {
+          const status = a.sheet?.status;
+          if (status === 'pending' && ++tries < POLL_MAX) {
             timer = setTimeout(read, POLL_MS);
+          } else if (asked.current && (status === 'ready' || status === 'failed')) {
+            asked.current = false;
+            if (status === 'ready') {
+              toast(t('app.sheetDone'), 'success');
+              void navigator.clipboard?.writeText(blockOf(a, locale, t)).catch(() => undefined);
+            } else {
+              toast(t('app.sheetFailedRefunded'), 'error');
+              router.refresh();
+            }
           }
         })
         .catch(() => alive && setFailed(true));
@@ -62,7 +105,7 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
       alive = false;
       if (timer) clearTimeout(timer);
     };
-  }, [nodeId]);
+  }, [nodeId, tick]);
 
   const sheet = answer?.sheet ?? null;
   const ambianceKey = sheet?.ambiance?.key ?? null;
@@ -71,25 +114,32 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
   const sky = sheet?.ambiance?.sky ?? null;
   const skyLabel = sky ? t(sky === 'hazy' ? 'app.skyHazy' : 'app.skySun') : null;
 
+  const needsAnalysis = sheet !== null && sheet.status !== 'ready' && sheet.status !== 'pending';
+
   async function copy() {
     if (!answer) return;
-    const text = formatSheetBlock(
-      {
-        code: answer.code,
-        sourceCode: sheet?.sourceCode ?? null,
-        ambianceKey,
-        ambianceLabel,
-        sky,
-        skyLabel,
-        lines: sheet?.status === 'ready' ? sheet.lines : [],
-      },
-      locale,
-    );
     try {
-      await navigator.clipboard.writeText(text);
-      toast(t('app.sheetCopied'), 'success');
+      await navigator.clipboard.writeText(blockOf(answer, locale, t));
+      toast(t(needsAnalysis ? 'app.sheetCopiedAsking' : 'app.sheetCopied'), 'success');
     } catch {
       toast(t('app.sheetCopyFailed'), 'error');
+    }
+    // The analysis is asked, and paid, only when the sheet is copied — and
+    // only if it does not exist yet.
+    if (!needsAnalysis) return;
+    try {
+      await api(`/api/render-nodes/${nodeId}/sheet/analyze`, {
+        method: 'POST',
+      });
+      asked.current = true;
+      setTick((n) => n + 1);
+      router.refresh();
+    } catch (err) {
+      const reason = plansReasonFor(err);
+      if (reason) chrome?.openPlans(reason);
+      else if (errorCodeOf(err) === 'SHEET_NOT_CONFIGURED')
+        toast(t('app.sheetUnavailable'), 'error');
+      else toast(t('app.sheetAskFailed'), 'error');
     }
   }
 
@@ -109,6 +159,7 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
             className="rounded-lg bg-[#EEF1FF] px-2.5 py-1 text-[11.5px] font-semibold text-[#1E36D6] hover:bg-[#E3E8FF]"
           >
             {t('app.sheetCopy')}
+            {needsAnalysis ? ` · ${SHEET_COST} ${t('app.sheetCredits')}` : ''}
           </button>
         )}
       </div>
@@ -155,6 +206,8 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
             <p role="status" className="text-[12px] leading-snug text-[#6B6878]">
               {t('app.sheetPending')}
             </p>
+          ) : sheet.status === 'idle' ? (
+            <p className="text-[12px] leading-snug text-[#8A8896]">{t('app.sheetIdle')}</p>
           ) : sheet.status === 'unavailable' ? (
             <p className="text-[12px] leading-snug text-[#8A8896]">{t('app.sheetUnavailable')}</p>
           ) : sheet.status === 'failed' ? (

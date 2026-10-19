@@ -150,6 +150,11 @@ async function askOpenAI(
   return body.choices?.[0]?.message?.content ?? '';
 }
 
+/** Whether an analysis key exists (checked before anything is charged). */
+export function sheetAnalysisConfigured(): boolean {
+  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY);
+}
+
 export async function analyzeRenderSheet(input: {
   source: Buffer;
   render: Buffer;
