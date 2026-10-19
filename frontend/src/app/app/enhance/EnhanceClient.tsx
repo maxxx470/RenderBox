@@ -11,16 +11,18 @@
 // 2026-10-08 (owner) — the image workspace's layout: on the left the stage
 // with a simplified command bar under it (the user's own description, the
 // paperclip, ratio and size — see EnhanceBar); on the right a full-height
-// column, "À améliorer": seven improvements, each with a "+" that attaches one
-// reference image the engine uses as a guide for that aspect only, then the
-// intensity and the engine. Typing in the bar is enough, nothing ticked.
+// column, "À améliorer": seven improvements, then the intensity and the
+// engine. Typing in the bar is enough, nothing ticked. Each improvement took a
+// reference image until 2026-10-19 (its "+"): with no moderation key in
+// production none could be checked, so the owner removed them — the route
+// still accepts them.
 //
 // "Relancer" reuses the photo already uploaded (same project, same source
 // node) so a second try with other settings does not upload it twice or
 // scatter a project per attempt.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Category, Download, Paper, Plus } from 'react-iconly';
+import { Category, Download, Paper } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
@@ -62,7 +64,7 @@ import {
   notConfiguredKey,
 } from '../request-error';
 import { EnhanceBar } from './EnhanceBar';
-import { fitForUpload, UPLOAD_FIT } from '../fit-upload';
+import { fitForUpload } from '../fit-upload';
 
 const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
 const HEADING =
@@ -82,27 +84,19 @@ function nodeImage(id: string) {
   return `/api/render-nodes/${id}/image`;
 }
 
-/** One improvement of the column: the tick, its name and hint, then "+". */
+/** One improvement of the column: the tick, its name and hint. */
 function OptionRow({
   optionKey,
   on,
-  reference,
   disabled,
   onToggle,
-  onAddReference,
-  onRemoveReference,
 }: {
   optionKey: EnhanceOptionKey;
   on: boolean;
-  reference: File | null;
   disabled: boolean;
   onToggle: () => void;
-  onAddReference: () => void;
-  onRemoveReference: () => void;
 }) {
-  const t = useTranslations();
   const { locale } = useLocale();
-  const refUrl = useObjectUrl(reference);
   const option = ENHANCE_OPTIONS[optionKey];
 
   return (
@@ -153,47 +147,6 @@ function OptionRow({
           </span>
         </span>
       </button>
-      {refUrl ? (
-        // The reference, as a thumbnail; its cross takes it off again.
-        <div className="relative h-7 w-7 flex-shrink-0" title={t('enhance.refAttached')}>
-          <img
-            src={refUrl}
-            alt={t('enhance.refAttached')}
-            className="h-full w-full rounded-lg object-cover"
-          />
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={onRemoveReference}
-            aria-label={t('enhance.refRemove')}
-            title={t('enhance.refRemove')}
-            className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-[5px] border-[1.5px] border-white bg-[#17161F] text-white"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="7"
-              height="7"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3.4"
-              strokeLinecap="round"
-            >
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
-          </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={onAddReference}
-          aria-label={`${t('enhance.refAdd')} — ${option.label[locale]}`}
-          title={t('enhance.refAdd')}
-          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-white transition-colors hover:bg-[#E9E9EE] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <Plus set="curved" size={15} primaryColor="#2948FC" />
-        </button>
-      )}
     </div>
   );
 }
@@ -222,8 +175,6 @@ export function EnhanceClient({
   const [working, setWorking] = useState(false);
 
   const [options, setOptions] = useState<EnhanceOptionKey[]>(DEFAULT_ENHANCE_OPTIONS);
-  // One reference image per ticked improvement (owner, 2026-10-08).
-  const [refs, setRefs] = useState<Partial<Record<EnhanceOptionKey, File>>>({});
   const [strength, setStrength] = useState<EnhanceStrength>('subtle');
   const [engine, setEngine] = useState<EngineName>('nanobanana');
   const [instruction, setInstruction] = useState('');
@@ -231,9 +182,6 @@ export function EnhanceClient({
   const [resolution, setResolution] = useState<ResolutionKey>(DEFAULT_RESOLUTION);
   const [remaining, setRemaining] = useState(surface.creditsBalance);
   const [panelOpen, setPanelOpen] = useState(false);
-  const refInputRef = useRef<HTMLInputElement>(null);
-  // Which improvement the reference picker was opened for.
-  const refTarget = useRef<EnhanceOptionKey | null>(null);
   const preview = useObjectUrl(file);
   // Either a file attached here, or an image that already lives in a project.
   const hasSource = Boolean(file || session);
@@ -260,27 +208,12 @@ export function EnhanceClient({
     setResultId(null);
   }
 
-  function dropReference(key: EnhanceOptionKey) {
-    setRefs((cur) => {
-      const next = { ...cur };
-      delete next[key];
-      return next;
-    });
-  }
-
   function toggleOption(key: EnhanceOptionKey) {
     if (options.includes(key)) {
       setOptions((cur) => cur.filter((k) => k !== key));
-      // A reference belongs to a ticked improvement: unticking drops it.
-      dropReference(key);
     } else {
       setOptions((cur) => [...cur, key]);
     }
-  }
-
-  function addReference(key: EnhanceOptionKey) {
-    refTarget.current = key;
-    refInputRef.current?.click();
   }
 
   async function uploadSource(source: File): Promise<Session> {
@@ -341,10 +274,6 @@ export function EnhanceClient({
       form.append('resolution', resolution);
       for (const key of options) form.append('options', key);
       if (instruction.trim()) form.append('instruction', instruction.trim());
-      for (const key of options) {
-        const ref = refs[key];
-        if (ref) form.append(`ref_${key}`, await fitForUpload(ref, UPLOAD_FIT.reference));
-      }
       const csrf = getCsrfTokenForUpload();
       const res = await fetch(`/api/projects/${current.projectId}/enhance`, {
         method: 'POST',
@@ -396,23 +325,6 @@ export function EnhanceClient({
         userEmail: surface.userEmail,
       }}
     >
-      <input
-        ref={refInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        className="hidden"
-        onChange={(e) => {
-          const picked = e.target.files?.[0];
-          const key = refTarget.current;
-          if (picked && key) {
-            setRefs((cur) => ({ ...cur, [key]: picked }));
-            // Adding a reference ticks its improvement: one goes with the other.
-            setOptions((cur) => (cur.includes(key) ? cur : [...cur, key]));
-          }
-          e.target.value = '';
-        }}
-      />
-
       <main className={`flex min-w-0 flex-1 flex-col overflow-hidden ${MOBILE_NAV_PAD}`}>
         {/* On a phone: one short line, then the « À améliorer » column's
             button, named — a bare grey icon was easy to miss (2026-10-15). */}
@@ -567,21 +479,15 @@ export function EnhanceClient({
               panelOpen ? 'flex' : 'hidden'
             } fixed bottom-0 right-0 top-16 z-[35] w-[300px] flex-col overflow-y-auto bg-white px-4 py-4.5 ${MOBILE_NAV_PAD} min-[900px]:static min-[900px]:z-auto min-[900px]:flex min-[900px]:flex-shrink-0 min-[900px]:border-l min-[900px]:border-[#ECECF2]`}
           >
-            <h3 className={`${HEADING} mb-1`}>{t('enhance.optionsHeading')}</h3>
-            <p className="mb-3 text-[11px] leading-relaxed text-[#8A8896]">
-              {t('enhance.refNote')}
-            </p>
+            <h3 className={`${HEADING} mb-3`}>{t('enhance.optionsHeading')}</h3>
             <div className="flex flex-col gap-1">
               {ENHANCE_OPTION_KEYS.map((key) => (
                 <OptionRow
                   key={key}
                   optionKey={key}
                   on={options.includes(key)}
-                  reference={refs[key] ?? null}
                   disabled={working}
                   onToggle={() => toggleOption(key)}
-                  onAddReference={() => addReference(key)}
-                  onRemoveReference={() => dropReference(key)}
                 />
               ))}
             </div>

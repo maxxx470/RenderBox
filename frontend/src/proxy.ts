@@ -66,7 +66,19 @@ function ensureCsrfCookieWhenAuthDisabled(req: NextRequest, res: NextResponse): 
   });
 }
 
+// The old address leads to the domain (2026-10-19): one address for every
+// visitor, so a Google sign-in started on one ends on the same one. Pages
+// only — the matcher leaves /api alone, so calls and webhooks made out to the
+// old address keep working.
+const LEGACY_HOSTS = new Set(['renderbox-app.vercel.app']);
+const CANONICAL_ORIGIN = 'https://www.renderpro.app';
+
 export function proxy(req: NextRequest): NextResponse {
+  if (LEGACY_HOSTS.has(req.headers.get('host') ?? '')) {
+    const { pathname, search } = req.nextUrl;
+    return NextResponse.redirect(new URL(pathname + search, CANONICAL_ORIGIN), 308);
+  }
+
   const csp = buildCsp({
     nonce: crypto.randomUUID(),
     isProduction: process.env.NODE_ENV === 'production',

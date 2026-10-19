@@ -6,7 +6,8 @@
 // right edge, square, a hairline on its left (2026-10-13; a floating rounded
 // card before), the selected image's materials on top
 // (NodeMaterialsPanel, given ready-made by the page; the edit panel while
-// Commenter / Ajouter is on), the project tree under it. A drawer from the
+// Commenter / Ajouter is on), the project tree under it — or, on the image
+// generator, the recent images (`lower`, 2026-10-19). A drawer from the
 // right below 900px, opened by the page's own button.
 import type { ReactNode } from 'react';
 import type { RenderTreeNode } from '@/lib/server/render-tree';
@@ -26,10 +27,11 @@ export function SideColumn({
   onReferenceChange,
   pins,
   onPinsChange,
-  tree,
-  selectedId,
-  onSelect,
-  onDelete,
+  tree = [],
+  selectedId = null,
+  onSelect = () => {},
+  onDelete = () => {},
+  lower,
   mobileOpen,
   onMobileClose,
 }: {
@@ -43,10 +45,12 @@ export function SideColumn({
   onReferenceChange: (file: File | null) => void;
   pins: Pin[];
   onPinsChange: (pins: Pin[]) => void;
-  tree: RenderTreeNode[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
-  onDelete: (node: RenderTreeNode) => void;
+  tree?: RenderTreeNode[];
+  selectedId?: string | null;
+  onSelect?: (id: string) => void;
+  onDelete?: (node: RenderTreeNode) => void;
+  /** In the tree's place: its own title and content (the recent images). */
+  lower?: { title: string; content: ReactNode };
   mobileOpen: boolean;
   onMobileClose: () => void;
 }) {
@@ -83,20 +87,24 @@ export function SideColumn({
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto border-t border-[#ECECF2] px-4 py-4.5">
           <h3 className="mb-3.5 font-[family-name:var(--font-display)] text-[11px] uppercase tracking-wide text-[#8A8896]">
-            {t('app.treeTitle')}
+            {lower ? lower.title : t('app.treeTitle')}
           </h3>
-          <ProjectTree
-            tree={tree}
-            selectedId={selectedId}
-            onSelect={(id) => {
-              onSelect(id);
-              onMobileClose();
-            }}
-            onDelete={(node) => {
-              onDelete(node);
-              onMobileClose();
-            }}
-          />
+          {lower ? (
+            lower.content
+          ) : (
+            <ProjectTree
+              tree={tree}
+              selectedId={selectedId}
+              onSelect={(id) => {
+                onSelect(id);
+                onMobileClose();
+              }}
+              onDelete={(node) => {
+                onDelete(node);
+                onMobileClose();
+              }}
+            />
+          )}
         </div>
       </div>
     </>

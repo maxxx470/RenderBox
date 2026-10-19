@@ -171,7 +171,8 @@ export function AppShell({
   const [pickingElement, setPickingElement] = useState(false);
   const referenceUrl = useObjectUrl(mode === 'add' ? referenceFile : null);
   const [pins, setPins] = useState<Pin[]>([]);
-  const [variantCount, setVariantCount] = useState(3);
+  // One version by default (owner, 2026-10-19); more on request.
+  const [variantCount, setVariantCount] = useState(1);
   const [submittingEdit, setSubmittingEdit] = useState(false);
   // Set only for failures that a plain retry could fix — a missing tier or an
   // exhausted quota would fail identically, so those stay a toast.

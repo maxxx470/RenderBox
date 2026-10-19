@@ -398,6 +398,16 @@ const fr = {
   'app.cmdVariantsLess': 'Une variante de moins',
   'app.cmdVariants': 'Variantes',
   'app.cmdReferenceTag': 'Élément',
+  'app.genSourceTag': 'Image source',
+  'app.genResultTag': 'Rendu',
+  'app.genResultEmpty':
+    'Le rendu apparaîtra ici. Choisissez une ambiance ou un modèle, puis lancez la génération.',
+  'app.genResultWorking': 'Génération en cours… jusqu’à 2 à 3 minutes en 4K.',
+  'app.genUseAsSource': 'Utiliser comme image source',
+  'app.genOpenProject': 'Ouvrir dans le projet',
+  'app.recentTitle': 'Images récentes',
+  'app.recentEmpty':
+    'Vos images générées apparaîtront ici. Cliquez sur l’une d’elles pour la reprendre comme image source.',
   'app.cmdPhotoTag': 'Photo',
   'app.cmdSourceTag': 'Source',
   'app.cmdRemoveAttachment': "Retirer l'image",
