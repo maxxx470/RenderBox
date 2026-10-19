@@ -118,6 +118,43 @@ async function askClaude(
   return block && block.type === 'text' ? block.text : '';
 }
 
+/** Claude through Kie (2026-10-19, owner: « c'est Kie API qui va gérer ça ») —
+ *  the same KIE_API_KEY as the renders, Anthropic's messages format on Kie's
+ *  own endpoint. Kie bills its credits for the call. */
+async function askKie(
+  apiKey: string,
+  prompt: string,
+  images: [string, string],
+  signal: AbortSignal,
+): Promise<string> {
+  const res = await fetch('https://api.kie.ai/claude/v1/messages', {
+    method: 'POST',
+    signal,
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: process.env.KIE_SHEET_MODEL || 'claude-sonnet-5-5',
+      max_tokens: 1024,
+      stream: false,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            ...images.map((data) => ({
+              type: 'image',
+              source: { type: 'base64', media_type: 'image/jpeg', data },
+            })),
+            { type: 'text', text: prompt },
+          ],
+        },
+      ],
+    }),
+  });
+  if (!res.ok) throw Object.assign(new Error('kie vision'), { status: res.status });
+  const body = (await res.json()) as { content?: { type?: string; text?: string }[] };
+  const block = body.content?.find((b) => b.type === 'text');
+  return block?.text ?? '';
+}
+
 async function askOpenAI(
   apiKey: string,
   prompt: string,
@@ -152,7 +189,9 @@ async function askOpenAI(
 
 /** Whether an analysis key exists (checked before anything is charged). */
 export function sheetAnalysisConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY);
+  return Boolean(
+    process.env.KIE_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY,
+  );
 }
 
 export async function analyzeRenderSheet(input: {
@@ -160,18 +199,21 @@ export async function analyzeRenderSheet(input: {
   render: Buffer;
   locale: 'fr' | 'en';
 }): Promise<SheetAnalysis> {
+  const kieKey = process.env.KIE_API_KEY ?? '';
   const claudeKey = process.env.ANTHROPIC_API_KEY ?? '';
   const openaiKey = process.env.OPENAI_API_KEY ?? '';
-  if (!claudeKey && !openaiKey) return { kind: 'not_configured' };
+  if (!kieKey && !claudeKey && !openaiKey) return { kind: 'not_configured' };
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), SHEET_DEADLINE_MS);
   try {
     const images: [string, string] = [await shrink(input.source), await shrink(input.render)];
     const prompt = promptFor(input.locale);
-    const text = claudeKey
-      ? await askClaude(claudeKey, prompt, images, controller.signal)
-      : await askOpenAI(openaiKey, prompt, images, controller.signal);
+    const text = kieKey
+      ? await askKie(kieKey, prompt, images, controller.signal)
+      : claudeKey
+        ? await askClaude(claudeKey, prompt, images, controller.signal)
+        : await askOpenAI(openaiKey, prompt, images, controller.signal);
     const lines = parseSheetLines(text);
     if (!lines) {
       log.warn('analyzeRenderSheet: unusable answer', { length: text.length });

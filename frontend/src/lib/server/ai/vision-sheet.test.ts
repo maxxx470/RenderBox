@@ -19,6 +19,7 @@ beforeEach(async () => {
     .png()
     .toBuffer();
   mockCreate.mockReset();
+  vi.stubEnv('KIE_API_KEY', '');
   vi.stubEnv('ANTHROPIC_API_KEY', '');
   vi.stubEnv('OPENAI_API_KEY', '');
 });
@@ -118,6 +119,44 @@ describe('analyzeRenderSheet', () => {
       'image_url',
       'image_url',
     ]);
+  });
+
+  it('uses Claude through Kie with the renders’ own key, and prefers it to the others', async () => {
+    vi.stubEnv('KIE_API_KEY', 'kie-test');
+    vi.stubEnv('ANTHROPIC_API_KEY', 'sk-test');
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            content: [{ type: 'text', text: '[{"color":"mur beige","material":"enduit"}]' }],
+          }),
+          { status: 200 },
+        ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    expect(await run()).toEqual({
+      kind: 'lines',
+      lines: [{ color: 'mur beige', material: 'enduit' }],
+    });
+    expect(mockCreate).not.toHaveBeenCalled();
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.kie.ai/claude/v1/messages');
+    expect((init.headers as Record<string, string>).authorization).toBe('Bearer kie-test');
+    const body = JSON.parse(String(init.body)) as {
+      stream: boolean;
+      messages: { content: { type: string }[] }[];
+    };
+    expect(body.stream).toBe(false);
+    expect(body.messages[0]!.content.map((c) => c.type)).toEqual(['image', 'image', 'text']);
+  });
+
+  it('a Kie refusal becomes a fixed code', async () => {
+    vi.stubEnv('KIE_API_KEY', 'kie-test');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('{}', { status: 402 })),
+    );
+    expect(await run()).toEqual({ kind: 'error', code: 'unknown' });
   });
 
   it('prefers Claude when both keys are set', async () => {
