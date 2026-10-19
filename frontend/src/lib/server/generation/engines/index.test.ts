@@ -103,8 +103,8 @@ describe('generateRender — engine versions (Kie)', () => {
     expect(resolveEngineVersion('nanobanana', 'visio-2')).toBeUndefined();
     vi.stubEnv('KIE_API_KEY', 'key');
     // No choice since 2026-10-17: a version sent by an older page is ignored.
-    expect(resolveEngineVersion('nanobanana', 'visio-2')).toBe('visio-pro');
-    expect(resolveEngineVersion('nanobanana', undefined)).toBe('visio-pro');
+    expect(resolveEngineVersion('nanobanana', 'visio-2')).toBe('visio-3');
+    expect(resolveEngineVersion('nanobanana', undefined)).toBe('visio-3');
     expect(resolveEngineVersion('gpt_image', 'pixel-2')).toBe('pixel-2-5');
   });
 

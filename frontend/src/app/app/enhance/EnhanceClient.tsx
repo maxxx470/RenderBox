@@ -60,6 +60,8 @@ import { useObjectUrl } from '../CommandBar';
 import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from '../fan';
 import { ENHANCE_EXAMPLES } from '../generer-examples';
 import { MOBILE_NAV_PAD } from '../MobileNav';
+import { RecentImages, recentImageLabel } from '../RecentImages';
+import type { RecentRenderCardData } from '../GenerationHome';
 import {
   creditErrorKey,
   plansReasonFor,
@@ -163,8 +165,11 @@ export function EnhanceClient({
   surface,
   initialSession = null,
   initialResultId = null,
+  recentRenders = [],
 }: {
   surface: AppSurfaceProps;
+  /** The account's latest renders, at the top of the column (2026-10-19). */
+  recentRenders?: RecentRenderCardData[];
   /** An image already in a project (opened from its command bar). */
   initialSession?: Session | null;
   /** An Enhance project reopened: its latest result, compared with the photo. */
@@ -181,6 +186,7 @@ export function EnhanceClient({
   const [session, setSession] = useState<Session | null>(initialSession);
   const [resultId, setResultId] = useState<string | null>(initialResultId);
   const [working, setWorking] = useState(false);
+  const [recent, setRecent] = useState<RecentRenderCardData[]>(recentRenders);
 
   const [options, setOptions] = useState<EnhanceOptionKey[]>(DEFAULT_ENHANCE_OPTIONS);
   const [strength, setStrength] = useState<EnhanceStrength>(DEFAULT_ENHANCE_STRENGTH);
@@ -299,6 +305,20 @@ export function EnhanceClient({
       const data = (await res.json()) as { nodeId: string; creditsBalance: number | null };
       setResultId(data.nodeId);
       setRemaining(data.creditsBalance);
+      const made = current;
+      setRecent((cur) =>
+        [
+          {
+            id: data.nodeId,
+            projectId: made.projectId,
+            projectName: '',
+            preset: null,
+            engine,
+            editType: 'enhance',
+          },
+          ...cur.filter((r) => r.id !== data.nodeId),
+        ].slice(0, 15),
+      );
     } catch (err) {
       const code = err instanceof RequestError ? err.code : '';
       const creditKey = creditErrorKey(err);
@@ -493,6 +513,24 @@ export function EnhanceClient({
               panelOpen ? 'flex' : 'hidden'
             } fixed bottom-0 right-0 top-16 z-[35] w-[300px] flex-col overflow-y-auto bg-white px-4 py-4.5 ${MOBILE_NAV_PAD} min-[900px]:static min-[900px]:z-auto min-[900px]:flex min-[900px]:flex-shrink-0 min-[900px]:border-l min-[900px]:border-[#ECECF2]`}
           >
+            {/* « Images récentes » (owner, 2026-10-19: « ajoute ça à
+                Améliorer »): a click makes one the image to enhance. */}
+            <h3 className={`${HEADING} mb-2.5`}>{t('app.recentTitle')}</h3>
+            <div className="mb-4">
+              <RecentImages
+                images={recent}
+                selectedId={session && !file ? session.sourceNodeId : null}
+                disabled={working}
+                columns={4}
+                onPick={(r) => {
+                  setFile(null);
+                  setSession({ projectId: r.projectId, sourceNodeId: r.id });
+                  setResultId(null);
+                  setPanelOpen(false);
+                }}
+                labelFor={(r) => recentImageLabel(r, locale)}
+              />
+            </div>
             <h3 className={`${HEADING} mb-3`}>{t('enhance.optionsHeading')}</h3>
             <div className="flex flex-col gap-1">
               {ENHANCE_OPTION_KEYS.map((key) => (

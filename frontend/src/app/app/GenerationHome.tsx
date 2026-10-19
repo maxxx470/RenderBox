@@ -35,7 +35,7 @@ import {
 } from './request-error';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
-import { PRESETS, isPresetKey, type PresetKey } from '@/lib/server/generation/presets';
+import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import {
   TEMPLATE_KEYS,
   TEMPLATES,
@@ -61,7 +61,7 @@ import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './Comm
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
 import { fitForUpload, UPLOAD_FIT } from './fit-upload';
-import { RecentImages } from './RecentImages';
+import { RecentImages, recentImageLabel } from './RecentImages';
 
 export interface RecentRenderCardData {
   id: string;
@@ -772,13 +772,7 @@ export function GenerationHome({
               selectedId={stored?.nodeId ?? null}
               disabled={creating}
               onPick={(r) => pinStored({ projectId: r.projectId, nodeId: r.id })}
-              labelFor={(r) =>
-                r.preset && isPresetKey(r.preset)
-                  ? PRESETS[r.preset].label[locale]
-                  : r.engine === 'nanobanana' || r.engine === 'gpt_image'
-                    ? ENGINE_LABELS[r.engine].name[locale]
-                    : ''
-              }
+              labelFor={(r) => recentImageLabel(r, locale)}
             />
           ),
         }}

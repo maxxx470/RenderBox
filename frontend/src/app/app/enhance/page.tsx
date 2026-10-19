@@ -9,6 +9,8 @@
 // checked here: the image proxy and the enhance route both refuse a node the
 // caller does not own, so a forged link shows nothing and runs nothing.
 import { loadAppSurface } from '../surface-data';
+import { loadShell } from '../shell-data';
+import { loadRecentRenders } from '../recent-renders';
 import { EnhanceClient } from './EnhanceClient';
 
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -22,7 +24,13 @@ export default async function AppEnhancePage({
     resultat?: string | string[];
   }>;
 }) {
-  const [surface, params] = await Promise.all([loadAppSurface('enhance'), searchParams]);
+  const [surface, params, { auth }] = await Promise.all([
+    loadAppSurface('enhance'),
+    searchParams,
+    loadShell(),
+  ]);
+  // The « Images récentes » of the column (2026-10-19): a click enhances one.
+  const recentRenders = await loadRecentRenders(auth.user.sub);
   const projectId = typeof params.projet === 'string' ? params.projet : '';
   const nodeId = typeof params.image === 'string' ? params.image : '';
   const initialSession =
@@ -33,6 +41,7 @@ export default async function AppEnhancePage({
       surface={surface}
       initialSession={initialSession}
       initialResultId={initialSession && ID.test(resultId) ? resultId : null}
+      recentRenders={recentRenders}
     />
   );
 }

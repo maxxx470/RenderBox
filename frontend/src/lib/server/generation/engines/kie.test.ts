@@ -159,6 +159,35 @@ describe('generateWithKie', () => {
     expect(created().input.aspect_ratio).toBe('auto');
   });
 
+  it('Visio 3 (Seedream 5.0 Pro): its model, a quality for the size, a ratio always', async () => {
+    await run('visio-3', {
+      ...INPUT,
+      referenceImages: [],
+      sourceImageBuffer: await landscape(),
+      aspectRatio: 'auto' as never,
+      resolution: '2k',
+    });
+    const body = created();
+    expect(body.model).toBe('seedream/5-pro-image-to-image');
+    expect(body.input).toMatchObject({
+      aspect_ratio: '3:2',
+      quality: 'high',
+      output_format: 'png',
+    });
+    expect(body.input.resolution).toBeUndefined();
+    expect(body.input.image_urls).toHaveLength(1);
+  });
+
+  it('Visio 3 at 1K: basic quality; a ratio it lacks goes to the nearest', async () => {
+    await run('visio-3', { ...INPUT, resolution: '1k' as never, aspectRatio: '5:4' as never });
+    expect(created().input).toMatchObject({ quality: 'basic', aspect_ratio: '4:3' });
+  });
+
+  it('cuts a prompt longer than the model takes', async () => {
+    await run('visio-3', { ...INPUT, prompt: 'x'.repeat(6000) });
+    expect(created().input.prompt).toHaveLength(5000);
+  });
+
   it('sends no resolution to a model without one', async () => {
     await run('visio-2-lite');
     const { input } = created();

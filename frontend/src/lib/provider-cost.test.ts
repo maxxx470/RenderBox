@@ -13,13 +13,13 @@ describe('realImageCost', () => {
   });
 
   it('turns Kie credits into dollars (200 = 1 $) and FCFA', () => {
-    // Visio at 1K, as Kie billed it on 2026-10-17.
-    expect(realImageCost('nanobanana', '1k')).toEqual({
-      kieCredits: 18,
-      usd: 0.09,
-      xof: Math.round(0.09 * XOF_PER_USD),
-    });
-    expect(realImageCost('nanobanana', '1k').xof).toBe(53);
+    // Visio (Seedream 5.0 Pro) at 1K and 2K, kie.ai's price on 2026-10-19.
+    const visio = realImageCost('nanobanana', '1k');
+    expect(visio.kieCredits).toBe(7);
+    expect(visio.usd).toBeCloseTo(0.035, 10);
+    expect(visio.xof).toBe(Math.round(0.035 * XOF_PER_USD));
+    expect(realImageCost('nanobanana', '2k').kieCredits).toBe(14);
+    expect(realImageCost('nanobanana', '4k').kieCredits).toBe(14);
     // Pixel IA at 4K, three variants.
     expect(realImageCost('gpt_image', '4k', 3).kieCredits).toBe(48);
   });
@@ -27,7 +27,7 @@ describe('realImageCost', () => {
 
 describe('renderPrice', () => {
   it("charges an administrator Kie's price, everyone else the RenderPro price", () => {
-    expect(renderPrice('SUPERADMIN', 'nanobanana', '1k')).toBe(18);
+    expect(renderPrice('SUPERADMIN', 'nanobanana', '1k')).toBe(7);
     expect(renderPrice('ADMIN', 'gpt_image', '2k')).toBe(10);
     expect(renderPrice('SUPERADMIN', 'gpt_image', '4k', 2)).toBe(32);
     expect(renderPrice('USER', 'nanobanana', '1k')).toBe(50);

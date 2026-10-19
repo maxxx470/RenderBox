@@ -8,6 +8,17 @@
 import { Image as ImageIcon } from 'react-iconly';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import type { RecentRenderCardData } from './GenerationHome';
+import { PRESETS, isPresetKey } from '@/lib/server/generation/presets';
+import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
+
+/** What made an image, for its tooltip: its ambiance, or else its engine. */
+export function recentImageLabel(image: RecentRenderCardData, locale: 'fr' | 'en'): string {
+  if (image.preset && isPresetKey(image.preset)) return PRESETS[image.preset].label[locale];
+  if (image.engine === 'nanobanana' || image.engine === 'gpt_image') {
+    return ENGINE_LABELS[image.engine].name[locale];
+  }
+  return '';
+}
 
 export function RecentImages({
   images,
@@ -15,6 +26,7 @@ export function RecentImages({
   disabled,
   onPick,
   labelFor,
+  columns = 3,
 }: {
   images: RecentRenderCardData[];
   selectedId: string | null;
@@ -22,6 +34,8 @@ export function RecentImages({
   onPick: (image: RecentRenderCardData) => void;
   /** What made the image (ambiance or engine), for its tooltip. */
   labelFor: (image: RecentRenderCardData) => string;
+  /** Four in Améliorer's column, where the improvements need the room. */
+  columns?: 3 | 4;
 }) {
   const t = useTranslations();
 
@@ -37,7 +51,7 @@ export function RecentImages({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className={columns === 4 ? 'grid grid-cols-4 gap-1.5' : 'grid grid-cols-3 gap-2'}>
       {images.map((image) => {
         const selected = image.id === selectedId;
         const label = labelFor(image);

@@ -28,6 +28,7 @@ describe('engine versions', () => {
       'visio-2',
       'visio-2-1',
       'visio-2-lite',
+      'visio-3',
     ]);
     expect(versionsOf('gpt_image')).toEqual(['pixel-1-5', 'pixel-2', 'pixel-2-5']);
     expect(versionsOf('nanobanana')).toContain(DEFAULT_ENGINE_VERSION.nanobanana);
@@ -93,6 +94,6 @@ describe('parseEngineVersions', () => {
     expect(
       parseEngineVersions({ nanobanana: 'visio-2-1', gpt_image: 'visio-1', other: 'pixel-2' }),
     ).toEqual({ nanobanana: 'visio-2-1', gpt_image: 'pixel-2-5' });
-    expect(parseEngineVersions({ nanobanana: 'visio-9' }).nanobanana).toBe('visio-pro');
+    expect(parseEngineVersions({ nanobanana: 'visio-9' }).nanobanana).toBe('visio-3');
   });
 });

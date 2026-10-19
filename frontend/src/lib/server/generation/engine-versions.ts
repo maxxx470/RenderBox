@@ -1,7 +1,8 @@
 // The versions of each engine (owner, 2026-10-15: « chaque version du
-// fournisseur devient une version numérotée sous notre nom »). Visio's are the
-// Nano Banana family, Pixel IA's the GPT Image family, both reached through
-// Kie (engines/kie.ts). The vendor's model is never shown: the UI says
+// fournisseur devient une version numérotée sous notre nom »). Visio's were
+// the Nano Banana family until 2026-10-19, when the owner moved Visio to
+// ByteDance's Seedream (« Visio 3 », Seedream 5.0 Pro); Pixel IA's are the
+// GPT Image family; all reached through Kie (engines/kie.ts). The vendor's model is never shown: the UI says
 // « Visio 2.1 », not the model id.
 //
 // Deliberately NOT server-only (same reasoning as engine-labels.ts): the
@@ -16,6 +17,7 @@ export const ENGINE_VERSION_KEYS = [
   'visio-2',
   'visio-2-1',
   'visio-2-lite',
+  'visio-3',
   'pixel-1-5',
   'pixel-2',
   'pixel-2-5',
@@ -41,6 +43,14 @@ export interface EngineVersion {
   resolution: boolean;
   /** Ratios the model refuses at a given size. */
   ratioLimits?: Partial<Record<'1K' | '2K' | '4K', readonly string[]>>;
+  /**
+   * The model's `quality` value for each size, when it takes one instead of
+   * `resolution` (Seedream: basic = 1K, high = 2K; 4K asks for 2K and
+   * output-shape.ts enlarges it).
+   */
+  quality?: Record<'1K' | '2K' | '4K', string>;
+  /** The longest prompt the model accepts. */
+  maxPromptChars?: number;
   /** Fixed extra input fields (output format, quality). */
   extra?: Record<string, string>;
 }
@@ -109,6 +119,25 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
     ratioRequired: false,
     resolution: false,
   },
+  // Seedream 5.0 Pro (ByteDance), Visio's engine since 2026-10-19 (owner:
+  // « remplace Nano Banana par Seedream, la dernière version »). Read from
+  // docs.kie.ai that day: up to 10 input images in `image_urls`, a ratio
+  // required among eight (no 'auto', no 5:4 / 4:5), `quality` basic (1K) or
+  // high (2K), a prompt of 5 000 characters at most; 7 / 14 Kie credits.
+  'visio-3': {
+    engine: 'nanobanana',
+    name: { fr: 'Visio 3', en: 'Visio 3' },
+    description: { fr: 'Le plus récent, jusqu’en 2K', en: 'The latest, up to 2K' },
+    kieModel: 'seedream/5-pro-image-to-image',
+    imageField: 'image_urls',
+    maxImages: 10,
+    ratios: ['1:1', '4:3', '3:4', '16:9', '9:16', '2:3', '3:2', '21:9'],
+    ratioRequired: true,
+    resolution: false,
+    quality: { '1K': 'basic', '2K': 'high', '4K': 'high' },
+    maxPromptChars: 5000,
+    extra: { output_format: 'png' },
+  },
   'pixel-1-5': {
     engine: 'gpt_image',
     name: { fr: 'Pixel IA 1.5', en: 'Pixel AI 1.5' },
@@ -151,14 +180,13 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
 /**
  * The one version each engine runs on (owner, 2026-10-17: « garde la dernière
  * version la plus performante de chaque modèle », no choice offered). Checked
- * that day: Nano Banana Pro still gives the most realistic colours and
- * proportions in hands-on tests (2.1 leads Google's own benchmarks and is
- * cheaper); GPT Image 2.5 Sunburst leads LMArena's image editing and changes
- * only what is asked. The other versions stay in the catalogue for the
+ * that day: GPT Image 2.5 Sunburst leads LMArena's image editing and changes
+ * only what is asked. Visio ran on Nano Banana Pro until 2026-10-19, then on
+ * Seedream 5.0 Pro (owner). The other versions stay in the catalogue for the
  * renders already made.
  */
 export const DEFAULT_ENGINE_VERSION: Record<EngineName, EngineVersionKey> = {
-  nanobanana: 'visio-pro',
+  nanobanana: 'visio-3',
   gpt_image: 'pixel-2-5',
 };
 

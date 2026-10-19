@@ -158,16 +158,29 @@ export async function generateWithKie(
   }
   const ratio = kieRatioFor(version, input.aspectRatio, sourceAspect, size);
 
+  // A model with a prompt ceiling (Seedream: 5 000) gets the prompt cut to it
+  // rather than a refused task; it only happens with a very long request.
+  let prompt = input.prompt;
+  if (version.maxPromptChars && prompt.length > version.maxPromptChars) {
+    log.warn('kie: prompt longer than the model takes, cut', {
+      model: version.kieModel,
+      length: prompt.length,
+      max: version.maxPromptChars,
+    });
+    prompt = prompt.slice(0, version.maxPromptChars);
+  }
+
   const created = await fetch(`${API}/createTask`, {
     method: 'POST',
     headers: { ...auth, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: version.kieModel,
       input: {
-        prompt: input.prompt,
+        prompt,
         [version.imageField]: urls,
         ...(ratio ? { aspect_ratio: ratio } : {}),
         ...(version.resolution ? { resolution: size ?? '1K' } : {}),
+        ...(version.quality ? { quality: version.quality[size ?? '1K'] } : {}),
         ...version.extra,
       },
     }),
