@@ -14,7 +14,6 @@
 // the pinned image is shown large for the comments, the result then appears
 // beside its source.
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { Category, Download } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -36,6 +35,7 @@ import {
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+import { ambianceText } from '@/lib/server/generation/ambiance-text';
 import {
   TEMPLATE_KEYS,
   TEMPLATES,
@@ -94,12 +94,15 @@ const GENERATE_TIMEOUT_MS = 310_000;
 const imageUrl = (nodeId: string) => `/api/render-nodes/${nodeId}/image`;
 
 export function GenerationHome({
+  initialImage = null,
   recentRenders,
   tier,
   max,
   remaining: initialRemaining,
   userEmail,
 }: {
+  /** An image opened from the gallery (`?image=`): pinned as the source. */
+  initialImage?: { projectId: string; nodeId: string } | null;
   recentRenders: RecentRenderCardData[];
   tier: PricingTierId | null;
   max: number | null;
@@ -128,7 +131,7 @@ export function GenerationHome({
   // The source: a new photo through the paperclip (stored on the first
   // render, then `stored` too), or a recent image picked in the column.
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [stored, setStored] = useState<StoredImage | null>(null);
+  const [stored, setStored] = useState<StoredImage | null>(initialImage);
   const [result, setResult] = useState<ResultImage | null>(null);
   const [recent, setRecent] = useState<RecentRenderCardData[]>(recentRenders);
   useFreshRecent(setRecent);
@@ -162,10 +165,39 @@ export function GenerationHome({
   // rest belongs to the mode it was made in.
   function handleModeChange(next: AppMode) {
     setMode(next);
-    setPrompt('');
     setPins([]);
     setReferenceFile(null);
     setTemplate(null);
+    // Générer shows its ambiance's text again; the edit modes start empty.
+    setPrompt(next === 'generate' ? ambianceText(preset, sky) : '');
+  }
+
+  /**
+   * Picking an ambiance (the menu or a fan template) writes its prompt in the
+   * bar, to be read and changed before launching (owner, 2026-10-19). A new
+   * ambiance replaces what was there; the sky chip only rewrites a text the
+   * user has not touched.
+   */
+  function writeAmbiance(key: PresetKey | null, nextSky: SkyOption = sky) {
+    setPrompt(ambianceText(key, nextSky));
+  }
+
+  function changePreset(next: PresetKey | null) {
+    setPreset(next);
+    setTemplate(null);
+    writeAmbiance(next);
+  }
+
+  function changeSky(next: SkyOption) {
+    const key = template ?? preset;
+    const untouched = prompt.trim() === '' || prompt.trim() === ambianceText(key, sky);
+    setSky(next);
+    if (untouched) writeAmbiance(key, next);
+  }
+
+  function clearTemplate() {
+    setTemplate(null);
+    if (prompt.trim() === ambianceText(template, sky)) setPrompt('');
   }
 
   // "Utiliser ce modèle": the template's chip goes in the bar, then the
@@ -178,6 +210,8 @@ export function GenerationHome({
       setReferenceFile(null);
     }
     setTemplate(key);
+    setPreset(null);
+    writeAmbiance(key);
     if (!sourceSrc) fileInputRef.current?.click();
   }
 
@@ -282,6 +316,7 @@ export function GenerationHome({
 
   // Générer: the render is made here and appears beside its source.
   async function generate() {
+    const ambianceKey = template ?? preset;
     setCreating(true);
     setResult(null);
     try {
@@ -295,7 +330,11 @@ export function GenerationHome({
             sourceNodeId: source.nodeId,
             preset,
             engine,
-            customPrompt: prompt.trim() || undefined,
+            // With an ambiance the bar holds its text (read, maybe edited);
+            // the server keeps the default when it was left as written. With
+            // none, the bar holds the user's own request.
+            ambianceText: ambianceKey ? prompt.trim() || undefined : undefined,
+            customPrompt: ambianceKey ? undefined : prompt.trim() || undefined,
             template: template ?? undefined,
             // The sky of Exterior day, picked as a template or in the menu.
             sky: (template ?? preset) === 'jour_ext' ? sky : undefined,
@@ -601,12 +640,6 @@ export function GenerationHome({
                       >
                         <Download set="curved" size={15} primaryColor="#3D3B49" />
                       </a>
-                      <Link
-                        href={`/app/${result.projectId}?node=${result.nodeId}`}
-                        className="rounded-lg bg-[#F2F2F5] px-3 py-1.5 text-[12px] font-medium text-[#3D3B49] hover:bg-[#E9E9EE]"
-                      >
-                        {t('app.genOpenProject')}
-                      </Link>
                     </>
                   )
                 }
@@ -649,7 +682,7 @@ export function GenerationHome({
           resolution={resolution}
           onResolutionChange={setResolution}
           preset={preset}
-          onPresetChange={setPreset}
+          onPresetChange={changePreset}
           prompt={prompt}
           onPromptChange={setPrompt}
           // The paperclip pins the image to work on; in Ajouter, once
@@ -677,12 +710,12 @@ export function GenerationHome({
               ? {
                   label: TEMPLATES[template].label[locale],
                   image: TEMPLATES[template].image,
-                  onClear: () => setTemplate(null),
-                  sky: template === 'jour_ext' ? { value: sky, onChange: setSky } : undefined,
+                  onClear: clearTemplate,
+                  sky: template === 'jour_ext' ? { value: sky, onChange: changeSky } : undefined,
                 }
               : null
           }
-          presetSky={preset === 'jour_ext' ? { value: sky, onChange: setSky } : undefined}
+          presetSky={preset === 'jour_ext' ? { value: sky, onChange: changeSky } : undefined}
           onSubmit={() => {
             if (!sourceSrc || sendDisabled) return;
             // No plan, or not enough credits for this render: the plans

@@ -17,8 +17,9 @@ describe('kindOf', () => {
 });
 
 describe('projectHref', () => {
-  it('opens an image project in the editor', () => {
-    expect(projectHref('p1', 'image', { id: 'n2', parentId: 'n1' })).toBe('/app/p1');
+  it('opens an image project on the generator, on its latest image', () => {
+    expect(projectHref('p1', 'image', { id: 'n2', parentId: 'n1' })).toBe('/app/generer?image=n2');
+    expect(projectHref('p1', 'image')).toBe('/app/generer');
   });
 
   it('opens an Enhance project on the Enhance page, on its latest result', () => {
@@ -46,9 +47,9 @@ describe('imageHref', () => {
   const result = { id: 'n2', projectId: 'p1', parentId: 'n1', kind: 'GENERATED' };
   const photo = { id: 'n1', projectId: 'p1', parentId: null, kind: 'UPLOADED' };
 
-  it('opens an image of an image project in the editor, on that image', () => {
-    expect(imageHref(result, 'image')).toBe('/app/p1?node=n2');
-    expect(imageHref(photo, 'image')).toBe('/app/p1?node=n1');
+  it('opens an image of an image project on the generator, pinned as the source', () => {
+    expect(imageHref(result, 'image')).toBe('/app/generer?image=n2');
+    expect(imageHref(photo, 'image')).toBe('/app/generer?image=n1');
   });
 
   it('opens an Enhance result against its photo, and the photo alone', () => {

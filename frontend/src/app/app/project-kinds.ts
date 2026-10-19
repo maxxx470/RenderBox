@@ -21,16 +21,18 @@ export function kindOf(renders: readonly { editType: string | null }[]): Project
 }
 
 /**
- * Where a project opens. An image project opens in the editor; an Enhance
- * project opens on the Enhance page, on its latest result compared with the
- * photo it improved (`latest` — the newest render and the node it came from).
+ * Where a project opens. An image project opens on the image generator, on
+ * its latest image (2026-10-19, owner: the project tree is gone, the editor
+ * with it); an Enhance project opens on the Enhance page, on its latest
+ * result compared with the photo it improved (`latest` — the newest render
+ * and the node it came from).
  */
 export function projectHref(
   projectId: string,
   kind: ProjectKind,
   latest?: { id: string; parentId: string | null } | null,
 ): string {
-  if (kind === 'image') return `/app/${projectId}`;
+  if (kind === 'image') return latest ? `/app/generer?image=${latest.id}` : '/app/generer';
   if (!latest?.parentId) return '/app/enhance';
   return `/app/enhance?projet=${projectId}&image=${latest.parentId}&resultat=${latest.id}`;
 }
@@ -46,7 +48,7 @@ export function imageTypeOf(node: { kind: string; editType: string | null }): Im
 }
 
 /**
- * Where one image opens: in its project's editor, on that very image; or, in
+ * Where one image opens: on the image generator, pinned as the source; or, in
  * an Enhance project, on the Enhance page — a result against the photo it
  * improved, the photo alone ready for another run.
  */
@@ -54,7 +56,7 @@ export function imageHref(
   node: { id: string; projectId: string; parentId: string | null; kind: string },
   projectKind: ProjectKind,
 ): string {
-  if (projectKind === 'image') return `/app/${node.projectId}?node=${node.id}`;
+  if (projectKind === 'image') return `/app/generer?image=${node.id}`;
   if (node.kind !== 'GENERATED') return `/app/enhance?projet=${node.projectId}&image=${node.id}`;
   return projectHref(node.projectId, 'enhance', node);
 }

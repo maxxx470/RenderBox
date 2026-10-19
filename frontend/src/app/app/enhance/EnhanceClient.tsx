@@ -21,7 +21,6 @@
 // node) so a second try with other settings does not upload it twice or
 // scatter a project per attempt.
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Category, Download } from 'react-iconly';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -213,10 +212,6 @@ export function EnhanceClient({
   const preview = useObjectUrl(file);
   // Either a file attached here, or an image that already lives in a project.
   const hasSource = Boolean(file || session);
-  // Opened from an image project: the result is filed into that project, so
-  // the page offers the way back to it. An Enhance project (made here, or
-  // reopened with its result) has no editor to go back to.
-  const imageProjectId = initialSession && !initialResultId ? initialSession.projectId : null;
 
   useEffect(() => {
     if (user?.defaultEngine === 'nanobanana' || user?.defaultEngine === 'gpt_image') {
@@ -450,14 +445,6 @@ export function EnhanceClient({
                       >
                         <Download set="curved" size={15} primaryColor="#3D3B49" />
                       </a>
-                      {imageProjectId && session?.projectId === imageProjectId && (
-                        <Link
-                          href={`/app/${imageProjectId}`}
-                          className="rounded-lg bg-[#F2F2F5] px-3 py-1.5 text-[12px] font-medium text-[#3D3B49] hover:bg-[#E9E9EE]"
-                        >
-                          {t('enhance.openProject')}
-                        </Link>
-                      )}
                     </>
                   )
                 }

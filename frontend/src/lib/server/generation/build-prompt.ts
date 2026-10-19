@@ -23,6 +23,7 @@
 import 'server-only';
 import type { EngineName } from './engines/types';
 import { PRESETS, type PresetKey } from './presets';
+import { ambianceText } from './ambiance-text';
 import {
   formatPrompt,
   lookSpec,
@@ -69,17 +70,25 @@ export function buildGenerationPrompt(input: {
   /** Exterior day only: lightly hazy (default) or direct sun. */
   sky?: SkyKey | undefined;
   customPrompt?: string | undefined;
+  /**
+   * The ambiance's text as the user left it in the bar (2026-10-19, owner:
+   * « l'utilisateur peut le lire, le changer avant de lancer »). Sent only
+   * when it differs from the text the ambiance writes itself; then it
+   * replaces the ambiance's own section.
+   */
+  ambianceText?: string | undefined;
 }): string {
   const { engine, materialsSnapshot: materials, customPrompt } = input;
   const def = input.preset ? PRESETS[input.preset].prompt : null;
+  const edited = input.preset ? editedText(input.preset, input.sky, input.ambianceText) : null;
 
-  if (def?.kind === 'board') return boardPrompt(def.modifier, materials, customPrompt);
+  if (def?.kind === 'board') return boardPrompt(edited ?? def.modifier, materials, customPrompt);
 
   if (def?.kind === 'transform') {
     return formatPrompt(
       engine,
       transformSpec({
-        representation: def.modifier,
+        representation: edited ?? def.modifier,
         request: customPrompt,
         materials: def.keepsMaterials ? materials : [],
       }),
@@ -92,7 +101,27 @@ export function buildGenerationPrompt(input: {
       : input.preset === 'croquis'
         ? 'sketch'
         : lookKey(input.preset);
-  return formatPrompt(engine, lookSpec({ look, sky: input.sky, request: customPrompt, materials }));
+  return formatPrompt(
+    engine,
+    lookSpec({
+      look,
+      sky: input.sky,
+      request: customPrompt,
+      lightText: edited ?? undefined,
+      materials,
+    }),
+  );
+}
+
+/** The user's text when it is really theirs: not empty, not the default. */
+function editedText(
+  preset: PresetKey,
+  sky: SkyKey | undefined,
+  text: string | undefined,
+): string | null {
+  const line = text ? toPromptLine(text) : '';
+  if (line === '' || line === toPromptLine(ambianceText(preset, sky))) return null;
+  return line;
 }
 
 function lookKey(preset: PresetKey): LookKey {

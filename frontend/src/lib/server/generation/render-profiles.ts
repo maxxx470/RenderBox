@@ -19,6 +19,7 @@
 import 'server-only';
 import type { EngineName } from './engines/types';
 import type { SkyOption } from './templates';
+import { AMBIANCE_TEXT } from './ambiance-text';
 
 // ── Common blocks ─────────────────────────────────────────────────────────
 
@@ -116,9 +117,7 @@ interface Light {
 function exteriorDay(sky: SkyKey): Light {
   const hazy = sky === 'hazy';
   return {
-    visio: hazy
-      ? 'Natural daylight under a lightly hazy sky, sun at 30 to 45 degrees elevation, shadows defined but softened, neutral white balance around 5600 K. Exposure 0 to +0.3 EV, facade not overexposed. Medium filmic contrast. Saturation -5 to 0 percent, natural vegetation green, never neon.'
-      : 'Natural daylight, direct sun at 30 to 45 degrees elevation, clear sky, crisp but softened shadows, neutral white balance around 5600 K. Exposure 0 to +0.3 EV, facade not overexposed. Medium filmic contrast. Saturation -5 to 0 percent, natural vegetation green, never neon.',
+    visio: hazy ? AMBIANCE_TEXT.EXTERIOR_DAY_HAZY : AMBIANCE_TEXT.EXTERIOR_DAY_SUN,
     pixel: [
       hazy
         ? '- Sky: lightly hazy, sun at 30 to 45 degrees elevation.'
@@ -136,8 +135,7 @@ function exteriorDay(sky: SkyKey): Light {
 
 const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
   jour_int: {
-    visio:
-      'Soft diffused daylight, like an overcast sky, entering through the windows and filtering through blinds or curtains. Long soft shadows, never hard. Neutral slightly warm white balance around 4800 K, with small warm accents from practical lamps around 2700 K. Balanced exposure around -0.3 to 0 EV, open shadows, window view keeps detail, no blown-out windows. Soft filmic contrast with slightly lifted blacks. Overall saturation lowered by about 10 to 15 percent while a few accent colors stay readable. Realistic global illumination with gentle warm color bounce.',
+    visio: AMBIANCE_TEXT.INTERIOR_DAY,
     pixel: [
       '- Source: soft diffused daylight through the windows, like an overcast sky, filtered by blinds or curtains.',
       '- White balance: neutral slightly warm, around 4800 K; practical lamps as small accents around 2700 K.',
@@ -150,8 +148,7 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
       'blown highlights, crushed blacks, oversaturation, orange cast, harsh sun patches, HDR look, plastic surfaces',
   },
   nuit_ext: {
-    visio:
-      'Blue hour exterior, deep blue sky, facade lit by architectural lighting around 2800 K, warm glowing windows, slightly reflective ground. Exposure -0.7 to -0.3 EV, medium-high contrast, controlled glow, soft light falloff. Saturation 0 to +5 percent.',
+    visio: AMBIANCE_TEXT.EXTERIOR_NIGHT,
     pixel: [
       '- Time: blue hour, deep blue sky, never flat black.',
       '- Artificial light: architectural facade lighting around 2800 K, warm glowing windows, controlled glow, soft falloff.',
@@ -163,8 +160,7 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
     avoid: 'flat black sky, excessive halos, overexposed lamps, grain noise, oversaturated blue',
   },
   nuit_int: {
-    visio:
-      'Evening interior lit by practical lamps and indirect lighting around 2700 K, with subtle warm spot accents. Windows show a deep blue night around 7500 K. The room stays readable, never black. Exposure -0.3 to 0 EV, medium-high contrast with shadows still detailed. Saturation lowered by about 5 percent. Warm pools of light, soft falloff, realistic global illumination.',
+    visio: AMBIANCE_TEXT.INTERIOR_NIGHT,
     pixel: [
       '- Lamps: practical and indirect lighting around 2700 K, subtle warm spot accents, warm pools of light with soft falloff.',
       '- Windows: deep blue night, around 7500 K.',
@@ -183,8 +179,7 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
 // wets what is there, it brings no people, umbrellas or cars.
 const EXTRA_LIGHTS: Record<'golden' | 'rain', Light> = {
   golden: {
-    visio:
-      'Golden hour, sun low at 5 to 15 degrees elevation, warm raking light around 3500 K on the facades and through the windows, long soft shadows, sky graded from warm amber near the horizon to soft blue above. Exposure -0.3 to 0 EV, sunlit highlights kept, shadows open with a cool natural fill. Medium filmic contrast. Saturation 0 to +5 percent, warm but natural, never orange overall.',
+    visio: AMBIANCE_TEXT.GOLDEN_HOUR,
     pixel: [
       '- Time: golden hour, sun low at 5 to 15 degrees elevation.',
       '- Light: warm raking light around 3500 K on the facades and through the windows; long soft shadows.',
@@ -197,8 +192,7 @@ const EXTRA_LIGHTS: Record<'golden' | 'rain', Light> = {
       'orange cast over the whole image, blown sun, fake lens flare, oversaturated sky, black shadows, HDR look',
   },
   rain: {
-    visio:
-      'Rainy overcast day, soft even light from a grey sky, neutral to slightly cool white balance around 6500 K. Wet ground and wet horizontal surfaces with true reflections of the building, a few shallow puddles, darker and richer tones where surfaces are wet, a light drizzle barely visible, a little mist in the distance. Warm interior light glowing softly in the existing windows around 3000 K. Exposure -0.3 to 0 EV, facade still readable. Soft contrast. Saturation -10 to -5 percent.',
+    visio: AMBIANCE_TEXT.RAIN,
     pixel: [
       '- Sky: rainy overcast, soft even grey light.',
       '- White balance: neutral to slightly cool, around 6500 K; warm interior light in the existing windows around 3000 K.',
@@ -231,8 +225,7 @@ const SOURCE_LIGHT: Light = {
 
 /** The pencil sketch (annex A « Esquisse »): no photographic setting at all. */
 const SKETCH: Light = {
-  visio:
-    'Drawing: architectural design sketch on off-white paper, visible pencil lines, simplified volumes, light shading, neutral light, graphite tones with at most one or two soft accent tints. Each material stays recognisable by its line and hatching. Keep it a design drawing, not a photograph.',
+  visio: AMBIANCE_TEXT.SKETCH,
   pixel: [
     '- Medium: pencil on off-white paper, visible pencil lines, light shading, neutral light.',
     '- Volumes: simplified, same outline and openings as the source.',
@@ -245,8 +238,7 @@ const SKETCH: Light = {
 
 /** The watercolour (2026-10-19): a hand-painted drawing, like the sketch. */
 const WATERCOLOUR: Light = {
-  visio:
-    'Drawing: architectural watercolour illustration on textured cold-press paper, fine ink outline of the building, transparent washes with soft bleeding edges, the white of the paper left in the highlights, natural muted colours true to the source materials, the sky as a light loose wash. Each material stays recognisable by its colour and brushwork. Keep it a hand-painted illustration, not a photograph.',
+  visio: AMBIANCE_TEXT.WATERCOLOUR,
   pixel: [
     '- Medium: watercolour on textured cold-press paper, fine ink outline of the building.',
     '- Washes: transparent, soft bleeding edges; the white of the paper left in the highlights.',
@@ -344,10 +336,17 @@ export function lookSpec(input: {
   look: LookKey;
   sky?: SkyKey | undefined;
   request?: string | undefined;
+  /**
+   * The user's own version of the light / drawing text shown in the bar
+   * (2026-10-19): it replaces the profile's section, nothing else — the lock,
+   * the materials, the photo look and the check stay. Ignored on C0.
+   */
+  lightText?: string | undefined;
   materials: readonly { face: string; valeur: string }[];
 }): PromptSpec {
   const request = targetedRequest(input.request);
   const hasRequest = request !== null;
+  const lightText = input.lightText ? toPromptLine(input.lightText) : '';
   const project = projectMaterialLines(input.materials);
   const { look } = input;
   // The pencil sketch and the watercolour are drawings: no photo settings.
@@ -363,13 +362,15 @@ export function lookSpec(input: {
             ? EXTRA_LIGHTS[look]
             : profileLight(look, input.sky);
 
+  const own = lightText !== '' && look !== 'source';
+  const visioText = own ? lightText : light.visio;
   const sections: PromptSection[] = [
     {
       title: sketch ? 'DRAWING' : 'LIGHT',
       visio: sketch
-        ? light.visio
-        : `Light: ${light.visio.charAt(0).toLowerCase()}${light.visio.slice(1)}`,
-      pixel: light.pixel,
+        ? visioText
+        : `Light: ${visioText.charAt(0).toLowerCase()}${visioText.slice(1)}`,
+      pixel: own ? [lightText] : light.pixel,
     },
   ];
   if (sketch) {

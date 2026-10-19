@@ -51,6 +51,9 @@ const Body = z
     preset: z.enum(PRESET_KEYS).nullish(),
     engine: z.enum(ENGINE_NAMES),
     customPrompt: z.string().trim().max(2000).optional(),
+    // The ambiance's text as the user left it in the bar (2026-10-19): it
+    // replaces that ambiance's own section when it differs from the default.
+    ambianceText: z.string().trim().max(4000).optional(),
     // Started from a template (the image generator page): the server builds
     // that light profile's prompt from the key (render-profiles.ts) — the
     // client never sends it — and the node keeps the key as its preset (the
@@ -103,7 +106,8 @@ export async function POST(
       );
     }
     // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
-    const { sourceNodeId, engine, customPrompt, ratio, resolution, template, sky } = parsed.data;
+    const { sourceNodeId, engine, customPrompt, ambianceText, ratio, resolution, template, sky } =
+      parsed.data;
     const version = resolveEngineVersion(engine, parsed.data.version);
     // What the prompt is built on and the node records: the template's key
     // (a light profile) or the ambiance; neither: a faithful photo render.
@@ -196,6 +200,7 @@ export async function POST(
         preset,
         sky,
         customPrompt,
+        ambianceText,
       });
 
       let result;

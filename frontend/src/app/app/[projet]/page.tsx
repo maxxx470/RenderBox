@@ -1,95 +1,43 @@
 import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/server/prisma';
-import { buildRenderTree } from '@/lib/server/render-tree';
-import { AppShell } from '../AppShell';
 import { loadShell } from '../shell-data';
 import { kindOf, projectHref } from '../project-kinds';
 
-export default async function AppProjectPage({ params }: { params: Promise<{ projet: string }> }) {
-  // Account and plan: shared with the app layout, see shell-data.ts.
-  const { auth, quota } = await loadShell();
-
+// /app/[projet] — the project editor with its tree is gone (2026-10-19,
+// owner: « l'arbre du projet ne devait plus exister »). Old links, bookmarks
+// and notifications still land here, so the page only sends them on: an
+// Enhance project to the Enhance page, an image project to the image
+// generator with the asked image (`?node=`) or its latest one pinned.
+export default async function AppProjectPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ projet: string }>;
+  searchParams: Promise<{ node?: string }>;
+}) {
+  const { auth } = await loadShell();
   const { projet } = await params;
+  const { node } = await searchParams;
 
-  // All four reads go out at once — one database round trip for the page
-  // instead of three in a row (project, then tree + quota, then the client
-  // fetching materials after hydration).
-  //
-  // Ownership is in every WHERE clause rather than a separate exists-check
-  // run first: the child queries filter on `project.userId`, so a project ID
-  // belonging to another user returns nothing anywhere and 404s exactly like
-  // one that doesn't exist — same "don't leak existence" posture as
-  // requireOrgRole's 404-not-403 (see CLAUDE.md).
-  const owned = { projectId: projet, project: { userId: auth.user.sub } };
-  const [project, nodes, materials] = await Promise.all([
-    prisma.project.findFirst({
-      where: { id: projet, userId: auth.user.sub },
-      select: { id: true, name: true },
-    }),
-    prisma.renderNode.findMany({
-      where: owned,
-      orderBy: { createdAt: 'asc' },
-      select: {
-        id: true,
-        parentId: true,
-        kind: true,
-        createdAt: true,
-        preset: true,
-        engine: true,
-        engineVersion: true,
-        editType: true,
+  // Ownership in the WHERE clause: another account's project 404s exactly
+  // like one that does not exist.
+  const project = await prisma.project.findFirst({
+    where: { id: projet, userId: auth.user.sub },
+    select: {
+      id: true,
+      renderNodes: {
+        orderBy: { createdAt: 'asc' },
+        select: { id: true, parentId: true, kind: true, editType: true },
       },
-    }),
-    // Same shape and order as GET /api/projects/[projectId]/materials, which
-    // the workspace still calls to refresh after a generation.
-    prisma.material.findMany({
-      where: owned,
-      orderBy: { face: 'asc' },
-      select: {
-        id: true,
-        face: true,
-        valeur: true,
-        source: true,
-        confidence: true,
-        attachedNodeId: true,
-        attachedAt: true,
-      },
-    }),
-  ]);
-  if (!project) {
-    notFound();
-  }
+    },
+  });
+  if (!project) notFound();
 
-  // An Enhance project is not edited here: it opens on the Enhance page, on
-  // its latest result (owner, 2026-10-08) — whichever link led here, the
-  // dashboard, a recent render or an old bookmark.
-  const generated = nodes.filter((n) => n.kind === 'GENERATED');
-  const nodeIds = new Set(nodes.map((n) => n.id));
-  if (kindOf(generated) === 'enhance') {
-    redirect(projectHref(project.id, 'enhance', generated.at(-1)));
-  }
+  const generated = project.renderNodes.filter((n) => n.kind === 'GENERATED');
+  const kind = kindOf(generated);
+  if (kind === 'enhance') redirect(projectHref(project.id, 'enhance', generated.at(-1)));
 
-  return (
-    <AppShell
-      initialProjectId={project.id}
-      initialProjectName={project.name}
-      initialTree={buildRenderTree(nodes)}
-      initialMaterials={materials.map(({ attachedNodeId, attachedAt, ...m }) => {
-        // The attach mark as GET .../materials gives it (étape 3C.5.3): the
-        // image and the date only when the image is one of this project's —
-        // the nodes just read are all of them.
-        const visible = attachedNodeId !== null && nodeIds.has(attachedNodeId);
-        return {
-          ...m,
-          source: m.source === 'manuel' ? 'manuel' : 'auto',
-          attached: attachedNodeId !== null,
-          attachedNodeId: visible ? attachedNodeId : null,
-          attachedAt: visible && attachedAt ? attachedAt.toISOString() : null,
-        };
-      })}
-      initialTier={quota.tier}
-      initialMax={quota.max}
-      initialRemaining={quota.remaining}
-    />
-  );
+  const asked = node ? project.renderNodes.find((n) => n.id === node) : null;
+  const latest = asked ?? generated.at(-1) ?? project.renderNodes.at(-1) ?? null;
+  redirect(projectHref(project.id, 'image', latest));
 }
