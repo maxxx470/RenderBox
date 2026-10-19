@@ -4,10 +4,16 @@ Preserve the exact geometry, proportions, openings, roof shape, camera angle, fr
 2. DRAWING
 - Medium: pencil on off-white paper, visible pencil lines, light shading, neutral light.
 - Volumes: simplified, same outline and openings as the source.
-- Tones: graphite, at most one or two soft accent tints.
+- Tones: graphite grey only, no colour.
+- Construction: a few perspective construction lines left in, loose hatching on walls and glazing.
 - Materials: recognisable by line and hatching only.
 - Keep it a design drawing, not a photograph.
-3. AVOID
+3. SETTING
+- a boundary wall and a gate drawn with a few clean lines, where the source has them.
+- shrubs and trees drawn as loose scribbled foliage, where the source has planting.
+- the street and its kerb indicated by two or three long lines.
+- These additions are explicitly requested, only on ground, terraces, balconies and openings the image already has; never a new wall, window, roof, volume or other architectural element.
+4. AVOID
 Photographic look, dense color fill, 3D render look, heavy textures.
-4. FINAL CHECK
-Before answering, verify: geometry unchanged, openings unchanged, no new objects, the result is a drawing, not a photograph.
+5. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, no new architectural element, the result is a drawing, not a photograph.

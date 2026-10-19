@@ -32,12 +32,12 @@ export const PRESET_THUMB: Record<PresetKey, string> = {
   isometrie: '/presets/thumb/isometrie.webp',
   esquisse: '/presets/thumb/esquisse.webp',
   croquis: '/presets/thumb/croquis.webp',
-  // The lights wear their template's portrait picture (2026-10-19).
-  jour_ext: '/modeles/jour-ext.webp',
-  jour_int: '/modeles/jour-int.webp',
-  nuit_ext: '/modeles/nuit-ext.webp',
-  nuit_int: '/modeles/nuit-int.webp',
-  // 2026-10-19: the owner's four pictures (image/), cropped to 360 × 480.
+  // Square pictures since 2026-10-19 (owner: « les miniatures … en carré »),
+  // 1:1 — the owner regenerates each one under the same name.
+  jour_ext: '/presets/thumb/jour-ext.webp',
+  jour_int: '/presets/thumb/jour-int.webp',
+  nuit_ext: '/presets/thumb/nuit-ext.webp',
+  nuit_int: '/presets/thumb/nuit-int.webp',
   maquette_blanche: '/presets/thumb/maquette-blanche.webp',
   aquarelle: '/presets/thumb/aquarelle.webp',
   heure_doree: '/presets/thumb/heure-doree.webp',
@@ -126,7 +126,7 @@ export function PresetSelect({
                   <img
                     src={PRESET_THUMB[key]}
                     alt=""
-                    className="aspect-[3/4] w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
+                    className="aspect-square w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
                   />
                   <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-1.5 pb-1.5 pt-5 text-[11px] font-semibold leading-tight text-white">
                     {PRESETS[key].label[locale]}

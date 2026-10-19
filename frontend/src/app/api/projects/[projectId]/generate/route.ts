@@ -37,7 +37,8 @@ import { buildRenderTree } from '@/lib/server/render-tree';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
 import { loadPromptMaterials, toPromptEntries } from '@/lib/server/materials/node-materials';
 import type { ResolvedMaterial } from '@/lib/server/materials/resolve';
-import { PRESET_KEYS } from '@/lib/server/generation/presets';
+import { PRESET_KEYS, isPresetKey } from '@/lib/server/generation/presets';
+import { resolvePastedSheet, scheduleSheet } from '@/lib/server/materials/render-sheet';
 import { SKY_OPTIONS, TEMPLATE_KEYS } from '@/lib/server/generation/templates';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
@@ -106,12 +107,25 @@ export async function POST(
       );
     }
     // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
-    const { sourceNodeId, engine, customPrompt, ambianceText, ratio, resolution, template, sky } =
-      parsed.data;
+    const { sourceNodeId, engine, ratio, resolution, template } = parsed.data;
+    // A materials sheet pasted under the prompt (2026-10-19, owner): taken out
+    // of the text, its lines go to the prompt as a request and its ambiance
+    // is the render's when none was chosen — the renders of one building
+    // keep to the same rules.
+    const [pastedInText, pastedInRequest] = await Promise.all([
+      resolvePastedSheet(parsed.data.ambianceText, auth.user.sub),
+      resolvePastedSheet(parsed.data.customPrompt, auth.user.sub),
+    ]);
+    const ambianceText = pastedInText.rest;
+    const customPrompt = pastedInRequest.rest;
+    const sheet = pastedInText.sheet ?? pastedInRequest.sheet;
     const version = resolveEngineVersion(engine, parsed.data.version);
     // What the prompt is built on and the node records: the template's key
     // (a light profile) or the ambiance; neither: a faithful photo render.
-    const preset = template ?? parsed.data.preset ?? null;
+    const sheetPreset =
+      sheet?.ambianceKey && isPresetKey(sheet.ambianceKey) ? sheet.ambianceKey : null;
+    const preset = template ?? parsed.data.preset ?? sheetPreset;
+    const sky = parsed.data.sky ?? (preset === sheetPreset ? sheet?.sky : undefined) ?? undefined;
 
     const sourceNode = await prisma.renderNode.findUnique({
       where: { id: sourceNodeId },
@@ -201,6 +215,8 @@ export async function POST(
         sky,
         customPrompt,
         ambianceText,
+        sheet:
+          sheet && sheet.lines.length > 0 ? { code: sheet.code, lines: sheet.lines } : undefined,
       });
 
       let result;
@@ -281,6 +297,23 @@ export async function POST(
 
       // The render is stored: the credits are spent for good.
       owed = 0;
+
+      // The image's materials sheet starts here (which colour of the source
+      // became which material, the ambiance used) and is completed once the
+      // response is sent. Never fails the render.
+      try {
+        await scheduleSheet({
+          nodeId: newNodeId,
+          sourceNodeId: sourceNode.id,
+          ambiance: preset
+            ? { key: preset, sky: preset === 'jour_ext' ? (sky ?? 'hazy') : null }
+            : null,
+          source: sourceImageBuffer,
+          render: result.imageBuffer,
+        });
+      } catch (e) {
+        log.warn('generate: sheet could not start (non-fatal)', { err: String(e) });
+      }
 
       // Detect + merge materials from the render that was JUST produced (Phase
       // 2). Never lets a Vision hiccup fail the generation the user asked for

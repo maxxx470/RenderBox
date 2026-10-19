@@ -404,6 +404,15 @@ model RenderNode {
   // `creditsConsumed`; 2026-10-17, owner: the API usage in /admin).
   // NULL = not made through Kie (an upload, the direct engines, older images).
   providerCredits Float?
+  // 2026-10-19 (owner) — the image's public code (« RP-7K4M2Q »), the same on
+  // the whole site whoever owns the image: pasted back in the command bar it
+  // names exactly this image. Assigned the first time the image is shown or a
+  // sheet is made for it (older images have none until then).
+  code          String?      @unique
+  // 2026-10-19 (owner) — the image's materials sheet: which colour of its
+  // source became which material in this render, the ambiance used and the
+  // source's code (lib/server/materials/render-sheet.ts). Null = none yet.
+  sheet         Json?
   // Phase 5 — set only when this node came from the edit route (not the
   // standard generate route). Null = a standard generation or an upload.
   // "enhance" = the /app/enhance route (no preset, see generation/enhance.ts).

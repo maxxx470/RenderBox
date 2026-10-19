@@ -8,11 +8,19 @@ Preserve the exact geometry, proportions, openings, roof shape, camera angle, fr
 - Contrast: soft filmic, slightly lifted blacks.
 - Saturation: lowered by 10 to 15 percent (target -12 percent); a few accent colors stay readable.
 - Shadows: long and soft, never hard; realistic global illumination with gentle warm bounce.
-3. MATERIALS
+- Palette: warm cream, sand and oat tones in soft white light.
+3. SETTING
+- sheer white curtains softly filtering the window light.
+- the view through the window kept readable (sea, sky or garden, as the source shows).
+- natural linen and wool throws and cushions on any bed or seating.
+- a cup and a book on a ledge or side table.
+- one person quietly resting, only where there is a bed or a sofa.
+- These additions are explicitly requested, only on ground, terraces, balconies and openings the image already has; never a new wall, window, roof, volume or other architectural element.
+4. MATERIALS
 Keep every material, color, finish and pattern exactly as in the source image. Do not replace, restyle, recolor or reinterpret any material. Only render each existing material more realistically, with physically accurate response to light. Where such materials are present: lime plaster, render and polished concrete with subtle tonal variation, fine grain and micro-patina, never a uniform plastic surface; wood with visible grain and soft satin reflection; fabric, linen and bouclé with visible weave, natural wrinkles and soft shadow in the folds; marble, travertine and stone with sharp veining, soft reflection and fine regular joints; tiles and zellige with glaze variation, small tone differences and visible joints; glass with believable reflections of sky and surroundings, a slight green or blue tint, never a perfect mirror; metal with sharp controlled reflections and a light patina; brick with brick-to-brick color variation and recessed joints; vegetation with varied foliage and natural green, never a uniform mass or neon green. Add subtle imperfections for a lived-in realism. No excessive gloss, no plastic or smooth-3D look. The same material keeps the same appearance on every face within a view.
-4. PHOTO LOOK
+5. PHOTO LOOK
 High-end architectural photography, full-frame camera, 35 mm lens, natural exposure, subtle depth of field, fine film grain, no oversharpening, photorealistic.
-5. AVOID
+6. AVOID
 Blown highlights, crushed blacks, oversaturation, orange cast, harsh sun patches, HDR look, plastic surfaces.
-6. FINAL CHECK
-Before answering, verify: geometry unchanged, openings unchanged, materials unchanged, no new objects.
+7. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, materials unchanged, no new architectural element, only the setting above added.

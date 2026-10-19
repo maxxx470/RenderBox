@@ -26,7 +26,8 @@ const statements = sql
 describe(`migration ${NAME}`, () => {
   it('sorts after every existing migration folder', () => {
     const sorted = [...folders].sort(byteOrder);
-    expect(sorted[sorted.length - 1]).toBe(NAME);
+    // Only 9_phase9g_render_sheet (2026-10-19) may come after it.
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9g_render_sheet']);
   });
 
   it('only adds the nullable RenderNode.providerCredits column and changes no data', () => {

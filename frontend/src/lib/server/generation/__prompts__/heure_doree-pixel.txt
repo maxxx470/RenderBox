@@ -8,11 +8,22 @@ Preserve the exact geometry, proportions, openings, roof shape, camera angle, fr
 - Exposure: -0.3 to 0 EV (target -0.15 EV); sunlit highlights kept; shadows open with a cool natural fill.
 - Contrast: medium, filmic.
 - Saturation: 0 to +5 percent (target +3 percent); warm but natural, never orange overall.
-3. MATERIALS
+- Palette: honey, amber and soft peach on the facades, cool lavender-blue in the upper sky and in the shadows.
+3. SETTING
+- warm backlit ornamental grasses and Mediterranean shrubs in the garden.
+- a mature olive tree in front of the facade, wherever the plot has room.
+- pale natural stone paving and sun loungers on the terrace.
+- where the plot has a pool, a still surface reflecting the warm sky.
+- interior lights glowing softly behind the glass.
+- where the ground is green, make it a natural lawn with low plants, small flowers and shrubs, with a few fallen dry leaves near the street edge.
+- where the ground is sand or beige earth, keep it fine sand with a few plants that grow in sand, and a light dust rising over the road.
+- keep paved and tarred surfaces as they are, with natural wear.
+- These additions are explicitly requested, only on ground, terraces, balconies and openings the image already has; never a new wall, window, roof, volume or other architectural element.
+4. MATERIALS
 Keep every material, color, finish and pattern exactly as in the source image. Do not replace, restyle, recolor or reinterpret any material. Only render each existing material more realistically, with physically accurate response to light. Where such materials are present: lime plaster, render and polished concrete with subtle tonal variation, fine grain and micro-patina, never a uniform plastic surface; wood with visible grain and soft satin reflection; fabric, linen and bouclé with visible weave, natural wrinkles and soft shadow in the folds; marble, travertine and stone with sharp veining, soft reflection and fine regular joints; tiles and zellige with glaze variation, small tone differences and visible joints; glass with believable reflections of sky and surroundings, a slight green or blue tint, never a perfect mirror; metal with sharp controlled reflections and a light patina; brick with brick-to-brick color variation and recessed joints; vegetation with varied foliage and natural green, never a uniform mass or neon green. Add subtle imperfections for a lived-in realism. No excessive gloss, no plastic or smooth-3D look. The same material keeps the same appearance on every face within a view.
-4. PHOTO LOOK
+5. PHOTO LOOK
 High-end architectural photography, full-frame camera, 35 mm lens, natural exposure, subtle depth of field, fine film grain, no oversharpening, photorealistic.
-5. AVOID
+6. AVOID
 Orange cast over the whole image, blown sun, fake lens flare, oversaturated sky, black shadows, HDR look.
-6. FINAL CHECK
-Before answering, verify: geometry unchanged, openings unchanged, materials unchanged, no new objects.
+7. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, materials unchanged, no new architectural element, only the setting above added.

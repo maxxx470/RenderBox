@@ -27,9 +27,11 @@ import { ambianceText } from './ambiance-text';
 import {
   formatPrompt,
   lookSpec,
+  sheetRequestLines,
   toPromptLine,
   transformSpec,
   type LookKey,
+  type SheetRequest,
   type SkyKey,
 } from './render-profiles';
 
@@ -50,6 +52,7 @@ function boardPrompt(
   modifier: string,
   materials: readonly MaterialSnapshotEntry[],
   customPrompt: string | undefined,
+  sheet?: SheetRequest,
 ): string {
   const parts: string[] = [];
   const lines = materials
@@ -58,6 +61,7 @@ function boardPrompt(
     .map((m) => `- ${m.face}: ${m.valeur}`);
   if (lines.length > 0) parts.push(BOARD_MATERIALS_HEADER, ...lines);
   parts.push(modifier);
+  parts.push(...sheetRequestLines(sheet));
   if (customPrompt?.trim()) parts.push(customPrompt.trim());
   return parts.join('\n');
 }
@@ -77,12 +81,16 @@ export function buildGenerationPrompt(input: {
    * replaces the ambiance's own section.
    */
   ambianceText?: string | undefined;
+  /** A materials sheet pasted under the prompt (2026-10-19). */
+  sheet?: SheetRequest | undefined;
 }): string {
   const { engine, materialsSnapshot: materials, customPrompt } = input;
   const def = input.preset ? PRESETS[input.preset].prompt : null;
   const edited = input.preset ? editedText(input.preset, input.sky, input.ambianceText) : null;
 
-  if (def?.kind === 'board') return boardPrompt(edited ?? def.modifier, materials, customPrompt);
+  if (def?.kind === 'board') {
+    return boardPrompt(edited ?? def.modifier, materials, customPrompt, input.sheet);
+  }
 
   if (def?.kind === 'transform') {
     return formatPrompt(
@@ -90,6 +98,7 @@ export function buildGenerationPrompt(input: {
       transformSpec({
         representation: edited ?? def.modifier,
         request: customPrompt,
+        sheet: input.sheet,
         materials: def.keepsMaterials ? materials : [],
       }),
     );
@@ -108,6 +117,7 @@ export function buildGenerationPrompt(input: {
       sky: input.sky,
       request: customPrompt,
       lightText: edited ?? undefined,
+      sheet: input.sheet,
       materials,
     }),
   );

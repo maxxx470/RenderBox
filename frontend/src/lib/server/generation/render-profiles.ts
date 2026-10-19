@@ -19,7 +19,7 @@
 import 'server-only';
 import type { EngineName } from './engines/types';
 import type { SkyOption } from './templates';
-import { AMBIANCE_TEXT } from './ambiance-text';
+import { AMBIANCE_TEXT, settingKeyOf, settingLines, settingText } from './ambiance-text';
 
 // ── Common blocks ─────────────────────────────────────────────────────────
 
@@ -79,6 +79,31 @@ export function targetedRequest(request: string | undefined): string | null {
   return `Only modify what this request explicitly names: "${line}". Everything else must remain faithful to the source image. Words such as improve, modernise or make it nicer are not permission to change the design.`;
 }
 
+/** A materials sheet the user pasted (2026-10-19): what became what. */
+export interface SheetRequest {
+  /** The code of the image the sheet was made for, to name it. */
+  code?: string | null | undefined;
+  lines: readonly { color: string; material: string }[];
+}
+
+/**
+ * The sheet as lines right after the lock: wherever the source shows the
+ * colour on the left, the render shows the material on the right. Each side
+ * is put on one line (toPromptLine), so nothing pasted can start a section.
+ */
+export function sheetRequestLines(sheet: SheetRequest | undefined): string[] {
+  const lines = (sheet?.lines ?? [])
+    .map((l) => ({ color: toPromptLine(l.color), material: toPromptLine(l.material) }))
+    .filter((l) => l.color !== '' && l.material !== '')
+    .map((l) => `- ${l.color} → ${l.material}`);
+  if (lines.length === 0) return [];
+  const from = sheet?.code ? ` (copied from image ${sheet.code})` : '';
+  return [
+    `Material sheet${from}: apply exactly these assignments — wherever the source image shows the colour on the left, render it as the material on the right, the same on every face and in every view.`,
+    ...lines,
+  ];
+}
+
 export function materialsBlock(hasRequest: boolean): string {
   return hasRequest ? MATERIALS_BLOCK_WITH_REQUEST : MATERIALS_BLOCK;
 }
@@ -127,6 +152,9 @@ function exteriorDay(sky: SkyKey): Light {
       '- Contrast: medium, filmic.',
       '- Saturation: -5 to 0 percent (target -3 percent); vegetation natural green, never neon.',
       hazy ? '- Shadows: defined but softened.' : '- Shadows: crisp but softened.',
+      hazy
+        ? '- Palette: a pale clean blue sky, softly cool shadows, fresh natural greens.'
+        : '- Palette: a deep clean blue sky, crisp cool shadows, fresh natural greens.',
     ],
     avoid:
       'oversaturated sky, black shadows, neon green vegetation, blown white walls, HDR look, fake lens flare',
@@ -143,6 +171,7 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
       '- Contrast: soft filmic, slightly lifted blacks.',
       '- Saturation: lowered by 10 to 15 percent (target -12 percent); a few accent colors stay readable.',
       '- Shadows: long and soft, never hard; realistic global illumination with gentle warm bounce.',
+      '- Palette: warm cream, sand and oat tones in soft white light.',
     ],
     avoid:
       'blown highlights, crushed blacks, oversaturation, orange cast, harsh sun patches, HDR look, plastic surfaces',
@@ -156,6 +185,7 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
       '- Contrast: medium-high, filmic.',
       '- Saturation: 0 to +5 percent (target +3 percent).',
       '- Ground: slightly reflective.',
+      '- Palette: deep indigo and teal sky and shadows against warm amber windows.',
     ],
     avoid: 'flat black sky, excessive halos, overexposed lamps, grain noise, oversaturated blue',
   },
@@ -168,6 +198,7 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
       '- Contrast: medium-high, shadows still detailed.',
       '- Saturation: about -5 percent.',
       '- Realistic global illumination.',
+      '- Palette: deep bronze, chocolate brown and near-black against warm amber light.',
     ],
     avoid: 'room too dark, burnt lamp highlights, flat lighting, overall orange cast, noise',
   },
@@ -175,8 +206,8 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
 
 // Two more lights for the ambiance menu (2026-10-19, owner: « ajoute 4
 // autres ambiances »), written like annex A: figure + plain words, the same
-// constraints for both engines. They add nothing to the scene either: rain
-// wets what is there, it brings no people, umbrellas or cars.
+// constraints for both engines. Like the others they carry a setting (see
+// ambiance-text.ts), never a new architectural element.
 const EXTRA_LIGHTS: Record<'golden' | 'rain', Light> = {
   golden: {
     visio: AMBIANCE_TEXT.GOLDEN_HOUR,
@@ -187,6 +218,7 @@ const EXTRA_LIGHTS: Record<'golden' | 'rain', Light> = {
       '- Exposure: -0.3 to 0 EV (target -0.15 EV); sunlit highlights kept; shadows open with a cool natural fill.',
       '- Contrast: medium, filmic.',
       '- Saturation: 0 to +5 percent (target +3 percent); warm but natural, never orange overall.',
+      '- Palette: honey, amber and soft peach on the facades, cool lavender-blue in the upper sky and in the shadows.',
     ],
     avoid:
       'orange cast over the whole image, blown sun, fake lens flare, oversaturated sky, black shadows, HDR look',
@@ -201,6 +233,7 @@ const EXTRA_LIGHTS: Record<'golden' | 'rain', Light> = {
       '- Exposure: -0.3 to 0 EV (target -0.15 EV); facade still readable.',
       '- Contrast: soft.',
       '- Saturation: -10 to -5 percent (target -8 percent).',
+      '- Palette: cool slate and grey tones with warm amber from the windows.',
     ],
     avoid:
       'heavy rain streaks across the image, flooded ground, gloomy dark image, blue cast, blurred building, HDR look',
@@ -229,7 +262,8 @@ const SKETCH: Light = {
   pixel: [
     '- Medium: pencil on off-white paper, visible pencil lines, light shading, neutral light.',
     '- Volumes: simplified, same outline and openings as the source.',
-    '- Tones: graphite, at most one or two soft accent tints.',
+    '- Tones: graphite grey only, no colour.',
+    '- Construction: a few perspective construction lines left in, loose hatching on walls and glazing.',
     '- Materials: recognisable by line and hatching only.',
     '- Keep it a design drawing, not a photograph.',
   ],
@@ -243,6 +277,7 @@ const WATERCOLOUR: Light = {
     '- Medium: watercolour on textured cold-press paper, fine ink outline of the building.',
     '- Washes: transparent, soft bleeding edges; the white of the paper left in the highlights.',
     '- Colours: natural and muted, true to the source materials; the sky as a light loose wash.',
+    '- Palette: muted sage, olive and moss greens, warm ochre and umber, a soft grey-blue sky wash.',
     '- Volumes: same outline and openings as the source.',
     '- Materials: recognisable by colour and brushwork.',
     '- Keep it a hand-painted illustration, not a photograph.',
@@ -285,6 +320,10 @@ const INTRO: Record<PromptSpec['kind'], { visio: string; pixel: string }> = {
     pixel: 'This is a new representation of the building in the first image, not a new design.',
   },
 };
+
+/** The check of a look that carries a setting (see lookSpec). */
+const SETTING_CHECK =
+  'geometry unchanged, openings unchanged, materials unchanged, no new architectural element, only the setting above added';
 
 export const BASE_CHECK =
   'geometry unchanged, openings unchanged, materials unchanged, no new objects';
@@ -342,10 +381,14 @@ export function lookSpec(input: {
    * the materials, the photo look and the check stay. Ignored on C0.
    */
   lightText?: string | undefined;
+  /** A materials sheet pasted under the prompt. */
+  sheet?: SheetRequest | undefined;
   materials: readonly { face: string; valeur: string }[];
 }): PromptSpec {
+  const sheetLines = sheetRequestLines(input.sheet);
   const request = targetedRequest(input.request);
-  const hasRequest = request !== null;
+  // A sheet changes materials too: the keep-every-material block must give way.
+  const hasRequest = request !== null || sheetLines.length > 0;
   const lightText = input.lightText ? toPromptLine(input.lightText) : '';
   const project = projectMaterialLines(input.materials);
   const { look } = input;
@@ -363,6 +406,8 @@ export function lookSpec(input: {
             : profileLight(look, input.sky);
 
   const own = lightText !== '' && look !== 'source';
+  // The setting the ambiance's thumbnail shows around the building.
+  const settingKey = own ? null : settingKeyOf(settingName(look));
   const visioText = own ? lightText : light.visio;
   const sections: PromptSection[] = [
     {
@@ -373,6 +418,13 @@ export function lookSpec(input: {
       pixel: own ? [lightText] : light.pixel,
     },
   ];
+  if (settingKey) {
+    sections.push({
+      title: 'SETTING',
+      visio: settingText(settingKey),
+      pixel: settingLines(settingKey),
+    });
+  }
   if (sketch) {
     // A sketch of a timber-clad wall still reads as timber: the recorded
     // materials stay, drawn; the photographic material block does not apply.
@@ -393,18 +445,38 @@ export function lookSpec(input: {
   return {
     kind: 'edit',
     lock: GEOMETRY_LOCK,
-    request: request ? [request] : [],
+    request: [...(request ? [request] : []), ...sheetLines],
     sections,
     avoid: light.avoid,
+    // The setting adds planting and details, never architecture: the check
+    // says so instead of « no new objects », which it would contradict.
     check: sketch
       ? checkFor(
-          look === 'watercolour'
-            ? 'geometry unchanged, openings unchanged, no new objects, the result is a watercolour illustration, not a photograph'
-            : 'geometry unchanged, openings unchanged, no new objects, the result is a drawing, not a photograph',
+          `geometry unchanged, openings unchanged, no new architectural element, the result is ${
+            look === 'watercolour' ? 'a watercolour illustration' : 'a drawing'
+          }, not a photograph`,
           hasRequest,
         )
-      : checkFor(BASE_CHECK, hasRequest),
+      : checkFor(settingKey ? SETTING_CHECK : BASE_CHECK, hasRequest),
   };
+}
+
+/** The key of a look's setting in ambiance-text.ts ('' for C0). */
+function settingName(look: LookKey): string {
+  switch (look) {
+    case 'golden':
+      return 'heure_doree';
+    case 'rain':
+      return 'pluie';
+    case 'sketch':
+      return 'croquis';
+    case 'watercolour':
+      return 'aquarelle';
+    case 'source':
+      return '';
+    default:
+      return look;
+  }
 }
 
 /**
@@ -416,9 +488,11 @@ export function lookSpec(input: {
 export function transformSpec(input: {
   representation: string;
   request?: string | undefined;
+  sheet?: SheetRequest | undefined;
   materials: readonly { face: string; valeur: string }[];
 }): PromptSpec {
   const request = targetedRequest(input.request);
+  const sheetLines = sheetRequestLines(input.sheet);
   const project = projectMaterialLines(input.materials);
   const sections: PromptSection[] = [
     { title: 'REPRESENTATION', visio: input.representation, pixel: [input.representation] },
@@ -429,11 +503,11 @@ export function transformSpec(input: {
   return {
     kind: 'transform',
     lock: TRANSFORM_LOCK,
-    request: request ? [request] : [],
+    request: [...(request ? [request] : []), ...sheetLines],
     sections,
     check: checkFor(
       'footprint and proportions unchanged, openings unchanged, no invented volume, the representation is the one described',
-      request !== null,
+      request !== null || sheetLines.length > 0,
     ),
   };
 }

@@ -27,7 +27,10 @@ describe(`migration ${NAME}`, () => {
   it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
     // Only 9_phase9f_render_provider_credits (same day) may come after it.
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9f_render_provider_credits']);
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
+      '9_phase9f_render_provider_credits',
+      '9_phase9g_render_sheet',
+    ]);
   });
 
   it('only adds the nullable User.infoSeenAt column and changes no data', () => {

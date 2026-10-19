@@ -5,10 +5,17 @@ Preserve the exact geometry, proportions, openings, roof shape, camera angle, fr
 - Medium: watercolour on textured cold-press paper, fine ink outline of the building.
 - Washes: transparent, soft bleeding edges; the white of the paper left in the highlights.
 - Colours: natural and muted, true to the source materials; the sky as a light loose wash.
+- Palette: muted sage, olive and moss greens, warm ochre and umber, a soft grey-blue sky wash.
 - Volumes: same outline and openings as the source.
 - Materials: recognisable by colour and brushwork.
 - Keep it a hand-painted illustration, not a photograph.
-3. AVOID
+3. SETTING
+- birch and pine trees, ornamental grasses and shrubs painted in loose washes around the building.
+- a flagstone path leading to the entrance, where the source has a path or a forecourt.
+- where the plot has water, a calm pool painted in pale teal.
+- the painting fading irregularly into bare paper at its edges, with a few loose splatters.
+- These additions are explicitly requested, only on ground, terraces, balconies and openings the image already has; never a new wall, window, roof, volume or other architectural element.
+4. AVOID
 Photographic look, 3D render look, heavy opaque paint, oversaturated colours, digital gradients.
-4. FINAL CHECK
-Before answering, verify: geometry unchanged, openings unchanged, no new objects, the result is a watercolour illustration, not a photograph.
+5. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, no new architectural element, the result is a watercolour illustration, not a photograph.

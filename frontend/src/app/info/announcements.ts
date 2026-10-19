@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'material-sheet-ambiances',
+    date: '2026-10-19',
+    kind: 'shipped',
+    title: {
+      fr: 'Fiche de matériaux, code d’image et 14 ambiances',
+      en: 'Materials sheet, image codes and 14 ambiances',
+    },
+    body: {
+      fr: 'Chaque rendu a sa fiche de matériaux : quelle couleur de votre image source est devenue quel matériau, l’ambiance utilisée et le code de l’image, unique sur tout le site. Un bouton « Copier » la reprend : collée sous le prompt d’un nouveau rendu, elle garde les mêmes matériaux et la même ambiance pour tous les rendus d’un même bâtiment. Le menu compte 14 ambiances, chacune écrit son prompt dans la barre pour que vous puissiez le lire et le modifier, et un clic sur une image de la Galerie l’ouvre directement dans le Générateur. Source et rendu se comparent avec un curseur, y compris dans Améliorer.',
+      en: 'Every render has its materials sheet: which colour of your source image became which material, the ambiance used and the image’s code, unique across the whole site. A “Copy” button takes it along: pasted under the prompt of a new render, it keeps the same materials and the same ambiance across all renders of a building. The menu now has 14 ambiances, each one writes its prompt in the bar so you can read and change it, and a click on a Gallery image opens it straight in the Generator. Source and render can be compared with a slider, in Enhance too.',
+    },
+  },
+  {
     id: 'faithful-renders',
     date: '2026-10-19',
     kind: 'shipped',

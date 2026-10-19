@@ -62,6 +62,14 @@ vi.mock('@/lib/server/materials/detect-and-merge', () => ({
   detectAndMergeMaterials: mockDetectAndMerge,
 }));
 
+// The materials sheet (2026-10-19): its analysis is not run here — the route
+// only starts it; the sheet's own tests are in materials/render-sheet.test.ts.
+const { mockScheduleSheet } = vi.hoisted(() => ({ mockScheduleSheet: vi.fn() }));
+vi.mock('@/lib/server/materials/render-sheet', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/server/materials/render-sheet')>()),
+  scheduleSheet: mockScheduleSheet,
+}));
+
 import { verifyToken } from '@/lib/server/auth';
 import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
@@ -172,6 +180,7 @@ beforeEach(() => {
   mockDebitCredits.mockReset().mockResolvedValue({ ok: true, balance: 2950 });
   mockRefundCredits.mockReset().mockResolvedValue(undefined);
   mockDetectAndMerge.mockReset().mockResolvedValue(undefined);
+  mockScheduleSheet.mockReset().mockResolvedValue(undefined);
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
 
   vi.mocked(verifyToken).mockResolvedValue({
@@ -1087,5 +1096,85 @@ describe('POST /api/projects/[projectId]/generate — engine deadline (étape 3B
     expect(res.status).toBe(201);
     expect(((await res.json()) as { materialsDetected: boolean }).materialsDetected).toBe(false);
     expect(mockRefundCredits).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-10-19)', () => {
+  const PASTED = [
+    'FICHE RENDERPRO · RP-7K4M2Q',
+    'Image source : RP-3D9F1A',
+    'Ambiance : Nuit extérieur [nuit_ext]',
+    'Couleur → matériau :',
+    '- Brun-rouge des murs → brique rouge, joints creux',
+    '- Gris foncé du garde-corps → métal noir mat',
+    'FIN DE LA FICHE',
+  ].join('\n');
+  const engineInput = () => mockGenerate.mock.calls[0]?.[1] as { prompt: string };
+  const LINES = [
+    { color: 'Brun-rouge des murs', material: 'brique rouge, joints creux' },
+    { color: 'Gris foncé du garde-corps', material: 'métal noir mat' },
+  ];
+
+  it('starts the sheet of the render once it is stored, with its ambiance and its source', async () => {
+    await POST(makeReq(validBody({ preset: 'jour_ext', sky: 'sun' })), ctx());
+    expect(mockScheduleSheet).toHaveBeenCalledTimes(1);
+    expect(mockScheduleSheet).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nodeId: 'node-new',
+        sourceNodeId: SOURCE_NODE_ID,
+        ambiance: { key: 'jour_ext', sky: 'sun' },
+      }),
+    );
+  });
+
+  it('a sheet that cannot start never fails the render', async () => {
+    mockScheduleSheet.mockRejectedValue(new Error('db down'));
+    const res = await POST(makeReq(validBody()), ctx());
+    expect(res.status).toBe(201);
+  });
+
+  it('a sheet pasted under the prompt goes to the engine as a request, and its ambiance is used', async () => {
+    const res = await POST(
+      makeReq(validBody({ preset: null, customPrompt: `une précision\n\n${PASTED}` })),
+      ctx(),
+    );
+    expect(res.status).toBe(201);
+    const expected = buildGenerationPrompt({
+      engine: 'nanobanana',
+      materialsSnapshot: [],
+      preset: 'nuit_ext',
+      customPrompt: 'une précision',
+      sheet: { code: 'RP-7K4M2Q', lines: LINES },
+    });
+    expect(engineInput().prompt).toBe(expected);
+    expect(engineInput().prompt).toContain('- Brun-rouge des murs → brique rouge, joints creux');
+    expect(prismaMock.renderNode.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ preset: 'nuit_ext' }) }),
+    );
+  });
+
+  it('an ambiance the user chose wins over the one in the sheet', async () => {
+    await POST(makeReq(validBody({ preset: 'pluie', customPrompt: PASTED })), ctx());
+    expect(prismaMock.renderNode.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ preset: 'pluie' }) }),
+    );
+  });
+
+  it('the sheet is taken out of the ambiance text too, so an unchanged text stays the default', async () => {
+    const { ambianceText } = await import('@/lib/server/generation/ambiance-text');
+    await POST(
+      makeReq(
+        validBody({ preset: 'nuit_ext', ambianceText: `${ambianceText('nuit_ext')}\n\n${PASTED}` }),
+      ),
+      ctx(),
+    );
+    expect(engineInput().prompt).toBe(
+      buildGenerationPrompt({
+        engine: 'nanobanana',
+        materialsSnapshot: [],
+        preset: 'nuit_ext',
+        sheet: { code: 'RP-7K4M2Q', lines: LINES },
+      }),
+    );
   });
 });

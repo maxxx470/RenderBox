@@ -34,7 +34,12 @@ import {
 } from './request-error';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
-import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
+import {
+  AMBIANCE_KEYS,
+  PRESETS,
+  isPresetKey,
+  type PresetKey,
+} from '@/lib/server/generation/presets';
 import { ambianceText } from '@/lib/server/generation/ambiance-text';
 import {
   TEMPLATE_KEYS,
@@ -56,7 +61,8 @@ import { useAppChrome } from './AppChrome';
 import { useRenderPrice } from './use-render-price';
 import { MOBILE_NAV_PAD } from './MobileNav';
 import { SideColumn } from './SideColumn';
-import { NodeMaterialsPanel } from './NodeMaterialsPanel';
+import { RenderSheetPanel } from './RenderSheetPanel';
+import { extractSheetBlock } from '@/lib/render-sheet';
 import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
@@ -180,6 +186,33 @@ export function GenerationHome({
    */
   function writeAmbiance(key: PresetKey | null, nextSky: SkyOption = sky) {
     setPrompt(ambianceText(key, nextSky));
+  }
+
+  /**
+   * The bar's text changed. A materials sheet pasted in it (owner,
+   * 2026-10-19) brings its ambiance: the chip follows, so the new render keeps
+   * to the same rules as the image the sheet came from. When only the sheet
+   * was pasted, the ambiance's own text is written above it.
+   */
+  function changePrompt(value: string) {
+    const found = extractSheetBlock(value);
+    const key = found?.sheet.ambianceKey;
+    if (found && key && isPresetKey(key) && (AMBIANCE_KEYS as readonly string[]).includes(key)) {
+      const sheetSky = found.sheet.sky;
+      if ((template ?? preset) !== key) {
+        setPreset(key);
+        setTemplate(null);
+        if (sheetSky) setSky(sheetSky);
+        if (found.rest === '') {
+          const block = value.trim();
+          setPrompt(`${ambianceText(key, sheetSky ?? sky)}\n\n${block}`);
+          return;
+        }
+      } else if (sheetSky && sheetSky !== sky) {
+        setSky(sheetSky);
+      }
+    }
+    setPrompt(value);
   }
 
   function changePreset(next: PresetKey | null) {
@@ -684,7 +717,7 @@ export function GenerationHome({
           preset={preset}
           onPresetChange={changePreset}
           prompt={prompt}
-          onPromptChange={setPrompt}
+          onPromptChange={changePrompt}
           // The paperclip pins the image to work on; in Ajouter, once
           // that is there, it takes the element's photo.
           onAttach={mode === 'add' && sourceSrc ? setReferenceFile : pinPhoto}
@@ -748,9 +781,8 @@ export function GenerationHome({
       <SideColumn
         mode={mode}
         // No project yet: the panel says where an image's materials will show.
-        materialsPanel={
-          <NodeMaterialsPanel state={null} controller={null} nodeName={null} legacy={[]} />
-        }
+        // The sheet of the image shown: the render's, or the pinned image's.
+        materialsPanel={<RenderSheetPanel nodeId={result?.nodeId ?? stored?.nodeId ?? null} />}
         canEdit={Boolean(sourceSrc)}
         lockedHint={t('app.genHomeNeedPhoto')}
         referenceFile={referenceFile}
