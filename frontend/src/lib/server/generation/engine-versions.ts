@@ -127,7 +127,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   'visio-3': {
     engine: 'nanobanana',
     name: { fr: 'Visio 3', en: 'Visio 3' },
-    description: { fr: 'Le plus récent, jusqu’en 2K', en: 'The latest, up to 2K' },
+    description: { fr: 'Autre génération, jusqu’en 2K', en: 'Another generation, up to 2K' },
     kieModel: 'seedream/5-pro-image-to-image',
     imageField: 'image_urls',
     maxImages: 10,
@@ -182,11 +182,12 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
  * version la plus performante de chaque modèle », no choice offered). Checked
  * that day: GPT Image 2.5 Sunburst leads LMArena's image editing and changes
  * only what is asked. Visio ran on Nano Banana Pro until 2026-10-19, then on
- * Seedream 5.0 Pro (owner). The other versions stay in the catalogue for the
- * renders already made.
+ * Seedream 5.0 Pro, and since 2026-10-20 on the latest Nano Banana, 2.1
+ * (owner: « la dernière version de Nano Banana remplace Seedream »). The other
+ * versions stay in the catalogue for the renders already made.
  */
 export const DEFAULT_ENGINE_VERSION: Record<EngineName, EngineVersionKey> = {
-  nanobanana: 'visio-3',
+  nanobanana: 'visio-2-1',
   gpt_image: 'pixel-2-5',
 };
 

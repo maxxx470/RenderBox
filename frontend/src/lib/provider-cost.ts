@@ -20,12 +20,13 @@ export const USD_PER_EUR = 1.124208;
 export const XOF_PER_USD = XOF_PER_EUR / USD_PER_EUR;
 
 /**
- * Kie credits per image: Visio 3 (Seedream 5.0 Pro since 2026-10-19, kie.ai's
- * published price: 7 at 1K, 14 at 2K; 4K is a 2K render enlarged) and
- * Pixel IA 2.5. Nano Banana Pro cost 18 / 18 / 24.
+ * Kie credits per image: Visio (Nano Banana 2.1 since 2026-10-20, kie.ai's
+ * published price: 4 at 1K, 6 at 2K, 9 at 4K — not yet checked against a
+ * billed task) and Pixel IA 2.5. Seedream 5.0 Pro cost 7 / 14 / 14, Nano
+ * Banana Pro 18 / 18 / 24.
  */
 export const KIE_CREDITS_PER_IMAGE: Record<EngineName, Record<ResolutionKey, number>> = {
-  nanobanana: { '1k': 7, '2k': 14, '4k': 14 },
+  nanobanana: { '1k': 4, '2k': 6, '4k': 9 },
   gpt_image: { '1k': 6, '2k': 10, '4k': 16 },
 };
 

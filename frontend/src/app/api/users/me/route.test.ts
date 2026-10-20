@@ -36,7 +36,7 @@ describe('PATCH /api/users/me', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
       defaultEngine: 'gpt_image',
-      engineVersions: { nanobanana: 'visio-3', gpt_image: 'pixel-2-5' },
+      engineVersions: { nanobanana: 'visio-2-1', gpt_image: 'pixel-2-5' },
     });
     expect(prismaMock.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },

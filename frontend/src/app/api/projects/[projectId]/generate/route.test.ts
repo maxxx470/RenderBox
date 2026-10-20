@@ -397,7 +397,7 @@ describe('POST /api/projects/[projectId]/generate — credits', () => {
       role: 'SUPERADMIN',
     } as never);
     await POST(makeReq(validBody({ resolution: '2k' })), ctx());
-    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 14);
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 6);
     await POST(makeReq(validBody({ engine: 'gpt_image', resolution: '4k' })), ctx());
     expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 16);
   });

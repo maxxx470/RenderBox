@@ -94,6 +94,6 @@ describe('parseEngineVersions', () => {
     expect(
       parseEngineVersions({ nanobanana: 'visio-2-1', gpt_image: 'visio-1', other: 'pixel-2' }),
     ).toEqual({ nanobanana: 'visio-2-1', gpt_image: 'pixel-2-5' });
-    expect(parseEngineVersions({ nanobanana: 'visio-9' }).nanobanana).toBe('visio-3');
+    expect(parseEngineVersions({ nanobanana: 'visio-9' }).nanobanana).toBe('visio-2-1');
   });
 });
