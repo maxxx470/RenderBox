@@ -22,3 +22,6 @@ next-env.d.ts
 amp
 node-compile-cache/
 
+
+# Database backups (production data) — never committed
+frontend/scripts/backups/

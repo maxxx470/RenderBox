@@ -15,8 +15,8 @@ import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { formatSheetBlock } from '@/lib/render-sheet';
-import { SHEET_COST } from '@/lib/pricing-tiers';
-import { errorCodeOf, plansReasonFor } from './request-error';
+import { SHEET_COST } from '@/lib/provider-cost';
+import { creditDetailOf, errorCodeOf, plansReasonFor } from './request-error';
 import { useAppChrome } from './AppChrome';
 import { creditsChanged } from './fresh-credits';
 import { PRESETS, isPresetKey } from '@/lib/server/generation/presets';
@@ -137,7 +137,7 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
       creditsChanged();
     } catch (err) {
       const reason = plansReasonFor(err);
-      if (reason) chrome?.openPlans(reason);
+      if (reason) chrome?.openPlans(reason, creditDetailOf(err));
       else if (errorCodeOf(err) === 'SHEET_NOT_CONFIGURED')
         toast(t('app.sheetUnavailable'), 'error');
       else toast(t('app.sheetAskFailed'), 'error');

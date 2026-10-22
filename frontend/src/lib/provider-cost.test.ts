@@ -1,37 +1,133 @@
-import { describe, it, expect } from 'vitest';
-import { KIE_CREDITS_PER_IMAGE, realImageCost, renderPrice, XOF_PER_USD } from './provider-cost';
-import { ENGINE_NAMES } from '@/lib/server/generation/engines/types';
-import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
+import { describe, expect, it } from 'vitest';
+import { PRICING_TIERS } from './pricing-tiers';
+import {
+  ASSISTANT_COST,
+  KIE_PRICES,
+  KIE_USD_PER_CREDIT,
+  MAKETOU_FEE_RATE,
+  SHEET_COST,
+  XOF_PER_CREDIT,
+  XOF_PER_USD,
+  creditsValue,
+  describePrices,
+  imageRange,
+  normalizeKieCredits,
+  offeredPrice,
+  offeredPrices,
+  planMargin,
+  requestPrice,
+} from './provider-cost';
+import { DEFAULT_ENGINE_VERSION, ENGINE_VERSION_KEYS } from './server/generation/engine-versions';
+import { RESOLUTION_KEYS } from './server/generation/resolutions';
 
-describe('realImageCost', () => {
-  it('prices every engine at every size', () => {
-    for (const engine of ENGINE_NAMES) {
-      for (const resolution of RESOLUTION_KEYS) {
-        expect(KIE_CREDITS_PER_IMAGE[engine][resolution]).toBeGreaterThan(0);
+describe('the constants (owner, 2026-10-22)', () => {
+  it('1 credit = 0.005 $, 1 $ = 600 FCFA, so 1 credit = 3 FCFA; Maketou 8 %', () => {
+    expect(KIE_USD_PER_CREDIT).toBe(0.005);
+    expect(XOF_PER_USD).toBe(600);
+    expect(XOF_PER_CREDIT).toBe(3);
+    expect(MAKETOU_FEE_RATE).toBe(0.08);
+    expect(creditsValue(1000)).toEqual({ usd: 5, xof: 3000 });
+  });
+
+  it('a materials sheet costs 2 credits, a message to the team nothing', () => {
+    expect(SHEET_COST).toBe(2);
+    expect(ASSISTANT_COST).toBe(0);
+  });
+});
+
+describe('the grid: every engine version × size', () => {
+  it('has a row for every version and a cell for every size', () => {
+    expect(Object.keys(KIE_PRICES).sort()).toEqual([...ENGINE_VERSION_KEYS].sort());
+    for (const v of ENGINE_VERSION_KEYS) {
+      expect(Object.keys(KIE_PRICES[v]).sort()).toEqual([...RESOLUTION_KEYS].sort());
+    }
+  });
+
+  it('the verified prices', () => {
+    expect(KIE_PRICES['visio-2-1']).toEqual({ '1k': 4, '2k': 6, '4k': 9 });
+    expect(KIE_PRICES['pixel-2-5']).toEqual({ '1k': 6, '2k': 10, '4k': 16 });
+    expect(KIE_PRICES['visio-pro']).toEqual({ '1k': 18, '2k': 18, '4k': 24 });
+    expect(KIE_PRICES['visio-3']).toEqual({ '1k': 7, '2k': 14, '4k': 14 });
+  });
+
+  it('every combination the interface offers is priced (no blocked default)', () => {
+    for (const engine of Object.keys(
+      DEFAULT_ENGINE_VERSION,
+    ) as (keyof typeof DEFAULT_ENGINE_VERSION)[]) {
+      for (const r of RESOLUTION_KEYS) {
+        expect(KIE_PRICES[DEFAULT_ENGINE_VERSION[engine]][r]).not.toBeNull();
+        expect(Number.isFinite(offeredPrice(engine, r))).toBe(true);
+      }
+    }
+    expect(offeredPrices()).toHaveLength(2 * RESOLUTION_KEYS.length);
+  });
+
+  it('each offered engine × size × variant count debits exactly the grid times the count', () => {
+    for (const engine of ['nanobanana', 'gpt_image'] as const) {
+      const version = DEFAULT_ENGINE_VERSION[engine];
+      for (const r of RESOLUTION_KEYS) {
+        for (const n of [1, 2, 3, 4]) {
+          expect(requestPrice(engine, r, n)).toBe(KIE_PRICES[version][r]! * n);
+          expect(requestPrice(engine, r, n, version)).toBe(KIE_PRICES[version][r]! * n);
+        }
       }
     }
   });
 
-  it('turns Kie credits into dollars (200 = 1 $) and FCFA', () => {
-    // Visio (Nano Banana 2.1) at 1K, 2K and 4K, kie.ai's price on 2026-10-20.
-    const visio = realImageCost('nanobanana', '1k');
-    expect(visio.kieCredits).toBe(4);
-    expect(visio.usd).toBeCloseTo(0.02, 10);
-    expect(visio.xof).toBe(Math.round(0.02 * XOF_PER_USD));
-    expect(realImageCost('nanobanana', '2k').kieCredits).toBe(6);
-    expect(realImageCost('nanobanana', '4k').kieCredits).toBe(9);
-    // Pixel IA at 4K, three variants.
-    expect(realImageCost('gpt_image', '4k', 3).kieCredits).toBe(48);
+  it('a version is priced as itself, and no size is the default size (1K)', () => {
+    expect(requestPrice('nanobanana', '1k', 1, 'visio-pro')).toBe(18);
+    expect(requestPrice('nanobanana', '4k', 2, 'visio-3')).toBe(28);
+    expect(requestPrice('nanobanana', undefined)).toBe(4);
+    expect(requestPrice('gpt_image', null)).toBe(6);
+  });
+
+  it('a version without a verified price is blocked (null), never guessed', () => {
+    for (const v of ['visio-1', 'visio-2', 'visio-2-lite', 'pixel-1-5', 'pixel-2'] as const) {
+      for (const r of RESOLUTION_KEYS) expect(requestPrice('nanobanana', r, 1, v)).toBeNull();
+    }
   });
 });
 
-describe('renderPrice', () => {
-  it("charges an administrator Kie's price, everyone else the RenderPro price", () => {
-    expect(renderPrice('SUPERADMIN', 'nanobanana', '1k')).toBe(4);
-    expect(renderPrice('ADMIN', 'gpt_image', '2k')).toBe(10);
-    expect(renderPrice('SUPERADMIN', 'gpt_image', '4k', 2)).toBe(32);
-    expect(renderPrice('USER', 'nanobanana', '1k')).toBe(50);
-    expect(renderPrice('USER', 'gpt_image', '4k', 2)).toBe(140);
-    expect(renderPrice(undefined, 'gpt_image', '1k')).toBe(50);
+describe('what the plans buy, and what they guarantee', () => {
+  it('the image range comes from the grid: dearest offered for the min, cheapest for the max', () => {
+    // Dearest: Pixel IA 4K (16); cheapest: Visio 1K (4).
+    expect(imageRange(500)).toEqual({ min: 31, max: 125 });
+    expect(imageRange(1500)).toEqual({ min: 93, max: 375 });
+    expect(imageRange(4000)).toEqual({ min: 250, max: 1000 });
+    expect(imageRange(3)).toEqual({ min: 0, max: 0 });
+  });
+
+  it('guaranteed margins: gross 75 / 70 / 66.7 %, net of Maketou 67 / 62 / 58.7 %', () => {
+    const m = PRICING_TIERS.map((t) => planMargin(t));
+    expect(m.map((x) => x.kieCostXof)).toEqual([1500, 4500, 12000]);
+    expect(m[0]!.gross).toBeCloseTo(0.75, 10);
+    expect(m[1]!.gross).toBeCloseTo(0.7, 10);
+    expect(m[2]!.gross).toBeCloseTo(2 / 3, 10);
+    expect(m[0]!.net).toBeCloseTo(0.67, 10);
+    expect(m[1]!.net).toBeCloseTo(0.62, 10);
+    expect(m[2]!.net).toBeCloseTo(2 / 3 - 0.08, 10);
+  });
+
+  it('describes the offered prices in both languages', () => {
+    expect(describePrices('fr')).toBe(
+      'Visio : 4 crédits en 1K, 6 en 2K, 9 en 4K ; Pixel IA : 6 crédits en 1K, 10 en 2K, 16 en 4K',
+    );
+    expect(describePrices('en')).toBe(
+      'Visio: 4 credits at 1K, 6 at 2K, 9 at 4K; Pixel AI: 6 credits at 1K, 10 at 2K, 16 at 4K',
+    );
+  });
+});
+
+describe('normalizeKieCredits — Kie changed its unit', () => {
+  it('reads tenths (until 2026-10-19) and credits (from 2026-10-21) against the price', () => {
+    expect(normalizeKieCredits(60, 6)).toBe(6);
+    expect(normalizeKieCredits(160, 16)).toBe(16);
+    expect(normalizeKieCredits(180, 18)).toBe(18);
+    expect(normalizeKieCredits(6, 6)).toBe(6);
+    expect(normalizeKieCredits(4, 4)).toBe(4);
+  });
+
+  it('keeps the value without an expected price', () => {
+    expect(normalizeKieCredits(60, null)).toBe(60);
   });
 });

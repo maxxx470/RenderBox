@@ -1,7 +1,7 @@
 // Gate #2 for AI generation — the paid CREDITS (since 2026-10-13; a monthly
 // count of renders before). A plan grants its credits (lib/pricing-tiers.ts)
-// for 30 days; each image produced costs RENDER_COST (1K / 2K) or
-// RENDER_COST_4K, whatever made it. Fully independent of
+// for 30 days; each action costs exactly Kie's price for the engine version
+// and the size used (lib/provider-cost.ts, since 2026-10-22). Fully independent of
 // rate-limit-generation.ts's hourly anti-abuse cap: both gates must pass
 // before an engine call is made, and neither replaces the other.
 //
@@ -12,7 +12,7 @@
 //      or storage failure, a variant that failed, a request stopped after the
 //      debit).
 // The cost is always computed by the server from the request it validated
-// (renderCost), never taken from the client.
+// (requestPrice), never taken from the client.
 //
 // Lazy by design — expiry is detected and cleared the moment a user tries to
 // generate (or loads a page that displays their credits), never by a cron
@@ -220,6 +220,17 @@ export function creditRefusalResponse(
       status: refusal.reason === 'INSUFFICIENT_CREDITS' ? 402 : 403,
       headers: { 'x-request-id': requestId },
     },
+  );
+}
+
+/**
+ * A version × size the grid has no verified price for (provider-cost.ts): the
+ * request is refused before anything is debited, until the owner confirms it.
+ */
+export function priceNotVerifiedResponse(requestId: string): NextResponse {
+  return NextResponse.json(
+    { error: 'PRICE_NOT_VERIFIED', message: 'No verified price for this engine version and size' },
+    { status: 409, headers: { 'x-request-id': requestId } },
   );
 }
 

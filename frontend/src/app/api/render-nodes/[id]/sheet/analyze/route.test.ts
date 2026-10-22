@@ -26,7 +26,7 @@ describe('POST /api/render-nodes/[id]/sheet/analyze', () => {
     mockRequest.mockResolvedValue({ kind: 'started', balance: 92 });
     const res = await call();
     expect(res.status).toBe(202);
-    expect(await res.json()).toEqual({ status: 'pending', charged: 8, balance: 92 });
+    expect(await res.json()).toEqual({ status: 'pending', charged: 2, balance: 92 });
     expect(mockRequest).toHaveBeenCalledWith({ nodeId: 'n1', userId: 'u1' });
   });
 
@@ -44,7 +44,7 @@ describe('POST /api/render-nodes/[id]/sheet/analyze', () => {
     });
     const res = await call();
     expect(res.status).toBe(402);
-    expect(await res.json()).toMatchObject({ error: 'INSUFFICIENT_CREDITS', cost: 8 });
+    expect(await res.json()).toMatchObject({ error: 'INSUFFICIENT_CREDITS', cost: 2 });
     mockRequest.mockResolvedValue({
       kind: 'refused',
       refusal: { ok: false, reason: 'NO_ACTIVE_TIER', balance: null },

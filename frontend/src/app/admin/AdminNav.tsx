@@ -16,6 +16,7 @@ import {
   Chat,
   Document,
   Image as ImageIcon,
+  Chart,
   User,
   Wallet,
 } from 'react-iconly';
@@ -40,6 +41,12 @@ const NAV: { href: string; icon: typeof Category; label: TranslationKey; short: 
       icon: Wallet,
       label: 'admin.navPayments',
       short: 'admin.navPayments',
+    },
+    {
+      href: '/admin/stock-kie',
+      icon: Chart,
+      label: 'admin.navKieStock',
+      short: 'admin.navKieStockShort',
     },
     {
       href: '/admin/journal',

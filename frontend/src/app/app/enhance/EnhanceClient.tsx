@@ -69,6 +69,7 @@ import type { RecentRenderCardData } from '../GenerationHome';
 import {
   creditErrorKey,
   plansReasonFor,
+  creditDetailOf,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -280,7 +281,10 @@ export function EnhanceClient({
     // 2026-10-15), before anything is uploaded.
     if (!surface.tier && !remaining) return chrome?.openPlans('noTier');
     if (remaining !== null && remaining < priceOf(engine, resolution))
-      return chrome?.openPlans('noCredits');
+      return chrome?.openPlans('noCredits', {
+        cost: priceOf(engine, resolution),
+        balance: remaining,
+      });
     setWorking(true);
     setResultId(null);
     let current = session;
@@ -334,7 +338,7 @@ export function EnhanceClient({
       const code = err instanceof RequestError ? err.code : '';
       const creditKey = creditErrorKey(err);
       const plansReason = plansReasonFor(err);
-      if (plansReason && chrome) chrome.openPlans(plansReason);
+      if (plansReason && chrome) chrome.openPlans(plansReason, creditDetailOf(err));
       else if (creditKey)
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       else if (code === 'CONTENT_FLAGGED') toast(t('enhance.refFlagged'), 'error');

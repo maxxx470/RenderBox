@@ -22,7 +22,7 @@ import {
   debitCredits,
   refundCredits,
 } from '@/lib/server/generation/tier-quota';
-import { ASSISTANT_COST } from '@/lib/pricing-tiers';
+import { ASSISTANT_COST } from '@/lib/provider-cost';
 
 export const runtime = 'nodejs';
 

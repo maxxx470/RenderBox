@@ -34,9 +34,10 @@ import { enforceGenerationRateLimit } from '@/lib/server/middleware/rate-limit-g
 import {
   creditRefusalResponse,
   debitCredits,
+  priceNotVerifiedResponse,
   refundCredits,
 } from '@/lib/server/generation/tier-quota';
-import { renderPriceFor } from '@/lib/server/generation/render-price';
+import { requestPrice } from '@/lib/provider-cost';
 import {
   generateRender,
   isEngineConfigured,
@@ -249,8 +250,8 @@ export async function POST(
     // Each variant is a distinct AI call and a distinct image: N variants
     // cost N times one image at the size asked for, priced by the server and
     // debited in full, atomically, before any engine call (tier-quota.ts).
-    const unitCost = await renderPriceFor(prisma, auth.user.sub, engine, resolution);
-    const cost = unitCost * variantCount;
+    const cost = requestPrice(engine, resolution, variantCount, version);
+    if (cost === null) return priceNotVerifiedResponse(ctx.requestId);
     const debit = await debitCredits(prisma, auth.user.sub, cost);
     if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);
 
@@ -412,7 +413,7 @@ export async function POST(
 
       // Only the variants ACTUALLY produced + stored are charged — one that
       // failed the engine call or the upload is refunded.
-      owed = unitCost * (variantCount - createdNodeIds.length);
+      owed = (cost / variantCount) * (variantCount - createdNodeIds.length);
 
       // A comment usually changes a material ("façade en bois"), so the
       // project's material memory is re-read from the result, as after a

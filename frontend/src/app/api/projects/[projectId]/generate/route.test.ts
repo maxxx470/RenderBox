@@ -364,17 +364,17 @@ describe('POST /api/projects/[projectId]/generate — credits', () => {
     expect(res.status).toBe(402);
     expect(await res.json()).toMatchObject({
       error: 'INSUFFICIENT_CREDITS',
-      cost: 50,
+      cost: 4,
       balance: 30,
     });
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
   });
 
-  it('debits 50 credits for a 1K / 2K render BEFORE the engine call, and keeps them once it is stored', async () => {
+  it('debits the grid price (Visio 2K: 6 credits) BEFORE the engine call, and keeps it once stored', async () => {
     const res = await POST(makeReq(validBody({ resolution: '2k' })), ctx());
     expect(res.status).toBe(201);
-    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 6);
     expect(mockDebitCredits.mock.invocationCallOrder[0]).toBeLessThan(
       mockGenerate.mock.invocationCallOrder[0]!,
     );
@@ -382,14 +382,36 @@ describe('POST /api/projects/[projectId]/generate — credits', () => {
     expect(((await res.json()) as { creditsBalance: number }).creditsBalance).toBe(2950);
   });
 
-  it('debits 70 credits for a 4K render', async () => {
-    const res = await POST(makeReq(validBody({ resolution: '4k' })), ctx());
+  it.each([
+    ['nanobanana', '1k', 4],
+    ['nanobanana', '2k', 6],
+    ['nanobanana', '4k', 9],
+    ['gpt_image', '1k', 6],
+    ['gpt_image', '2k', 10],
+    ['gpt_image', '4k', 16],
+  ])('debits exactly the grid: %s at %s = %i credits', async (engine, resolution, cost) => {
+    const res = await POST(makeReq(validBody({ engine, resolution })), ctx());
     expect(res.status).toBe(201);
-    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, cost);
   });
 
-  // 2026-10-18 (owner): an administrator pays what Kie charges for the model.
-  it("debits an administrator Kie's price for the engine and size, the role read from the database", async () => {
+  it('through Kie, the price is the version the render runs on', async () => {
+    vi.stubEnv('KIE_API_KEY', 'kie-test');
+    try {
+      await POST(makeReq(validBody({ resolution: '4k', version: 'visio-pro' })), ctx());
+      // The client's version is ignored: the default (Nano Banana 2.1) runs and is priced.
+      expect(mockGenerate).toHaveBeenCalledWith(
+        'nanobanana',
+        expect.objectContaining({ version: 'visio-2-1' }),
+      );
+      expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 9);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  // 2026-10-22 (owner): no admin price any more — everyone pays the grid.
+  it('an administrator pays the same grid price as everyone', async () => {
     prismaMock.user.findUnique.mockResolvedValue({
       id: USER_ID,
       email: 'owner@test.local',
@@ -405,20 +427,20 @@ describe('POST /api/projects/[projectId]/generate — credits', () => {
   it('prices the request itself: a cost sent by the client is ignored', async () => {
     const res = await POST(makeReq({ ...validBody({ resolution: '4k' }), cost: 1 }), ctx());
     expect(res.status).toBe(201);
-    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
+    expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 9);
   });
 
   it('refunds the credits when the engine call fails', async () => {
     mockGenerate.mockRejectedValueOnce(new Error('engine down'));
     const res = await POST(makeReq(validBody()), ctx());
     expect(res.status).toBe(502);
-    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 4);
   });
 
   it('refunds the credits when the render cannot be stored', async () => {
     prismaMock.$transaction.mockRejectedValueOnce(new Error('db down'));
     await expect(POST(makeReq(validBody({ resolution: '4k' })), ctx())).rejects.toThrow('db down');
-    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 9);
   });
 });
 
@@ -1015,7 +1037,7 @@ describe('POST /api/projects/[projectId]/generate — daily limit after the prec
       const res = await POST(makeReq(validBody()), ctx());
       expect(res.status).toBe(status);
       expect(mockEnforceGenerationRateLimit).toHaveBeenCalledTimes(1);
-      expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
+      expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 4);
     },
   );
 
@@ -1033,7 +1055,7 @@ describe('POST /api/projects/[projectId]/generate — daily limit after the prec
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
     // The credits were debited just before the limiter: they come back.
-    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 4);
   });
 
   it('two valid requests at once: each calls the limiter once, for its own user unit (mocked, not real Redis)', async () => {
@@ -1069,7 +1091,7 @@ describe('POST /api/projects/[projectId]/generate — engine deadline (étape 3B
     });
     expect(res.headers.get('x-request-id')).toBeTruthy();
     expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
-    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 4);
     expect(mockDetectAndMerge).not.toHaveBeenCalled();
   });
 

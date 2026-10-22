@@ -16,7 +16,8 @@ import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
 import type { GenerateRenderInput, GenerateRenderOutput } from './types';
 import { ENGINE_VERSIONS, kieRatioFor, type EngineVersionKey } from '../engine-versions';
-import { RESOLUTIONS } from '../resolutions';
+import { DEFAULT_RESOLUTION, RESOLUTIONS } from '../resolutions';
+import { KIE_PRICES, normalizeKieCredits } from '@/lib/provider-cost';
 import { log } from '@/lib/server/observability/log';
 
 const API = 'https://api.kie.ai/api/v1/jobs';
@@ -237,7 +238,12 @@ export async function generateWithKie(
   const image = await fetch(resultUrl, signal ? { signal } : {});
   if (!image.ok) throw new KieError(`kie download: HTTP ${image.status}`, image.status, 'download');
   const mimeType = image.headers.get('content-type')?.split(';')[0]?.trim() || 'image/png';
-  const credits = Number(record.creditsConsumed);
+  // Kie's unit changed (tenths of a credit until 2026-10-19, credits after):
+  // read against the grid's price, so providerCredits is always in credits.
+  const credits = normalizeKieCredits(
+    Number(record.creditsConsumed),
+    KIE_PRICES[versionKey][input.resolution ?? DEFAULT_RESOLUTION],
+  );
   return {
     imageBuffer: Buffer.from(await image.arrayBuffer()),
     mimeType: mimeType.startsWith('image/') ? mimeType : 'image/png',

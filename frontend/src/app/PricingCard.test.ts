@@ -55,13 +55,13 @@ describe('PricingCard — one card for the landing and the Abonnement page', () 
   it('prints the figures of pricing-tiers.ts: price, dollar equivalent, credits with a thousands separator', () => {
     const [decouverte, standard, pro] = PRICING_TIERS;
     expect(cardText(decouverte!, 'fr', 'band')).toContain('6 000 FCFA');
-    expect(cardText(decouverte!, 'fr', 'band')).toContain('1 000 crédits / mois');
-    expect(cardText(standard!, 'fr', 'band')).toContain('3 000 crédits / mois');
-    expect(cardText(pro!, 'fr', 'band')).toContain('8 000 crédits / mois');
+    expect(cardText(decouverte!, 'fr', 'band')).toContain('500 crédits / mois');
+    expect(cardText(standard!, 'fr', 'band')).toContain('1 500 crédits / mois');
+    expect(cardText(pro!, 'fr', 'band')).toContain('4 000 crédits / mois');
     expect(cardText(pro!, 'fr', 'band')).toContain('36 000 FCFA');
     expect(cardText(pro!, 'fr', 'band')).toContain('≈ 58 $ US');
-    expect(cardText(decouverte!, 'en', 'band')).toContain('1,000 credits / month');
-    expect(cardText(pro!, 'en', 'band')).toContain('8,000 credits / month');
+    expect(cardText(decouverte!, 'en', 'band')).toContain('500 credits / month');
+    expect(cardText(pro!, 'en', 'band')).toContain('4,000 credits / month');
     expect(cardText(pro!, 'en', 'band')).toContain('≈ $58 USD');
   });
 

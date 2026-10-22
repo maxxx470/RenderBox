@@ -29,7 +29,7 @@ import { InstallAppCard } from './InstallAppCard';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/api';
-import { RENDER_COST } from '@/lib/pricing-tiers';
+import { imageRange } from '@/lib/provider-cost';
 import { COUNTRY_SUGGESTIONS_FR, MAIN_USES, PROFESSIONS, TEAM_SIZES } from '@/lib/onboarding';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
@@ -481,7 +481,8 @@ function PlanCard({
         {endDate ? <span>{t('parametres.planUntil', { date: endDate })}</span> : <span />}
         <span>
           {t('parametres.planImages', {
-            count: Math.floor(left / RENDER_COST).toLocaleString(intl),
+            min: imageRange(left).min.toLocaleString(intl),
+            max: imageRange(left).max.toLocaleString(intl),
           })}
         </span>
       </div>

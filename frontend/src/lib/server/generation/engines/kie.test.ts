@@ -97,11 +97,7 @@ function created() {
 describe('generateWithKie', () => {
   it('uploads source then references, creates the task, polls until success, downloads the image', async () => {
     const out = await run('visio-2-1');
-    expect(out).toEqual({
-      imageBuffer: Buffer.from([1, 2, 3]),
-      mimeType: 'image/png',
-      providerCredits: 18,
-    });
+    expect(out).toMatchObject({ imageBuffer: Buffer.from([1, 2, 3]), mimeType: 'image/png' });
 
     const body = created();
     expect(body.model).toBe('nano-banana-2-1');
@@ -226,7 +222,22 @@ describe('generateWithKie', () => {
 });
 
 describe('Kie cost and balance (the API usage in /admin)', () => {
-  it('returns what Kie charged for the image', async () => {
+  it('returns what Kie charged for the image, in credits', async () => {
+    const out = await run('visio-pro');
+    expect(out.providerCredits).toBe(18);
+  });
+
+  it('reads the tenths Kie answered until 2026-10-19 as credits (180 for an 18-credit image)', async () => {
+    records = [
+      {
+        code: 200,
+        data: {
+          state: 'success',
+          resultJson: JSON.stringify({ resultUrls: ['https://files.kie.test/out.png'] }),
+          creditsConsumed: 180,
+        },
+      },
+    ];
     const out = await run('visio-pro');
     expect(out.providerCredits).toBe(18);
   });

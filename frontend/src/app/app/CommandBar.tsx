@@ -154,9 +154,10 @@ export function Pinned({ image, removeLabel }: { image: PinnedImage; removeLabel
  * as the accessible name and the tooltip.
  *
  * Since 2026-10-13 (credits) the tile also shows what the click will cost,
- * before it: a small badge along its bottom edge ("50 crédits" on a computer,
+ * before it: a small badge along its bottom edge ("6 crédits" on a computer,
  * the figure alone on the phone's 36px tile), and the name and tooltip read
- * "Générer · 50 crédits". Display only: the server prices the request itself.
+ * "Générer · Coût : 6 crédits" — the grid's price of the engine at that size
+ * (lib/provider-cost.ts). Display only: the server prices the request itself.
  */
 export function SendButton({
   big,

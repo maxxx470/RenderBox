@@ -27,7 +27,10 @@ describe(`migration ${NAME}`, () => {
   it('sorts after every existing migration folder', () => {
     const sorted = [...folders].sort(byteOrder);
     // Only 9_phase9g_render_sheet (2026-10-19) may come after it.
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9g_render_sheet']);
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
+      '9_phase9g_render_sheet',
+      '9_phase9h_kie_credits',
+    ]);
   });
 
   it('only adds the nullable RenderNode.providerCredits column and changes no data', () => {

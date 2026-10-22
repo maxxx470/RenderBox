@@ -26,9 +26,9 @@ const statements = sql
   .filter(Boolean);
 
 describe(`migration ${NAME}`, () => {
-  it('sorts after every existing migration folder', () => {
+  it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
-    expect(sorted[sorted.length - 1]).toBe(NAME);
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9h_kie_credits']);
   });
 
   it('only adds the nullable code and sheet columns and a unique index on the code', () => {

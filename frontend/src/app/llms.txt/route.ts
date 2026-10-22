@@ -5,7 +5,8 @@
 export const runtime = 'nodejs';
 export const dynamic = 'force-static';
 
-import { PRICING_TIERS, RENDER_COST, RENDER_COST_4K } from '@/lib/pricing-tiers';
+import { PRICING_TIERS } from '@/lib/pricing-tiers';
+import { describePrices, SHEET_COST } from '@/lib/provider-cost';
 import { TIKTOK_ACCOUNT, YOUTUBE_CHANNEL } from '@/lib/community-links';
 import { dictionaries } from '@/lib/i18n/dictionaries';
 import { localizedPath, SITE_URL } from '@/lib/seo';
@@ -50,7 +51,7 @@ function body(): string {
 ## Pricing
 
 ${plans}
-- One image costs ${RENDER_COST} credits at 1K or 2K and ${RENDER_COST_4K} credits at 4K. Unused credits expire after 30 days. No subscription renews by itself.
+- One credit is one credit of the AI provider: each image costs exactly what the engine charges at the size asked for — ${describePrices('en')}. A materials sheet costs ${SHEET_COST} credits. Unused credits expire after 30 days. No subscription renews by itself.
 
 ## Pages
 

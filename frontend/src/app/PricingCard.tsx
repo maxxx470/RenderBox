@@ -17,6 +17,7 @@ import { TickSquare } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { PLAN_FEATURES, type PricingTier, type PricingTierId } from '@/lib/pricing-tiers';
+import { imageRange } from '@/lib/provider-cost';
 import { localPrice } from '@/lib/local-currency';
 import { useVisitorCountry } from '@/lib/visitor-country';
 
@@ -120,6 +121,12 @@ export function PricingCard({
               count: tier.creditsPerMonth.toLocaleString(intl),
             })}
           </span>
+        </CheckItem>
+        <CheckItem light={light}>
+          {t('landing.pricingFeatureImages', {
+            min: imageRange(tier.creditsPerMonth).min.toLocaleString(intl),
+            max: imageRange(tier.creditsPerMonth).max.toLocaleString(intl),
+          })}
         </CheckItem>
         {PLAN_FEATURES.map((k) => (
           <CheckItem key={k} light={light}>

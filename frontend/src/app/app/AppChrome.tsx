@@ -33,7 +33,7 @@ import type { PricingTierId } from '@/lib/pricing-tiers';
 import { AppTopbar } from './AppTopbar';
 import { HomeSidebar, type RailPage } from './HomeSidebar';
 import { MobileNav } from './MobileNav';
-import { PlansDialog, type PlansReason } from './PlansDialog';
+import { PlansDialog, type PlansReason, type PlansDetail } from './PlansDialog';
 import { isPlaceholderAccount } from '@/lib/account-label';
 import type { AppMode } from './CommandBar';
 import { SIDEBAR_COOKIE } from './sidebar-cookie';
@@ -73,7 +73,7 @@ interface ChromeContext {
   /** Where a project's render tree is portalled into the rail. */
   treeSlot: HTMLElement | null;
   /** Opens « Choisissez une formule » over the page (PlansDialog). */
-  openPlans: (reason: PlansReason) => void;
+  openPlans: (reason: PlansReason, detail?: PlansDetail) => void;
   /** The engines' versions run (Kie configured): the bars show their chip. */
   versionsEnabled: boolean;
   /** The version chosen for each engine, kept across pages and visits. */
@@ -153,8 +153,12 @@ export function AppChrome({
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   // The rail entry just clicked, shown as current before the page arrives.
   const [pendingPage, setPendingPage] = useState<RailPage | null>(null);
-  const [plans, setPlans] = useState<PlansReason | null>(null);
-  const openPlans = useCallback((reason: PlansReason) => setPlans(reason), []);
+  const [plans, setPlans] = useState<{ reason: PlansReason; detail?: PlansDetail } | null>(null);
+  const openPlans = useCallback(
+    (reason: PlansReason, detail?: PlansDetail) =>
+      setPlans(detail ? { reason, detail } : { reason }),
+    [],
+  );
   const closePlans = useCallback(() => setPlans(null), []);
   // Kept on the account since 2026-10-16 (owner: « liée au compte »), so the
   // choice follows the user to every device; the browser's localStorage held
@@ -250,7 +254,8 @@ export function AppChrome({
       </div>
       {plans && (
         <PlansDialog
-          reason={plans}
+          reason={plans.reason}
+          detail={plans.detail}
           currentTier={quota.tier}
           demo={isPlaceholderAccount(userEmail)}
           onClose={closePlans}

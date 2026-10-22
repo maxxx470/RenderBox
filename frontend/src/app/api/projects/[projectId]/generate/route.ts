@@ -20,9 +20,10 @@ import { enforceGenerationRateLimit } from '@/lib/server/middleware/rate-limit-g
 import {
   creditRefusalResponse,
   debitCredits,
+  priceNotVerifiedResponse,
   refundCredits,
 } from '@/lib/server/generation/tier-quota';
-import { renderPriceFor } from '@/lib/server/generation/render-price';
+import { requestPrice } from '@/lib/provider-cost';
 import {
   generateRender,
   isEngineConfigured,
@@ -174,7 +175,8 @@ export async function POST(
     // for, priced by the server (never by the client), debited atomically
     // BEFORE the engine call (tier-quota.ts). Without a plan or enough
     // credits the request stops here, before taking an hourly unit.
-    const cost = await renderPriceFor(prisma, auth.user.sub, engine, resolution);
+    const cost = requestPrice(engine, resolution, 1, version);
+    if (cost === null) return priceNotVerifiedResponse(ctx.requestId);
     const debit = await debitCredits(prisma, auth.user.sub, cost);
     if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);
 

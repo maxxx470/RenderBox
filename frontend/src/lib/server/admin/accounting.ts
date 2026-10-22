@@ -1,6 +1,6 @@
 import 'server-only';
 import type { PrismaClient } from '@prisma/client';
-import { KIE_USD_PER_CREDIT, USD_PER_EUR, XOF_PER_USD } from '@/lib/provider-cost';
+import { MAKETOU_FEE_RATE, XOF_PER_CREDIT, XOF_PER_USD } from '@/lib/provider-cost';
 
 // The accounts of the back-office (2026-10-17, owner: « mon chiffre
 // d'affaires, ce que je gagne, tous les détails sur ce que je dépense … si je
@@ -13,10 +13,9 @@ import { KIE_USD_PER_CREDIT, USD_PER_EUR, XOF_PER_USD } from '@/lib/provider-cos
 // Not counted, and said on the page: images made on the direct Google /
 // OpenAI keys (their price is billed by those accounts, not recorded here).
 
-// The dollar in FCFA and Kie's price live in provider-cost.ts (2026-10-18).
-export { USD_PER_EUR, XOF_PER_USD };
-/** Maketou's fee on each cart created through its API (payments/maketou.ts). */
-export const MAKETOU_FEE_RATE = 0.08;
+// The dollar in FCFA (600, fixed by the owner on 2026-10-22), a credit in
+// FCFA (3) and Maketou's fee live in provider-cost.ts.
+export { MAKETOU_FEE_RATE, XOF_PER_USD };
 
 /** What the owner pays every month whatever the sales (hosting, domain,
  *  tools), in dollars, from the month it started (YYYY-MM). Empty until the
@@ -120,7 +119,7 @@ export async function computeAccounting(
     const l = at(monthKey(n.createdAt));
     if (n.providerCredits !== null) {
       l.kieCredits += n.providerCredits;
-      l.kieXof += n.providerCredits * KIE_USD_PER_CREDIT * XOF_PER_USD;
+      l.kieXof += n.providerCredits * XOF_PER_CREDIT;
       l.kieImages++;
     } else if (!n.engineVersion && n.engine) {
       l.directImages++;

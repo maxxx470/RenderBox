@@ -106,6 +106,7 @@ model User {
   adminActions      AdminAction[]
   projects          Project[]
   supportMessages   SupportMessage[]
+  kieTopUps         KieTopUp[]
 
   @@index([email])
   @@index([role])
@@ -403,6 +404,9 @@ model RenderNode {
   // What Kie charged for this image, in Kie credits (its recordInfo
   // `creditsConsumed`; 2026-10-17, owner: the API usage in /admin).
   // NULL = not made through Kie (an upload, the direct engines, older images).
+  // Kie answered in tenths of a credit until 2026-10-19: those rows were
+  // divided by 10 (migration 9_phase9h_kie_credits), and engines/kie.ts reads
+  // the unit against the price grid (normalizeKieCredits).
   providerCredits Float?
   // 2026-10-19 (owner) — the image's public code (« RP-7K4M2Q »), the same on
   // the whole site whoever owns the image: pasted back in the command bar it
@@ -542,4 +546,22 @@ model Generation {
   createdAt         DateTime   @default(now())
 
   @@index([engine, createdAt])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Admin — Kie API top-up history (Phase 2, owner 2026-10-22; migration
+// 9_phase9h_kie_credits). What an admin recorded paying on kie.ai, for the
+// history only: Kie's balance is always read live, never derived from this.
+// ───────────────────────────────────────────────────────────────────────
+model KieTopUp {
+  id        String   @id @default(cuid())
+  amountUsd Float
+  credits   Float
+  note      String?
+  adminId   String?
+  admin     User?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([adminId])
 }

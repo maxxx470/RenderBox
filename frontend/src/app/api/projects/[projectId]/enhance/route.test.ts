@@ -362,7 +362,7 @@ describe('POST /api/projects/[projectId]/enhance — engine deadline (étape 3B.
       message: 'Generation timed out',
     });
     // Debited before the engine, given back: nothing was produced.
-    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 50);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 4);
   });
 
   it('keeps 502 GENERATION_FAILED for any other engine error', async () => {
@@ -374,22 +374,33 @@ describe('POST /api/projects/[projectId]/enhance — engine deadline (étape 3B.
 });
 
 describe('POST /api/projects/[projectId]/enhance — credits', () => {
-  it('debits one image at the size produced, before the engine: 50 at 1K / 2K, 70 at 4K', async () => {
+  it('debits one image at the grid price, before the engine: Visio 6 at 2K, 9 at 4K', async () => {
     expect((await POST(makeReq(baseFields({ resolution: '2k' })), ctx())).status).toBe(201);
-    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 50);
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 6);
     expect(mockDebitCredits.mock.invocationCallOrder[0]).toBeLessThan(
       mockGenerate.mock.invocationCallOrder[0]!,
     );
     expect((await POST(makeReq(baseFields({ resolution: '4k' })), ctx())).status).toBe(201);
-    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 70);
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 9);
     expect(mockRefundCredits).not.toHaveBeenCalled();
+  });
+
+  it('Pixel IA is priced at its own grid: 6 / 10 / 16', async () => {
+    for (const [resolution, cost] of [
+      ['1k', 6],
+      ['2k', 10],
+      ['4k', 16],
+    ] as const) {
+      await POST(makeReq(baseFields({ engine: 'gpt_image', resolution })), ctx());
+      expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, cost);
+    }
   });
 
   it('402s with INSUFFICIENT_CREDITS before any engine call', async () => {
     mockDebitCredits.mockResolvedValue({ ok: false, reason: 'INSUFFICIENT_CREDITS', balance: 20 });
     const res = await POST(makeReq(baseFields()), ctx());
     expect(res.status).toBe(402);
-    expect(await res.json()).toMatchObject({ error: 'INSUFFICIENT_CREDITS', cost: 50 });
+    expect(await res.json()).toMatchObject({ error: 'INSUFFICIENT_CREDITS', cost: 4, balance: 20 });
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
   });
@@ -398,6 +409,6 @@ describe('POST /api/projects/[projectId]/enhance — credits', () => {
     mockGenerate.mockRejectedValueOnce(new Error('engine down'));
     const res = await POST(makeReq(baseFields({ resolution: '4k' })), ctx());
     expect(res.status).toBe(502);
-    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 70);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 9);
   });
 });

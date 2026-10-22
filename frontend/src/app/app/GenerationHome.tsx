@@ -24,6 +24,7 @@ import { getCsrfTokenForUpload } from '@/lib/csrf-client';
 import {
   creditErrorKey,
   plansReasonFor,
+  creditDetailOf,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -327,7 +328,7 @@ export function GenerationHome({
     const plansReason = plansReasonFor(err);
     if (plansReason && chrome) {
       // Refused for want of a plan or credits: the plans, over the page.
-      chrome.openPlans(plansReason);
+      chrome.openPlans(plansReason, creditDetailOf(err));
     } else if (creditKey) {
       toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
     } else if (isServiceNotConfigured(err)) {
@@ -763,7 +764,8 @@ export function GenerationHome({
               mode === 'generate' ? 1 : variantCount,
             );
             if (!tier && !remaining) return chrome?.openPlans('noTier');
-            if (remaining !== null && remaining < cost) return chrome?.openPlans('noCredits');
+            if (remaining !== null && remaining < cost)
+              return chrome?.openPlans('noCredits', { cost, balance: remaining });
             if (mode === 'generate') void generate();
             else void runEdit();
           }}

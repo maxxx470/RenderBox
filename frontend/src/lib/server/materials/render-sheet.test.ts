@@ -213,13 +213,13 @@ describe('requestSheetAnalysis — asked when the sheet is copied, paid by the u
     );
   });
 
-  it('charges 8 credits to the user, claims the sheet once and analyses in the background', async () => {
+  it('charges 2 credits to the user, claims the sheet once and analyses in the background', async () => {
     prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
     prismaMock.renderNode.updateMany.mockResolvedValue({ count: 1 } as never);
     mockAnalyze.mockResolvedValue({ kind: 'lines', lines: LINES });
     const out = await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' });
     expect(out).toEqual({ kind: 'started', balance: 92 });
-    expect(mockDebit).toHaveBeenCalledWith(expect.anything(), 'u1', 8);
+    expect(mockDebit).toHaveBeenCalledWith(expect.anything(), 'u1', 2);
     expect(prismaMock.renderNode.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'n2', sheet: { path: ['status'], equals: 'idle' } },
@@ -239,7 +239,7 @@ describe('requestSheetAnalysis — asked when the sheet is copied, paid by the u
     await vi.waitFor(() =>
       expect(prismaMock.user.update).toHaveBeenCalledWith({
         where: { id: 'u1' },
-        data: { creditsBalance: { increment: 8 } },
+        data: { creditsBalance: { increment: 2 } },
       }),
     );
   });
@@ -299,7 +299,7 @@ describe('requestSheetAnalysis — asked when the sheet is copied, paid by the u
 describe('failAndRefund and recoverStalledSheet — a failed paid analysis costs nothing', () => {
   const PENDING = { ...READY, status: 'pending', lines: [], startedAt: Date.now() };
 
-  it('turns the sheet "failed" and gives the 8 credits back together, once', async () => {
+  it('turns the sheet "failed" and gives the 2 credits back together, once', async () => {
     prismaMock.renderNode.findUnique.mockResolvedValue({ sheet: PENDING } as never);
     prismaMock.renderNode.updateMany.mockResolvedValue({ count: 1 } as never);
     expect(await failAndRefund('n2', 'u1', 'timeout')).toBe(true);

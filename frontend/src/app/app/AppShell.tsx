@@ -46,6 +46,7 @@ import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './Comm
 import {
   creditErrorKey,
   plansReasonFor,
+  creditDetailOf,
   RequestError,
   readErrorCode,
   isGenerationTimeout,
@@ -378,7 +379,7 @@ export function AppShell({
       const creditKey = creditErrorKey(err);
       const plansReason = plansReasonFor(err);
       if (plansReason && chrome) {
-        chrome.openPlans(plansReason);
+        chrome.openPlans(plansReason, creditDetailOf(err));
       } else if (creditKey) {
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       } else if (isServiceNotConfigured(err)) {
@@ -468,7 +469,7 @@ export function AppShell({
       const creditKey = creditErrorKey(err);
       const plansReason = plansReasonFor(err);
       if (plansReason && chrome) {
-        chrome.openPlans(plansReason);
+        chrome.openPlans(plansReason, creditDetailOf(err));
       } else if (creditKey) {
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       } else if (isServiceNotConfigured(err)) {
@@ -497,7 +498,8 @@ export function AppShell({
       mode === 'generate' ? 1 : variantCount,
     );
     if (!tier && !remaining) return chrome?.openPlans('noTier');
-    if (remaining !== null && remaining < cost) return chrome?.openPlans('noCredits');
+    if (remaining !== null && remaining < cost)
+      return chrome?.openPlans('noCredits', { cost, balance: remaining });
     if (mode === 'generate') void handleGenerate();
     else void handleEditSubmit();
   }

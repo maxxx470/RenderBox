@@ -17,14 +17,21 @@ import { useToast } from '@/contexts/ToastContext';
 import { PricingCard } from '../PricingCard';
 
 export type PlansReason = 'noTier' | 'noCredits';
+/** What the refused request cost and what the account had (402). */
+export interface PlansDetail {
+  cost: number;
+  balance: number | null;
+}
 
 export function PlansDialog({
   reason,
+  detail,
   currentTier,
   demo,
   onClose,
 }: {
   reason: PlansReason;
+  detail?: PlansDetail | undefined;
   currentTier: PricingTierId | null;
   /** Free-access mode: no real account to charge (see TarifsClient). */
   demo: boolean;
@@ -88,6 +95,14 @@ export function PlansDialog({
             <p className="mt-1 text-[13.5px] text-[#6B6878]">
               {t(reason === 'noTier' ? 'plans.reasonNoTier' : 'plans.reasonNoCredits')}
             </p>
+            {reason === 'noCredits' && detail ? (
+              <p className="mt-1 font-[family-name:var(--font-mono)] text-[12.5px] font-medium text-[#C21F33]">
+                {t('plans.costLine', {
+                  cost: detail.cost.toLocaleString(),
+                  balance: (detail.balance ?? 0).toLocaleString(),
+                })}
+              </p>
+            ) : null}
           </div>
           <button
             type="button"

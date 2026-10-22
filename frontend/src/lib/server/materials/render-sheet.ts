@@ -21,7 +21,7 @@ import { prisma } from '@/lib/server/prisma';
 import { log } from '@/lib/server/observability/log';
 import { analyzeRenderSheet, sheetAnalysisConfigured } from '@/lib/server/ai/vision-sheet';
 import { debitCredits, type DebitResult } from '@/lib/server/generation/tier-quota';
-import { SHEET_COST } from '@/lib/pricing-tiers';
+import { SHEET_COST } from '@/lib/provider-cost';
 import {
   CODE_ALPHABET,
   IMAGE_CODE_RE,

@@ -22,7 +22,8 @@ import { Danger, Wallet } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/lib/api';
-import { PRICING_TIERS, RENDER_COST, type PricingTierId } from '@/lib/pricing-tiers';
+import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
+import { imageRange } from '@/lib/provider-cost';
 import { PricingCard, TIER_NAME_KEY } from '../../PricingCard';
 import { AppSurface, type AppSurfaceProps } from '../AppSurface';
 
@@ -87,8 +88,8 @@ export function TarifsClient({
     : null;
   const credits = (n: number) =>
     t(n === 1 ? 'tarifs.creditsOne' : 'tarifs.creditsMany', { count: n.toLocaleString(intl) });
-  // Below one 1K / 2K render, nothing can be generated any more.
-  const empty = remaining < RENDER_COST;
+  // Below the cheapest image of the grid, nothing can be generated any more.
+  const empty = imageRange(remaining).max < 1;
 
   return (
     <AppSurface

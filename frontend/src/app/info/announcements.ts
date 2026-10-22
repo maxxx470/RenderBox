@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'credits-engine-price',
+    date: '2026-10-22',
+    kind: 'shipped',
+    title: {
+      fr: 'Chaque image coûte le prix exact du moteur',
+      en: 'Every image costs the engine’s exact price',
+    },
+    body: {
+      fr: 'Les crédits suivent désormais le prix réel de chaque moteur et de chaque taille : une image Visio coûte 4 crédits en 1K, 6 en 2K et 9 en 4K ; une image Pixel IA 6, 10 et 16. Les formules donnent 500, 1 500 et 4 000 crédits, aux mêmes prix, et chaque carte indique combien d’images cela représente. Le coût s’affiche avant chaque génération, et les crédits sont rendus si elle échoue. Une fiche de matériaux coûte 2 crédits.',
+      en: 'Credits now follow the real price of each engine and size: a Visio image costs 4 credits at 1K, 6 at 2K and 9 at 4K; a Pixel AI image 6, 10 and 16. The plans give 500, 1,500 and 4,000 credits at the same prices, and each card shows how many images that makes. The cost shows before every generation, and the credits come back if it fails. A materials sheet costs 2 credits.',
+    },
+  },
+  {
     id: 'install-app',
     date: '2026-10-20',
     kind: 'shipped',

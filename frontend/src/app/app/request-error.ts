@@ -1,3 +1,4 @@
+import type { PlansDetail } from './PlansDialog';
 // Error codes for the raw-fetch (FormData) calls — upload and edit — which
 // bypass the api() wrapper and so never get an ApiError.
 //
@@ -105,6 +106,15 @@ export function creditErrorKey(
   if (code === 'NO_ACTIVE_TIER' || code === 'TIER_EXPIRED') return 'app.noActiveTierError';
   if (code === 'INSUFFICIENT_CREDITS') return 'app.insufficientCreditsError';
   return null;
+}
+
+/** The cost and the balance a credit refusal carries (402 INSUFFICIENT_CREDITS
+ *  answers both), for the plans dialog's « Coût : X crédits » line. */
+export function creditDetailOf(err: unknown): PlansDetail | undefined {
+  if (!(err instanceof ApiError)) return undefined;
+  const { cost, balance } = err.body as { cost?: unknown; balance?: unknown };
+  if (typeof cost !== 'number') return undefined;
+  return { cost, balance: typeof balance === 'number' ? balance : null };
 }
 
 /** The same refusal, as the reason the plans dialog opens with (owner,

@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { PRICING_TIERS, RENDER_COST } from '@/lib/pricing-tiers';
+import { PRICING_TIERS } from '@/lib/pricing-tiers';
 
 // Package root (frontend/), as in observability/runtime-enforcement.test.ts.
 const ROOT = resolve(__dirname, '../../../..');
@@ -40,6 +40,7 @@ describe(`migration ${NAME}`, () => {
       '9_phase9e_user_info_seen',
       '9_phase9f_render_provider_credits',
       '9_phase9g_render_sheet',
+      '9_phase9h_kie_credits',
     ]);
     expect(sorted.indexOf('20260829225539_tier_quota')).toBeLessThan(sorted.indexOf(NAME));
   });
@@ -56,7 +57,7 @@ describe(`migration ${NAME}`, () => {
   it('converts the renders left on an active plan at 50 credits each, using the old quotas', () => {
     const update = statements.find((s) => s.startsWith('UPDATE'));
     expect(update).toBeDefined();
-    expect(RENDER_COST).toBe(50);
+    // The 2026-10-13 rate, frozen in that migration (the grid replaced it on 2026-10-22).
     expect(update).toContain('SET "creditsBalance" = 50 * GREATEST( 0,');
     expect(update).toContain(`WHEN 'decouverte' THEN 30`);
     expect(update).toContain(`WHEN 'standard' THEN 100`);

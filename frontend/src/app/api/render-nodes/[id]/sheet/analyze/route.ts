@@ -14,7 +14,7 @@ import { requireAuth } from '@/lib/server/middleware';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 import { creditRefusalResponse } from '@/lib/server/generation/tier-quota';
 import { requestSheetAnalysis } from '@/lib/server/materials/render-sheet';
-import { SHEET_COST } from '@/lib/pricing-tiers';
+import { SHEET_COST } from '@/lib/provider-cost';
 
 export async function POST(
   req: NextRequest,

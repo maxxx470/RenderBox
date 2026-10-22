@@ -120,7 +120,7 @@ describe('getCreditStatus', () => {
       engineVersions: { nanobanana: 'visio-2-1', gpt_image: 'pixel-2-5' },
       infoSince: null,
       tier: 'standard',
-      max: 3000,
+      max: 1500,
       remaining: 2350,
       // 30 days after tierPeriodStart — shown as the credits' expiry date.
       periodEndsAt: new Date('2026-07-01T00:00:00.000Z'),
@@ -131,30 +131,30 @@ describe('getCreditStatus', () => {
 
 describe('debitCredits', () => {
   it('debits atomically: one conditional UPDATE that only passes if the balance covers the cost', async () => {
-    prismaMock.user.findUnique.mockResolvedValueOnce(activeUser('decouverte', 1000));
+    prismaMock.user.findUnique.mockResolvedValueOnce(activeUser('decouverte', 500));
     prismaMock.user.updateMany.mockResolvedValueOnce({ count: 1 });
 
-    expect(await debitCredits(prismaMock, 'user-1', 50)).toEqual({ ok: true, balance: 950 });
+    expect(await debitCredits(prismaMock, 'user-1', 6)).toEqual({ ok: true, balance: 494 });
     expect(prismaMock.user.updateMany).toHaveBeenCalledWith({
       where: {
         id: 'user-1',
         currentTier: 'decouverte',
         tierPeriodStart: { gt: CUTOFF },
-        creditsBalance: { gte: 50 },
+        creditsBalance: { gte: 6 },
       },
-      data: { creditsBalance: { decrement: 50 } },
+      data: { creditsBalance: { decrement: 6 } },
     });
     // Never a read-then-write: no plain update of the balance.
     expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
-  it('a 4K render costs 70', async () => {
-    prismaMock.user.findUnique.mockResolvedValueOnce(activeUser('pro', 8000));
+  it('debits exactly the amount it is given, no rounding and no minimum (Pixel IA 4K: 16)', async () => {
+    prismaMock.user.findUnique.mockResolvedValueOnce(activeUser('pro', 4000));
     prismaMock.user.updateMany.mockResolvedValueOnce({ count: 1 });
 
-    expect(await debitCredits(prismaMock, 'user-1', 70)).toEqual({ ok: true, balance: 7930 });
+    expect(await debitCredits(prismaMock, 'user-1', 16)).toEqual({ ok: true, balance: 3984 });
     expect(prismaMock.user.updateMany.mock.calls[0]?.[0]?.data).toEqual({
-      creditsBalance: { decrement: 70 },
+      creditsBalance: { decrement: 16 },
     });
   });
 
@@ -268,7 +268,7 @@ describe('activateTier', () => {
     await activateTier(prismaMock, 'user-1', 'pro');
     expect(prismaMock.user.updateMany).toHaveBeenCalledWith({
       where: { id: 'user-1', currentTier: null },
-      data: { currentTier: 'pro', tierPeriodStart: NOW, creditsBalance: { increment: 8000 } },
+      data: { currentTier: 'pro', tierPeriodStart: NOW, creditsBalance: { increment: 4000 } },
     });
     expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
@@ -279,7 +279,28 @@ describe('activateTier', () => {
     await activateTier(prismaMock, 'user-1', 'decouverte');
     expect(prismaMock.user.update).toHaveBeenCalledWith({
       where: { id: 'user-1' },
-      data: { currentTier: 'decouverte', tierPeriodStart: NOW, creditsBalance: 1000 },
+      data: { currentTier: 'decouverte', tierPeriodStart: NOW, creditsBalance: 500 },
+    });
+  });
+
+  it.each([
+    ['decouverte', 500],
+    ['standard', 1500],
+    ['pro', 4000],
+  ] as const)('buying %s gives %i credits (first plan and renewal)', async (tier, credits) => {
+    prismaMock.user.updateMany.mockResolvedValueOnce({ count: 1 } as never);
+    await activateTier(prismaMock, 'user-1', tier);
+    expect(prismaMock.user.updateMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: { currentTier: tier, tierPeriodStart: NOW, creditsBalance: { increment: credits } },
+      }),
+    );
+    prismaMock.user.updateMany.mockResolvedValueOnce({ count: 0 } as never);
+    prismaMock.user.update.mockResolvedValueOnce({} as never);
+    await activateTier(prismaMock, 'user-1', tier);
+    expect(prismaMock.user.update).toHaveBeenLastCalledWith({
+      where: { id: 'user-1' },
+      data: { currentTier: tier, tierPeriodStart: NOW, creditsBalance: credits },
     });
   });
 });
