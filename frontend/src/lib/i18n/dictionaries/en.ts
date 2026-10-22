@@ -907,6 +907,17 @@ const en: Record<keyof typeof fr, string> = {
   'parametres.planImages': '≈ {count} images',
   'parametres.managePlan': 'Manage my plan',
   'parametres.choosePlan': 'Choose a plan',
+  'parametres.installTitle': 'Install the app',
+  'parametres.installBody':
+    'Add RenderPro to your device: it opens in its own window, like an app, with its icon.',
+  'parametres.installButton': 'Install RenderPro',
+  'parametres.installDone': 'RenderPro is installed on this device.',
+  'parametres.installIos':
+    'In Safari, tap the Share button, then “Add to Home Screen”: RenderPro will open like an app, with its icon.',
+  'parametres.installMacSafari':
+    'In Safari, open the File menu then “Add to Dock”: RenderPro will open in its own window.',
+  'parametres.installOther':
+    'In your browser’s menu, choose “Install app” or “Add to Home screen”. Chrome, Edge, Safari and Samsung Internet offer it.',
   'parametres.securityTitle': 'Sign-in and security',
   'parametres.emailLabel': 'Email',
   'parametres.googleSub': 'One-click sign-in',

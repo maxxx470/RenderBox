@@ -531,7 +531,7 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     );
     expect(res.status).toBe(201);
     expect(engineInput().prompt).toBe(sent('nuit_ext'));
-    expect(engineInput().prompt).toContain('2800 K');
+    expect(engineInput().prompt).toContain('exterior night photograph');
   });
 
   it("exterior day's sky: lightly hazy by default, direct sun when asked (D2)", async () => {
@@ -540,7 +540,7 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     mockGenerate.mockClear();
     await POST(makeReq(validBody({ template: 'jour_ext', sky: 'sun' })), ctx());
     expect(engineInput().prompt).toBe(sent('jour_ext', [], undefined, { sky: 'sun' }));
-    expect(engineInput().prompt).toContain('clear sky');
+    expect(engineInput().prompt).toContain('clear-sky direct sunlight');
   });
 
   it('refuses an unknown sky', async () => {

@@ -936,6 +936,17 @@ const fr = {
   'parametres.planImages': '≈ {count} images',
   'parametres.managePlan': 'Gérer mon abonnement',
   'parametres.choosePlan': 'Choisir une formule',
+  'parametres.installTitle': 'Installer l’application',
+  'parametres.installBody':
+    'Ajoutez RenderPro à votre appareil : il s’ouvre dans sa propre fenêtre, comme une application, avec son icône.',
+  'parametres.installButton': 'Installer RenderPro',
+  'parametres.installDone': 'RenderPro est installé sur cet appareil.',
+  'parametres.installIos':
+    'Dans Safari, touchez le bouton Partager, puis « Sur l’écran d’accueil » : RenderPro s’ouvrira comme une application, avec son icône.',
+  'parametres.installMacSafari':
+    'Dans Safari, ouvrez le menu Fichier puis « Ajouter au Dock » : RenderPro s’ouvrira dans sa propre fenêtre.',
+  'parametres.installOther':
+    'Dans le menu de votre navigateur, choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil ». Chrome, Edge, Safari et Samsung Internet le proposent.',
   'parametres.securityTitle': 'Connexion et sécurité',
   'parametres.emailLabel': 'E-mail',
   'parametres.googleSub': 'Connexion en un clic',

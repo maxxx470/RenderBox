@@ -1,21 +1,9 @@
 1. LOCK
 This is an edit of the first image, not a new design.
 Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
-2. DRAWING
-- Medium: watercolour on textured cold-press paper, fine ink outline of the building.
-- Washes: transparent, soft bleeding edges; the white of the paper left in the highlights.
-- Colours: natural and muted, true to the source materials; the sky as a light loose wash.
-- Palette: muted sage, olive and moss greens, warm ochre and umber, a soft grey-blue sky wash.
-- Volumes: same outline and openings as the source.
-- Materials: recognisable by colour and brushwork.
-- Keep it a hand-painted illustration, not a photograph.
-3. SETTING
-- birch and pine trees, ornamental grasses and shrubs painted in loose washes around the building.
-- a flagstone path leading to the entrance, where the source has a path or a forecourt.
-- where the plot has water, a calm pool painted in pale teal.
-- the painting fading irregularly into bare paper at its edges, with a few loose splatters.
-- These additions are explicitly requested, only on ground, terraces, balconies and openings the image already has; never a new wall, window, roof, volume or other architectural element.
-4. AVOID
-Photographic look, 3D render look, heavy opaque paint, oversaturated colours, digital gradients.
-5. FINAL CHECK
+2. AMBIANCE
+Transform this image into an architectural watercolor and ink illustration. Strictly preserve the building’s geometry, proportions, camera angle and composition. Use soft watercolor washes, warm tones, visible brush texture and precise hand-drawn ink contour lines. Render the existing vegetation as loosely painted layered green washes, without adding new plants or objects. Use a light cream paper background to unify the composition and enhance the handcrafted feel. Produce one single illustration: no marginal sketches, no diagrams, no handwritten notes, no text. Cohesive, artistic and professionally illustrated.
+3. AVOID
+Photorealistic rendering, added elements not in the source, distorted proportions, watermark, text, signature, low resolution, messy composition.
+4. FINAL CHECK
 Before answering, verify: geometry unchanged, openings unchanged, no new architectural element, the result is a watercolour illustration, not a photograph.

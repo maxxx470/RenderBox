@@ -25,6 +25,7 @@
 import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { InstallAppCard } from './InstallAppCard';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { api } from '@/lib/api';
@@ -547,6 +548,8 @@ function AccountColumn({
           </ul>
         )}
       </section>
+
+      <InstallAppCard idPrefix={idPrefix} />
 
       <section className={CARD} aria-labelledby={`${idPrefix}-payments`}>
         <div className="flex items-center justify-between gap-3">

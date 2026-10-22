@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'install-app',
+    date: '2026-10-20',
+    kind: 'shipped',
+    title: {
+      fr: 'RenderPro s’installe comme une application',
+      en: 'RenderPro installs like an app',
+    },
+    body: {
+      fr: 'Sur téléphone, tablette et ordinateur, RenderPro peut maintenant s’installer : il s’ouvre dans sa propre fenêtre, avec son icône, et affiche une page claire quand la connexion est coupée. Ouvrez Paramètres, puis « Installer l’application » : un bouton sous Chrome, Edge et Samsung Internet ; sur iPhone et iPad, le bouton Partager de Safari puis « Sur l’écran d’accueil » ; sur Mac, Fichier puis « Ajouter au Dock » dans Safari. Vos images et vos crédits restent toujours lus depuis le serveur, jamais gardés sur l’appareil. Les prompts des 14 ambiances ont aussi été réécrits : chacun garde fidèlement votre image et ne change que l’ambiance choisie.',
+      en: 'On phone, tablet and computer, RenderPro can now be installed: it opens in its own window, with its icon, and shows a clear page when the connection drops. Open Settings, then “Install the app”: a button in Chrome, Edge and Samsung Internet; on iPhone and iPad, Safari’s Share button then “Add to Home Screen”; on a Mac, File then “Add to Dock” in Safari. Your images and credits are always read from the server, never kept on the device. The prompts of the 14 ambiances were also rewritten: each one stays faithful to your image and changes only the ambiance you chose.',
+    },
+  },
+  {
     id: 'material-sheet-ambiances',
     date: '2026-10-19',
     kind: 'shipped',

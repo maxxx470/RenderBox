@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Mono, Inter, Poppins } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -7,6 +7,7 @@ import { LocaleProvider } from '@/lib/i18n/LocaleContext';
 import { requestLocale } from '@/lib/i18n/request-locale';
 import { OG_IMAGE, SEO_COPY, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { VisitorCountryProvider } from '@/lib/visitor-country';
+import { PwaRegister } from './PwaRegister';
 
 // Site-wide type (2026-10-06, owner: "la même police que sur Metrio"):
 // Metrio's pairing — Inter for body text, Poppins for titles, IBM Plex Mono
@@ -32,6 +33,10 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
+// Browser chrome colour while the site is open (white, like the app's header).
+// The web app manifest is app/manifest.ts, the worker public/sw.js.
+export const viewport: Viewport = { themeColor: '#FFFFFF' };
+
 // What every page tells search engines and link previews unless it says more
 // (lib/seo.ts; the public pages set their own title, address and languages).
 export async function generateMetadata(): Promise<Metadata> {
@@ -44,6 +49,9 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     openGraph: { type: 'website', siteName: SITE_NAME, title, description, images: [OG_IMAGE] },
     twitter: { card: 'summary_large_image', title, description, images: [OG_IMAGE.url] },
+    // Safari (iPhone, iPad, Mac) installs from its Share / File menu and reads these.
+    appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: 'default' },
+    formatDetection: { telephone: false },
   };
 }
 
@@ -65,6 +73,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className={`${inter.className} bg-white text-[#17161F] antialiased`}>
+        <PwaRegister />
         <LocaleProvider initialLocale={locale}>
           {/* The country also gives the plan card its local-currency line. */}
           <VisitorCountryProvider country={country}>

@@ -55,6 +55,9 @@ export function buildCsp(options: {
     // next/font self-hosts its files at build time — no external font origin.
     `font-src 'self'`,
     `connect-src ${connectSources(sentryDsn).join(' ')}`,
+    // The service worker (public/sw.js) and the web app manifest.
+    `worker-src 'self'`,
+    `manifest-src 'self'`,
     `object-src 'none'`,
     `base-uri 'self'`,
     // Matches the X-Frame-Options: DENY already set in next.config.ts.
