@@ -185,6 +185,25 @@ export const PRESETS: Record<PresetKey, PresetDef> = {
   },
 };
 
+/**
+ * Ambiances 1 to 6 of the analysis specification (2026-10-22): Claude writes
+ * their site / lighting / vegetation (or space / lighting / styling) sections
+ * in a second call; the eight others are fixed texts filled from the analysis.
+ */
+export const WRITTEN_PRESETS = [
+  'jour_ext',
+  'heure_doree',
+  'pluie',
+  'nuit_ext',
+  'jour_int',
+  'nuit_int',
+] as const satisfies readonly PresetKey[];
+export type WrittenPreset = (typeof WRITTEN_PRESETS)[number];
+
+export function isWrittenPreset(value: PresetKey): value is WrittenPreset {
+  return (WRITTEN_PRESETS as readonly string[]).includes(value);
+}
+
 export function isPresetKey(value: string): value is PresetKey {
   return (PRESET_KEYS as readonly string[]).includes(value);
 }

@@ -23,6 +23,10 @@ import { AssistantWidget, openAssistant } from './AssistantWidget';
 /** Bottom padding for a page that mounts MobileNav: the pill (64px) plus its
  *  margins and the phone's safe area. Nothing from 900px up. */
 export const MOBILE_NAV_PAD = 'pb-[calc(104px+env(safe-area-inset-bottom))] min-[900px]:pb-0';
+/** A command bar on a page that scrolls below 900px: pinned just above the
+ *  bottom menu — the page's MOBILE_NAV_PAD already keeps the menu's room, and
+ *  a sticky element stops at the scroller's padding, so bottom-0 is right. */
+export const PHONE_STICKY_BAR = 'max-[899px]:sticky max-[899px]:bottom-0 max-[899px]:z-20';
 
 const MORE_PAGES: RailPage[] = ['info', 'settings', 'pricing', 'admin'];
 

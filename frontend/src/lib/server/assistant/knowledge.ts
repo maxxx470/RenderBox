@@ -9,7 +9,7 @@
 import 'server-only';
 import { AMBIANCE_KEYS, PRESETS } from '@/lib/server/generation/presets';
 import { PRICING_TIERS } from '@/lib/pricing-tiers';
-import { ASSISTANT_COST, describePrices, SHEET_COST } from '@/lib/provider-cost';
+import { ASSISTANT_COST, describeAnalysis, describePrices, SHEET_COST } from '@/lib/provider-cost';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTIONS, RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import {
@@ -99,7 +99,7 @@ ENHANCE (améliorer un rendu existant)
 
 ABONNEMENTS ET CRÉDITS
 - ${tiers}.
-- Un crédit RenderPro est un crédit du fournisseur d’IA : chaque image produite (un rendu, Commenter, Ajouter ou Améliorer) coûte exactement ce que le moteur facture à la taille choisie — ${describePrices('fr')} ; N variantes coûtent N fois ce prix, et une fiche de matériaux ${SHEET_COST} crédits. Le même prix pour tout le monde. ${ASSISTANT_COST > 0 ? `Un message à l'assistant coûte ${ASSISTANT_COST} crédits.` : "L'assistant est gratuit."} Le coût s'affiche sur le bouton d'envoi avant le clic. Les crédits sont retirés au lancement et rendus si la génération échoue. Le solde est visible dans la pastille bleue de l'en-tête et sur l'Accueil.
+- Un crédit RenderPro est un crédit du fournisseur d’IA : chaque image produite (un rendu, Commenter, Ajouter ou Améliorer) coûte exactement ce que le moteur facture à la taille choisie — ${describePrices('fr')} ; ${describeAnalysis('fr')} ; N variantes coûtent N fois ce prix, et une fiche de matériaux ${SHEET_COST} crédits. Le même prix pour tout le monde. ${ASSISTANT_COST > 0 ? `Un message à l'assistant coûte ${ASSISTANT_COST} crédits.` : "L'assistant est gratuit."} Le coût s'affiche sur le bouton d'envoi avant le clic. Les crédits sont retirés au lancement et rendus si la génération échoue. Le solde est visible dans la pastille bleue de l'en-tête et sur l'Accueil.
 - Une formule dure 30 jours à partir du paiement, sans prélèvement automatique ensuite. Les crédits non utilisés expirent à la fin de la période, sans report. Choisir une formule (ou renouveler la sienne) démarre une nouvelle période de 30 jours avec tous ses crédits.
 - Page Abonnement : le « Solde actuel » (crédits restants, formule et date d'expiration), un avertissement quand il ne reste plus assez de crédits, les trois formules (crédits par mois, prix en FCFA, un équivalent indicatif dans la devise du pays du visiteur — en euros en Europe, en dirhams au Maroc, en dinars en Algérie… — ou en dollars ailleurs, la formule actuelle marquée). On paie toujours en FCFA ; l’équivalent n’est qu’une indication puis l’« Historique » des paiements.
 - Une limite quotidienne anti-abus existe aussi ; si elle est atteinte, réessayer le lendemain.

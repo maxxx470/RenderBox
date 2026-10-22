@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'analysis-before-render',
+    date: '2026-10-22',
+    kind: 'shipped',
+    title: {
+      fr: 'Chaque rendu commence par une analyse de votre image',
+      en: 'Every render starts with an analysis of your image',
+    },
+    body: {
+      fr: 'Avant un rendu avec ambiance ou une amélioration, RenderPro analyse votre image : sa géométrie, ses ouvertures et le matériau de chaque élément. Le rendu garde ainsi votre bâtiment et vos matériaux, et les images d’un même projet montrent le même bâtiment, avec les mêmes matériaux et la même végétation. L’analyse est comprise dans le prix affiché ; si elle échoue, rien n’est généré et vos crédits vous sont rendus.',
+      en: 'Before a render with an ambiance or an enhancement, RenderPro analyses your image: its geometry, its openings and the material of each element. The render keeps your building and your materials, and the images of one project show the same building, with the same materials and planting. The analysis is included in the price shown; if it fails, nothing is generated and your credits come back.',
+    },
+  },
+  {
     id: 'credits-engine-price',
     date: '2026-10-22',
     kind: 'shipped',

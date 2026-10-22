@@ -33,6 +33,7 @@ describe(`migration ${NAME}`, () => {
       '9_phase9f_render_provider_credits',
       '9_phase9g_render_sheet',
       '9_phase9h_kie_credits',
+      '9_phase9i_building_sheets',
     ]);
   });
 

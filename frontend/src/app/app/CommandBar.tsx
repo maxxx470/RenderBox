@@ -47,6 +47,7 @@ import { ElementsPicker } from './ElementsPicker';
 import { Glyph, type RailIconName } from './RailIcon';
 import { CHIP_ACTIVE, CHIP_BASE, CHIP_STATIC } from './chip';
 import { useRenderPrice } from './use-render-price';
+import { analysisPrice } from '@/lib/provider-cost';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
 
@@ -77,7 +78,7 @@ export const ROUND =
   'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white text-[#17161F] transition-colors hover:bg-[#E9E9EE] disabled:cursor-not-allowed disabled:opacity-40';
 /** The glow behind the bar: soft light columns in the charter's blue and red. */
 export const GLOW =
-  'pointer-events-none absolute -inset-x-20 -bottom-10 -top-20 -z-10 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0)_0px,rgba(255,255,255,0.4)_26px,rgba(255,255,255,0)_52px),linear-gradient(90deg,#A3C2FB_0%,#435CFE_22%,#F88B98_50%,#2948FC_78%,#A3C2FB_100%)] opacity-90 blur-[16px] [mask-image:radial-gradient(ellipse_52%_58%_at_50%_55%,#000_40%,transparent_100%)]';
+  'pointer-events-none absolute -inset-x-20 -bottom-10 -top-20 -z-10 bg-[repeating-linear-gradient(90deg,rgba(255,255,255,0)_0px,rgba(255,255,255,0.4)_26px,rgba(255,255,255,0)_52px),linear-gradient(90deg,#A3C2FB_0%,#435CFE_22%,#F88B98_50%,#2948FC_78%,#A3C2FB_100%)] opacity-90 blur-[16px] [mask-image:radial-gradient(ellipse_52%_58%_at_50%_55%,#000_40%,transparent_100%)] max-[899px]:-top-3';
 
 /** One image shown in the composer. */
 export interface PinnedImage {
@@ -265,6 +266,7 @@ export function CommandBar({
   fill = false,
   versions,
   onVersionChange,
+  balance,
 }: {
   mode: AppMode;
   onModeChange: (mode: AppMode) => void;
@@ -336,6 +338,8 @@ export function CommandBar({
   /** The version chosen for each engine; absent: no version chip (no Kie). */
   versions?: Record<EngineName, EngineVersionKey> | undefined;
   onVersionChange?: ((engine: EngineName, version: EngineVersionKey) => void) | undefined;
+  /** The account's credits, said beside the cost in the composer's row. */
+  balance?: number | null | undefined;
 }) {
   const { t, locale } = useLocale();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -568,12 +572,28 @@ export function CommandBar({
   // Why the send button is off, said in the composer's row (and under the bar
   // on a phone). Without it the bar is a dead end.
   const showHint = Boolean(sendHint && sendDisabled && !generating);
+  // A render with an ambiance (or a fan template) also pays its Claude
+  // analysis: the one price shown already includes it.
+  const cost = priceOf(
+    engine,
+    resolution,
+    mode === 'generate' ? 1 : (variantCount ?? 1),
+    mode === 'generate' ? analysisPrice(preset, Boolean(template)) : 0,
+  );
+  // Otherwise, once an image is pinned, the row says what the render costs
+  // (owner, 2026-10-22: « Coût : N crédits » in plain sight, the bar's height
+  // unchanged).
+  const costLine = !Number.isFinite(cost)
+    ? ''
+    : typeof balance === 'number'
+      ? t('app.costLineBalance', { cost, balance })
+      : t('app.costLine', { cost });
 
   const sendButton = (big: boolean) => (
     <SendButton
       big={big}
       label={submitLabel}
-      cost={priceOf(engine, resolution, mode === 'generate' ? 1 : (variantCount ?? 1))}
+      cost={cost}
       disabled={sendDisabled}
       busy={generating}
       onClick={onSubmit}
@@ -660,7 +680,7 @@ export function CommandBar({
                     : showHint
                       ? sendHint
                       : pinned.length > 0
-                        ? ''
+                        ? costLine
                         : (attachTitle ?? t('app.cmdAttach'))}
                 </span>
                 {/* Phone: the settings fold behind a button. */}

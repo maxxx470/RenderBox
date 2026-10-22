@@ -1,0 +1,30 @@
+TRANSFORM:
+This SketchUp viewport image into an ultra-photorealistic interior photograph, 8K, DSLR photo shot on interior space as if captured on Sony VENICE 2, Zeiss Otus 35mm lens.
+
+BASE DESIGN CONSISTENCY:
+Do not redesign, or reinterpret the interior spatial composition in any way. Strictly preserve the exact ceiling height, wall positions, door and window placement, built-in joinery, and furniture arrangement exactly as shown in the reference image. No creative additions, no furniture substitutions, no reinterpretation of space. Geometry to preserve: Rectangular bedroom, bed against the back wall, one large window on the left..
+
+SPACE & CONTEXT:
+Master bedroom of a contemporary villa in Abidjan. Calm, airy proportions with generous ceiling height and cross ventilation. Clean contemporary tropical style; the window frames a soft garden view of eucalyptus trees.
+
+MATERIALS & TEXTURE:
+Finishes: floor: iroko wood planks (warm brown); walls: white paint (white); curtains: linen (off-white). Keep every material exactly as identified: same type, same color, same placement. Only enhance realism: true texture depth, natural micro-variation, correct light response. Do not replace, restyle or invent materials.
+All fabrics rendered with true fiber depth — thread weave visible, natural drape and weight, correct light absorption and subtle sheen specific to each material.
+Subtle natural micro-variations on every surface: slight wood grain variation, gentle fabric creasing, soft wear on floors. Nothing sterile or perfectly uniform.
+
+LIGHTING & MOOD:
+Morning light enters softly through the openings and the linen curtains, creating gentle sunbeams across the floor and bed. No artificial light needed; soft shadows, warm neutral tones, calm and restful mood.
+Light affects brightness and tone only; the materials keep their identified colors.
+
+STYLING & PROPS:
+Furniture stays exactly as in the image. Accessories: handwoven throw, ceramic vase, wooden stool. Greenery: potted ferns and a leafy plant with palm-like fronds near the window.
+Furniture stays exactly as in the image. Styling adds only small accessories and plants; do not add, remove or replace furniture.
+
+CAMERA:
+Photographed on Sony VENICE 2, Zeiss Otus 35mm lens, f/8, interior eye-level at 1.0 to 1.2 metres above floor, shot for Architectural Digest, editorial interior photography.
+
+RENDER SPECS:
+Ultra-photorealistic, 8K print quality, full dynamic range with rich detail in both deep shadows and bright highlights, color science warm, natural and cinematic with subtle richness without oversaturation, output must feel like a professional interior photograph shot for a premium magazine like Architectural Digest.
+
+NEGATIVE PROMPTS:
+No redesigning of interior layout or spatial composition, no furniture substitution, no cartoon style, no plastic-looking materials or CGI surfaces, no excessive glow, bloom, or vignette, no floating objects, no distorted perspective, no unrealistic scale. No changes to materials, no added or removed doors or windows.

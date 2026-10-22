@@ -1,0 +1,7 @@
+Transform this image into an exploded axonometric diagram of the building. Separate the building vertically into its main layers (roof, each floor level, ground floor, slab), floating apart with equal spacing, all aligned on the same vertical axis. Viewed from a corner, rotated 45 degrees.
+Keep the exact geometry, proportions and openings of each layer as in the reference image: do not redesign anything. Geometry to preserve: Two-storey cubic villa, flat roof with thin overhang, entrance centred on the ground floor, three tall windows per floor..
+Materials as identified: ground floor walls: white rendered walls (white); upper floor cladding: iroko timber slats (warm brown); window frames: black aluminium (black). Same type, same color, same placement; only enhance realism.
+Pure white background, soft shadows, thin leader lines with short labels in French, spelled correctly: Toiture, Étage, Rez-de-chaussée, Dalle. Label only layers and materials that exist in the analysis.
+Clean technical presentation style. No people, no vegetation.
+
+NEGATIVE: no redesign, no added or removed windows, no change to materials, no cartoon style, no spelling errors in labels.

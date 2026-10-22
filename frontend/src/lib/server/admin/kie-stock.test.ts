@@ -15,6 +15,7 @@ beforeEach(() => {
     _count: { _all: 2 },
   } as never);
   prismaMock.kieTopUp.findMany.mockResolvedValue([] as never);
+  prismaMock.user.findUnique.mockResolvedValue({ creditsBalance: 3000 } as never);
 });
 
 describe('coverageLevel', () => {
@@ -34,6 +35,8 @@ describe('computeKieStock', () => {
     expect(s.balanceUsd).toBeCloseTo(22, 10);
     expect(s.balanceXof).toBe(13200);
     expect(s.circulation).toBe(4000);
+    // the demo account's share is shown, and still counted in the circulation
+    expect(s.demoCredits).toBe(3000);
     expect(s.coverage).toBeCloseTo(1.1, 10);
     expect(s.level).toBe('orange');
   });

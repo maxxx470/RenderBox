@@ -367,10 +367,36 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  renderNodes RenderNode[]
-  materials   Material[]
+  renderNodes    RenderNode[]
+  materials      Material[]
+  buildingSheets BuildingSheet[]
 
   @@index([userId, createdAt])
+}
+
+// 2026-10-22 (owner) — the analysis specification's « fiche »: what Claude
+// read of one building (or one floor plan) of a project, kept so that every
+// image of that building keeps the same materials, plants and neighbours
+// (lib/server/analysis/sheets.ts). Usually one to three per project; deleted
+// with the project. Migration 9_phase9i_building_sheets (additive).
+model BuildingSheet {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // "building" (the general analysis) or "plan" (a floor plan's own analysis).
+  kind      String
+  // The latest analysis JSON of this building, as Claude returned it (checked).
+  analysis  Json
+  // The sections written for its first render: {site, vegetation} outdoors,
+  // {space, styling} indoors — reused as they are by the next ambiances.
+  sections  Json?
+  // Améliorer: the premium finish chosen for each element, reused on every
+  // image of the same building.
+  premium   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, kind])
 }
 
 model RenderNode {
@@ -543,6 +569,11 @@ model Generation {
   // [{ face, valeur, origin: "detection" | "correction", nodeId, confidence? }].
   // Null for every generation made before Phase 7.
   promptMaterials   Json?
+  // 2026-10-22 — the Claude analysis that preceded the render (the analysis,
+  // the written sections, the sheet it matched and the tokens each call
+  // used): to debug a render and to measure the analysis' real cost. Null
+  // for renders without an analysis and every render made before.
+  analysis          Json?
   createdAt         DateTime   @default(now())
 
   @@index([engine, createdAt])

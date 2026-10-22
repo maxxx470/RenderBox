@@ -26,7 +26,7 @@ type View = 'side' | 'compare';
 /** One side of the stage: a picture on the grey ground, its tag in a corner. */
 function StagePane({ tag, children }: { tag: string; children: ReactNode }) {
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-[#F7F7FA] p-3">
+    <div className="relative flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-[#F7F7FA] p-3 max-[899px]:min-h-[200px] max-[899px]:pt-11">
       <span className={`absolute left-3 top-3 z-10 bg-white text-[#6B6878] ${TAG}`}>{tag}</span>
       {children}
     </div>
@@ -96,7 +96,7 @@ function CompareSlider({
   return (
     <div
       ref={stageRef}
-      className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-[#F7F7FA]"
+      className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-[#F7F7FA] max-[899px]:h-[60svh] max-[899px]:flex-none"
     >
       <div
         role="slider"
@@ -207,7 +207,7 @@ export function SourceResultStage({
               src={sourceSrc}
               alt=""
               draggable={false}
-              className="max-h-full max-w-full rounded-lg object-contain"
+              className="max-h-full max-w-full rounded-lg object-contain max-[899px]:max-h-[55svh]"
             />
           </StagePane>
           <StagePane tag={t('app.genResultTag')}>
@@ -217,7 +217,7 @@ export function SourceResultStage({
                 src={resultSrc}
                 alt=""
                 draggable={false}
-                className="rb-card-in max-h-full max-w-full rounded-lg object-contain"
+                className="rb-card-in max-h-full max-w-full rounded-lg object-contain max-[899px]:max-h-[55svh]"
               />
             ) : working ? (
               <div role="status" className="flex flex-col items-center gap-3 text-center">

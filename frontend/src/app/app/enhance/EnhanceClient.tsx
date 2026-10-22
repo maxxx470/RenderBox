@@ -57,11 +57,12 @@ import {
 import { AppFrame } from '../AppFrame';
 import { useAppChrome } from '../AppChrome';
 import { useRenderPrice } from '../use-render-price';
+import { ANALYSIS_COST } from '@/lib/provider-cost';
 import type { AppSurfaceProps } from '../AppSurface';
 import { useObjectUrl } from '../CommandBar';
 import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from '../fan';
 import { ENHANCE_EXAMPLES } from '../generer-examples';
-import { MOBILE_NAV_PAD } from '../MobileNav';
+import { MOBILE_NAV_PAD, PHONE_STICKY_BAR } from '../MobileNav';
 import { RecentImages, recentImageLabel, useFreshRecent } from '../RecentImages';
 import { creditsChanged, useSyncedCredits } from '../fresh-credits';
 import { SourceResultStage } from '../SourceResultStage';
@@ -72,6 +73,7 @@ import {
   creditDetailOf,
   RequestError,
   readErrorCode,
+  analysisErrorKey,
   isGenerationTimeout,
   isServiceNotConfigured,
   notConfiguredKey,
@@ -280,9 +282,9 @@ export function EnhanceClient({
     // No plan, or not enough credits: the plans open over the page (owner,
     // 2026-10-15), before anything is uploaded.
     if (!surface.tier && !remaining) return chrome?.openPlans('noTier');
-    if (remaining !== null && remaining < priceOf(engine, resolution))
+    if (remaining !== null && remaining < priceOf(engine, resolution, 1, ANALYSIS_COST))
       return chrome?.openPlans('noCredits', {
-        cost: priceOf(engine, resolution),
+        cost: priceOf(engine, resolution, 1, ANALYSIS_COST),
         balance: remaining,
       });
     setWorking(true);
@@ -342,6 +344,7 @@ export function EnhanceClient({
       else if (creditKey)
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       else if (code === 'CONTENT_FLAGGED') toast(t('enhance.refFlagged'), 'error');
+      else if (analysisErrorKey(err)) toast(t(analysisErrorKey(err)!), 'error');
       else if (isServiceNotConfigured(err)) toast(t(notConfiguredKey(err)), 'error');
       else if (isGenerationTimeout(err)) toast(t('app.generationTimeout'), 'error');
       else toast(t('enhance.error'), 'error');
@@ -378,7 +381,12 @@ export function EnhanceClient({
         userEmail: surface.userEmail,
       }}
     >
-      <main className={`flex min-w-0 flex-1 flex-col overflow-hidden ${MOBILE_NAV_PAD}`}>
+      {/* Below 900px the page scrolls (owner, 2026-10-22: « le format
+          téléphone ne fonctionne pas »): the stage takes its natural height
+          and the bar stays pinned above the bottom menu. */}
+      <main
+        className={`flex min-w-0 flex-1 flex-col overflow-hidden max-[899px]:overflow-y-auto ${MOBILE_NAV_PAD}`}
+      >
         {/* On a phone: one short line, then the « À améliorer » column's
             button, named — a bare grey icon was easy to miss (2026-10-15). */}
         <div className="flex items-center justify-between gap-3 px-3.5 pt-3 min-[900px]:hidden">
@@ -396,7 +404,7 @@ export function EnhanceClient({
         </div>
 
         {/* Same side padding as the bar below it, as on a project. */}
-        <section className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 pt-4 min-[640px]:px-5 min-[640px]:pt-5">
+        <section className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 pt-4 max-[899px]:flex-none max-[899px]:overflow-visible min-[640px]:px-5 min-[640px]:pt-5">
           <div className="mb-4 max-[899px]:hidden">
             <h2 className="mb-1 font-[family-name:var(--font-display)] text-base font-semibold text-[#17161F]">
               {t('enhance.title')}
@@ -461,7 +469,7 @@ export function EnhanceClient({
           )}
         </section>
 
-        {
+        <div className={PHONE_STICKY_BAR}>
           <EnhanceBar
             engine={engine}
             instruction={instruction}
@@ -492,7 +500,7 @@ export function EnhanceClient({
             sendHint={sendHint}
             working={working}
           />
-        }
+        </div>
       </main>
 
       {
@@ -643,7 +651,7 @@ export function EnhanceClient({
             )}
 
             <p className="mt-auto pt-3 text-center text-[11.5px] text-[#6B6878]">
-              {t('enhance.costNote', { cost: priceOf(engine, resolution) })}
+              {t('enhance.costNote', { cost: priceOf(engine, resolution, 1, ANALYSIS_COST) })}
               {remaining !== null && surface.creditsMax !== null
                 ? ` · ${remaining}/${surface.creditsMax}`
                 : ''}

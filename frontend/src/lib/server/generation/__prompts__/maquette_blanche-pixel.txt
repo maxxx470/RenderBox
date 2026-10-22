@@ -1,7 +1,0 @@
-1. LOCK
-This is a new representation of the building in the first image, not a new design.
-Keep the building's real footprint, volumes, proportions, roof shape and the number and position of its openings; only the kind of representation changes, as described below. Do not add, remove, move, resize or redesign any architectural element unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
-2. REPRESENTATION
-Transform this image into a close-up photograph of a physical architectural scale model made entirely in white: white foam board and white card only, with no color, no realistic material textures and no wood or acrylic accents. Strictly preserve the volumes, proportions, openings and composition of the source building, with precise miniature windows and openings cut cleanly into the white surfaces. Place the model on a neutral presentation table with soft, even studio lighting and subtle shadows that emphasize the volumes. Do not add or remove any architectural element. Highly detailed, clean and minimal.
-3. FINAL CHECK
-Before answering, verify: footprint and proportions unchanged, openings unchanged, no invented volume, the representation is the one described.

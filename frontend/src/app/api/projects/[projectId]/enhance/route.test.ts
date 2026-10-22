@@ -67,11 +67,19 @@ vi.mock('@/lib/server/moderation/moderate-image', async () => {
   return { ...actual, moderateImage: mockModerateImage };
 });
 
+// The Claude analysis (2026-10-22): mocked here — its prompts, checks and
+// sheets are tested in lib/server/analysis/. The mock's prompt names what the
+// route handed it.
+const { mockPrepare } = vi.hoisted(() => ({ mockPrepare: vi.fn() }));
+vi.mock('@/lib/server/analysis/pipeline', () => ({ prepareEnhancePrompt: mockPrepare }));
+const enhanced = (input: Record<string, unknown>) => {
+  return `ENHANCED:${JSON.stringify({ ...input, image: undefined, projectId: undefined })}`;
+};
+
 import { verifyToken } from '@/lib/server/auth';
 import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
 import { ENHANCE_OPTION_KEYS } from '@/lib/server/generation/enhance';
-import { buildEnhancePrompt } from '@/lib/server/generation/enhance-prompt';
 
 const USER_ID = 'user-1';
 const PROJECT_ID = 'project-1';
@@ -128,6 +136,13 @@ beforeEach(() => {
   mockRefundCredits.mockReset().mockResolvedValue(undefined);
   mockModerateImage.mockReset().mockResolvedValue({ flagged: false, categories: [] });
   mockDetectMaterials.mockReset().mockResolvedValue(undefined);
+  mockPrepare
+    .mockReset()
+    .mockImplementation(async (_db: unknown, input: Record<string, unknown>) => ({
+      ok: true,
+      prompt: enhanced(input),
+      trace: { sheetId: 'sheet-1', matched: false, analysis: {}, usage: [] },
+    }));
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
 
   vi.mocked(verifyToken).mockResolvedValue({
@@ -185,15 +200,13 @@ describe('POST /api/projects/[projectId]/enhance', () => {
     );
     expect(res.status).toBe(201);
     const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-    expect(input.prompt).toBe(
-      buildEnhancePrompt({
-        engine: 'nanobanana',
-        options: [],
-        strength: 'subtle',
-        instruction: 'brighter interior',
-      }),
-    );
-    expect(input.prompt).toContain('Only modify what this request explicitly names');
+    expect(mockPrepare.mock.calls[0]?.[1]).toMatchObject({
+      projectId: PROJECT_ID,
+      options: [],
+      strength: 'subtle',
+      instruction: 'brighter interior',
+    });
+    expect(input.prompt).toContain('brighter interior');
   });
 
   it.each(['ref_sky', 'ref_materials'])(
@@ -283,14 +296,20 @@ describe('POST /api/projects/[projectId]/enhance — what reaches the engine', (
       ),
       ctx(),
     );
-    expect(engineCall().input.prompt).toBe(
-      buildEnhancePrompt({
-        engine: 'nanobanana',
-        options: ['sky', 'lighting', 'ambiance'],
-        strength: 'medium',
-        darkRoom: true,
-        ambiance: 'jour_int',
-        instruction: 'Ambiance de fin de journée',
+    expect(mockPrepare.mock.calls[0]?.[1]).toMatchObject({
+      options: ['sky', 'lighting', 'ambiance'],
+      strength: 'medium',
+      darkRoom: true,
+      ambiance: 'jour_int',
+      instruction: 'Ambiance de fin de journée',
+    });
+    expect(engineCall().input.prompt).toBe(enhanced(mockPrepare.mock.calls[0]?.[1]));
+    // The analysis is kept with the generation.
+    expect(prismaMock.generation.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          analysis: expect.objectContaining({ sheetId: 'sheet-1' }),
+        }),
       }),
     );
   });
@@ -300,17 +319,33 @@ describe('POST /api/projects/[projectId]/enhance — what reaches the engine', (
       makeReq(baseFields({ options: ['sharpness'], darkRoom: '1', ambiance: 'nuit_int' })),
       ctx(),
     );
-    expect(engineCall().input.prompt).toBe(
-      buildEnhancePrompt({ engine: 'nanobanana', options: ['sharpness'], strength: 'subtle' }),
-    );
+    expect(mockPrepare.mock.calls[0]?.[1]).toMatchObject({
+      options: ['sharpness'],
+      darkRoom: false,
+      ambiance: undefined,
+    });
   });
 
-  it('lays the prompt out for the chosen engine', async () => {
+  it('the same analysed prompt goes to either engine', async () => {
     await POST(makeReq(baseFields({ engine: 'gpt_image' })), ctx());
-    expect(engineCall().input.prompt).toBe(
-      buildEnhancePrompt({ engine: 'gpt_image', options: ['lighting'], strength: 'subtle' }),
-    );
+    await POST(makeReq(baseFields({ engine: 'nanobanana' })), ctx());
+    expect(engineCall(0).input.prompt).toBe(engineCall(1).input.prompt);
   });
+
+  it.each([
+    ['unreadable', 422, 'ANALYSIS_UNREADABLE'],
+    ['timeout', 504, 'ANALYSIS_TIMEOUT'],
+  ] as const)(
+    'an analysis that fails (%s) stops it: %i %s, no engine call, every credit back',
+    async (reason, status, code) => {
+      mockPrepare.mockResolvedValueOnce({ ok: false, step: 'analysis', reason });
+      const res = await POST(makeReq(baseFields()), ctx());
+      expect(res.status).toBe(status);
+      expect((await res.json()).error).toBe(code);
+      expect(mockGenerate).not.toHaveBeenCalled();
+      expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 8);
+    },
+  );
 
   it('sends the source image only: no reference field', async () => {
     await POST(
@@ -362,7 +397,7 @@ describe('POST /api/projects/[projectId]/enhance — engine deadline (étape 3B.
       message: 'Generation timed out',
     });
     // Debited before the engine, given back: nothing was produced.
-    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 4);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 4 + 4);
   });
 
   it('keeps 502 GENERATION_FAILED for any other engine error', async () => {
@@ -374,14 +409,17 @@ describe('POST /api/projects/[projectId]/enhance — engine deadline (étape 3B.
 });
 
 describe('POST /api/projects/[projectId]/enhance — credits', () => {
-  it('debits one image at the grid price, before the engine: Visio 6 at 2K, 9 at 4K', async () => {
+  it('debits one image at the grid price plus the analysis (4), before anything: Visio 6 + 4 at 2K, 9 + 4 at 4K', async () => {
     expect((await POST(makeReq(baseFields({ resolution: '2k' })), ctx())).status).toBe(201);
-    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 6);
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 6 + 4);
+    expect(mockDebitCredits.mock.invocationCallOrder[0]).toBeLessThan(
+      mockPrepare.mock.invocationCallOrder[0]!,
+    );
     expect(mockDebitCredits.mock.invocationCallOrder[0]).toBeLessThan(
       mockGenerate.mock.invocationCallOrder[0]!,
     );
     expect((await POST(makeReq(baseFields({ resolution: '4k' })), ctx())).status).toBe(201);
-    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 9);
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 9 + 4);
     expect(mockRefundCredits).not.toHaveBeenCalled();
   });
 
@@ -392,7 +430,7 @@ describe('POST /api/projects/[projectId]/enhance — credits', () => {
       ['4k', 16],
     ] as const) {
       await POST(makeReq(baseFields({ engine: 'gpt_image', resolution })), ctx());
-      expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, cost);
+      expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, cost + 4);
     }
   });
 
@@ -400,7 +438,11 @@ describe('POST /api/projects/[projectId]/enhance — credits', () => {
     mockDebitCredits.mockResolvedValue({ ok: false, reason: 'INSUFFICIENT_CREDITS', balance: 20 });
     const res = await POST(makeReq(baseFields()), ctx());
     expect(res.status).toBe(402);
-    expect(await res.json()).toMatchObject({ error: 'INSUFFICIENT_CREDITS', cost: 4, balance: 20 });
+    expect(await res.json()).toMatchObject({
+      error: 'INSUFFICIENT_CREDITS',
+      cost: 4 + 4,
+      balance: 20,
+    });
     expect(mockGenerate).not.toHaveBeenCalled();
     expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
   });
@@ -409,6 +451,6 @@ describe('POST /api/projects/[projectId]/enhance — credits', () => {
     mockGenerate.mockRejectedValueOnce(new Error('engine down'));
     const res = await POST(makeReq(baseFields({ resolution: '4k' })), ctx());
     expect(res.status).toBe(502);
-    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 9);
+    expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 9 + 4);
   });
 });

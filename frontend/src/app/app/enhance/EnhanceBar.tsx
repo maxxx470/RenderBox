@@ -18,6 +18,7 @@ import { ResolutionSelect } from '../ResolutionSelect';
 import { ACCEPTED_UPLOAD_TYPES } from '../upload-types';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { useRenderPrice } from '../use-render-price';
+import { ANALYSIS_COST } from '@/lib/provider-cost';
 
 export function EnhanceBar({
   instruction,
@@ -69,7 +70,7 @@ export function EnhanceBar({
     <SendButton
       big={big}
       label={t('enhance.submit')}
-      cost={priceOf(engine, resolution)}
+      cost={priceOf(engine, resolution, 1, ANALYSIS_COST)}
       disabled={sendDisabled}
       busy={working}
       onClick={onSubmit}

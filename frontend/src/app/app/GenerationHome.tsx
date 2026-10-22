@@ -30,6 +30,7 @@ import {
   isGenerationTimeout,
   isMaterialsUnavailable,
   isServiceNotConfigured,
+  analysisErrorKey,
   errorCodeOf,
   notConfiguredKey,
 } from './request-error';
@@ -60,8 +61,9 @@ import {
 import { AppFrame } from './AppFrame';
 import { useAppChrome } from './AppChrome';
 import { creditsChanged, useSyncedCredits } from './fresh-credits';
+import { analysisPrice } from '@/lib/provider-cost';
 import { useRenderPrice } from './use-render-price';
-import { MOBILE_NAV_PAD } from './MobileNav';
+import { MOBILE_NAV_PAD, PHONE_STICKY_BAR } from './MobileNav';
 import { SideColumn } from './SideColumn';
 import { RenderSheetPanel } from './RenderSheetPanel';
 import { extractSheetBlock } from '@/lib/render-sheet';
@@ -335,6 +337,8 @@ export function GenerationHome({
       toast(t(notConfiguredKey(err)), 'error');
     } else if (isMaterialsUnavailable(err)) {
       toast(t('app.materialsUnavailableError'), 'error');
+    } else if (analysisErrorKey(err)) {
+      toast(t(analysisErrorKey(err)!), 'error');
     } else {
       // The code after the message says which step failed, on any screenshot.
       const code = errorCodeOf(err);
@@ -564,7 +568,12 @@ export function GenerationHome({
     >
       {/* On the left the stage with the command bar under it at the same
           width, on the right the materials sheet and the recent images. */}
-      <main className={`flex min-w-0 flex-1 flex-col overflow-hidden ${MOBILE_NAV_PAD}`}>
+      {/* Below 900px the page scrolls (owner, 2026-10-22: « le format
+          téléphone ne fonctionne pas »): the stage takes its natural height
+          and the bar stays pinned above the bottom menu. */}
+      <main
+        className={`flex min-w-0 flex-1 flex-col overflow-hidden max-[899px]:overflow-y-auto ${MOBILE_NAV_PAD}`}
+      >
         <input
           ref={fileInputRef}
           type="file"
@@ -589,7 +598,7 @@ export function GenerationHome({
           </button>
         </div>
         {/* Same side padding as the command bar below it, as on a project. */}
-        <section className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 pt-4 min-[640px]:px-5 min-[640px]:pt-5">
+        <section className="flex min-h-0 flex-1 flex-col overflow-hidden px-2.5 pt-4 max-[899px]:flex-none max-[899px]:overflow-visible min-[640px]:px-5 min-[640px]:pt-5">
           {/* On a phone the header already names the page (owner, 2026-10-15). */}
           <div className="mb-4 max-[899px]:hidden">
             <h2 className="mb-1 font-[family-name:var(--font-display)] text-base font-semibold text-[#17161F]">
@@ -615,7 +624,7 @@ export function GenerationHome({
                 </p>
                 <div
                   ref={stageRef}
-                  className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-[#F7F7FA]"
+                  className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl bg-[#F7F7FA] max-[899px]:h-[60svh] max-[899px]:flex-none"
                 >
                   <img
                     ref={imgRef}
@@ -704,84 +713,88 @@ export function GenerationHome({
           </div>
         </section>
 
-        <CommandBar
-          mode={mode}
-          onModeChange={handleModeChange}
-          // All three modes are open here: Commenter and Ajouter work
-          // on the image pinned in the bar.
-          editEnabled
-          engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
-          onEngineChange={setEngine}
-          engineLocked={mode === 'retouch'}
-          versions={chrome?.versionsEnabled ? chrome.versions : undefined}
-          onVersionChange={chrome?.versionsEnabled ? chrome.setVersion : undefined}
-          ratio={ratio}
-          onRatioChange={setRatio}
-          resolution={resolution}
-          onResolutionChange={setResolution}
-          preset={preset}
-          onPresetChange={changePreset}
-          prompt={prompt}
-          onPromptChange={changePrompt}
-          // The paperclip pins the image to work on; in Ajouter, once
-          // that is there, it takes the element's photo.
-          onAttach={mode === 'add' && sourceSrc ? setReferenceFile : pinPhoto}
-          attachTitle={
-            mode === 'add' && sourceSrc
-              ? t('app.cmdAttachReference')
-              : mode === 'generate'
-                ? t('app.cmdAttach')
-                : t('app.cmdAttachSource')
-          }
-          uploading={false}
-          pinned={pinned}
-          variantCount={variantCount}
-          onVariantCountChange={setVariantCount}
-          zoneSelected={hasComments}
-          referenceAdded={Boolean(referenceFile)}
-          materials={[]}
-          elementNodes={[]}
-          onPickElement={() => {}}
-          pickingElement={false}
-          template={
-            template
-              ? {
-                  label: TEMPLATES[template].label[locale],
-                  image: TEMPLATES[template].image,
-                  onClear: clearTemplate,
-                  sky: template === 'jour_ext' ? { value: sky, onChange: changeSky } : undefined,
-                }
-              : null
-          }
-          presetSky={preset === 'jour_ext' ? { value: sky, onChange: changeSky } : undefined}
-          onSubmit={() => {
-            if (!sourceSrc || sendDisabled) return;
-            // No plan, or not enough credits for this render: the plans
-            // open over the page, before anything is uploaded.
-            const cost = priceOf(
-              mode === 'retouch' ? ANNOTATE_ENGINE : engine,
-              resolution,
-              mode === 'generate' ? 1 : variantCount,
-            );
-            if (!tier && !remaining) return chrome?.openPlans('noTier');
-            if (remaining !== null && remaining < cost)
-              return chrome?.openPlans('noCredits', { cost, balance: remaining });
-            if (mode === 'generate') void generate();
-            else void runEdit();
-          }}
-          inputDisabled={creating}
-          sendDisabled={sendDisabled}
-          sendHint={sendHint}
-          submitLabel={
-            mode === 'generate'
-              ? t('app.submitGenerate')
-              : mode === 'retouch'
-                ? t('app.modeRetouch')
-                : t('app.modeAdd')
-          }
-          generating={creating}
-          fill
-        />
+        <div className={PHONE_STICKY_BAR}>
+          <CommandBar
+            mode={mode}
+            onModeChange={handleModeChange}
+            // All three modes are open here: Commenter and Ajouter work
+            // on the image pinned in the bar.
+            editEnabled
+            engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
+            onEngineChange={setEngine}
+            engineLocked={mode === 'retouch'}
+            balance={remaining}
+            versions={chrome?.versionsEnabled ? chrome.versions : undefined}
+            onVersionChange={chrome?.versionsEnabled ? chrome.setVersion : undefined}
+            ratio={ratio}
+            onRatioChange={setRatio}
+            resolution={resolution}
+            onResolutionChange={setResolution}
+            preset={preset}
+            onPresetChange={changePreset}
+            prompt={prompt}
+            onPromptChange={changePrompt}
+            // The paperclip pins the image to work on; in Ajouter, once
+            // that is there, it takes the element's photo.
+            onAttach={mode === 'add' && sourceSrc ? setReferenceFile : pinPhoto}
+            attachTitle={
+              mode === 'add' && sourceSrc
+                ? t('app.cmdAttachReference')
+                : mode === 'generate'
+                  ? t('app.cmdAttach')
+                  : t('app.cmdAttachSource')
+            }
+            uploading={false}
+            pinned={pinned}
+            variantCount={variantCount}
+            onVariantCountChange={setVariantCount}
+            zoneSelected={hasComments}
+            referenceAdded={Boolean(referenceFile)}
+            materials={[]}
+            elementNodes={[]}
+            onPickElement={() => {}}
+            pickingElement={false}
+            template={
+              template
+                ? {
+                    label: TEMPLATES[template].label[locale],
+                    image: TEMPLATES[template].image,
+                    onClear: clearTemplate,
+                    sky: template === 'jour_ext' ? { value: sky, onChange: changeSky } : undefined,
+                  }
+                : null
+            }
+            presetSky={preset === 'jour_ext' ? { value: sky, onChange: changeSky } : undefined}
+            onSubmit={() => {
+              if (!sourceSrc || sendDisabled) return;
+              // No plan, or not enough credits for this render: the plans
+              // open over the page, before anything is uploaded.
+              const cost = priceOf(
+                mode === 'retouch' ? ANNOTATE_ENGINE : engine,
+                resolution,
+                mode === 'generate' ? 1 : variantCount,
+                mode === 'generate' ? analysisPrice(preset, Boolean(template)) : 0,
+              );
+              if (!tier && !remaining) return chrome?.openPlans('noTier');
+              if (remaining !== null && remaining < cost)
+                return chrome?.openPlans('noCredits', { cost, balance: remaining });
+              if (mode === 'generate') void generate();
+              else void runEdit();
+            }}
+            inputDisabled={creating}
+            sendDisabled={sendDisabled}
+            sendHint={sendHint}
+            submitLabel={
+              mode === 'generate'
+                ? t('app.submitGenerate')
+                : mode === 'retouch'
+                  ? t('app.modeRetouch')
+                  : t('app.modeAdd')
+            }
+            generating={creating}
+            fill
+          />
+        </div>
       </main>
 
       <SideColumn

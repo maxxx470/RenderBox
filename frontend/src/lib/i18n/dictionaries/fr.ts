@@ -158,6 +158,12 @@ const fr = {
   'app.creditsUnit': 'crédits',
   'app.creditsCount': '{count} crédits',
   'app.sendWithCost': '{verb} · Coût : {cost}',
+  'app.analysisUnreadable':
+    'Cette image n’a pas pu être analysée : envoyez une image d’architecture lisible. Aucun crédit n’a été débité.',
+  'app.analysisFailed':
+    'L’analyse de l’image n’a pas abouti. Réessayez : aucun crédit n’a été débité.',
+  'app.costLine': 'Coût : {cost} crédits',
+  'app.costLineBalance': 'Coût : {cost} crédits · Solde : {balance}',
   'app.railInfo': 'Info',
   'app.infoNewCount': 'nouveautés : {n}',
   'app.railNavigation': 'Navigation',
@@ -647,6 +653,7 @@ const fr = {
   'admin.stock.circulationTitle': 'Crédits en circulation',
   'admin.stock.circulationLabel': 'Détenus par les comptes',
   'admin.stock.accounts': '{count} comptes avec des crédits',
+  'admin.stock.demoShare': 'dont compte démo : {credits}',
   'admin.stock.coverageLabel': 'Couverture',
   'admin.stock.coverageRule': 'stock ÷ crédits détenus',
   'admin.stock.levelRed': 'Sous 100 %',

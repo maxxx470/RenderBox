@@ -1,0 +1,32 @@
+TRANSFORM:
+This render image into an ultra-photorealistic architectural photograph, 8K, DSLR photo shot on location as if captured on Sony VENICE 2, Zeiss Otus 28mm lens.
+
+BASE DESIGN CONSISTENCY:
+Do not alter, redesign, or reinterpret the architectural form in any way. Strictly preserve the exact geometry, massing, proportions, window placement, roof profile, and facade composition exactly as shown in the reference image. No reinterpretation of form. Geometry to preserve: Two-storey cubic villa, flat roof with thin overhang, entrance centred on the ground floor, three tall windows per floor..
+
+SITE LOCATION & NEIGHBOURHOOD CONTEXT:
+Cocody, Abidjan. A quiet upscale residential street: tarred road with red laterite verges, low rendered boundary walls, mature eucalyptus trees, and simple two-storey villas set back behind gates. Distant neighbours stay soft and secondary. Humid tropical calm.
+
+MATERIALS & TEXTURE:
+Finishes: ground floor walls: white rendered walls (white); upper floor cladding: iroko timber slats (warm brown); window frames: black aluminium (black). Keep every material exactly as identified: same type, same color, same placement. Only enhance realism: true texture depth, natural micro-variation, correct light response. Do not replace, restyle or invent materials.
+Glazing: clear high performance glass reflecting the sky; interior behind the glass dark and unreadable, no invented interior elements.
+All surfaces clean, freshly constructed, well maintained. Subtle natural micro-variations on every surface: slight irregularities in the render, small variations in grass and ground, light wear on paving. Nothing sterile or perfectly uniform.
+
+LIGHTING & MOOD:
+Late-morning sun around 10 to 11 am, high and slightly angled, casting short crisp shadows from the roof overhang and tree canopies onto the facade. Clear blue sky with a few well-defined white clouds, dry-season clarity, bright and clean mood.
+Light affects brightness and tone only; the materials keep their identified colors.
+Drizzle is fine and subtle, never a downpour hiding the building. The wet look applies to ground and horizontal surfaces only; the facade stays clearly recognizable.
+
+VEGETATION:
+A tall eucalyptus with a slender pale trunk and airy canopy rises beside the plot; a broad round-crowned shade tree stands at the far edge. Mid layer: dense rounded ligustrum shrubs and mounds of red, white and pink flowering shrubs. Ground: clipped low hedge, feathery grasses, ferns, short lawn.
+Plants stay around and beside the building and never cover or alter the facade, openings, roof or materials.
+Fauna: none
+
+CAMERA:
+Photographed on Sony VENICE 2, Zeiss Otus 28mm lens, f/8, eye-level, shot for Architectural Digest, editorial architectural photography
+
+RENDER SPECS:
+Ultra-photorealistic, 8K print quality, full dynamic range with rich detail in both deep shadows and bright highlights, color science warm, natural and cinematic with subtle richness without oversaturation, output must feel like a professional architectural photograph shot for a premium magazine like Architectural Digest.
+
+NEGATIVE PROMPTS:
+No redesigning of architecture or facade, no cartoon style, no plastic-looking materials or CGI surfaces, no excessive glow, bloom, or vignette. No changes to materials, no added or removed windows, no change to the building shape.

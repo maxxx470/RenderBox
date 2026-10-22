@@ -70,6 +70,14 @@ vi.mock('@/lib/server/materials/render-sheet', async (importOriginal) => ({
   scheduleSheet: mockScheduleSheet,
 }));
 
+// The Claude analysis (2026-10-22): mocked here — its prompts, checks and
+// sheets are tested in lib/server/analysis/. The mock's prompt names what the
+// route handed it, so a test can tell exactly what reached the engine.
+const { mockPrepare } = vi.hoisted(() => ({ mockPrepare: vi.fn() }));
+vi.mock('@/lib/server/analysis/pipeline', () => ({ prepareAmbiancePrompt: mockPrepare }));
+const analysed = (input: { preset: string; sky?: string | undefined; overrides: string }) =>
+  `ANALYSED:${input.preset}:${input.sky ?? ''}|${input.overrides}`;
+
 import { verifyToken } from '@/lib/server/auth';
 import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
@@ -87,6 +95,9 @@ function sent(
   customPrompt?: string,
   extra: { engine?: 'nanobanana' | 'gpt_image'; sky?: 'hazy' | 'sun' } = {},
 ): string {
+  if (preset) {
+    return analysed({ preset, sky: extra.sky, overrides: (customPrompt ?? '').trim() });
+  }
   return buildGenerationPrompt({
     engine: extra.engine ?? 'nanobanana',
     materialsSnapshot: rows.map(([face, valeur]) => ({
@@ -95,8 +106,6 @@ function sent(
       source: '',
       confidence: null,
     })),
-    preset,
-    sky: extra.sky,
     customPrompt,
   });
 }
@@ -123,7 +132,7 @@ function ctx() {
 }
 
 function validBody(overrides: Record<string, unknown> = {}) {
-  return { sourceNodeId: SOURCE_NODE_ID, preset: 'jour_ext', engine: 'nanobanana', ...overrides };
+  return { sourceNodeId: SOURCE_NODE_ID, preset: null, engine: 'nanobanana', ...overrides };
 }
 
 const T0 = new Date('2026-10-12T10:00:00Z');
@@ -181,6 +190,11 @@ beforeEach(() => {
   mockRefundCredits.mockReset().mockResolvedValue(undefined);
   mockDetectAndMerge.mockReset().mockResolvedValue(undefined);
   mockScheduleSheet.mockReset().mockResolvedValue(undefined);
+  mockPrepare.mockReset().mockImplementation(async (_db: unknown, input: never) => ({
+    ok: true,
+    prompt: analysed(input),
+    trace: { sheetId: 'sheet-1', matched: false, analysis: {}, usage: [] },
+  }));
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
 
   vi.mocked(verifyToken).mockResolvedValue({
@@ -261,14 +275,73 @@ describe('POST /api/projects/[projectId]/generate — presets', () => {
     expect(mockDetectAndMerge).toHaveBeenCalledTimes(1);
   });
 
-  it('assembles the prompt sent to the engine with the source image materials + preset modifier', async () => {
-    imageMaterials([], [correction(SOURCE_NODE_ID, 'toiture', 'Tuile terre cuite')]);
+  it('an ambiance goes through the Claude analysis: its prompt is the one the engine receives', async () => {
+    await POST(makeReq(validBody({ preset: 'eclate', customPrompt: 'vue aérienne' })), ctx());
 
+    expect(mockPrepare).toHaveBeenCalledWith(
+      prismaMock,
+      expect.objectContaining({
+        projectId: PROJECT_ID,
+        preset: 'eclate',
+        overrides: 'vue aérienne',
+      }),
+    );
+    expect((mockGenerate.mock.calls[0]?.[1] as { prompt: string }).prompt).toBe(
+      sent('eclate', [], 'vue aérienne'),
+    );
+    // The analysis is kept with the generation (debug, real cost).
+    expect(prismaMock.generation.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          analysis: expect.objectContaining({ sheetId: 'sheet-1' }),
+        }),
+      }),
+    );
+  });
+
+  it.each([
+    ['unreadable', 422, 'ANALYSIS_UNREADABLE'],
+    ['timeout', 504, 'ANALYSIS_TIMEOUT'],
+    ['failed', 502, 'ANALYSIS_FAILED'],
+    ['not_configured', 503, 'ANALYSIS_NOT_CONFIGURED'],
+  ] as const)(
+    'an analysis that fails (%s) stops the render: %i %s, no engine call, every credit back',
+    async (reason, status, code) => {
+      mockPrepare.mockResolvedValueOnce({ ok: false, step: 'analysis', reason });
+      const res = await POST(makeReq(validBody({ preset: 'jour_ext' })), ctx());
+      expect(res.status).toBe(status);
+      expect((await res.json()).error).toBe(code);
+      expect(mockGenerate).not.toHaveBeenCalled();
+      expect(prismaMock.renderNode.create).not.toHaveBeenCalled();
+      // Visio 1K (4) + the analysis and the sections (5): all given back.
+      expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 9);
+      expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 9);
+    },
+  );
+
+  it('the analysis is part of the price: 4 with the eight fixed ambiances, 5 with the six lights', async () => {
     await POST(makeReq(validBody({ preset: 'eclate' })), ctx());
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 4 + 4);
+    await POST(makeReq(validBody({ preset: 'pluie' })), ctx());
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 4 + 5);
+    await POST(makeReq(validBody({ template: 'jour_int' })), ctx());
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 4 + 5);
+    await POST(makeReq(validBody({ preset: null })), ctx());
+    expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 4);
+  });
 
-    const call = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-    expect(call.prompt).toContain('Tuile terre cuite');
-    expect(call.prompt.toLowerCase()).toContain('exploded axonometric');
+  it('the user’s own version of the ambiance text replaces its defaults; the unchanged text is not sent', async () => {
+    const { ambianceText } = await import('@/lib/server/generation/ambiance-text');
+    await POST(
+      makeReq(validBody({ preset: 'jour_ext', ambianceText: ambianceText('jour_ext') })),
+      ctx(),
+    );
+    expect(mockPrepare.mock.calls[0]?.[1]).toMatchObject({ overrides: '' });
+    await POST(
+      makeReq(validBody({ preset: 'jour_ext', ambianceText: 'Lomé, en fin de matinée' })),
+      ctx(),
+    );
+    expect(mockPrepare.mock.calls[1]?.[1]).toMatchObject({ overrides: 'Lomé, en fin de matinée' });
   });
 
   it('asks for a faithful photo render when no ambiance is chosen', async () => {
@@ -553,7 +626,6 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     );
     expect(res.status).toBe(201);
     expect(engineInput().prompt).toBe(sent('nuit_ext'));
-    expect(engineInput().prompt).toContain('exterior night photograph');
   });
 
   it("exterior day's sky: lightly hazy by default, direct sun when asked (D2)", async () => {
@@ -562,7 +634,6 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     mockGenerate.mockClear();
     await POST(makeReq(validBody({ template: 'jour_ext', sky: 'sun' })), ctx());
     expect(engineInput().prompt).toBe(sent('jour_ext', [], undefined, { sky: 'sun' }));
-    expect(engineInput().prompt).toContain('clear-sky direct sunlight');
   });
 
   it('refuses an unknown sky', async () => {
@@ -1131,11 +1202,6 @@ describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-
     '- Gris foncé du garde-corps → métal noir mat',
     'FIN DE LA FICHE',
   ].join('\n');
-  const engineInput = () => mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-  const LINES = [
-    { color: 'Brun-rouge des murs', material: 'brique rouge, joints creux' },
-    { color: 'Gris foncé du garde-corps', material: 'métal noir mat' },
-  ];
 
   it('starts the sheet of the render once it is stored, with its ambiance and its source', async () => {
     await POST(makeReq(validBody({ preset: 'jour_ext', sky: 'sun' })), ctx());
@@ -1161,15 +1227,15 @@ describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-
       ctx(),
     );
     expect(res.status).toBe(201);
-    const expected = buildGenerationPrompt({
-      engine: 'nanobanana',
-      materialsSnapshot: [],
+    // The sheet's lines go to the analysis, which records them as materials.
+    expect(mockPrepare.mock.calls[0]?.[1]).toMatchObject({
       preset: 'nuit_ext',
-      customPrompt: 'une précision',
-      sheet: { code: 'RP-7K4M2Q', lines: LINES },
+      overrides: 'une précision',
+      materialSheet: [
+        '- Brun-rouge des murs → brique rouge, joints creux',
+        '- Gris foncé du garde-corps → métal noir mat',
+      ],
     });
-    expect(engineInput().prompt).toBe(expected);
-    expect(engineInput().prompt).toContain('- Brun-rouge des murs → brique rouge, joints creux');
     expect(prismaMock.renderNode.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ preset: 'nuit_ext' }) }),
     );
@@ -1190,13 +1256,6 @@ describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-
       ),
       ctx(),
     );
-    expect(engineInput().prompt).toBe(
-      buildGenerationPrompt({
-        engine: 'nanobanana',
-        materialsSnapshot: [],
-        preset: 'nuit_ext',
-        sheet: { code: 'RP-7K4M2Q', lines: LINES },
-      }),
-    );
+    expect(mockPrepare.mock.calls[0]?.[1]).toMatchObject({ preset: 'nuit_ext', overrides: '' });
   });
 });

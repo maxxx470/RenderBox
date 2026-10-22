@@ -11,6 +11,7 @@ import {
   planMargin,
   type OfferedPrice,
 } from '@/lib/provider-cost';
+import { AUTH_DISABLED_USER_ID } from '@/lib/server/auth-disabled';
 import { computeAccounting } from './accounting';
 
 // « Stock Kie » in /admin (2026-10-22, owner — Phase 2): since a site credit IS
@@ -47,6 +48,10 @@ export interface KieStock {
   balanceXof: number | null;
   /** Credits every account holds — what Kie may still be asked for. */
   circulation: number;
+  /** Of which the free-access demo account (demo@localhost) holds — counted
+   *  in the circulation all the same: every visitor spends it while
+   *  AUTH_DISABLED is on (owner, 2026-10-22). */
+  demoCredits: number;
   accountsWithCredits: number;
   /** balance / circulation; null when nothing is held or the balance is unknown. */
   coverage: number | null;
@@ -84,12 +89,16 @@ export async function computeKieStock(
   readBalance: () => Promise<number | null>,
   configured: boolean,
 ): Promise<KieStock> {
-  const [balance, held, accounting, topUps] = await Promise.all([
+  const [balance, held, demo, accounting, topUps] = await Promise.all([
     readBalance().catch(() => null),
     prisma.user.aggregate({
       where: { creditsBalance: { gt: 0 } },
       _sum: { creditsBalance: true },
       _count: { _all: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: AUTH_DISABLED_USER_ID },
+      select: { creditsBalance: true },
     }),
     computeAccounting(prisma),
     prisma.kieTopUp.findMany({
@@ -118,6 +127,7 @@ export async function computeKieStock(
     balanceUsd: value?.usd ?? null,
     balanceXof: value?.xof ?? null,
     circulation,
+    demoCredits: Math.max(0, demo?.creditsBalance ?? 0),
     accountsWithCredits: held._count._all,
     coverage,
     level: balance === null ? (circulation > 0 ? 'red' : 'green') : coverageLevel(coverage),

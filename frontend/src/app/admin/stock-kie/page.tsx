@@ -167,7 +167,11 @@ export default function AdminKieStockPage() {
             <Figure
               label={t('admin.stock.circulationLabel')}
               value={`${num(data.circulation)} ${t('admin.stock.credits')}`}
-              sub={t('admin.stock.accounts', { count: num(data.accountsWithCredits) })}
+              sub={
+                data.demoCredits > 0
+                  ? `${t('admin.stock.accounts', { count: num(data.accountsWithCredits) })} · ${t('admin.stock.demoShare', { credits: num(data.demoCredits) })}`
+                  : t('admin.stock.accounts', { count: num(data.accountsWithCredits) })
+              }
             />
             <Figure
               label={t('admin.stock.coverageLabel')}

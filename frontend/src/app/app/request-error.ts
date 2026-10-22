@@ -66,6 +66,20 @@ export function isMaterialsUnavailable(err: unknown): boolean {
   return false;
 }
 
+/**
+ * The message for a render the Claude analysis stopped (2026-10-22): an image
+ * it could not read, or an analysis that did not succeed — every credit was
+ * given back. Null for any other failure.
+ */
+export function analysisErrorKey(
+  err: unknown,
+): 'app.analysisUnreadable' | 'app.analysisFailed' | null {
+  const code = err instanceof RequestError || err instanceof ApiError ? err.code : '';
+  if (code === 'ANALYSIS_UNREADABLE') return 'app.analysisUnreadable';
+  if (code.startsWith('ANALYSIS_')) return 'app.analysisFailed';
+  return null;
+}
+
 /** True when the failure is a missing server-side provider, not a flake. */
 export function isServiceNotConfigured(err: unknown): boolean {
   if (err instanceof RequestError) return NOT_CONFIGURED.has(err.code);

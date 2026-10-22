@@ -26,9 +26,9 @@ const statements = sql
   .filter(Boolean);
 
 describe(`migration ${NAME}`, () => {
-  it('sorts after every existing migration folder', () => {
+  it('sorts after every migration before it (only 9_phase9i_building_sheets follows)', () => {
     const sorted = [...folders].sort(byteOrder);
-    expect(sorted[sorted.length - 1]).toBe(NAME);
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9i_building_sheets']);
   });
 
   it('creates the KieTopUp table, its indexes and its link to the admin', () => {

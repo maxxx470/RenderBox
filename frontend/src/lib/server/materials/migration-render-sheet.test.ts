@@ -28,7 +28,10 @@ const statements = sql
 describe(`migration ${NAME}`, () => {
   it('sorts after every migration folder that came before it', () => {
     const sorted = [...folders].sort(byteOrder);
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual(['9_phase9h_kie_credits']);
+    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
+      '9_phase9h_kie_credits',
+      '9_phase9i_building_sheets',
+    ]);
   });
 
   it('only adds the nullable code and sheet columns and a unique index on the code', () => {

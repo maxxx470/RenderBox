@@ -26,6 +26,7 @@ export const maxDuration = 300;
 
 import { randomUUID } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
@@ -39,7 +40,9 @@ import {
   priceNotVerifiedResponse,
   refundCredits,
 } from '@/lib/server/generation/tier-quota';
-import { requestPrice } from '@/lib/provider-cost';
+import { ANALYSIS_COST, requestPrice } from '@/lib/provider-cost';
+import { prepareEnhancePrompt } from '@/lib/server/analysis/pipeline';
+import { analysisFailureResponse } from '@/lib/server/analysis/responses';
 import {
   generateRender,
   isEngineConfigured,
@@ -55,7 +58,6 @@ import {
   ENHANCE_OPTION_KEYS,
   ENHANCE_STRENGTHS,
 } from '@/lib/server/generation/enhance';
-import { buildEnhancePrompt } from '@/lib/server/generation/enhance-prompt';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 
@@ -156,10 +158,12 @@ export async function POST(
       }
     }
 
-    // One image at the size asked for, priced by the server, debited
-    // atomically before the engine call — see generate/route.ts.
-    const cost = requestPrice(engine, resolution, 1, version);
-    if (cost === null) return priceNotVerifiedResponse(ctx.requestId);
+    // One image at the size asked for, plus the Claude analysis that chooses
+    // its finishes (2026-10-22), priced by the server, debited atomically
+    // before anything runs — see generate/route.ts.
+    const renderCost = requestPrice(engine, resolution, 1, version);
+    if (renderCost === null) return priceNotVerifiedResponse(ctx.requestId);
+    const cost = renderCost + ANALYSIS_COST;
     const debit = await debitCredits(prisma, auth.user.sub, cost);
     if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);
 
@@ -205,14 +209,20 @@ export async function POST(
       }
       const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
-      const prompt = buildEnhancePrompt({
-        engine,
+      // Claude reads the image first and picks a premium finish per element
+      // (2026-10-22 specification, « Onglet Améliorer »): no analysis, no
+      // render, every credit given back.
+      const prepared = await prepareEnhancePrompt(prisma, {
+        projectId,
+        image: sourceImageBuffer,
         options,
         strength,
         darkRoom: options.includes('lighting') && darkRoom,
         ambiance: options.includes('ambiance') ? ambiance : undefined,
         instruction,
       });
+      if (!prepared.ok) return analysisFailureResponse(prepared, ctx.requestId);
+      const prompt = prepared.prompt;
 
       let result;
       try {
@@ -284,7 +294,13 @@ export async function POST(
           select: { id: true },
         });
         await tx.generation.create({
-          data: { nodeId: node.id, engine, prompt, materialsSnapshot: materials },
+          data: {
+            nodeId: node.id,
+            engine,
+            prompt,
+            materialsSnapshot: materials,
+            analysis: prepared.trace as unknown as Prisma.InputJsonValue,
+          },
         });
         return node.id;
       });

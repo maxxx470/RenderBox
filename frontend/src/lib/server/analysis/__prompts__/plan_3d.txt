@@ -1,0 +1,11 @@
+Render this floor plan as a realistic top-down 3D view, roof removed, walls cut to show their thickness.
+Use the uploaded plan image as the exact layout — keep every wall, room, opening and proportion identical, do not redesign the plan.
+Apply the materials, furniture and style from this spec: {"rooms":[{"name":"Séjour","area_if_written":"32 m²","floor_material":"large-format light tiles","key_furniture":["sofa","dining table"]},{"name":"Chambre 1","floor_material":"iroko wood","key_furniture":["double bed"]}],"openings":"5 doors, 7 windows"}
+
+Show each room name exactly as in the spec, spelled correctly, with its area only if the spec gives one. Keep the title block and graphic scale if present on the plan.
+Furniture: only the items listed in key_furniture for each room. Do not add furniture, appliances, TVs or any element that is not in the spec.
+Style: contemporary, warm natural materials, soft daylight from above, soft realistic shadows under furniture, clean color palette so each room is readable at a glance.
+Outdoors: short lawn, clipped low hedge, mounds of flowering shrubs in red, white and pink, ferns, one eucalyptus.
+Photorealistic, high detail.
+
+NEGATIVE: no redesign of the plan, no moved walls, no added rooms, no cartoon style, no spelling errors in labels.
