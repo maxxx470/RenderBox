@@ -1,37 +1,13 @@
-// The image's code and its materials sheet — the database and the vision
-// model are replaced.
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+// The image's code and its materials sheet — the database is replaced.
+import { describe, it, expect, beforeEach } from 'vitest';
 import { prismaMock } from '@/test-utils/prisma-mock';
 
-const { mockAnalyze, mockConfigured, mockDebit } = vi.hoisted(() => ({
-  mockAnalyze: vi.fn(),
-  mockConfigured: vi.fn(),
-  mockDebit: vi.fn(),
-}));
-vi.mock('@/lib/server/ai/vision-sheet', () => ({
-  analyzeRenderSheet: mockAnalyze,
-  sheetAnalysisConfigured: mockConfigured,
-}));
-vi.mock('@/lib/server/generation/tier-quota', () => ({
-  debitCredits: mockDebit,
-}));
-// `after` only exists inside a request: the tasks run at once here.
-vi.mock('next/server', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('next/server')>()),
-  after: (task: () => Promise<void>) => void task(),
-}));
-vi.mock('@/lib/i18n/request-locale', () => ({
-  requestLocale: vi.fn().mockResolvedValue({ locale: 'fr', country: null }),
-}));
-
 import {
-  completeSheet,
   ensureNodeCode,
   failAndRefund,
   recoverStalledSheet,
   generateImageCode,
   readSheet,
-  requestSheetAnalysis,
   resolvePastedSheet,
   scheduleSheet,
   startSheet,
@@ -48,9 +24,6 @@ const READY = {
 };
 
 beforeEach(() => {
-  mockAnalyze.mockReset();
-  mockConfigured.mockReset().mockReturnValue(true);
-  mockDebit.mockReset().mockResolvedValue({ ok: true, balance: 92 });
   prismaMock.$transaction.mockImplementation((async (fn: (tx: unknown) => unknown) =>
     fn(prismaMock)) as never);
 });
@@ -108,7 +81,7 @@ describe('readSheet', () => {
   });
 });
 
-describe('startSheet and completeSheet', () => {
+describe('startSheet and scheduleSheet', () => {
   it('starts "idle" (no analysis, no charge), with the ambiance and the source image’s code', async () => {
     prismaMock.renderNode.findUnique
       .mockResolvedValueOnce({ code: 'RP-NNNNNN' } as never)
@@ -132,60 +105,10 @@ describe('startSheet and completeSheet', () => {
     });
   });
 
-  it('writes the lines once the analysis answers', async () => {
-    prismaMock.renderNode.findUnique.mockResolvedValue({
-      sheet: { ...READY, status: 'pending', lines: [] },
-    } as never);
-    mockAnalyze.mockResolvedValue({ kind: 'lines', lines: LINES });
-    await completeSheet({
-      nodeId: 'n2',
-      source: Buffer.from('a'),
-      render: Buffer.from('b'),
-      locale: 'fr',
-    });
-    expect(prismaMock.renderNode.update).toHaveBeenCalledWith({
-      where: { id: 'n2' },
-      data: { sheet: { ...READY, status: 'ready', lines: LINES } },
-    });
-  });
-
-  it('says why when there is no analysis, and writes nothing — failAndRefund ends it', async () => {
-    prismaMock.renderNode.findUnique.mockResolvedValue({
-      sheet: { ...READY, status: 'pending', lines: [] },
-    } as never);
-    const input = {
-      nodeId: 'n2',
-      source: Buffer.from('a'),
-      render: Buffer.from('b'),
-      locale: 'en' as const,
-    };
-    mockAnalyze.mockResolvedValue({ kind: 'not_configured' });
-    expect(await completeSheet(input)).toEqual({ ok: false, failure: 'not_configured' });
-    mockAnalyze.mockResolvedValue({ kind: 'error', code: 'timeout' });
-    expect(await completeSheet(input)).toEqual({ ok: false, failure: 'timeout' });
-    mockAnalyze.mockResolvedValue({ kind: 'error', code: 'unknown', status: 402 });
-    expect(await completeSheet(input)).toEqual({ ok: false, failure: 'unknown_402' });
-    mockAnalyze.mockResolvedValue({ kind: 'invalid_response' });
-    expect(await completeSheet(input)).toEqual({ ok: false, failure: 'invalid_response' });
-    expect(prismaMock.renderNode.update).not.toHaveBeenCalled();
-  });
-
-  it('does nothing for an image that has no sheet to complete', async () => {
-    prismaMock.renderNode.findUnique.mockResolvedValue({ sheet: null } as never);
-    await completeSheet({
-      nodeId: 'n2',
-      source: Buffer.from('a'),
-      render: Buffer.from('b'),
-      locale: 'fr',
-    });
-    expect(mockAnalyze).not.toHaveBeenCalled();
-  });
-
-  it('scheduleSheet only starts the sheet — no analysis, no charge — and never throws', async () => {
+  it('scheduleSheet only starts the sheet and never throws', async () => {
     prismaMock.renderNode.findUnique.mockResolvedValue({ code: 'RP-AAAAAA' } as never);
     await scheduleSheet({ nodeId: 'n2', sourceNodeId: 'n1', ambiance: null });
-    expect(mockAnalyze).not.toHaveBeenCalled();
-    expect(mockDebit).not.toHaveBeenCalled();
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
 
     prismaMock.renderNode.findUnique.mockRejectedValue(new Error('db down'));
     await expect(
@@ -194,109 +117,7 @@ describe('startSheet and completeSheet', () => {
   });
 });
 
-describe('requestSheetAnalysis — asked when the sheet is copied, paid by the user', () => {
-  const IDLE = { ...READY, status: 'idle', lines: [] };
-  const node = (sheet: unknown, over: Record<string, unknown> = {}) =>
-    ({
-      kind: 'GENERATED',
-      blobUrl: 'https://blob/render',
-      sheet,
-      parent: { blobUrl: 'https://blob/source' },
-      project: { userId: 'u1' },
-      ...over,
-    }) as never;
-
-  beforeEach(() => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => new Response(new Uint8Array([1, 2, 3]), { status: 200 })),
-    );
-  });
-
-  it('charges 2 credits to the user, claims the sheet once and analyses in the background', async () => {
-    prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
-    prismaMock.renderNode.updateMany.mockResolvedValue({ count: 1 } as never);
-    mockAnalyze.mockResolvedValue({ kind: 'lines', lines: LINES });
-    const out = await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' });
-    expect(out).toEqual({ kind: 'started', balance: 92 });
-    expect(mockDebit).toHaveBeenCalledWith(expect.anything(), 'u1', 2);
-    expect(prismaMock.renderNode.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'n2', sheet: { path: ['status'], equals: 'idle' } },
-      }),
-    );
-    await vi.waitFor(() => expect(mockAnalyze).toHaveBeenCalledTimes(1));
-    expect(prismaMock.user.update).not.toHaveBeenCalled();
-  });
-
-  it('gives the credits back when the analysis produces nothing', async () => {
-    prismaMock.renderNode.findUnique
-      .mockResolvedValueOnce(node(IDLE))
-      .mockResolvedValue({ sheet: { ...IDLE, status: 'pending' } } as never);
-    prismaMock.renderNode.updateMany.mockResolvedValue({ count: 1 } as never);
-    mockAnalyze.mockResolvedValue({ kind: 'invalid_response' });
-    await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' });
-    await vi.waitFor(() =>
-      expect(prismaMock.user.update).toHaveBeenCalledWith({
-        where: { id: 'u1' },
-        data: { creditsBalance: { increment: 2 } },
-      }),
-    );
-  });
-
-  it('charges nothing when the sheet is already analysed or running', async () => {
-    prismaMock.renderNode.findUnique.mockResolvedValue(node(READY));
-    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toEqual({
-      kind: 'already',
-      status: 'ready',
-    });
-    prismaMock.renderNode.findUnique.mockResolvedValue(node({ ...READY, status: 'pending' }));
-    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toMatchObject({
-      kind: 'already',
-    });
-    expect(mockDebit).not.toHaveBeenCalled();
-  });
-
-  it('charges nothing without an analysis key, for another account’s image or an upload', async () => {
-    mockConfigured.mockReturnValue(false);
-    prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
-    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toEqual({
-      kind: 'not_configured',
-    });
-    mockConfigured.mockReturnValue(true);
-    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'someone-else' })).toEqual({
-      kind: 'not_found',
-    });
-    prismaMock.renderNode.findUnique.mockResolvedValue(node(null, { kind: 'UPLOADED' }));
-    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toEqual({
-      kind: 'no_sheet',
-    });
-    expect(mockDebit).not.toHaveBeenCalled();
-  });
-
-  it('puts the sheet back and charges nothing when the balance does not cover it', async () => {
-    prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
-    prismaMock.renderNode.updateMany.mockResolvedValue({ count: 1 } as never);
-    mockDebit.mockResolvedValue({ ok: false, reason: 'INSUFFICIENT_CREDITS', balance: 3 });
-    const out = await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' });
-    expect(out).toMatchObject({ kind: 'refused' });
-    expect(prismaMock.renderNode.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { sheet: IDLE } }),
-    );
-    expect(mockAnalyze).not.toHaveBeenCalled();
-  });
-
-  it('a second click while the first claim stands pays nothing', async () => {
-    prismaMock.renderNode.findUnique.mockResolvedValue(node(IDLE));
-    prismaMock.renderNode.updateMany.mockResolvedValue({ count: 0 } as never);
-    expect(await requestSheetAnalysis({ nodeId: 'n2', userId: 'u1' })).toMatchObject({
-      kind: 'already',
-    });
-    expect(mockDebit).not.toHaveBeenCalled();
-  });
-});
-
-describe('failAndRefund and recoverStalledSheet — a failed paid analysis costs nothing', () => {
+describe('failAndRefund and recoverStalledSheet — an analysis started before 2026-10-23 and never finished is refunded', () => {
   const PENDING = { ...READY, status: 'pending', lines: [], startedAt: Date.now() };
 
   it('turns the sheet "failed" and gives the 2 credits back together, once', async () => {

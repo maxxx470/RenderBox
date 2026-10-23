@@ -8,17 +8,14 @@
 //   - which colour of the source became which material in this render,
 //   - « Copier »: the whole sheet as text, to paste under the prompt of a new
 //     render so it keeps the same materials and the same ambiance.
-// The lines come from the render's analysis, which runs after the render is
-// delivered: the panel asks again every few seconds while it is "pending".
-import { useEffect, useRef, useState } from 'react';
+// No analysis since 2026-10-23 (owner: « il n'y aura plus d'analyse »):
+// « Copier » copies the sheet at once, for free. The colour → material lines
+// are only those an older render already had.
+import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useToast } from '@/contexts/ToastContext';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { formatSheetBlock } from '@/lib/render-sheet';
-import { SHEET_COST } from '@/lib/provider-cost';
-import { creditDetailOf, errorCodeOf, plansReasonFor } from './request-error';
-import { useAppChrome } from './AppChrome';
-import { creditsChanged } from './fresh-credits';
 import { PRESETS, isPresetKey } from '@/lib/server/generation/presets';
 
 interface SheetAnswer {
@@ -58,55 +55,25 @@ function blockOf(
   );
 }
 
-const POLL_MS = 4000;
-const POLL_MAX = 60;
-
 export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
   const t = useTranslations();
   const { locale } = useLocale();
   const { toast } = useToast();
   const [answer, setAnswer] = useState<SheetAnswer | null>(null);
   const [failed, setFailed] = useState(false);
-  const [tick, setTick] = useState(0);
-  const chrome = useAppChrome();
-  // True once THIS user asked for the analysis (copying an unanalysed sheet).
-  const asked = useRef(false);
 
   useEffect(() => {
     setAnswer(null);
     setFailed(false);
     if (!nodeId) return;
     let alive = true;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    let tries = 0;
-    const read = () => {
-      api<SheetAnswer>(`/api/render-nodes/${nodeId}/sheet`)
-        .then((a) => {
-          if (!alive) return;
-          setAnswer(a);
-          const status = a.sheet?.status;
-          if (status === 'pending' && ++tries < POLL_MAX) {
-            timer = setTimeout(read, POLL_MS);
-          } else if (asked.current && (status === 'ready' || status === 'failed')) {
-            asked.current = false;
-            // Ready, or failed and refunded: the balance is read again.
-            creditsChanged();
-            if (status === 'ready') {
-              toast(t('app.sheetDone'), 'success');
-              void navigator.clipboard?.writeText(blockOf(a, locale, t)).catch(() => undefined);
-            } else {
-              toast(t('app.sheetFailedRefunded'), 'error');
-            }
-          }
-        })
-        .catch(() => alive && setFailed(true));
-    };
-    read();
+    api<SheetAnswer>(`/api/render-nodes/${nodeId}/sheet`)
+      .then((a) => alive && setAnswer(a))
+      .catch(() => alive && setFailed(true));
     return () => {
       alive = false;
-      if (timer) clearTimeout(timer);
     };
-  }, [nodeId, tick]);
+  }, [nodeId]);
 
   const sheet = answer?.sheet ?? null;
   const ambianceKey = sheet?.ambiance?.key ?? null;
@@ -115,32 +82,15 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
   const sky = sheet?.ambiance?.sky ?? null;
   const skyLabel = sky ? t(sky === 'hazy' ? 'app.skyHazy' : 'app.skySun') : null;
 
-  const needsAnalysis = sheet !== null && sheet.status !== 'ready' && sheet.status !== 'pending';
+  const lines = sheet?.status === 'ready' ? sheet.lines : [];
 
   async function copy() {
     if (!answer) return;
     try {
       await navigator.clipboard.writeText(blockOf(answer, locale, t));
-      toast(t(needsAnalysis ? 'app.sheetCopiedAsking' : 'app.sheetCopied'), 'success');
+      toast(t('app.sheetCopied'), 'success');
     } catch {
       toast(t('app.sheetCopyFailed'), 'error');
-    }
-    // The analysis is asked, and paid, only when the sheet is copied — and
-    // only if it does not exist yet.
-    if (!needsAnalysis) return;
-    try {
-      await api(`/api/render-nodes/${nodeId}/sheet/analyze`, {
-        method: 'POST',
-      });
-      asked.current = true;
-      setTick((n) => n + 1);
-      creditsChanged();
-    } catch (err) {
-      const reason = plansReasonFor(err);
-      if (reason) chrome?.openPlans(reason, creditDetailOf(err));
-      else if (errorCodeOf(err) === 'SHEET_NOT_CONFIGURED')
-        toast(t('app.sheetUnavailable'), 'error');
-      else toast(t('app.sheetAskFailed'), 'error');
     }
   }
 
@@ -160,7 +110,6 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
             className="rounded-lg bg-[#EEF1FF] px-2.5 py-1 text-[11.5px] font-semibold text-[#1E36D6] hover:bg-[#E3E8FF]"
           >
             {t('app.sheetCopy')}
-            {needsAnalysis ? ` · ${SHEET_COST} ${t('app.sheetCredits')}` : ''}
           </button>
         )}
       </div>
@@ -203,32 +152,15 @@ export function RenderSheetPanel({ nodeId }: { nodeId: string | null }) {
             <p className="text-[12px] leading-snug text-[#8A8896]">
               {answer.kind === 'UPLOADED' ? t('app.sheetUploaded') : t('app.sheetNone')}
             </p>
-          ) : sheet.status === 'pending' ? (
-            <p role="status" className="text-[12px] leading-snug text-[#6B6878]">
-              {t('app.sheetPending')}
-            </p>
-          ) : sheet.status === 'idle' ? (
+          ) : lines.length === 0 ? (
             <p className="text-[12px] leading-snug text-[#8A8896]">{t('app.sheetIdle')}</p>
-          ) : sheet.status === 'unavailable' ? (
-            <p className="text-[12px] leading-snug text-[#8A8896]">{t('app.sheetUnavailable')}</p>
-          ) : sheet.status === 'failed' ? (
-            <p className="text-[12px] leading-snug text-[#8A8896]">
-              {t('app.sheetFailed')}
-              {sheet.failure && (
-                <span className="ml-1 font-[family-name:var(--font-mono)] text-[11px]">
-                  ({sheet.failure})
-                </span>
-              )}
-            </p>
-          ) : sheet.lines.length === 0 ? (
-            <p className="text-[12px] leading-snug text-[#8A8896]">{t('app.sheetNoLines')}</p>
           ) : (
             <div>
               <p className="mb-1.5 text-[11px] font-semibold text-[#8A8896]">
                 {t('app.sheetLines')}
               </p>
               <ul className="flex flex-col gap-1.5">
-                {sheet.lines.map((l, i) => (
+                {lines.map((l, i) => (
                   <li
                     key={i}
                     className="rounded-lg bg-[#F7F7FA] px-2.5 py-1.5 text-[12px] leading-snug text-[#17161F]"

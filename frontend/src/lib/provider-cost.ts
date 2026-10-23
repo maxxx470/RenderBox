@@ -31,7 +31,8 @@ export const XOF_PER_USD = 600;
 export const XOF_PER_CREDIT = KIE_USD_PER_CREDIT * XOF_PER_USD;
 /** Maketou's commission on each payment made through its API. */
 export const MAKETOU_FEE_RATE = 0.08;
-/** A materials sheet (the analysis asked when the sheet is copied). */
+/** What the materials-sheet analysis cost (2026-10-19 → 23). The analysis is gone
+ *  (2026-10-23): only used to refund one that was started and never finished. */
 export const SHEET_COST = 2;
 /** A message to the team (the assistant panel). */
 export const ASSISTANT_COST: number = 0;
