@@ -185,6 +185,26 @@ export const PRESETS: Record<PresetKey, PresetDef> = {
   },
 };
 
+/**
+ * Ambiances 1 to 6 of the owner's specification: their site / lighting /
+ * vegetation (or space / lighting / styling) sections come from the
+ * ambiance's defaults, which the user's words can replace; the eight others
+ * are fixed texts (spec-prompts.ts).
+ */
+export const WRITTEN_PRESETS = [
+  'jour_ext',
+  'heure_doree',
+  'pluie',
+  'nuit_ext',
+  'jour_int',
+  'nuit_int',
+] as const satisfies readonly PresetKey[];
+export type WrittenPreset = (typeof WRITTEN_PRESETS)[number];
+
+export function isWrittenPreset(value: PresetKey): value is WrittenPreset {
+  return (WRITTEN_PRESETS as readonly string[]).includes(value);
+}
+
 export function isPresetKey(value: string): value is PresetKey {
   return (PRESET_KEYS as readonly string[]).includes(value);
 }

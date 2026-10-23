@@ -55,7 +55,7 @@ import {
   ENHANCE_OPTION_KEYS,
   ENHANCE_STRENGTHS,
 } from '@/lib/server/generation/enhance';
-import { buildEnhancePrompt } from '@/lib/server/generation/enhance-prompt';
+import { enhancePrompt } from '@/lib/server/generation/spec-prompts';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 
@@ -205,8 +205,7 @@ export async function POST(
       }
       const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
-      const prompt = buildEnhancePrompt({
-        engine,
+      const prompt = enhancePrompt({
         options,
         strength,
         darkRoom: options.includes('lighting') && darkRoom,

@@ -1,0 +1,7 @@
+Transform this image into an access diagram: an isometric view of the building as a plain white massing model on a light grey background, seen from above at 45 degrees.
+Keep the exact geometry, proportions and openings as in the reference image: do not redesign anything.
+All surfaces in white and light grey only, openings as thin dark lines.
+Add thin dark arrows showing how people enter, with short uppercase labels in French (max 3 words each, for example ENTRÉE PRINCIPALE, GARAGE), spelled correctly. Label only the entrances and access points visible in the image; do not invent entrances, streets or paths.
+Clean diagram style: thin leader lines, small uppercase sans-serif text, no people, no vegetation, no color.
+
+NEGATIVE: no redesign, no added or removed windows, no invented streets or paths, no color, no spelling errors in labels.

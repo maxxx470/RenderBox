@@ -71,7 +71,7 @@ import { verifyToken } from '@/lib/server/auth';
 import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
 import { ENHANCE_OPTION_KEYS } from '@/lib/server/generation/enhance';
-import { buildEnhancePrompt } from '@/lib/server/generation/enhance-prompt';
+import { enhancePrompt } from '@/lib/server/generation/spec-prompts';
 
 const USER_ID = 'user-1';
 const PROJECT_ID = 'project-1';
@@ -186,14 +186,13 @@ describe('POST /api/projects/[projectId]/enhance', () => {
     expect(res.status).toBe(201);
     const input = mockGenerate.mock.calls[0]?.[1] as { prompt: string };
     expect(input.prompt).toBe(
-      buildEnhancePrompt({
-        engine: 'nanobanana',
+      enhancePrompt({
         options: [],
         strength: 'subtle',
         instruction: 'brighter interior',
       }),
     );
-    expect(input.prompt).toContain('Only modify what this request explicitly names');
+    expect(input.prompt).toContain("In the user's words: brighter interior.");
   });
 
   it.each(['ref_sky', 'ref_materials'])(
@@ -284,8 +283,7 @@ describe('POST /api/projects/[projectId]/enhance — what reaches the engine', (
       ctx(),
     );
     expect(engineCall().input.prompt).toBe(
-      buildEnhancePrompt({
-        engine: 'nanobanana',
+      enhancePrompt({
         options: ['sky', 'lighting', 'ambiance'],
         strength: 'medium',
         darkRoom: true,
@@ -301,14 +299,14 @@ describe('POST /api/projects/[projectId]/enhance — what reaches the engine', (
       ctx(),
     );
     expect(engineCall().input.prompt).toBe(
-      buildEnhancePrompt({ engine: 'nanobanana', options: ['sharpness'], strength: 'subtle' }),
+      enhancePrompt({ options: ['sharpness'], strength: 'subtle' }),
     );
   });
 
-  it('lays the prompt out for the chosen engine', async () => {
+  it('sends the same prompt to both engines', async () => {
     await POST(makeReq(baseFields({ engine: 'gpt_image' })), ctx());
     expect(engineCall().input.prompt).toBe(
-      buildEnhancePrompt({ engine: 'gpt_image', options: ['lighting'], strength: 'subtle' }),
+      enhancePrompt({ options: ['lighting'], strength: 'subtle' }),
     );
   });
 

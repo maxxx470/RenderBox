@@ -19,8 +19,6 @@
 import 'server-only';
 import type { EngineName } from './engines/types';
 import type { SkyOption } from './templates';
-import { DRAWN_AVOID, PHOTO_AVOID, lightTextOf } from './ambiance-text';
-import type { PresetKey } from './presets';
 
 // ── Common blocks ─────────────────────────────────────────────────────────
 
@@ -129,11 +127,10 @@ export function isProfileKey(value: string): value is ProfileKey {
   return (PROFILE_KEYS as readonly string[]).includes(value);
 }
 
-/** Exterior day only (D2): lightly hazy by default, direct sun on request. */
 /**
- * The annex A wording of the profiles (with the palette sentences), kept for
- * what still reads them: Améliorer's ambiance and the C0 / profile specs. The
- * ambiances of Générer use the owner's v2 texts (ambiance-text.ts).
+ * The annex A wording of the four profiles (with the palette sentences), kept
+ * for what still reads them: Améliorer's « Ambiance » improvement. The
+ * ambiances of Générer use the owner's specification (spec-prompts.ts).
  */
 const PROFILE_TEXT = {
   EXTERIOR_DAY_HAZY:
@@ -146,13 +143,6 @@ const PROFILE_TEXT = {
     'Blue hour exterior, deep blue sky, facade lit by architectural lighting around 2800 K, warm glowing windows, slightly reflective ground. Exposure -0.7 to -0.3 EV, medium-high contrast, controlled glow, soft light falloff. Saturation 0 to +5 percent. Palette: deep indigo and teal sky and shadows against warm amber windows.',
   INTERIOR_NIGHT:
     'Evening interior lit by practical lamps and indirect lighting around 2700 K, with subtle warm spot accents. Windows show a deep blue night around 7500 K. The room stays readable, never black. Exposure -0.3 to 0 EV, medium-high contrast with shadows still detailed. Saturation lowered by about 5 percent. Warm pools of light, soft falloff, realistic global illumination. Palette: deep bronze, chocolate brown and near-black against warm amber light.',
-  GOLDEN_HOUR:
-    'Golden hour, sun low at 5 to 15 degrees elevation, warm raking light around 3500 K on the facades and through the windows, long soft shadows, sky graded from warm amber near the horizon to soft blue above. Exposure -0.3 to 0 EV, sunlit highlights kept, shadows open with a cool natural fill. Medium filmic contrast. Saturation 0 to +5 percent, warm but natural, never orange overall. Palette: honey, amber and soft peach on the facades, cool lavender-blue in the upper sky and in the shadows.',
-  RAIN: 'Rainy overcast day, soft even light from a grey sky, neutral to slightly cool white balance around 6500 K. Wet ground and wet horizontal surfaces with true reflections of the building, a few shallow puddles, darker and richer tones where surfaces are wet, a light drizzle barely visible, a little mist in the distance. Warm interior light glowing softly in the existing windows around 3000 K. Exposure -0.3 to 0 EV, facade still readable. Soft contrast. Saturation -10 to -5 percent. Palette: cool slate and grey tones with warm amber from the windows.',
-  SKETCH:
-    'Drawing: architectural design sketch on off-white paper in fine graphite pencil, visible pencil lines, a few perspective construction lines left in, loose hatching on walls and glazing, simplified volumes, light shading, neutral light. The drawing is graphite grey only, with no colour. Each material stays recognisable by its line and hatching. Keep it a design drawing, not a photograph.',
-  WATERCOLOUR:
-    'Drawing: architectural watercolour illustration on textured cold-press paper, fine ink outline of the building, transparent washes with soft bleeding edges, the white of the paper left in the highlights, natural muted colours true to the source materials, the sky as a light loose wash. Each material stays recognisable by its colour and brushwork. Palette: muted sage, olive and moss greens, warm ochre and umber, a soft grey-blue sky wash. Keep it a hand-painted illustration, not a photograph.',
 } as const;
 
 export type SkyKey = SkyOption;
@@ -230,42 +220,6 @@ const LIGHTS: Record<Exclude<ProfileKey, 'jour_ext'>, Light> = {
   },
 };
 
-// Two more lights for the ambiance menu (2026-10-19, owner: « ajoute 4
-// autres ambiances »), written like annex A: figure + plain words, the same
-// constraints for both engines. Like the others they carry a setting (see
-// ambiance-text.ts), never a new architectural element.
-const EXTRA_LIGHTS: Record<'golden' | 'rain', Light> = {
-  golden: {
-    visio: PROFILE_TEXT.GOLDEN_HOUR,
-    pixel: [
-      '- Time: golden hour, sun low at 5 to 15 degrees elevation.',
-      '- Light: warm raking light around 3500 K on the facades and through the windows; long soft shadows.',
-      '- Sky: graded from warm amber near the horizon to soft blue above.',
-      '- Exposure: -0.3 to 0 EV (target -0.15 EV); sunlit highlights kept; shadows open with a cool natural fill.',
-      '- Contrast: medium, filmic.',
-      '- Saturation: 0 to +5 percent (target +3 percent); warm but natural, never orange overall.',
-      '- Palette: honey, amber and soft peach on the facades, cool lavender-blue in the upper sky and in the shadows.',
-    ],
-    avoid:
-      'orange cast over the whole image, blown sun, fake lens flare, oversaturated sky, black shadows, HDR look',
-  },
-  rain: {
-    visio: PROFILE_TEXT.RAIN,
-    pixel: [
-      '- Sky: rainy overcast, soft even grey light.',
-      '- White balance: neutral to slightly cool, around 6500 K; warm interior light in the existing windows around 3000 K.',
-      '- Wet surfaces: wet ground with true reflections of the building, a few shallow puddles, darker and richer tones where wet.',
-      '- Atmosphere: light drizzle barely visible, a little mist in the distance.',
-      '- Exposure: -0.3 to 0 EV (target -0.15 EV); facade still readable.',
-      '- Contrast: soft.',
-      '- Saturation: -10 to -5 percent (target -8 percent).',
-      '- Palette: cool slate and grey tones with warm amber from the windows.',
-    ],
-    avoid:
-      'heavy rain streaks across the image, flooded ground, gloomy dark image, blue cast, blurred building, HDR look',
-  },
-};
-
 export function profileLight(profile: ProfileKey, sky: SkyKey = 'hazy'): Light {
   return profile === 'jour_ext' ? exteriorDay(sky) : LIGHTS[profile];
 }
@@ -280,36 +234,6 @@ const SOURCE_LIGHT: Light = {
     '- No new ambiance: no sunset, no cinematic or artistic look.',
   ],
   avoid: 'HDR look, oversaturation, blown highlights, crushed blacks, plastic surfaces',
-};
-
-/** The pencil sketch (annex A « Esquisse »): no photographic setting at all. */
-const SKETCH: Light = {
-  visio: PROFILE_TEXT.SKETCH,
-  pixel: [
-    '- Medium: pencil on off-white paper, visible pencil lines, light shading, neutral light.',
-    '- Volumes: simplified, same outline and openings as the source.',
-    '- Tones: graphite grey only, no colour.',
-    '- Construction: a few perspective construction lines left in, loose hatching on walls and glazing.',
-    '- Materials: recognisable by line and hatching only.',
-    '- Keep it a design drawing, not a photograph.',
-  ],
-  avoid: 'photographic look, dense color fill, 3D render look, heavy textures',
-};
-
-/** The watercolour (2026-10-19): a hand-painted drawing, like the sketch. */
-const WATERCOLOUR: Light = {
-  visio: PROFILE_TEXT.WATERCOLOUR,
-  pixel: [
-    '- Medium: watercolour on textured cold-press paper, fine ink outline of the building.',
-    '- Washes: transparent, soft bleeding edges; the white of the paper left in the highlights.',
-    '- Colours: natural and muted, true to the source materials; the sky as a light loose wash.',
-    '- Palette: muted sage, olive and moss greens, warm ochre and umber, a soft grey-blue sky wash.',
-    '- Volumes: same outline and openings as the source.',
-    '- Materials: recognisable by colour and brushwork.',
-    '- Keep it a hand-painted illustration, not a photograph.',
-  ],
-  avoid:
-    'photographic look, 3D render look, heavy opaque paint, oversaturated colours, digital gradients',
 };
 
 // ── Spec and layouts ──────────────────────────────────────────────────────
@@ -384,25 +308,15 @@ export function formatPrompt(engine: EngineName, spec: PromptSpec): string {
   return blocks.map((lines, i) => [`${i + 1}. ${titles[i]}`, ...lines].join('\n')).join('\n');
 }
 
-// ── The photo profiles, C0 and the sketch ─────────────────────────────────
-
-export type LookKey = ProfileKey | 'golden' | 'rain' | 'source' | 'sketch' | 'watercolour';
+// ── C0: no ambiance ───────────────────────────────────────────────────────
 
 /**
- * Générer on a light profile (a fan template, D1), on no ambiance (C0) or on
- * the pencil sketch: lock, request, light (or drawing), materials, photo look
- * (never on the sketch), avoid, check — in that order, each block once.
+ * Générer without an ambiance (C0, a faithful photo render): lock, request,
+ * the source's own light, materials, photo look, avoid, check — in that
+ * order, each block once.
  */
 export function lookSpec(input: {
-  look: LookKey;
-  sky?: SkyKey | undefined;
   request?: string | undefined;
-  /**
-   * The user's own version of the light / drawing text shown in the bar
-   * (2026-10-19): it replaces the profile's section, nothing else — the lock,
-   * the materials, the photo look and the check stay. Ignored on C0.
-   */
-  lightText?: string | undefined;
   /** A materials sheet pasted under the prompt. */
   sheet?: SheetRequest | undefined;
   materials: readonly { face: string; valeur: string }[];
@@ -411,118 +325,22 @@ export function lookSpec(input: {
   const request = targetedRequest(input.request);
   // A sheet changes materials too: the keep-every-material block must give way.
   const hasRequest = request !== null || sheetLines.length > 0;
-  const lightText = input.lightText ? toPromptLine(input.lightText) : '';
   const project = projectMaterialLines(input.materials);
-  const { look } = input;
-  // The pencil sketch and the watercolour are drawings: no photo settings.
-  const sketch = look === 'sketch' || look === 'watercolour';
-  const light =
-    look === 'source'
-      ? SOURCE_LIGHT
-      : look === 'sketch'
-        ? SKETCH
-        : look === 'watercolour'
-          ? WATERCOLOUR
-          : look === 'golden' || look === 'rain'
-            ? EXTRA_LIGHTS[look]
-            : profileLight(look, input.sky);
-
-  // The ambiance's text (the owner's v2 wording, ambiance-text.ts) — or the
-  // user's own version of it — is the whole ambiance section; C0 keeps the
-  // source's own light.
-  const defaultText =
-    look === 'source' ? '' : lightTextOf(settingName(look) as PresetKey, input.sky);
-  const text = look !== 'source' && lightText !== '' ? lightText : defaultText;
-  const sections: PromptSection[] = [
-    text !== ''
-      ? { title: 'AMBIANCE', visio: text, pixel: [text] }
-      : {
-          title: 'LIGHT',
-          visio: `Light: ${light.visio.charAt(0).toLowerCase()}${light.visio.slice(1)}`,
-          pixel: light.pixel,
-        },
-  ];
-  if (sketch) {
-    // A sketch of a timber-clad wall still reads as timber: the recorded
-    // materials stay, drawn; the photographic material block does not apply.
-    if (project.length > 0) {
-      sections.push({ title: 'MATERIALS', visio: project.join('\n'), pixel: project });
-    }
-  } else {
-    const block = materialsBlock(hasRequest);
-    sections.push(
-      {
-        title: 'MATERIALS',
-        visio: [block, ...project].join('\n'),
-        pixel: [block, ...project],
-      },
-      { title: 'PHOTO LOOK', visio: PHOTO_LOOK, pixel: [PHOTO_LOOK] },
-    );
-  }
+  const block = materialsBlock(hasRequest);
   return {
     kind: 'edit',
     lock: GEOMETRY_LOCK,
     request: [...(request ? [request] : []), ...sheetLines],
-    sections,
-    avoid: look === 'source' ? light.avoid : sketch ? DRAWN_AVOID : PHOTO_AVOID,
-    check: sketch
-      ? checkFor(
-          `geometry unchanged, openings unchanged, no new architectural element, the result is ${
-            look === 'watercolour' ? 'a watercolour illustration' : 'a drawing'
-          }, not a photograph`,
-          hasRequest,
-        )
-      : checkFor(BASE_CHECK, hasRequest),
-  };
-}
-
-/** The key of a look's setting in ambiance-text.ts ('' for C0). */
-function settingName(look: LookKey): string {
-  switch (look) {
-    case 'golden':
-      return 'heure_doree';
-    case 'rain':
-      return 'pluie';
-    case 'sketch':
-      return 'croquis';
-    case 'watercolour':
-      return 'aquarelle';
-    case 'source':
-      return '';
-    default:
-      return look;
-  }
-}
-
-/**
- * A module that changes the kind of picture (3D plan, exploded view, model,
- * access diagram): the module's own text is the representation; the
- * transform lock comes first; recorded materials only where the module keeps
- * the real materials (the model and the diagram have their own palette).
- */
-export function transformSpec(input: {
-  representation: string;
-  request?: string | undefined;
-  sheet?: SheetRequest | undefined;
-  materials: readonly { face: string; valeur: string }[];
-}): PromptSpec {
-  const request = targetedRequest(input.request);
-  const sheetLines = sheetRequestLines(input.sheet);
-  const project = projectMaterialLines(input.materials);
-  const sections: PromptSection[] = [
-    { title: 'REPRESENTATION', visio: input.representation, pixel: [input.representation] },
-  ];
-  if (project.length > 0) {
-    sections.push({ title: 'MATERIALS', visio: project.join('\n'), pixel: project });
-  }
-  return {
-    kind: 'transform',
-    lock: TRANSFORM_LOCK,
-    request: [...(request ? [request] : []), ...sheetLines],
-    sections,
-    check: checkFor(
-      'footprint and proportions unchanged, openings unchanged, no invented volume, the representation is the one described',
-      request !== null || sheetLines.length > 0,
-    ),
+    sections: [
+      {
+        title: 'LIGHT',
+        visio: `Light: ${SOURCE_LIGHT.visio.charAt(0).toLowerCase()}${SOURCE_LIGHT.visio.slice(1)}`,
+        pixel: SOURCE_LIGHT.pixel,
+      },
+      { title: 'MATERIALS', visio: [block, ...project].join('\n'), pixel: [block, ...project] },
+      { title: 'PHOTO LOOK', visio: PHOTO_LOOK, pixel: [PHOTO_LOOK] },
+    ],
+    avoid: SOURCE_LIGHT.avoid,
+    check: checkFor(BASE_CHECK, hasRequest),
   };
 }

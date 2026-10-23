@@ -1,0 +1,10 @@
+Create an architectural analysis board in landscape format, on a clean white background, in a minimal editorial layout, from this image.
+Panels:
+1. VUE PRINCIPALE: the uploaded image, kept identical, large, about half of the board.
+2. VOLUMÉTRIE: the same building as a simplified white massing diagram, same geometry.
+3. COUPE SCHÉMATIQUE: a simple schematic section line drawing showing the levels and the roof type visible in the image. No interior details invented.
+4. MATÉRIAUX: swatches of the identified materials with their exact colors: facade_principale: Enduit blanc taloché; menuiseries: Aluminium noir.
+Short panel titles in French, small uppercase text, spelled correctly. Thin light grey lines, balanced spacing, no people, no extra text.
+Keep the geometry exactly as in the reference. Do not invent rooms, plans or dimensions.
+
+NEGATIVE: no redesign, no invented plans or dimensions, no change to materials, no spelling errors in labels.

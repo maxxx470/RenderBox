@@ -486,8 +486,10 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
   it('sends materials, ambiance and free text in that order', async () => {
     imageMaterials([], [correction(SOURCE_NODE_ID, 'facade_principale', 'Enduit blanc taloché')]);
     await POST(makeReq(validBody({ preset: 'isometrie', customPrompt: 'vue aérienne' })), ctx());
-    // The model keeps its own palette: the recorded material is not listed.
-    expect(engineInput().prompt).toBe(sent('isometrie', [], 'vue aérienne'));
+    // The specification's isometric view keeps the recorded materials too.
+    expect(engineInput().prompt).toBe(
+      sent('isometrie', [['facade_principale', 'Enduit blanc taloché']], 'vue aérienne'),
+    );
     mockGenerate.mockClear();
     await POST(makeReq(validBody({ preset: 'eclate', customPrompt: 'vue aérienne' })), ctx());
     expect(engineInput().prompt).toBe(
@@ -553,7 +555,7 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     );
     expect(res.status).toBe(201);
     expect(engineInput().prompt).toBe(sent('nuit_ext'));
-    expect(engineInput().prompt).toContain('exterior night photograph');
+    expect(engineInput().prompt).toContain('Blue-hour dusk deepening to night');
   });
 
   it("exterior day's sky: lightly hazy by default, direct sun when asked (D2)", async () => {
@@ -562,7 +564,7 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     mockGenerate.mockClear();
     await POST(makeReq(validBody({ template: 'jour_ext', sky: 'sun' })), ctx());
     expect(engineInput().prompt).toBe(sent('jour_ext', [], undefined, { sky: 'sun' }));
-    expect(engineInput().prompt).toContain('clear-sky direct sunlight');
+    expect(engineInput().prompt).toContain('Clear blue sky with a few well-defined white clouds');
   });
 
   it('refuses an unknown sky', async () => {
@@ -1169,7 +1171,9 @@ describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-
       sheet: { code: 'RP-7K4M2Q', lines: LINES },
     });
     expect(engineInput().prompt).toBe(expected);
-    expect(engineInput().prompt).toContain('- Brun-rouge des murs → brique rouge, joints creux');
+    expect(engineInput().prompt).toContain(
+      'where the image shows Brun-rouge des murs: brique rouge, joints creux',
+    );
     expect(prismaMock.renderNode.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ preset: 'nuit_ext' }) }),
     );

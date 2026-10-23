@@ -1,5 +1,0 @@
-Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:
-- facade_principale: Enduit blanc taloché
-- toiture: Tuile terre cuite
-Create an architectural analysis board on a clean white background based on the building in the image. Include a characteristic plan, a section, an axonometric diagram, and 5 small massing diagrams showing the form evolution step by step, all strictly consistent with the volumes, proportions and openings of the source image. Add material samples limited to the materials actually visible in the image. Use clean line drawings with light grey tones and minimal labels. Do not invent dimensions, text claims or architectural elements that are not present in the source. Keep the layout balanced, organized and professional.
-vue depuis la rue
