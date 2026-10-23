@@ -50,11 +50,13 @@ export const GALLERY: readonly GalleryBatch[] = [
   {
     key: 'croquis',
     label: { fr: 'Du croquis au rendu', en: 'From sketch to render' },
-    // The house pair (croquis-maison / rendu-maison) is out since 2026-10-23
-    // (owner: « à revoir »): its render is not the sketched building — the
-    // upper volume turned white, a glass balcony appeared. Put it back with a
-    // faithful render under the same name.
+    // rendu-maison was regenerated on 2026-10-23 (owner: « à revoir »): the
+    // first one was not the sketched building.
     rows: [
+      [
+        { src: '/galerie/croquis-maison.jpg', w: 900, h: 1205 },
+        { src: '/galerie/rendu-maison.jpg', w: 900, h: 1205 },
+      ],
       [
         { src: '/galerie/croquis-salon.jpg', w: 1200, h: 670 },
         { src: '/galerie/rendu-salon.jpg', w: 1200, h: 670 },
