@@ -57,7 +57,6 @@ import {
 import { AppFrame } from '../AppFrame';
 import { useAppChrome } from '../AppChrome';
 import { useRenderPrice } from '../use-render-price';
-import { ANALYSIS_COST } from '@/lib/provider-cost';
 import type { AppSurfaceProps } from '../AppSurface';
 import { useObjectUrl } from '../CommandBar';
 import { CARD_TRANSFORM, ExampleFanCard, FanCarousel } from '../fan';
@@ -73,7 +72,6 @@ import {
   creditDetailOf,
   RequestError,
   readErrorCode,
-  analysisErrorKey,
   isGenerationTimeout,
   isServiceNotConfigured,
   notConfiguredKey,
@@ -282,9 +280,9 @@ export function EnhanceClient({
     // No plan, or not enough credits: the plans open over the page (owner,
     // 2026-10-15), before anything is uploaded.
     if (!surface.tier && !remaining) return chrome?.openPlans('noTier');
-    if (remaining !== null && remaining < priceOf(engine, resolution, 1, ANALYSIS_COST))
+    if (remaining !== null && remaining < priceOf(engine, resolution))
       return chrome?.openPlans('noCredits', {
-        cost: priceOf(engine, resolution, 1, ANALYSIS_COST),
+        cost: priceOf(engine, resolution),
         balance: remaining,
       });
     setWorking(true);
@@ -344,7 +342,6 @@ export function EnhanceClient({
       else if (creditKey)
         toast(t(creditKey), 'error', { label: t('app.creditsCta'), href: '/app/tarifs' });
       else if (code === 'CONTENT_FLAGGED') toast(t('enhance.refFlagged'), 'error');
-      else if (analysisErrorKey(err)) toast(t(analysisErrorKey(err)!), 'error');
       else if (isServiceNotConfigured(err)) toast(t(notConfiguredKey(err)), 'error');
       else if (isGenerationTimeout(err)) toast(t('app.generationTimeout'), 'error');
       else toast(t('enhance.error'), 'error');
@@ -651,7 +648,7 @@ export function EnhanceClient({
             )}
 
             <p className="mt-auto pt-3 text-center text-[11.5px] text-[#6B6878]">
-              {t('enhance.costNote', { cost: priceOf(engine, resolution, 1, ANALYSIS_COST) })}
+              {t('enhance.costNote', { cost: priceOf(engine, resolution) })}
               {remaining !== null && surface.creditsMax !== null
                 ? ` · ${remaining}/${surface.creditsMax}`
                 : ''}

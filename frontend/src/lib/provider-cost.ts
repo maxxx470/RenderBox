@@ -16,7 +16,6 @@ import {
 } from '@/lib/server/generation/engine-versions';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import type { EngineName } from '@/lib/server/generation/engines/types';
-import { isWrittenPreset, type PresetKey } from '@/lib/server/generation/presets';
 import {
   DEFAULT_RESOLUTION,
   RESOLUTION_KEYS,
@@ -36,30 +35,6 @@ export const MAKETOU_FEE_RATE = 0.08;
 export const SHEET_COST = 2;
 /** A message to the team (the assistant panel). */
 export const ASSISTANT_COST: number = 0;
-
-/**
- * The Claude analysis (through Kie) that comes before every render with an
- * ambiance and every Améliorer (owner, 2026-10-22 — « pour toute analyse les
- * utilisateurs devront payer »): it is added to the render's price, and the
- * price shown before the click already includes it. ESTIMATES, to be checked
- * against the usage logged for each call: Kie publishes no Claude price, so
- * they come from Claude Sonnet 5.5's public one (2 $ / 10 $ per million tokens
- * in / out) — call 1 (≈ 3 500 tokens in with the image, ≈ 1 100 out with the
- * « look » sheet) ≈ 0.018 $ ≈ 4 credits; call 2, the sections of ambiances 1
- * to 6 (≈ 1 500 in, ≈ 250 out) ≈ 0.0055 $ ≈ 1 credit.
- */
-export const ANALYSIS_COST = 4;
-export const WRITING_COST = 1;
-
-/** What the analysis adds to a render: nothing without an ambiance (a
- *  faithful photo render, no analysis), call 1, plus call 2 for the six
- *  ambiances whose sections Claude writes (the fan's templates are four of
- *  them). */
-export function analysisPrice(preset: PresetKey | null, template = false): number {
-  if (template) return ANALYSIS_COST + WRITING_COST;
-  if (!preset) return 0;
-  return ANALYSIS_COST + (isWrittenPreset(preset) ? WRITING_COST : 0);
-}
 
 /**
  * Kie credits per image, for every engine version × size. `null` = no
@@ -139,13 +114,12 @@ export function offeredPrice(engine: EngineName, resolution: ResolutionKey, coun
 }
 
 /** How many images a number of credits buys: with the dearest offered
- *  combination and its analysis (min), and the cheapest, a faithful render
- *  without ambiance, which has no analysis (max). */
+ *  combination (min) and the cheapest (max). */
 export function imageRange(credits: number): { min: number; max: number } {
   const costs = offeredPrices().map((p) => p.credits);
   if (costs.length === 0) return { min: 0, max: 0 };
   return {
-    min: Math.floor(credits / (Math.max(...costs) + ANALYSIS_COST + WRITING_COST)),
+    min: Math.floor(credits / Math.max(...costs)),
     max: Math.floor(credits / Math.min(...costs)),
   };
 }
@@ -198,12 +172,4 @@ export function describePrices(locale: 'fr' | 'en'): string {
       return `${ENGINE_LABELS[engine].name[locale]}${locale === 'fr' ? ' :' : ':'} ${parts.join(', ')}`;
     })
     .join(locale === 'fr' ? ' ; ' : '; ');
-}
-
-/** The analysis in one sentence, for the assistant and /llms.txt. */
-export function describeAnalysis(locale: 'fr' | 'en'): string {
-  const lights = ANALYSIS_COST + WRITING_COST;
-  return locale === 'fr'
-    ? `un rendu avec ambiance commence par une analyse de l’image (géométrie et matériaux), comprise dans son prix : ${ANALYSIS_COST} crédits de plus, ${lights} avec les six lumières, et ${ANALYSIS_COST} pour Améliorer`
-    : `a render with an ambiance starts with an analysis of the image (geometry and materials), included in its price: ${ANALYSIS_COST} more credits, ${lights} with the six lights, and ${ANALYSIS_COST} for Enhance`;
 }

@@ -7,7 +7,7 @@
 import 'server-only';
 import { MAX_ANNOTATIONS } from '@/lib/server/generation/annotations';
 import { PRICING_TIERS } from '@/lib/pricing-tiers';
-import { describeAnalysis, describePrices } from '@/lib/provider-cost';
+import { describePrices } from '@/lib/provider-cost';
 
 type Locale = 'fr' | 'en';
 
@@ -89,8 +89,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'subscription',
       'pay',
     ],
-    fr: `Trois formules : Découverte, Standard et Pro (${creditsFr} crédits par mois). Chaque image produite — rendu, Commenter, Ajouter ou Améliorer — coûte exactement le prix du moteur à la taille choisie : ${describePrices('fr')} ; ${describeAnalysis('fr')}. Votre solde est dans la pastille bleue de l'en-tête et sur l'Accueil ; changez de formule depuis la page Abonnement.`,
-    en: `Three plans: Discovery, Standard and Pro (${creditsEn} credits a month). Every image produced — a render, Comment, Add or Enhance — costs exactly the engine's price at the size chosen: ${describePrices('en')}; ${describeAnalysis('en')}. Your balance is in the blue pill of the header and on Home; change plan from the Subscription page.`,
+    fr: `Trois formules : Découverte, Standard et Pro (${creditsFr} crédits par mois). Chaque image produite — rendu, Commenter, Ajouter ou Améliorer — coûte exactement le prix du moteur à la taille choisie : ${describePrices('fr')}. Votre solde est dans la pastille bleue de l'en-tête et sur l'Accueil ; changez de formule depuis la page Abonnement.`,
+    en: `Three plans: Discovery, Standard and Pro (${creditsEn} credits a month). Every image produced — a render, Comment, Add or Enhance — costs exactly the engine's price at the size chosen: ${describePrices('en')}. Your balance is in the blue pill of the header and on Home; change plan from the Subscription page.`,
   },
   {
     keys: ['ajout', 'ajouter', 'personnage', 'mobilier', 'add', 'person', 'furniture'],

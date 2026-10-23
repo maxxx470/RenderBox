@@ -158,10 +158,6 @@ const fr = {
   'app.creditsUnit': 'crédits',
   'app.creditsCount': '{count} crédits',
   'app.sendWithCost': '{verb} · Coût : {cost}',
-  'app.analysisUnreadable':
-    'Cette image n’a pas pu être analysée : envoyez une image d’architecture lisible. Aucun crédit n’a été débité.',
-  'app.analysisFailed':
-    'L’analyse de l’image n’a pas abouti. Réessayez : aucun crédit n’a été débité.',
   'app.costLine': 'Coût : {cost} crédits',
   'app.costLineBalance': 'Coût : {cost} crédits · Solde : {balance}',
   'app.railInfo': 'Info',

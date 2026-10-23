@@ -377,8 +377,10 @@ model Project {
 // 2026-10-22 (owner) — the analysis specification's « fiche »: what Claude
 // read of one building (or one floor plan) of a project, kept so that every
 // image of that building keeps the same materials, plants and neighbours
-// (lib/server/analysis/sheets.ts). Usually one to three per project; deleted
-// with the project. Migration 9_phase9i_building_sheets (additive).
+// Usually one to three per project; deleted with the project. Migration
+// 9_phase9i_building_sheets (additive). UNUSED since 2026-10-23 (owner: « il
+// n'y aura plus d'analyse »): the code that wrote it is gone, the table stays
+// (dropping it needs a destructive migration).
 model BuildingSheet {
   id        String   @id @default(cuid())
   projectId String
@@ -572,7 +574,8 @@ model Generation {
   // 2026-10-22 — the Claude analysis that preceded the render (the analysis,
   // the written sections, the sheet it matched and the tokens each call
   // used): to debug a render and to measure the analysis' real cost. Null
-  // for renders without an analysis and every render made before.
+  // for renders without an analysis and every render made before. No longer
+  // written since 2026-10-23 (the analysis was removed).
   analysis          Json?
   createdAt         DateTime   @default(now())
 

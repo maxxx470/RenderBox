@@ -1,0 +1,9 @@
+1. LOCK
+This is an edit of the first image, not a new design.
+Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+2. AMBIANCE
+Transform this image into an architectural watercolor and ink illustration. Strictly preserve the building’s geometry, proportions, camera angle and composition. Use soft watercolor washes, warm tones, visible brush texture and precise hand-drawn ink contour lines. Render the existing vegetation as loosely painted layered green washes, without adding new plants or objects. Use a light cream paper background to unify the composition and enhance the handcrafted feel. Produce one single illustration: no marginal sketches, no diagrams, no handwritten notes, no text. Cohesive, artistic and professionally illustrated.
+3. AVOID
+Photorealistic rendering, added elements not in the source, distorted proportions, watermark, text, signature, low resolution, messy composition.
+4. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, no new architectural element, the result is a watercolour illustration, not a photograph.

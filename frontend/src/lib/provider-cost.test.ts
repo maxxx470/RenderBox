@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PRICING_TIERS } from './pricing-tiers';
 import {
-  ANALYSIS_COST,
   ASSISTANT_COST,
-  WRITING_COST,
-  analysisPrice,
   KIE_PRICES,
   KIE_USD_PER_CREDIT,
   MAKETOU_FEE_RATE,
@@ -92,12 +89,11 @@ describe('the grid: every engine version × size', () => {
 });
 
 describe('what the plans buy, and what they guarantee', () => {
-  it('the image range comes from the grid: dearest offered with its analysis for the min, cheapest for the max', () => {
-    // Dearest: Pixel IA 4K (16) + the analysis and the sections (5); cheapest:
-    // Visio 1K (4) without an ambiance, which has no analysis.
-    expect(imageRange(500)).toEqual({ min: 23, max: 125 });
-    expect(imageRange(1500)).toEqual({ min: 71, max: 375 });
-    expect(imageRange(4000)).toEqual({ min: 190, max: 1000 });
+  it('the image range comes from the grid: dearest offered for the min, cheapest for the max', () => {
+    // Dearest: Pixel IA 4K (16); cheapest: Visio 1K (4).
+    expect(imageRange(500)).toEqual({ min: 31, max: 125 });
+    expect(imageRange(1500)).toEqual({ min: 93, max: 375 });
+    expect(imageRange(4000)).toEqual({ min: 250, max: 1000 });
     expect(imageRange(3)).toEqual({ min: 0, max: 0 });
   });
 
@@ -133,39 +129,5 @@ describe('normalizeKieCredits — Kie changed its unit', () => {
 
   it('keeps the value without an expected price', () => {
     expect(normalizeKieCredits(60, null)).toBe(60);
-  });
-});
-
-describe('the Claude analysis is part of a render with an ambiance (2026-10-22)', () => {
-  it('4 for call 1, 1 more for the sections of the six lights — estimates, in one place', () => {
-    expect(ANALYSIS_COST).toBe(4);
-    expect(WRITING_COST).toBe(1);
-  });
-
-  it('nothing without an ambiance; 4 with the eight fixed ones; 5 with the six lights and the templates', () => {
-    expect(analysisPrice(null)).toBe(0);
-    for (const p of [
-      'plan_3d',
-      'eclate',
-      'analyse',
-      'isometrie',
-      'maquette_blanche',
-      'esquisse',
-      'croquis',
-      'aquarelle',
-    ] as const) {
-      expect(analysisPrice(p)).toBe(4);
-    }
-    for (const p of [
-      'jour_ext',
-      'heure_doree',
-      'pluie',
-      'nuit_ext',
-      'jour_int',
-      'nuit_int',
-    ] as const) {
-      expect(analysisPrice(p)).toBe(5);
-    }
-    expect(analysisPrice(null, true)).toBe(5);
   });
 });

@@ -1,0 +1,11 @@
+1. LOCK
+This is a new representation of the building in the first image, not a new design.
+Keep the building's real footprint, volumes, proportions, roof shape and the number and position of its openings; only the kind of representation changes, as described below. Do not add, remove, move, resize or redesign any architectural element unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+2. REPRESENTATION
+Transform this image into a furnished 3D floor plan in a top-down cutaway view, with the roof removed and the walls cut at a low height. Strictly preserve the real layout: room positions, wall thicknesses, doors, windows, openings and circulations exactly as shown in the source. Show only furniture, fixtures and finishes that are visible in the source image. Do not invent rooms, furniture, openings or decoration. Apply physically accurate materials with natural variation in color and roughness. Use soft, even studio lighting with gentle shadows on a clean white background. Keep proportions and scale accurate.
+3. MATERIALS
+Recorded materials of this source image (keep each one unless the request explicitly changes it):
+- facade_principale: Enduit blanc taloché
+- toiture: Tuile terre cuite
+4. FINAL CHECK
+Before answering, verify: footprint and proportions unchanged, openings unchanged, no invented volume, the representation is the one described.

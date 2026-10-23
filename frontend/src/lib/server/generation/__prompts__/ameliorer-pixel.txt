@@ -1,0 +1,19 @@
+1. LOCK
+This is an edit of the first image, not a new design.
+Preserve the exact geometry, proportions, openings, roof shape, camera angle, framing and perspective of the source image. Keep vertical lines straight. Do not add, remove, move, resize or redesign any architectural element, furniture or object unless explicitly instructed. If part of the building is blurry, hidden or cut off, do not invent distinctive features: no new window, no new roof shape, no new volume.
+2. IMPROVEMENTS
+- Improve sharpness and edge definition, reduce blur, noise, aliasing and render artifacts. Do not change shapes or composition.
+- Improve exposure, natural light, shadows and contrast: balanced exposure, open shadows, no blown windows. Do not change material colors.
+- Raise exposure by about +1 to +1.5 stops, open the shadows, add warm accent light around 3000 K. Protect colors: no saturation or hue shift while brightening.
+- Improve how light renders each existing material. Do not change any material's nature or color.
+- Improve the sky and its integration into the overall lighting, lightly hazy by default. Do not touch the building or its cast shadows.
+- Harmonize the overall atmosphere using the lighting guidance of the selected profile. Do not change geometry.
+- Lighting guidance of the selected profile: Soft diffused daylight, like an overcast sky, entering through the windows and filtering through blinds or curtains. Long soft shadows, never hard. Neutral slightly warm white balance around 4800 K, with small warm accents from practical lamps around 2700 K. Balanced exposure around -0.3 to 0 EV, open shadows, window view keeps detail, no blown-out windows. Soft filmic contrast with slightly lifted blacks. Overall saturation lowered by about 10 to 15 percent while a few accent colors stay readable. Realistic global illumination with gentle warm color bounce. Palette: warm cream, sand and oat tones in soft white light.
+3. INTENSITY
+Intensity: clear but natural improvement.
+4. MATERIALS
+Keep every material, color, finish and pattern exactly as in the source image. Do not replace, restyle, recolor or reinterpret any material. Only render each existing material more realistically, with physically accurate response to light. Where such materials are present: lime plaster, render and polished concrete with subtle tonal variation, fine grain and micro-patina, never a uniform plastic surface; wood with visible grain and soft satin reflection; fabric, linen and bouclé with visible weave, natural wrinkles and soft shadow in the folds; marble, travertine and stone with sharp veining, soft reflection and fine regular joints; tiles and zellige with glaze variation, small tone differences and visible joints; glass with believable reflections of sky and surroundings, a slight green or blue tint, never a perfect mirror; metal with sharp controlled reflections and a light patina; brick with brick-to-brick color variation and recessed joints; vegetation with varied foliage and natural green, never a uniform mass or neon green. Add subtle imperfections for a lived-in realism. No excessive gloss, no plastic or smooth-3D look. The same material keeps the same appearance on every face within a view.
+5. AVOID
+HDR look, oversaturation, oversharpening, new objects.
+6. FINAL CHECK
+Before answering, verify: geometry unchanged, openings unchanged, materials unchanged, no new objects.

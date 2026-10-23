@@ -1,13 +1,19 @@
-// The prompt of a render WITHOUT an ambiance (C0, a faithful photo render),
-// built on the server from structured parameters only — the client sends the
-// user's own words, never a prompt (2026-10-19, the owner's prompt audit, D1).
-// render-profiles.ts's lookSpec('source'): geometry lock, the request, the
-// source's own light, the materials, the photo look, what to avoid, the final
-// check; then formatPrompt lays it out for the engine that will read it.
+// Assembles the prompt of a generation (Générer) on the server, from
+// structured parameters only — the client sends a preset or template key, an
+// optional sky, an engine and the user's own words, never a prompt
+// (2026-10-19, the owner's prompt audit, D1).
 //
-// Since 2026-10-22 every render WITH an ambiance (the fourteen of the menu
-// and the fan's templates) goes through the Claude analysis instead
-// (lib/server/analysis/), which replaced the prompts v2 of 2026-10-20.
+// - A light profile (a fan template or an old light ambiance), no ambiance
+//   (C0) or the pencil sketch: render-profiles.ts's lookSpec — geometry
+//   lock, the request, the light, the materials, the photo look, what to
+//   avoid, the final check.
+// - A module that changes the kind of picture (3D plan, exploded view,
+//   model, access diagram): transformSpec — the transform lock, the request,
+//   the module's own text, the recorded materials where the module keeps
+//   them.
+// - The analysis board: the text it always had (materials, modifier, the
+//   user's words), untouched — its rework is a separate project.
+// Then formatPrompt lays the spec out for the engine that will read it.
 //
 // A material is data, never an instruction: its face and its value are each
 // put on ONE line (toPromptLine), so a line break typed or detected inside a
@@ -16,7 +22,18 @@
 // left, the header goes too.
 import 'server-only';
 import type { EngineName } from './engines/types';
-import { formatPrompt, lookSpec, toPromptLine, type SheetRequest } from './render-profiles';
+import { PRESETS, type PresetKey } from './presets';
+import { ambianceText } from './ambiance-text';
+import {
+  formatPrompt,
+  lookSpec,
+  sheetRequestLines,
+  toPromptLine,
+  transformSpec,
+  type LookKey,
+  type SheetRequest,
+  type SkyKey,
+} from './render-profiles';
 
 export { toPromptLine };
 
@@ -27,19 +44,111 @@ export interface MaterialSnapshotEntry {
   confidence: number | null;
 }
 
+/** The analysis board's own header, as it was before the audit. */
+const BOARD_MATERIALS_HEADER =
+  "Materials recorded for this source image. Preserve each listed material by default. If the user's request explicitly changes a listed material, apply the requested change only to that material; preserve every other listed material unchanged unless the user explicitly requests otherwise:";
+
+function boardPrompt(
+  modifier: string,
+  materials: readonly MaterialSnapshotEntry[],
+  customPrompt: string | undefined,
+  sheet?: SheetRequest,
+): string {
+  const parts: string[] = [];
+  const lines = materials
+    .map((m) => ({ face: toPromptLine(m.face), valeur: toPromptLine(m.valeur) }))
+    .filter((m) => m.face !== '' && m.valeur !== '')
+    .map((m) => `- ${m.face}: ${m.valeur}`);
+  if (lines.length > 0) parts.push(BOARD_MATERIALS_HEADER, ...lines);
+  parts.push(modifier);
+  parts.push(...sheetRequestLines(sheet));
+  if (customPrompt?.trim()) parts.push(customPrompt.trim());
+  return parts.join('\n');
+}
+
 export function buildGenerationPrompt(input: {
   engine: EngineName;
   materialsSnapshot: readonly MaterialSnapshotEntry[];
+  /** The ambiance or the template's key; null: no ambiance (C0). */
+  preset: PresetKey | null;
+  /** Exterior day only: lightly hazy (default) or direct sun. */
+  sky?: SkyKey | undefined;
   customPrompt?: string | undefined;
+  /**
+   * The ambiance's text as the user left it in the bar (2026-10-19, owner:
+   * « l'utilisateur peut le lire, le changer avant de lancer »). Sent only
+   * when it differs from the text the ambiance writes itself; then it
+   * replaces the ambiance's own section.
+   */
+  ambianceText?: string | undefined;
   /** A materials sheet pasted under the prompt (2026-10-19). */
   sheet?: SheetRequest | undefined;
 }): string {
+  const { engine, materialsSnapshot: materials, customPrompt } = input;
+  const def = input.preset ? PRESETS[input.preset].prompt : null;
+  const edited = input.preset ? editedText(input.preset, input.sky, input.ambianceText) : null;
+
+  if (def?.kind === 'board') {
+    return boardPrompt(edited ?? def.modifier, materials, customPrompt, input.sheet);
+  }
+
+  if (def?.kind === 'transform') {
+    return formatPrompt(
+      engine,
+      transformSpec({
+        representation: edited ?? def.modifier,
+        request: customPrompt,
+        sheet: input.sheet,
+        materials: def.keepsMaterials ? materials : [],
+      }),
+    );
+  }
+
+  const look: LookKey =
+    input.preset === null
+      ? 'source'
+      : input.preset === 'croquis'
+        ? 'sketch'
+        : lookKey(input.preset);
   return formatPrompt(
-    input.engine,
+    engine,
     lookSpec({
-      request: input.customPrompt,
+      look,
+      sky: input.sky,
+      request: customPrompt,
+      lightText: edited ?? undefined,
       sheet: input.sheet,
-      materials: input.materialsSnapshot,
+      materials,
     }),
   );
+}
+
+/** The user's text when it is really theirs: not empty, not the default. */
+function editedText(
+  preset: PresetKey,
+  sky: SkyKey | undefined,
+  text: string | undefined,
+): string | null {
+  const line = text ? toPromptLine(text) : '';
+  if (line === '' || line === toPromptLine(ambianceText(preset, sky))) return null;
+  return line;
+}
+
+function lookKey(preset: PresetKey): LookKey {
+  switch (preset) {
+    case 'jour_ext':
+    case 'jour_int':
+    case 'nuit_ext':
+    case 'nuit_int':
+      return preset;
+    case 'heure_doree':
+      return 'golden';
+    case 'pluie':
+      return 'rain';
+    case 'aquarelle':
+      return 'watercolour';
+    default:
+      // Every other `look` preset is listed above; a new one must be mapped.
+      throw new Error(`no look for preset ${preset}`);
+  }
 }

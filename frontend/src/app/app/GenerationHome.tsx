@@ -30,7 +30,6 @@ import {
   isGenerationTimeout,
   isMaterialsUnavailable,
   isServiceNotConfigured,
-  analysisErrorKey,
   errorCodeOf,
   notConfiguredKey,
 } from './request-error';
@@ -61,7 +60,6 @@ import {
 import { AppFrame } from './AppFrame';
 import { useAppChrome } from './AppChrome';
 import { creditsChanged, useSyncedCredits } from './fresh-credits';
-import { analysisPrice } from '@/lib/provider-cost';
 import { useRenderPrice } from './use-render-price';
 import { MOBILE_NAV_PAD, PHONE_STICKY_BAR } from './MobileNav';
 import { SideColumn } from './SideColumn';
@@ -337,8 +335,6 @@ export function GenerationHome({
       toast(t(notConfiguredKey(err)), 'error');
     } else if (isMaterialsUnavailable(err)) {
       toast(t('app.materialsUnavailableError'), 'error');
-    } else if (analysisErrorKey(err)) {
-      toast(t(analysisErrorKey(err)!), 'error');
     } else {
       // The code after the message says which step failed, on any screenshot.
       const code = errorCodeOf(err);
@@ -773,7 +769,6 @@ export function GenerationHome({
                 mode === 'retouch' ? ANNOTATE_ENGINE : engine,
                 resolution,
                 mode === 'generate' ? 1 : variantCount,
-                mode === 'generate' ? analysisPrice(preset, Boolean(template)) : 0,
               );
               if (!tier && !remaining) return chrome?.openPlans('noTier');
               if (remaining !== null && remaining < cost)

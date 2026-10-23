@@ -156,9 +156,6 @@ const en: Record<keyof typeof fr, string> = {
   'app.creditsUnit': 'credits',
   'app.creditsCount': '{count} credits',
   'app.sendWithCost': '{verb} · Cost: {cost}',
-  'app.analysisUnreadable':
-    'This image could not be analysed: send a readable architectural image. No credit was charged.',
-  'app.analysisFailed': 'The image analysis did not succeed. Try again: no credit was charged.',
   'app.costLine': 'Cost: {cost} credits',
   'app.costLineBalance': 'Cost: {cost} credits · Balance: {balance}',
   'app.railInfo': 'Info',

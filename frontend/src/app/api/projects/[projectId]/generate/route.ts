@@ -10,7 +10,6 @@ export const maxDuration = 300;
 
 import { randomUUID } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
-import type { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { verifyCsrf } from '@/lib/server/auth';
 import { requireAuth } from '@/lib/server/middleware';
@@ -24,12 +23,7 @@ import {
   priceNotVerifiedResponse,
   refundCredits,
 } from '@/lib/server/generation/tier-quota';
-import { analysisPrice, requestPrice } from '@/lib/provider-cost';
-import { prepareAmbiancePrompt } from '@/lib/server/analysis/pipeline';
-import { analysisFailureResponse } from '@/lib/server/analysis/responses';
-import { userText } from '@/lib/server/analysis/assemble';
-import { ambianceText as defaultAmbianceText } from '@/lib/server/generation/ambiance-text';
-import { toPromptLine } from '@/lib/server/generation/render-profiles';
+import { requestPrice } from '@/lib/provider-cost';
 import {
   generateRender,
   isEngineConfigured,
@@ -181,11 +175,8 @@ export async function POST(
     // for, priced by the server (never by the client), debited atomically
     // BEFORE the engine call (tier-quota.ts). Without a plan or enough
     // credits the request stops here, before taking an hourly unit.
-    // With an ambiance, the Claude analysis that comes first is part of the
-    // price (owner, 2026-10-22): one debit for both, one refund if either fails.
-    const renderCost = requestPrice(engine, resolution, 1, version);
-    if (renderCost === null) return priceNotVerifiedResponse(ctx.requestId);
-    const cost = renderCost + analysisPrice(preset, Boolean(template));
+    const cost = requestPrice(engine, resolution, 1, version);
+    if (cost === null) return priceNotVerifiedResponse(ctx.requestId);
     const debit = await debitCredits(prisma, auth.user.sub, cost);
     if (!debit.ok) return creditRefusalResponse(debit, cost, ctx.requestId);
 
@@ -219,41 +210,16 @@ export async function POST(
       }
       const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
-      // With an ambiance: Claude analyses the image first (2026-10-22
-      // specification) and the code assembles the prompt from it — no
-      // analysis, no render. Without one: a faithful photo render (C0).
-      let assembledPrompt: string;
-      let analysisTrace: object | null = null;
-      if (preset) {
-        // The user's own words replace the ambiance's defaults: their version
-        // of the ambiance's text when they changed it, and their request.
-        const edited =
-          ambianceText &&
-          toPromptLine(ambianceText) !== toPromptLine(defaultAmbianceText(preset, sky))
-            ? ambianceText
-            : undefined;
-        const prepared = await prepareAmbiancePrompt(prisma, {
-          projectId,
-          preset,
-          sky,
-          image: sourceImageBuffer,
-          overrides: userText(edited, customPrompt),
-          materialSheet: (sheet?.lines ?? []).map(
-            (l) => `- ${toPromptLine(l.color)} → ${toPromptLine(l.material)}`,
-          ),
-        });
-        if (!prepared.ok) return analysisFailureResponse(prepared, ctx.requestId);
-        assembledPrompt = prepared.prompt;
-        analysisTrace = prepared.trace;
-      } else {
-        assembledPrompt = buildGenerationPrompt({
-          engine,
-          materialsSnapshot: toPromptEntries(promptMaterials),
-          customPrompt,
-          sheet:
-            sheet && sheet.lines.length > 0 ? { code: sheet.code, lines: sheet.lines } : undefined,
-        });
-      }
+      const assembledPrompt = buildGenerationPrompt({
+        engine,
+        materialsSnapshot: toPromptEntries(promptMaterials),
+        preset,
+        sky,
+        customPrompt,
+        ambianceText,
+        sheet:
+          sheet && sheet.lines.length > 0 ? { code: sheet.code, lines: sheet.lines } : undefined,
+      });
 
       let result;
       try {
@@ -326,7 +292,6 @@ export async function POST(
             materialsSnapshot: materials,
             // Exactly the materials the prompt lists; [] when it lists none.
             promptMaterials,
-            ...(analysisTrace ? { analysis: analysisTrace as Prisma.InputJsonValue } : {}),
           },
         });
         return newNode.id;

@@ -47,7 +47,6 @@ import { ElementsPicker } from './ElementsPicker';
 import { Glyph, type RailIconName } from './RailIcon';
 import { CHIP_ACTIVE, CHIP_BASE, CHIP_STATIC } from './chip';
 import { useRenderPrice } from './use-render-price';
-import { analysisPrice } from '@/lib/provider-cost';
 
 export type AppMode = 'generate' | 'retouch' | 'add';
 
@@ -572,14 +571,7 @@ export function CommandBar({
   // Why the send button is off, said in the composer's row (and under the bar
   // on a phone). Without it the bar is a dead end.
   const showHint = Boolean(sendHint && sendDisabled && !generating);
-  // A render with an ambiance (or a fan template) also pays its Claude
-  // analysis: the one price shown already includes it.
-  const cost = priceOf(
-    engine,
-    resolution,
-    mode === 'generate' ? 1 : (variantCount ?? 1),
-    mode === 'generate' ? analysisPrice(preset, Boolean(template)) : 0,
-  );
+  const cost = priceOf(engine, resolution, mode === 'generate' ? 1 : (variantCount ?? 1));
   // Otherwise, once an image is pinned, the row says what the render costs
   // (owner, 2026-10-22: « Coût : N crédits » in plain sight, the bar's height
   // unchanged).
