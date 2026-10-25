@@ -178,17 +178,17 @@ export function GenerationHome({
     setReferenceFile(null);
     setTemplate(null);
     // Générer shows its ambiance's text again; the edit modes start empty.
-    setPrompt(next === 'generate' ? ambianceText(preset, sky) : '');
+    setPrompt(next === 'generate' ? ambianceText(preset, locale) : '');
   }
 
   /**
    * Picking an ambiance (the menu or a fan template) writes its prompt in the
-   * bar, to be read and changed before launching (owner, 2026-10-19). A new
-   * ambiance replaces what was there; the sky chip only rewrites a text the
-   * user has not touched.
+   * bar, to be read and changed before launching (owner, 2026-10-19). Since
+   * 2026-10-25 that text IS the owner's prompt for this ambiance, in the
+   * language of the site: a new ambiance replaces what was there.
    */
-  function writeAmbiance(key: PresetKey | null, nextSky: SkyOption = sky) {
-    setPrompt(ambianceText(key, nextSky));
+  function writeAmbiance(key: PresetKey | null) {
+    setPrompt(ambianceText(key, locale));
   }
 
   /**
@@ -208,7 +208,7 @@ export function GenerationHome({
         if (sheetSky) setSky(sheetSky);
         if (found.rest === '') {
           const block = value.trim();
-          setPrompt(`${ambianceText(key, sheetSky ?? sky)}\n\n${block}`);
+          setPrompt(`${ambianceText(key, locale)}\n\n${block}`);
           return;
         }
       } else if (sheetSky && sheetSky !== sky) {
@@ -224,16 +224,16 @@ export function GenerationHome({
     writeAmbiance(next);
   }
 
+  // The sky chip no longer rewrites the bar: « Jour extérieur » states its
+  // own sky in the owner's dictated text, which is definitive. It is still
+  // sent with the request and stored with the render.
   function changeSky(next: SkyOption) {
-    const key = template ?? preset;
-    const untouched = prompt.trim() === '' || prompt.trim() === ambianceText(key, sky);
     setSky(next);
-    if (untouched) writeAmbiance(key, next);
   }
 
   function clearTemplate() {
     setTemplate(null);
-    if (prompt.trim() === ambianceText(template, sky)) setPrompt('');
+    if (prompt.trim() === ambianceText(template, locale)) setPrompt('');
   }
 
   // "Utiliser ce modèle": the template's chip goes in the bar, then the

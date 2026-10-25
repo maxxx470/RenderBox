@@ -44,6 +44,7 @@ import { SKY_OPTIONS, TEMPLATE_KEYS } from '@/lib/server/generation/templates';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
+import { localeFromRequest } from '@/lib/i18n/request-locale';
 import { log } from '@/lib/server/observability/log';
 
 const Body = z
@@ -210,11 +211,16 @@ export async function POST(
       }
       const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
+      // The ambiance's prompt is written in the language the visitor reads
+      // the site in (their locale cookie, else their country) — the owner
+      // wrote each of the fourteen in both.
+      const locale = localeFromRequest(req);
+
       const assembledPrompt = buildGenerationPrompt({
         engine,
         materialsSnapshot: toPromptEntries(promptMaterials),
         preset,
-        sky,
+        locale,
         customPrompt,
         ambianceText,
         sheet:

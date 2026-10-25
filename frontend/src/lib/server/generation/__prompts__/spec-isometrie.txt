@@ -1,6 +1,0 @@
-Transform this image into an isometric architectural presentation view of the building, seen from above at 45 degrees, parallel projection with no perspective distortion, on a plain light grey background.
-Keep the exact geometry, proportions and openings as in the reference image: do not redesign anything.
-Materials as identified: facade_principale: Enduit blanc taloché; menuiseries: Aluminium noir. Same type, same color, same placement; only enhance realism with a clean model-like finish.
-Soft studio light, soft shadows on the ground plane, a thin base under the building showing the plot only. Minimal vegetation: one eucalyptus and a few rounded shrubs, small and simple, never covering the building. No neighbours, no people, no text.
-
-NEGATIVE: no redesign, no added or removed windows, no change to materials, no perspective distortion, no cartoon style.

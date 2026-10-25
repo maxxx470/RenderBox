@@ -6,10 +6,10 @@
 // check; then formatPrompt lays it out for the engine that will read it.
 //
 // A render WITH an ambiance (the fourteen of the menu and the fan's templates)
-// gets the specification's prompt instead (spec-prompts.ts, 2026-10-23: the
-// texts of the « Spécification des prompts », filled by the code, no Claude
-// analysis); the user's words — their version of the bar's text, their
-// request — come after its defaults.
+// is sent the owner's dictated prompt for that ambiance, in the language the
+// site is being read in (ambiance-prompts.ts, 2026-10-25) — or the user's own
+// version of it when they changed it in the bar, since the bar shows the
+// prompt itself. Their separate request, if any, comes after it.
 //
 // A material is data, never an instruction: its face and its value are each
 // put on ONE line (toPromptLine), so a line break typed or detected inside a
@@ -20,7 +20,7 @@ import 'server-only';
 import type { EngineName } from './engines/types';
 import { formatPrompt, lookSpec, toPromptLine, type SheetRequest } from './render-profiles';
 import type { PresetKey } from './presets';
-import type { SkyOption } from './templates';
+import type { Locale } from '@/lib/i18n/dictionaries';
 import { ambianceText as defaultAmbianceText } from './ambiance-text';
 import { ambiancePrompt, userText } from './spec-prompts';
 
@@ -38,8 +38,8 @@ export function buildGenerationPrompt(input: {
   materialsSnapshot: readonly MaterialSnapshotEntry[];
   /** The ambiance or the template's key; null or absent: no ambiance (C0). */
   preset?: PresetKey | null | undefined;
-  /** Exterior day only: lightly hazy (default) or direct sun. */
-  sky?: SkyOption | undefined;
+  /** The language the ambiance's prompt is written in. */
+  locale: Locale;
   customPrompt?: string | undefined;
   /** The ambiance's text as the user left it in the bar: used only when it
    *  differs from the text the ambiance writes itself. */
@@ -48,18 +48,21 @@ export function buildGenerationPrompt(input: {
   sheet?: SheetRequest | undefined;
 }): string {
   if (input.preset) {
+    // Left as the ambiance wrote it, the owner's text is sent as it is;
+    // changed, the user's version takes its place — the bar showed them the
+    // prompt, so what they read is what runs.
+    const written = input.ambianceText?.trim();
     const edited =
-      input.ambianceText &&
-      toPromptLine(input.ambianceText) !==
-        toPromptLine(defaultAmbianceText(input.preset, input.sky))
-        ? input.ambianceText
+      written && written !== defaultAmbianceText(input.preset, input.locale).trim()
+        ? written
         : undefined;
     return ambiancePrompt({
       preset: input.preset,
-      sky: input.sky,
+      locale: input.locale,
       materials: input.materialsSnapshot,
       sheet: input.sheet,
-      request: userText(edited, input.customPrompt),
+      request: userText(input.customPrompt),
+      ...(edited ? { text: edited } : {}),
     });
   }
   return formatPrompt(

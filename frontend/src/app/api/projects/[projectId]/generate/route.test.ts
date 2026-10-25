@@ -75,6 +75,7 @@ import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
 import type { PresetKey } from '@/lib/server/generation/presets';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
+import { AMBIANCE_PROMPTS } from '@/lib/server/generation/ambiance-prompts';
 import { GEOMETRY_LOCK } from '@/lib/server/generation/render-profiles';
 
 /**
@@ -96,7 +97,8 @@ function sent(
       confidence: null,
     })),
     preset,
-    sky: extra.sky,
+    // No x-vercel-ip-country on these requests, so the route resolves English.
+    locale: 'en',
     customPrompt,
   });
 }
@@ -548,23 +550,30 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     expect(engineInput().prompt).not.toContain('top-down');
   });
 
-  it('a template with no note still sends its whole profile (audit F7, fixed)', async () => {
+  it('a template with no note sends the ambiance’s dictated text, whole', async () => {
     const res = await POST(
       makeReq(validBody({ preset: null, template: 'nuit_ext', customPrompt: '' })),
       ctx(),
     );
     expect(res.status).toBe(201);
     expect(engineInput().prompt).toBe(sent('nuit_ext'));
-    expect(engineInput().prompt).toContain('Blue-hour dusk deepening to night');
+    expect(engineInput().prompt).toBe(AMBIANCE_PROMPTS.nuit_ext.en);
   });
 
-  it("exterior day's sky: lightly hazy by default, direct sun when asked (D2)", async () => {
+  // The sky chip stopped changing the prompt on 2026-10-25: the owner's
+  // « Jour extérieur » states its own sky and its text is definitive. The
+  // chip is still accepted and still stored with the render.
+  it('exterior day sends one text whatever the sky, and the sky is still stored', async () => {
     await POST(makeReq(validBody({ template: 'jour_ext' })), ctx());
-    expect(engineInput().prompt).toBe(sent('jour_ext'));
+    const hazy = engineInput().prompt;
+    expect(hazy).toBe(sent('jour_ext'));
+    expect(hazy).toBe(AMBIANCE_PROMPTS.jour_ext.en);
     mockGenerate.mockClear();
     await POST(makeReq(validBody({ template: 'jour_ext', sky: 'sun' })), ctx());
-    expect(engineInput().prompt).toBe(sent('jour_ext', [], undefined, { sky: 'sun' }));
-    expect(engineInput().prompt).toContain('Clear blue sky with a few well-defined white clouds');
+    expect(engineInput().prompt).toBe(hazy);
+    expect(mockScheduleSheet).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ambiance: { key: 'jour_ext', sky: 'sun' } }),
+    );
   });
 
   it('refuses an unknown sky', async () => {
@@ -1167,6 +1176,7 @@ describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-
       engine: 'nanobanana',
       materialsSnapshot: [],
       preset: 'nuit_ext',
+      locale: 'en',
       customPrompt: 'une précision',
       sheet: { code: 'RP-7K4M2Q', lines: LINES },
     });
@@ -1190,7 +1200,10 @@ describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-
     const { ambianceText } = await import('@/lib/server/generation/ambiance-text');
     await POST(
       makeReq(
-        validBody({ preset: 'nuit_ext', ambianceText: `${ambianceText('nuit_ext')}\n\n${PASTED}` }),
+        validBody({
+          preset: 'nuit_ext',
+          ambianceText: `${ambianceText('nuit_ext', 'en')}\n\n${PASTED}`,
+        }),
       ),
       ctx(),
     );
@@ -1199,6 +1212,7 @@ describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-
         engine: 'nanobanana',
         materialsSnapshot: [],
         preset: 'nuit_ext',
+        locale: 'en',
         sheet: { code: 'RP-7K4M2Q', lines: LINES },
       }),
     );

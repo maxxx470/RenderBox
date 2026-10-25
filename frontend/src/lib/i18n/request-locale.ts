@@ -1,4 +1,5 @@
 import 'server-only';
+import type { NextRequest } from 'next/server';
 import { cookies, headers } from 'next/headers';
 import { COOKIE_PREFIX } from '@/lib/constants';
 import type { Locale } from './dictionaries';
@@ -18,4 +19,18 @@ export async function requestLocale(): Promise<{ locale: Locale; country: string
     region: head.get('x-vercel-ip-country-region'),
   });
   return { locale, country };
+}
+
+/**
+ * The same answer, read off a request instead of Next's request context — for
+ * Route Handlers, which hold the `NextRequest` and can therefore be tested
+ * without Next's async storage. The route that renders an image needs it: the
+ * ambiance's prompt is written in the visitor's language.
+ */
+export function localeFromRequest(req: NextRequest): Locale {
+  return resolveLocale({
+    cookie: req.cookies.get(`${COOKIE_PREFIX}-locale`)?.value,
+    country: req.headers.get('x-vercel-ip-country'),
+    region: req.headers.get('x-vercel-ip-country-region'),
+  });
 }

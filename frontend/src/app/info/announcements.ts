@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'ambiance-prompts-two-languages',
+    date: '2026-10-25',
+    kind: 'shipped',
+    title: {
+      fr: 'Les quatorze ambiances ont un nouveau prompt, dans votre langue',
+      en: 'All fourteen ambiances have a new prompt, in your language',
+    },
+    body: {
+      fr: 'Chacune des quatorze ambiances a été réécrite : un texte unique qui dit le type de photographie ou de dessin, la lumière, les matériaux, la végétation et les personnages, et qui finit par garder exactement le cadrage, les volumes et les ouvertures de votre image. Ces prompts marchent sur n’importe quelle image de départ : croquis à la main, capture SketchUp, maquette ou photographie. Ils sont écrits en français et en anglais, et le site envoie celui de la langue dans laquelle vous le lisez. Choisissez une ambiance et son prompt s’écrit en entier dans la barre de commande : c’est mot pour mot ce qui part au moteur, vous pouvez le relire et le modifier avant de lancer.',
+      en: 'All fourteen ambiances have been rewritten: one text each, naming the kind of photograph or drawing, the light, the materials, the vegetation and the people, and ending by keeping the exact framing, volumes and openings of your image. These prompts work on any starting image: a hand sketch, a SketchUp capture, a model or a photograph. They are written in French and in English, and the site sends the one in the language you are reading it in. Pick an ambiance and its prompt is written out in full in the command bar: it is word for word what goes to the engine, and you can read it over and change it before launching.',
+    },
+  },
+  {
     id: 'credits-engine-price',
     date: '2026-10-22',
     kind: 'shipped',

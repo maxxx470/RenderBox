@@ -33,6 +33,9 @@ const build = (
   buildGenerationPrompt({
     engine,
     materialsSnapshot: extra.materials ?? [],
+    // C0 (no ambiance) is built from structured fields, not from a dictated
+    // text, so the language plays no part here.
+    locale: 'fr',
     customPrompt: extra.customPrompt,
   });
 
