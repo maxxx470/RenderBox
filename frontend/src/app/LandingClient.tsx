@@ -462,16 +462,24 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             {/* The reference's "New" pill above the headline. It points at
                 the gallery: a claim about two engines is best answered by
                 showing what they make. */}
+            {/* The question the button below raises, answered before it is
+                asked, in the first thing the page says. The plans are priced
+                in FCFA and a large part of the audience has no bank card at
+                all, so « do I need a card to subscribe? » is the doubt that
+                stops them — and the answer is no: Maketou's checkout takes
+                mobile money too. A statement about the payment page, not a
+                promise of a free plan. It leads to the plans, where the
+                question is asked for real. */}
             <Link
-              href="/exemple"
+              href="#tarifs"
               className="rb-card-in mb-6 inline-flex items-center gap-2 rounded-lg bg-white py-1 pl-1 pr-3 text-[12.5px] font-medium text-[#17161F] shadow-[0_8px_20px_-14px_rgba(23,22,31,0.35)] transition-colors hover:bg-[#E9E9EE]"
             >
               <span
                 className={`rounded-md ${GRADIENT} px-2.5 py-0.5 text-[11px] font-semibold text-white`}
               >
-                {t('landing.heroBadgeNew')}
+                {t('landing.heroBadgePayment')}
               </span>
-              {t('landing.heroBadgeText')}
+              {t('landing.heroNoCard')}
               <ChevronRight set="curved" size={13} primaryColor="#6B6878" />
             </Link>
             {/* No Reveal wrapper here: rb-word-in is the entrance, and
@@ -485,15 +493,6 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             />
             <p className="mx-auto mt-5 max-w-[560px] text-[15px] leading-[1.6] text-[#6B6878]">
               {t('landing.heroSubtitle')}
-            </p>
-            {/* The question the button below raises, answered before it is
-                asked. The plans are priced in FCFA and a large part of the
-                audience has no bank card at all, so « do I need a card to
-                subscribe? » is the doubt that stops them — and the answer is
-                no: Maketou's checkout takes mobile money too. A statement
-                about the payment page, not a promise of a free plan. */}
-            <p className="mx-auto mt-3.5 text-[13px] font-medium text-[#6B6878]">
-              {t('landing.heroNoCard')}
             </p>
           </div>
 

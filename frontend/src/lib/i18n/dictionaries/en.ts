@@ -1117,8 +1117,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.navHow': 'How it works',
   'landing.navFaq': 'FAQ',
   'landing.menuClose': 'Close the menu',
-  'landing.heroBadgeNew': 'New',
-  'landing.heroBadgeText': 'Two AI engines in one project',
+  'landing.heroBadgePayment': 'Payment',
   'landing.heroNoCard': 'No bank card? Mobile money is enough.',
   'landing.heroSubtitle':
     'Upload a photo, a sketch or an image export of your plans: RenderPro generates renders that stay consistent from one view to the next, materials included.',

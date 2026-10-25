@@ -1157,8 +1157,7 @@ const fr = {
   'landing.navHow': 'Comment ça marche',
   'landing.navFaq': 'FAQ',
   'landing.menuClose': 'Fermer le menu',
-  'landing.heroBadgeNew': 'Nouveau',
-  'landing.heroBadgeText': 'Deux moteurs IA dans un seul projet',
+  'landing.heroBadgePayment': 'Paiement',
   'landing.heroNoCard': 'Pas de carte bancaire ? Le mobile money suffit.',
   'landing.heroSubtitle':
     "Importez une photo, un croquis ou l'export image de vos plans : RenderPro génère des rendus cohérents d'une vue à l'autre, matériaux compris.",
