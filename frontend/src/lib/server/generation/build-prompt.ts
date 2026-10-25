@@ -18,7 +18,7 @@
 // left, the header goes too.
 import 'server-only';
 import type { EngineName } from './engines/types';
-import { formatPrompt, lookSpec, toPromptLine, type SheetRequest } from './render-profiles';
+import { formatPrompt, lookSpec, toPromptLine } from './render-profiles';
 import type { PresetKey } from './presets';
 import type { Locale } from '@/lib/i18n/dictionaries';
 import { ambianceText as defaultAmbianceText } from './ambiance-text';
@@ -44,8 +44,8 @@ export function buildGenerationPrompt(input: {
   /** The ambiance's text as the user left it in the bar: used only when it
    *  differs from the text the ambiance writes itself. */
   ambianceText?: string | undefined;
-  /** A materials sheet pasted under the prompt (2026-10-19). */
-  sheet?: SheetRequest | undefined;
+  /** How many reference images go to the engine with the source (2026-10-25). */
+  referenceCount?: number | undefined;
 }): string {
   if (input.preset) {
     // Left as the ambiance wrote it, the owner's text is sent as it is;
@@ -60,8 +60,8 @@ export function buildGenerationPrompt(input: {
       preset: input.preset,
       locale: input.locale,
       materials: input.materialsSnapshot,
-      sheet: input.sheet,
       request: userText(input.customPrompt),
+      referenceCount: input.referenceCount ?? 0,
       ...(edited ? { text: edited } : {}),
     });
   }
@@ -69,7 +69,6 @@ export function buildGenerationPrompt(input: {
     input.engine,
     lookSpec({
       request: input.customPrompt,
-      sheet: input.sheet,
       materials: input.materialsSnapshot,
     }),
   );

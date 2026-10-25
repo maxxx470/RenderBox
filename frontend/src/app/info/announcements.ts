@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'reference-images',
+    date: '2026-10-25',
+    kind: 'shipped',
+    title: {
+      fr: 'Des images de référence, pour que vos rendus aillent ensemble',
+      en: 'Reference images, so your renders belong together',
+    },
+    body: {
+      fr: 'Épinglez jusqu’à trois images de référence dans le Générateur : le rendu en reprend les matériaux, la végétation et le ciel, sans jamais toucher à la géométrie de votre croquis. Sous un rendu terminé, « Utiliser comme référence » suffit ; vous pouvez aussi ajouter une image depuis votre ordinateur. Les références restent épinglées tant que vous ne les retirez pas, donc tous les croquis d’un même bâtiment gardent le même aspect. Elles ne coûtent aucun crédit de plus, et elles remplacent la fiche de matériaux : montrer l’image au moteur marche mieux que lui décrire ses matériaux en texte.',
+      en: 'Pin up to three reference images in the Generator: the render takes their materials, their vegetation and their sky, and never touches your sketch’s geometry. Under a finished render, “Use as reference” is enough; you can also add a picture from your computer. References stay pinned until you remove them, so every sketch of one building keeps the same look. They cost no extra credits, and they replace the materials sheet: showing the engine the picture works better than describing its materials in words.',
+    },
+  },
+  {
     id: 'ambiance-prompts-two-languages',
     date: '2026-10-25',
     kind: 'shipped',

@@ -62,14 +62,6 @@ vi.mock('@/lib/server/materials/detect-and-merge', () => ({
   detectAndMergeMaterials: mockDetectAndMerge,
 }));
 
-// The materials sheet (2026-10-19): its analysis is not run here — the route
-// only starts it; the sheet's own tests are in materials/render-sheet.test.ts.
-const { mockScheduleSheet } = vi.hoisted(() => ({ mockScheduleSheet: vi.fn() }));
-vi.mock('@/lib/server/materials/render-sheet', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/server/materials/render-sheet')>()),
-  scheduleSheet: mockScheduleSheet,
-}));
-
 import { verifyToken } from '@/lib/server/auth';
 import { POST, maxDuration } from './route';
 import { EngineTimeoutError } from '@/lib/server/generation/engines';
@@ -182,7 +174,6 @@ beforeEach(() => {
   mockDebitCredits.mockReset().mockResolvedValue({ ok: true, balance: 2950 });
   mockRefundCredits.mockReset().mockResolvedValue(undefined);
   mockDetectAndMerge.mockReset().mockResolvedValue(undefined);
-  mockScheduleSheet.mockReset().mockResolvedValue(undefined);
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
 
   vi.mocked(verifyToken).mockResolvedValue({
@@ -561,9 +552,11 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
   });
 
   // The sky chip stopped changing the prompt on 2026-10-25: the owner's
-  // « Jour extérieur » states its own sky and its text is definitive. The
-  // chip is still accepted and still stored with the render.
-  it('exterior day sends one text whatever the sky, and the sky is still stored', async () => {
+  // « Jour extérieur » states its own sky and its text is definitive. With
+  // the materials sheet gone the same day, the sky is no longer recorded
+  // anywhere either — the chip is accepted and does nothing. It is the
+  // owner's call whether it stays on screen.
+  it('exterior day sends one text whatever the sky', async () => {
     await POST(makeReq(validBody({ template: 'jour_ext' })), ctx());
     const hazy = engineInput().prompt;
     expect(hazy).toBe(sent('jour_ext'));
@@ -571,9 +564,6 @@ describe('POST /api/projects/[projectId]/generate — what reaches the engine', 
     mockGenerate.mockClear();
     await POST(makeReq(validBody({ template: 'jour_ext', sky: 'sun' })), ctx());
     expect(engineInput().prompt).toBe(hazy);
-    expect(mockScheduleSheet).toHaveBeenLastCalledWith(
-      expect.objectContaining({ ambiance: { key: 'jour_ext', sky: 'sun' } }),
-    );
   });
 
   it('refuses an unknown sky', async () => {
@@ -1132,89 +1122,84 @@ describe('POST /api/projects/[projectId]/generate — engine deadline (étape 3B
   });
 });
 
-describe('POST /api/projects/[projectId]/generate — the materials sheet (2026-10-19)', () => {
-  const PASTED = [
-    'FICHE RENDERPRO · RP-7K4M2Q',
-    'Image source : RP-3D9F1A',
-    'Ambiance : Nuit extérieur [nuit_ext]',
-    'Couleur → matériau :',
-    '- Brun-rouge des murs → brique rouge, joints creux',
-    '- Gris foncé du garde-corps → métal noir mat',
-    'FIN DE LA FICHE',
-  ].join('\n');
-  const engineInput = () => mockGenerate.mock.calls[0]?.[1] as { prompt: string };
-  const LINES = [
-    { color: 'Brun-rouge des murs', material: 'brique rouge, joints creux' },
-    { color: 'Gris foncé du garde-corps', material: 'métal noir mat' },
-  ];
+describe('POST /api/projects/[projectId]/generate — the reference images (2026-10-25)', () => {
+  const engineInput = () =>
+    mockGenerate.mock.calls[0]?.[1] as {
+      prompt: string;
+      referenceImages?: { buffer: Buffer; mimeType: string }[];
+    };
 
-  it('starts the sheet of the render once it is stored, with its ambiance and its source', async () => {
-    await POST(makeReq(validBody({ preset: 'jour_ext', sky: 'sun' })), ctx());
-    expect(mockScheduleSheet).toHaveBeenCalledTimes(1);
-    expect(mockScheduleSheet).toHaveBeenCalledWith(
-      expect.objectContaining({
-        nodeId: 'node-new',
-        sourceNodeId: SOURCE_NODE_ID,
-        ambiance: { key: 'jour_ext', sky: 'sun' },
-      }),
+  const REF_A = 'node-ref-a';
+  const REF_B = 'node-ref-b';
+
+  /** The references this account owns, as the route's findMany sees them. */
+  function ownedReferences(ids: string[]) {
+    prismaMock.renderNode.findMany.mockResolvedValue(
+      ids.map((id) => ({
+        id,
+        blobUrl: `https://blob.test/${id}.jpg`,
+        mimeType: 'image/jpeg',
+      })) as never,
     );
+  }
+
+  beforeEach(() => {
+    prismaMock.renderNode.findMany.mockResolvedValue([] as never);
   });
 
-  it('a sheet that cannot start never fails the render', async () => {
-    mockScheduleSheet.mockRejectedValue(new Error('db down'));
-    const res = await POST(makeReq(validBody()), ctx());
-    expect(res.status).toBe(201);
-  });
-
-  it('a sheet pasted under the prompt goes to the engine as a request, and its ambiance is used', async () => {
+  it('sends the pinned references to the engine alongside the source', async () => {
+    ownedReferences([REF_A, REF_B]);
     const res = await POST(
-      makeReq(validBody({ preset: null, customPrompt: `une précision\n\n${PASTED}` })),
+      makeReq(validBody({ preset: 'jour_ext', referenceNodeIds: [REF_A, REF_B] })),
       ctx(),
     );
     expect(res.status).toBe(201);
-    const expected = buildGenerationPrompt({
-      engine: 'nanobanana',
-      materialsSnapshot: [],
-      preset: 'nuit_ext',
-      locale: 'en',
-      customPrompt: 'une précision',
-      sheet: { code: 'RP-7K4M2Q', lines: LINES },
-    });
-    expect(engineInput().prompt).toBe(expected);
-    expect(engineInput().prompt).toContain(
-      'where the image shows Brun-rouge des murs: brique rouge, joints creux',
-    );
-    expect(prismaMock.renderNode.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ preset: 'nuit_ext' }) }),
-    );
+    expect(engineInput().referenceImages).toHaveLength(2);
+    expect(engineInput().referenceImages?.[0]?.mimeType).toBe('image/jpeg');
   });
 
-  it('an ambiance the user chose wins over the one in the sheet', async () => {
-    await POST(makeReq(validBody({ preset: 'pluie', customPrompt: PASTED })), ctx());
-    expect(prismaMock.renderNode.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ preset: 'pluie' }) }),
-    );
+  it('tells the prompt what to take from them, and what never to take', async () => {
+    ownedReferences([REF_A]);
+    await POST(makeReq(validBody({ preset: 'jour_ext', referenceNodeIds: [REF_A] })), ctx());
+    const prompt = engineInput().prompt;
+    expect(prompt).toContain('One reference image is attached besides the source image.');
+    expect(prompt).toContain('Take their materials, their vegetation and their sky');
+    // The reference is another building: its shape must never win.
+    expect(prompt).toContain('Take NOTHING else from the references');
   });
 
-  it('the sheet is taken out of the ambiance text too, so an unchanged text stays the default', async () => {
-    const { ambianceText } = await import('@/lib/server/generation/ambiance-text');
-    await POST(
-      makeReq(
-        validBody({
-          preset: 'nuit_ext',
-          ambianceText: `${ambianceText('nuit_ext', 'en')}\n\n${PASTED}`,
-        }),
-      ),
-      ctx(),
-    );
-    expect(engineInput().prompt).toBe(
-      buildGenerationPrompt({
-        engine: 'nanobanana',
-        materialsSnapshot: [],
-        preset: 'nuit_ext',
-        locale: 'en',
-        sheet: { code: 'RP-7K4M2Q', lines: LINES },
+  it('only loads images this account owns', async () => {
+    ownedReferences([REF_A]);
+    await POST(makeReq(validBody({ referenceNodeIds: [REF_A] })), ctx());
+    expect(prismaMock.renderNode.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ project: { userId: USER_ID } }),
       }),
     );
+  });
+
+  it('a reference the account does not own is dropped, and the render still goes', async () => {
+    // findMany comes back empty: the id named nothing of this account's.
+    const res = await POST(
+      makeReq(validBody({ preset: 'jour_ext', referenceNodeIds: ['node-someone-else'] })),
+      ctx(),
+    );
+    expect(res.status).toBe(201);
+    expect(engineInput().referenceImages).toBeUndefined();
+    // And the prompt never promises a picture the engine did not get.
+    expect(engineInput().prompt).not.toContain('reference image');
+  });
+
+  it('without references, nothing is added to the prompt and nothing is sent', async () => {
+    const res = await POST(makeReq(validBody({ preset: 'jour_ext' })), ctx());
+    expect(res.status).toBe(201);
+    expect(engineInput().referenceImages).toBeUndefined();
+    expect(engineInput().prompt).toBe(AMBIANCE_PROMPTS.jour_ext.en);
+  });
+
+  it('refuses more than three', async () => {
+    const res = await POST(makeReq(validBody({ referenceNodeIds: ['a', 'b', 'c', 'd'] })), ctx());
+    expect(res.status).toBe(400);
+    expect(mockGenerate).not.toHaveBeenCalled();
   });
 });

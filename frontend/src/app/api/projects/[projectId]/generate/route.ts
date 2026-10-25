@@ -38,13 +38,16 @@ import { buildRenderTree } from '@/lib/server/render-tree';
 import { detectAndMergeMaterials } from '@/lib/server/materials/detect-and-merge';
 import { loadPromptMaterials, toPromptEntries } from '@/lib/server/materials/node-materials';
 import type { ResolvedMaterial } from '@/lib/server/materials/resolve';
-import { PRESET_KEYS, isPresetKey } from '@/lib/server/generation/presets';
-import { resolvePastedSheet, scheduleSheet } from '@/lib/server/materials/render-sheet';
+import { PRESET_KEYS } from '@/lib/server/generation/presets';
 import { SKY_OPTIONS, TEMPLATE_KEYS } from '@/lib/server/generation/templates';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
 import { buildGenerationPrompt } from '@/lib/server/generation/build-prompt';
 import { localeFromRequest } from '@/lib/i18n/request-locale';
+import {
+  MAX_REFERENCE_IMAGES,
+  loadReferenceImages,
+} from '@/lib/server/generation/reference-images';
 import { log } from '@/lib/server/observability/log';
 
 const Body = z
@@ -65,6 +68,12 @@ const Body = z
     template: z.enum(TEMPLATE_KEYS).optional(),
     // Exterior day's sky (2026-10-19, D2): lightly hazy unless 'sun'.
     sky: z.enum(SKY_OPTIONS).optional(),
+    // The reference images (2026-10-25, owner): images of THIS account whose
+    // materials, vegetation and sky the render should follow. Named by node
+    // id, never sent as bytes — the server reads them itself, after checking
+    // the account owns them. Capped at MAX_REFERENCE_IMAGES: the cap is the
+    // server's, not the panel's.
+    referenceNodeIds: z.array(z.string().min(1)).max(MAX_REFERENCE_IMAGES).optional(),
     ratio: z.enum(RATIO_KEYS).optional(),
     resolution: z.enum(RESOLUTION_KEYS).optional(),
     // The engine's version (engine-versions.ts); absent: the engine's default.
@@ -110,24 +119,16 @@ export async function POST(
     }
     // Every ratio and size on both engines (2026-10-08) — see output-shape.ts.
     const { sourceNodeId, engine, ratio, resolution, template } = parsed.data;
-    // A materials sheet pasted under the prompt (2026-10-19, owner): taken out
-    // of the text, its lines go to the prompt as a request and its ambiance
-    // is the render's when none was chosen — the renders of one building
-    // keep to the same rules.
-    const [pastedInText, pastedInRequest] = await Promise.all([
-      resolvePastedSheet(parsed.data.ambianceText, auth.user.sub),
-      resolvePastedSheet(parsed.data.customPrompt, auth.user.sub),
-    ]);
-    const ambianceText = pastedInText.rest;
-    const customPrompt = pastedInRequest.rest;
-    const sheet = pastedInText.sheet ?? pastedInRequest.sheet;
+    const { ambianceText, customPrompt } = parsed.data;
     const version = resolveEngineVersion(engine, parsed.data.version);
     // What the prompt is built on and the node records: the template's key
     // (a light profile) or the ambiance; neither: a faithful photo render.
-    const sheetPreset =
-      sheet?.ambianceKey && isPresetKey(sheet.ambianceKey) ? sheet.ambianceKey : null;
-    const preset = template ?? parsed.data.preset ?? sheetPreset;
-    const sky = parsed.data.sky ?? (preset === sheetPreset ? sheet?.sky : undefined) ?? undefined;
+    // The materials sheet that used to carry an ambiance from one render to
+    // the next is gone (2026-10-25): reference images do that work now.
+    const preset = template ?? parsed.data.preset ?? null;
+    // `sky` is still accepted by the schema so older clients do not break,
+    // but nothing reads it any more: « Jour extérieur » states its own sky
+    // in the owner's dictated text (2026-10-25).
 
     const sourceNode = await prisma.renderNode.findUnique({
       where: { id: sourceNodeId },
@@ -211,6 +212,19 @@ export async function POST(
       }
       const sourceImageBuffer = Buffer.from(await sourceRes.arrayBuffer());
 
+      // The reference images, read here like the source. Only images this
+      // account owns can be named: the `project.userId` filter is the whole
+      // access check, so a node id guessed from someone else's account simply
+      // does not come back. A reference that cannot be read is dropped rather
+      // than failing a paid render — the prompt is told how many actually
+      // made it, so it never promises the engine a picture it never got.
+      const wantedReferenceIds = parsed.data.referenceNodeIds ?? [];
+      const referenceImages = await loadReferenceImages(
+        wantedReferenceIds,
+        auth.user.sub,
+        sourceNode.id,
+      );
+
       // The ambiance's prompt is written in the language the visitor reads
       // the site in (their locale cookie, else their country) — the owner
       // wrote each of the fourteen in both.
@@ -221,10 +235,9 @@ export async function POST(
         materialsSnapshot: toPromptEntries(promptMaterials),
         preset,
         locale,
+        referenceCount: referenceImages.length,
         customPrompt,
         ambianceText,
-        sheet:
-          sheet && sheet.lines.length > 0 ? { code: sheet.code, lines: sheet.lines } : undefined,
       });
 
       let result;
@@ -232,6 +245,14 @@ export async function POST(
         result = await generateRender(engine, {
           sourceImageBuffer,
           sourceMimeType: sourceNode.mimeType,
+          ...(referenceImages.length > 0
+            ? {
+                referenceImages: referenceImages.map((r) => ({
+                  buffer: r.buffer,
+                  mimeType: r.mimeType,
+                })),
+              }
+            : {}),
           prompt: assembledPrompt,
           ...(ratio && ratio !== 'auto' ? { aspectRatio: ratio } : {}),
           ...(resolution ? { resolution } : {}),
@@ -305,21 +326,6 @@ export async function POST(
 
       // The render is stored: the credits are spent for good.
       owed = 0;
-
-      // The image's materials sheet starts here (which colour of the source
-      // became which material, the ambiance used) and is completed once the
-      // response is sent. Never fails the render.
-      try {
-        await scheduleSheet({
-          nodeId: newNodeId,
-          sourceNodeId: sourceNode.id,
-          ambiance: preset
-            ? { key: preset, sky: preset === 'jour_ext' ? (sky ?? 'hazy') : null }
-            : null,
-        });
-      } catch (e) {
-        log.warn('generate: sheet could not start (non-fatal)', { err: String(e) });
-      }
 
       // Detect + merge materials from the render that was JUST produced (Phase
       // 2). Never lets a Vision hiccup fail the generation the user asked for

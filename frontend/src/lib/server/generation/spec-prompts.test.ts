@@ -99,11 +99,9 @@ describe('What the code still puts after the ambiance’s text', () => {
     ).not.toContain('Finishes:');
   });
 
-  it('a pasted sheet’s lines come through as colour → material', () => {
+  it('with no recorded material, the image’s own materials are kept', () => {
     expect(materialsText([])).toBe('every material exactly as shown in the reference image');
-    expect(materialsText([], { lines: [{ color: 'brun-rouge', material: 'brique' }] })).toBe(
-      'where the image shows brun-rouge: brique',
-    );
+    expect(materialsText([{ face: 'mur', valeur: 'brique' }])).toBe('mur: brique');
   });
 
   it('nothing typed can start a line of its own', () => {

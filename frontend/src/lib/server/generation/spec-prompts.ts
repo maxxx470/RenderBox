@@ -25,7 +25,7 @@ import 'server-only';
 import type { Locale } from '@/lib/i18n/dictionaries';
 import { ambiancePromptText } from './ambiance-prompts';
 import type { PresetKey } from './presets';
-import { toPromptLine, profileLight, type SheetRequest } from './render-profiles';
+import { toPromptLine, profileLight } from './render-profiles';
 import {
   ENHANCE_OPTION_KEYS,
   type EnhanceAmbianceKey,
@@ -40,22 +40,14 @@ export const EVERY_MATERIAL_AS_SHOWN = 'every material exactly as shown in the r
 
 // ── Placeholders ────────────────────────────────────────────────────────────
 
-/** {materials}: « element: material » and « colour → material », separated
- *  by semicolons; each value on one line, so nothing typed starts a line. */
-export function materialsText(
-  materials: readonly { face: string; valeur: string }[],
-  sheet?: SheetRequest | undefined,
-): string {
+/** {materials}: « element: material », separated by semicolons; each value
+ *  on one line, so nothing typed can start a line of its own. */
+export function materialsText(materials: readonly { face: string; valeur: string }[]): string {
   const recorded = materials
     .map((m) => ({ face: toPromptLine(m.face), valeur: toPromptLine(m.valeur) }))
     .filter((m) => m.face !== '' && m.valeur !== '')
     .map((m) => `${m.face}: ${m.valeur}`);
-  const pasted = (sheet?.lines ?? [])
-    .map((l) => ({ color: toPromptLine(l.color), material: toPromptLine(l.material) }))
-    .filter((l) => l.color !== '' && l.material !== '')
-    .map((l) => `where the image shows ${l.color}: ${l.material}`);
-  const all = [...recorded, ...pasted];
-  return all.length > 0 ? all.join('; ') : EVERY_MATERIAL_AS_SHOWN;
+  return recorded.length > 0 ? recorded.join('; ') : EVERY_MATERIAL_AS_SHOWN;
 }
 
 /** The user's own words as one line, or ''. */
@@ -75,6 +67,34 @@ function requestLine(text: string): string[] {
 }
 
 // -- The prompt of an ambiance --------------------------------------------
+
+/**
+ * What the reference images are for (2026-10-25, owner: « ces images-là
+ * permettront à Pixel IA et Visio de savoir quel matériau appliquer au
+ * nouveau croquis »). Written in the ambiance's own language, so the engine
+ * reads one coherent prompt rather than two.
+ *
+ * It names the three things the owner asked for -- materials, vegetation,
+ * sky -- and, every time, the thing it must NOT take: the reference's
+ * geometry. A reference is a picture of another building; without that line
+ * the engine reshapes the sketch to match it.
+ */
+function referenceLine(count: number, locale: Locale): string[] {
+  if (count < 1) return [];
+  const fr =
+    count === 1
+      ? 'Une image de référence est jointe en plus de l’image source.'
+      : `${count} images de référence sont jointes en plus de l’image source.`;
+  const en =
+    count === 1
+      ? 'One reference image is attached besides the source image.'
+      : `${count} reference images are attached besides the source image.`;
+  return [
+    locale === 'fr'
+      ? `${fr} Reprenez-en les matériaux, la végétation et le ciel, et appliquez-les à l’image source pour que les deux rendus aillent ensemble. Ne reprenez RIEN d’autre de la référence : ni sa géométrie, ni ses volumes, ni son cadrage, ni ses ouvertures, qui restent exactement ceux de l’image source.`
+      : `${en} Take their materials, their vegetation and their sky, and apply them to the source image so that both renders belong together. Take NOTHING else from the references: not their geometry, not their volumes, not their framing, not their openings, which stay exactly those of the source image.`,
+  ];
+}
 
 /** The one sentence of the old MATERIALS & TEXTURE block that is still sent:
  *  the materials are data about THIS image, so they outlive the texts. */
@@ -101,16 +121,18 @@ export function ambiancePrompt(input: {
   /** The language the prompt is written in. */
   locale: Locale;
   materials: readonly { face: string; valeur: string }[];
-  sheet?: SheetRequest | undefined;
   /** The user's own words, already joined (userText). */
   request: string;
   /** The ambiance's text as the user left it in the bar, when they changed
    *  it: it then replaces the owner's text. */
   text?: string | undefined;
+  /** How many reference images the engine is actually being handed. */
+  referenceCount?: number | undefined;
 }): string {
-  const materials = materialsText(input.materials, input.sheet);
+  const materials = materialsText(input.materials);
   return [
     input.text ?? ambiancePromptText(input.preset, input.locale),
+    ...referenceLine(input.referenceCount ?? 0, input.locale),
     ...(materials === EVERY_MATERIAL_AS_SHOWN ? [] : [`Finishes: ${materials}. ${KEEP_MATERIALS}`]),
     ...requestLine(input.request),
   ].join('\n\n');

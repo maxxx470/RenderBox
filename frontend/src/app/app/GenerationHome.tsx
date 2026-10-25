@@ -35,12 +35,7 @@ import {
 } from './request-error';
 import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
-import {
-  AMBIANCE_KEYS,
-  PRESETS,
-  isPresetKey,
-  type PresetKey,
-} from '@/lib/server/generation/presets';
+import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import { ambianceText } from '@/lib/server/generation/ambiance-text';
 import {
   TEMPLATE_KEYS,
@@ -63,8 +58,8 @@ import { creditsChanged, useSyncedCredits } from './fresh-credits';
 import { useRenderPrice } from './use-render-price';
 import { MOBILE_NAV_PAD, PHONE_STICKY_BAR } from './MobileNav';
 import { SideColumn } from './SideColumn';
-import { RenderSheetPanel } from './RenderSheetPanel';
-import { extractSheetBlock } from '@/lib/render-sheet';
+import { ReferencesPanel } from './ReferencesPanel';
+import { useReferences } from './references';
 import { CommandBar, useObjectUrl, type AppMode, type PinnedImage } from './CommandBar';
 import { AnnotationLayer, drawMarkedImage, type Pin } from './AnnotationLayer';
 import { ANNOTATE_ENGINE } from '@/lib/server/generation/annotations';
@@ -120,6 +115,10 @@ export function GenerationHome({
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
+  // The reference images (2026-10-25, owner): they stay pinned until taken
+  // off, so one reference carries across as many sketches as you like.
+  const { references, addReference, removeReference, isReference, full } = useReferences();
+  const [addingReference, setAddingReference] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const chrome = useAppChrome();
@@ -191,30 +190,10 @@ export function GenerationHome({
     setPrompt(ambianceText(key, locale));
   }
 
-  /**
-   * The bar's text changed. A materials sheet pasted in it (owner,
-   * 2026-10-19) brings its ambiance: the chip follows, so the new render keeps
-   * to the same rules as the image the sheet came from. When only the sheet
-   * was pasted, the ambiance's own text is written above it.
-   */
+  // The bar's text changed. Until 2026-10-25 a materials sheet pasted here
+  // was recognised and brought its ambiance with it; the sheet is gone, and
+  // reference images carry a building's look from one render to the next.
   function changePrompt(value: string) {
-    const found = extractSheetBlock(value);
-    const key = found?.sheet.ambianceKey;
-    if (found && key && isPresetKey(key) && (AMBIANCE_KEYS as readonly string[]).includes(key)) {
-      const sheetSky = found.sheet.sky;
-      if ((template ?? preset) !== key) {
-        setPreset(key);
-        setTemplate(null);
-        if (sheetSky) setSky(sheetSky);
-        if (found.rest === '') {
-          const block = value.trim();
-          setPrompt(`${ambianceText(key, locale)}\n\n${block}`);
-          return;
-        }
-      } else if (sheetSky && sheetSky !== sky) {
-        setSky(sheetSky);
-      }
-    }
     setPrompt(value);
   }
 
@@ -321,6 +300,59 @@ export function GenerationHome({
     return image;
   }
 
+  /**
+   * A picture from the computer, pinned as a reference (owner, 2026-10-25:
+   * « ajouter un fichier extérieur qui n'est pas forcément sur le site »).
+   *
+   * It goes through the SAME route as a source photo — magic bytes checked,
+   * stored, turned into an image of the account — so that a reference is
+   * always an image this account owns and the render route can check it. It
+   * lands in the current project when there is one, otherwise in a project
+   * of its own, and it shows in the gallery like any other upload.
+   */
+  async function addReferenceFile(file: File) {
+    if (full || addingReference) return;
+    setAddingReference(true);
+    try {
+      const projectId =
+        stored?.projectId ??
+        (
+          await api<{ id: string }>('/api/projects', {
+            method: 'POST',
+            body: {
+              name: t('projects.defaultName', {
+                date: new Date().toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-US', {
+                  day: 'numeric',
+                  month: 'short',
+                }),
+              }),
+            },
+          })
+        ).id;
+
+      const form = new FormData();
+      // A reference is read for its materials, its planting and its sky, not
+      // rendered from: the reference budget (1600 px, 500 kB) is plenty and
+      // keeps the request small, since up to three travel with one render.
+      form.append('file', await fitForUpload(file, UPLOAD_FIT.reference));
+      const csrf = getCsrfTokenForUpload();
+      const res = await fetch(`/api/projects/${projectId}/upload`, {
+        method: 'POST',
+        body: form,
+        credentials: 'include',
+        headers: csrf ? { 'x-csrf-token': csrf } : {},
+      });
+      if (!res.ok) throw new RequestError(await readErrorCode(res));
+      const node = (await res.json()) as { id: string };
+      addReference({ projectId, nodeId: node.id });
+      toast(t('app.referenceAdded'), 'success');
+    } catch (err) {
+      errorToast(err, 'app.referenceFailed');
+    } finally {
+      setAddingReference(false);
+    }
+  }
+
   function errorToast(err: unknown, fallback: TranslationKey) {
     // A failed render gives its credits back: read the balance again.
     creditsChanged();
@@ -379,6 +411,9 @@ export function GenerationHome({
             // 'auto' is the absence of a request, so it is not sent at all.
             ratio: ratio === 'auto' ? undefined : ratio,
             resolution,
+            // The pinned references: ids only. The server reads the images
+            // itself, after checking this account owns them.
+            referenceNodeIds: references.length > 0 ? references.map((r) => r.nodeId) : undefined,
           },
         },
       );
@@ -674,6 +709,25 @@ export function GenerationHome({
                       >
                         {t('app.genUseAsSource')}
                       </button>
+                      {/* The same render, kept as a reference instead: the
+                          next sketch is rendered with its materials, its
+                          planting and its sky (owner, 2026-10-25). */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          addReference({
+                            projectId: result.projectId,
+                            nodeId: result.nodeId,
+                          })
+                        }
+                        disabled={creating || full || isReference(result.nodeId)}
+                        title={isReference(result.nodeId) ? t('app.genIsReference') : undefined}
+                        className="rounded-lg bg-[#F2F2F5] px-3 py-1.5 text-[12px] font-semibold text-[#3D3B49] transition-colors hover:bg-[#E9E9EE] disabled:opacity-50"
+                      >
+                        {isReference(result.nodeId)
+                          ? t('app.genIsReference')
+                          : t('app.genUseAsReference')}
+                      </button>
                       <a
                         href={imageUrl(result.nodeId)}
                         download={`renderpro-${result.nodeId}.jpg`}
@@ -794,9 +848,14 @@ export function GenerationHome({
 
       <SideColumn
         mode={mode}
-        // No project yet: the panel says where an image's materials will show.
-        // The sheet of the image shown: the render's, or the pinned image's.
-        materialsPanel={<RenderSheetPanel nodeId={result?.nodeId ?? stored?.nodeId ?? null} />}
+        materialsPanel={
+          <ReferencesPanel
+            references={references}
+            onAdd={(file) => void addReferenceFile(file)}
+            onRemove={removeReference}
+            busy={addingReference}
+          />
+        }
         canEdit={Boolean(sourceSrc)}
         lockedHint={t('app.genHomeNeedPhoto')}
         referenceFile={referenceFile}

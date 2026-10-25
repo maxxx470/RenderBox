@@ -78,31 +78,6 @@ export function targetedRequest(request: string | undefined): string | null {
   return `Only modify what this request explicitly names: "${line}". Everything else must remain faithful to the source image. Words such as improve, modernise or make it nicer are not permission to change the design.`;
 }
 
-/** A materials sheet the user pasted (2026-10-19): what became what. */
-export interface SheetRequest {
-  /** The code of the image the sheet was made for, to name it. */
-  code?: string | null | undefined;
-  lines: readonly { color: string; material: string }[];
-}
-
-/**
- * The sheet as lines right after the lock: wherever the source shows the
- * colour on the left, the render shows the material on the right. Each side
- * is put on one line (toPromptLine), so nothing pasted can start a section.
- */
-export function sheetRequestLines(sheet: SheetRequest | undefined): string[] {
-  const lines = (sheet?.lines ?? [])
-    .map((l) => ({ color: toPromptLine(l.color), material: toPromptLine(l.material) }))
-    .filter((l) => l.color !== '' && l.material !== '')
-    .map((l) => `- ${l.color} → ${l.material}`);
-  if (lines.length === 0) return [];
-  const from = sheet?.code ? ` (copied from image ${sheet.code})` : '';
-  return [
-    `Material sheet${from}: apply exactly these assignments — wherever the source image shows the colour on the left, render it as the material on the right, the same on every face and in every view.`,
-    ...lines,
-  ];
-}
-
 export function materialsBlock(hasRequest: boolean): string {
   return hasRequest ? MATERIALS_BLOCK_WITH_REQUEST : MATERIALS_BLOCK;
 }
@@ -317,20 +292,16 @@ export function formatPrompt(engine: EngineName, spec: PromptSpec): string {
  */
 export function lookSpec(input: {
   request?: string | undefined;
-  /** A materials sheet pasted under the prompt. */
-  sheet?: SheetRequest | undefined;
   materials: readonly { face: string; valeur: string }[];
 }): PromptSpec {
-  const sheetLines = sheetRequestLines(input.sheet);
   const request = targetedRequest(input.request);
-  // A sheet changes materials too: the keep-every-material block must give way.
-  const hasRequest = request !== null || sheetLines.length > 0;
+  const hasRequest = request !== null;
   const project = projectMaterialLines(input.materials);
   const block = materialsBlock(hasRequest);
   return {
     kind: 'edit',
     lock: GEOMETRY_LOCK,
-    request: [...(request ? [request] : []), ...sheetLines],
+    request: request ? [request] : [],
     sections: [
       {
         title: 'LIGHT',
