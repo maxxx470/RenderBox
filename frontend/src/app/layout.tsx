@@ -7,6 +7,8 @@ import { LocaleProvider } from '@/lib/i18n/LocaleContext';
 import { requestLocale } from '@/lib/i18n/request-locale';
 import { OG_IMAGE, SEO_COPY, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { VisitorCountryProvider } from '@/lib/visitor-country';
+import { FxRatesProvider } from '@/lib/fx-rates';
+import { getEurRates } from '@/lib/server/fx-rates';
 import { PwaRegister } from './PwaRegister';
 
 // Site-wide type (2026-10-06, owner: "la même police que sur Metrio"):
@@ -63,6 +65,9 @@ export default async function RootLayout({
   // The visitor's own FR / EN choice first; otherwise the language of the
   // country their IP is in (French-speaking → fr, anything else → en).
   const { locale, country } = await requestLocale();
+  // Synchronous by design: it hands back whatever this instance already holds
+  // and refreshes in the background, so no page ever waits on the rate API.
+  const rates = getEurRates();
 
   return (
     // suppressHydrationWarning: browser extensions inject attributes on <html>
@@ -77,9 +82,12 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
           {/* The country also gives the plan card its local-currency line. */}
           <VisitorCountryProvider country={country}>
-            <ToastProvider>
-              <AuthProvider>{children}</AuthProvider>
-            </ToastProvider>
+            {/* The country picks the currency, these give the day's rate. */}
+            <FxRatesProvider rates={rates}>
+              <ToastProvider>
+                <AuthProvider>{children}</AuthProvider>
+              </ToastProvider>
+            </FxRatesProvider>
           </VisitorCountryProvider>
         </LocaleProvider>
       </body>

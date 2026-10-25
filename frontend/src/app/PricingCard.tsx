@@ -20,6 +20,7 @@ import { PLAN_FEATURES, type PricingTier, type PricingTierId } from '@/lib/prici
 import { imageRange } from '@/lib/provider-cost';
 import { localPrice } from '@/lib/local-currency';
 import { useVisitorCountry } from '@/lib/visitor-country';
+import { useEurRates } from '@/lib/fx-rates';
 
 const GRADIENT = 'bg-[linear-gradient(135deg,#435CFE_0%,#2948FC_48%,#1E36D6_100%)]';
 const MONO = 'font-[family-name:var(--font-mono)]';
@@ -68,7 +69,7 @@ export function PricingCard({
   const name = t(TIER_NAME_KEY[tier.id]);
   // The price in the visitor's currency where we know it (« ≈ 9,15 € »),
   // the dollar line otherwise; payment is in FCFA either way.
-  const local = localPrice(tier.priceXof, useVisitorCountry(), intl);
+  const local = localPrice(tier.priceXof, useVisitorCountry(), intl, useEurRates());
   // White type only on the featured card of the blue band.
   const light = tone === 'band' && tier.featured;
   const muted = light ? 'text-white/80' : 'text-[#6B6878]';

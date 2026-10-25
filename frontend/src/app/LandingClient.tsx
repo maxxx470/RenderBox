@@ -486,6 +486,15 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <p className="mx-auto mt-5 max-w-[560px] text-[15px] leading-[1.6] text-[#6B6878]">
               {t('landing.heroSubtitle')}
             </p>
+            {/* The question the button below raises, answered before it is
+                asked. The plans are priced in FCFA and a large part of the
+                audience has no bank card at all, so « do I need a card to
+                subscribe? » is the doubt that stops them — and the answer is
+                no: Maketou's checkout takes mobile money too. A statement
+                about the payment page, not a promise of a free plan. */}
+            <p className="mx-auto mt-3.5 text-[13px] font-medium text-[#6B6878]">
+              {t('landing.heroNoCard')}
+            </p>
           </div>
 
           {/* The fan takes over as soon as real renders are configured in
