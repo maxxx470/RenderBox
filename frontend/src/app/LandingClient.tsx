@@ -472,11 +472,14 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 question is asked for real. */}
             <Link
               href="#tarifs"
-              className="rb-card-in mb-6 inline-flex items-center gap-2 rounded-lg bg-white py-1 pl-1 pr-3 text-[12.5px] font-medium text-[#17161F] shadow-[0_8px_20px_-14px_rgba(23,22,31,0.35)] transition-colors hover:bg-[#E9E9EE]"
+              className="rb-card-in mb-6 inline-flex items-center gap-2 rounded-lg bg-white py-1 pl-1 pr-3 text-[12.5px] font-semibold text-[#C21F33] shadow-[0_8px_20px_-14px_rgba(23,22,31,0.35)] transition-colors hover:bg-[#FFF1F3]"
             >
-              <span
-                className={`rounded-md ${GRADIENT} px-2.5 py-0.5 text-[11px] font-semibold text-white`}
-              >
+              {/* Red, the charter's accent (owner, 2026-10-25). On white the
+                  brand red #F34857 measures 3.6:1 and fails the 4.5:1 floor
+                  at 12.5px, so the text takes #C21F33 — the charter's own
+                  red-for-text-on-white, 4.95:1 — while the badge keeps the
+                  brand red, which is large enough to carry it. */}
+              <span className="rounded-md bg-gradient-to-br from-[#F34857] to-[#EF3E50] px-2.5 py-0.5 text-[11px] font-semibold text-white">
                 {t('landing.heroBadgePayment')}
               </span>
               {t('landing.heroNoCard')}
