@@ -13,8 +13,8 @@ import { LandingClient } from './LandingClient';
 // nav) and can't read server env vars directly.
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { locale } = await requestLocale();
-  return pageMetadata('home', locale);
+  const { locale, explicitLang } = await requestLocale();
+  return pageMetadata('home', locale, explicitLang);
 }
 
 const TIER_NAME = {

@@ -6,8 +6,19 @@
 // A page speaks the visitor's language on one URL (cookie, else country). A
 // crawler would only ever see one language, so each language also has its own
 // address, `?lang=fr` / `?lang=en` (the proxy turns it into the locale
-// cookie): every page names both as alternates and the one it shows as
-// canonical, and the sitemap lists both.
+// cookie): every page names both as alternates, plus the bare path as
+// `x-default`.
+//
+// **A page is canonical to the address it was asked for** (2026-10-26, after
+// Search Console reported « Page en double : Google n'a pas choisi la même URL
+// canonique que l'utilisateur »). Until then every rendering named a
+// `?lang=` address as its canonical, so the bare `/` — the address every link
+// points at and the one a crawler fetches — told Google « the canonical is
+// somewhere else ». Google kept `/` and recorded the disagreement, and the
+// page stayed out of the index. Now `/` is canonical to itself and
+// `/?lang=fr` to itself: three addresses, one hreflang group, no
+// contradiction. The bare path is the group's `x-default`, and it alone is
+// listed in the sitemap.
 import type { Metadata } from 'next';
 import type { Locale } from '@/lib/i18n/dictionaries';
 
@@ -103,10 +114,39 @@ export function localizedPath(page: SeoPage, locale: Locale): string {
   return `${SEO_PATHS[page]}?lang=${locale}`;
 }
 
-/** What a public page tells search engines, in the language it shows. */
-export function pageMetadata(page: SeoPage, locale: Locale): Metadata {
+/** The bare address of a page, the group's `x-default` — absolute, because a
+ *  relative `/` resolves against metadataBase to an origin with no trailing
+ *  slash, which is not the address anyone links to. */
+export function canonicalUrl(page: SeoPage): string {
+  return page === 'home' ? `${SITE_URL}/` : `${SITE_URL}${SEO_PATHS[page]}`;
+}
+
+/** When each page's content last really changed, by hand — the sitemap used
+ *  to stamp every page with the build's own date, which says « everything
+ *  changed » at every deploy and is worth nothing to a crawler. Update the
+ *  date of a page when you change what it says; `info` carries no date here,
+ *  its newest announcement being the real one (see sitemap.ts). */
+export const LAST_MODIFIED: Record<Exclude<SeoPage, 'info' | 'connexion'>, string> = {
+  home: '2026-10-25',
+  exemple: '2026-10-19',
+  legal: '2026-10-13',
+};
+
+/**
+ * What a public page tells search engines, in the language it shows.
+ *
+ * `explicitLang` is the `?lang=` the visitor actually asked for, or null when
+ * the bare address was fetched (the proxy reports it — see request-locale.ts).
+ * The canonical follows it, so no address ever points its canonical at
+ * another one.
+ */
+export function pageMetadata(
+  page: SeoPage,
+  locale: Locale,
+  explicitLang: Locale | null = null,
+): Metadata {
   const { title, description } = SEO_COPY[page][locale];
-  const url = localizedPath(page, locale);
+  const url = explicitLang ? localizedPath(page, explicitLang) : canonicalUrl(page);
   return {
     // The home title already carries the name; the others get « · RenderPro ».
     title: page === 'home' ? { absolute: title } : title,
@@ -116,7 +156,7 @@ export function pageMetadata(page: SeoPage, locale: Locale): Metadata {
       languages: {
         fr: localizedPath(page, 'fr'),
         en: localizedPath(page, 'en'),
-        'x-default': SEO_PATHS[page],
+        'x-default': canonicalUrl(page),
       },
     },
     openGraph: {

@@ -1,7 +1,7 @@
 import 'server-only';
 import type { NextRequest } from 'next/server';
 import { cookies, headers } from 'next/headers';
-import { COOKIE_PREFIX } from '@/lib/constants';
+import { COOKIE_PREFIX, LANG_HEADER } from '@/lib/constants';
 import type { Locale } from './dictionaries';
 import { resolveLocale } from './geo-locale';
 
@@ -10,7 +10,13 @@ import { resolveLocale } from './geo-locale';
  * (the locale cookie, which `?lang=` also sets — see proxy.ts), otherwise the
  * language of the country their IP is in.
  */
-export async function requestLocale(): Promise<{ locale: Locale; country: string | null }> {
+export async function requestLocale(): Promise<{
+  locale: Locale;
+  country: string | null;
+  /** The `?lang=` this very request asked for, null when the bare address was
+   *  fetched. The canonical follows it (lib/seo.ts); the proxy sets it. */
+  explicitLang: Locale | null;
+}> {
   const [store, head] = await Promise.all([cookies(), headers()]);
   const country = head.get('x-vercel-ip-country');
   const locale = resolveLocale({
@@ -18,7 +24,12 @@ export async function requestLocale(): Promise<{ locale: Locale; country: string
     country,
     region: head.get('x-vercel-ip-country-region'),
   });
-  return { locale, country };
+  const asked = head.get(LANG_HEADER);
+  return {
+    locale,
+    country,
+    explicitLang: asked === 'fr' || asked === 'en' ? asked : null,
+  };
 }
 
 /**

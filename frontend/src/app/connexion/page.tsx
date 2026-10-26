@@ -21,8 +21,8 @@ function safeNext(raw: string | undefined): string {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { locale } = await requestLocale();
-  return pageMetadata('connexion', locale);
+  const { locale, explicitLang } = await requestLocale();
+  return pageMetadata('connexion', locale, explicitLang);
 }
 
 export default async function ConnexionPage({

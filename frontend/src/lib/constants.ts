@@ -5,3 +5,8 @@
 // the pre-monolith era when the backend ran as a separate Express server.
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 export const COOKIE_PREFIX = process.env.NEXT_PUBLIC_COOKIE_PREFIX ?? 'app';
+
+/** Carries the `?lang=` a request asked for from the proxy to the layouts,
+ *  which see headers but never the query string. The canonical follows it
+ *  (lib/seo.ts). */
+export const LANG_HEADER = 'x-asked-lang';

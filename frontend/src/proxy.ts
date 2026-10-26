@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { buildCsp } from '@/lib/csp';
-import { COOKIE_PREFIX as LOCALE_COOKIE_PREFIX } from '@/lib/constants';
+import { COOKIE_PREFIX as LOCALE_COOKIE_PREFIX, LANG_HEADER } from '@/lib/constants';
 
 // Silent-refresh gate for protected pages.
 //
@@ -106,6 +106,11 @@ export function proxy(req: NextRequest): NextResponse {
       .filter((c) => c && !c.startsWith(`${LOCALE_COOKIE}=`));
     requestHeaders.set('cookie', [...others, `${LOCALE_COOKIE}=${askedLocale}`].join('; '));
   }
+  // Which address was asked for, for the canonical (lib/seo.ts): a page
+  // fetched at `/?lang=fr` is canonical to `/?lang=fr`, one fetched at `/` to
+  // `/`. A layout cannot read the query string, only headers, hence this one.
+  // Always set, so a header forged upstream never passes for ours.
+  requestHeaders.set(LANG_HEADER, askedLocale ?? '');
 
   const nextResponse = () => NextResponse.next({ request: { headers: requestHeaders } });
 

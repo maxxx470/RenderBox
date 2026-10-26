@@ -6,8 +6,8 @@ import { pageMetadata } from '@/lib/seo';
 // The page is a Client Component: its title, address and languages for
 // search engines are said here (lib/seo.ts).
 export async function generateMetadata(): Promise<Metadata> {
-  const { locale } = await requestLocale();
-  return pageMetadata('legal', locale);
+  const { locale, explicitLang } = await requestLocale();
+  return pageMetadata('legal', locale, explicitLang);
 }
 
 export default function Layout({ children }: { children: ReactNode }) {

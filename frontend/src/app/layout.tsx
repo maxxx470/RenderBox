@@ -54,6 +54,15 @@ export async function generateMetadata(): Promise<Metadata> {
     // Safari (iPhone, iPad, Mac) installs from its Share / File menu and reads these.
     appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: 'default' },
     formatDetection: { telephone: false },
+    // Google Search Console proves the site is ours before it will show its
+    // indexing reports or take a sitemap. Set GOOGLE_SITE_VERIFICATION on
+    // Vercel to the token Search Console gives for the « HTML tag » method
+    // (the content of its <meta>, nothing else) and the tag appears on every
+    // page; left unset, nothing is rendered. Never invent a token: a wrong
+    // one makes Search Console refuse the domain.
+    ...(process.env.GOOGLE_SITE_VERIFICATION
+      ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+      : {}),
   };
 }
 

@@ -41,6 +41,13 @@ const config: NextConfig = {
   // into .next/standalone — required by the Docker runtime image (frontend/Dockerfile).
   // Has no impact on `next dev` / `next start` workflows.
   output: 'standalone',
+  // The old address of Paramètres (Phase 6). It was a page answering 200 that
+  // moved the browser with JavaScript: a crawler read an empty page with the
+  // home page's own title and no « noindex ». A real 308 says what happened,
+  // and `permanent` lets Google pass the address's standing to /parametres.
+  async redirects() {
+    return [{ source: '/settings', destination: '/parametres', permanent: true }];
+  },
   async headers() {
     return [
       {
