@@ -794,6 +794,14 @@ const en: Record<keyof typeof fr, string> = {
   'admin.userDetail.creditsRemove': 'Remove',
   'admin.userDetail.creditsInvalid':
     'Enter a whole number of credits and a reason of at least 3 characters.',
+  'admin.userDetail.creditsStockNote':
+    'Credits given away must fit in the Kie stock; credits taken back return to it.',
+  'admin.userDetail.creditsStockLink': 'See the stock',
+  'admin.userDetail.stockRoom': 'The Kie stock has {room} credits of room left.',
+  'admin.userDetail.stockTooLow':
+    'Refused: the Kie stock does not cover it. Kie balance {balance} credits, {circulation} already held by accounts, so {room} of room. Top the stock up or give less.',
+  'admin.userDetail.stockUnknown':
+    'Refused: Kie did not give its balance, so what is left cannot be known. Try again in a moment.',
   'admin.userDetail.rendersTitle': 'Latest renders',
   'admin.userDetail.rendersAll': 'All their renders',
   'admin.userDetail.noRenders': 'No renders.',

@@ -71,6 +71,7 @@ export default function AdminUserDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [stockNote, setStockNote] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -135,20 +136,47 @@ export default function AdminUserDetailPage() {
     ['admin.userDetail.fReferral', word('onboarding.referral.', user.referralSource)],
   ];
 
+  // Its own error handling, unlike the other actions: a gift refused for want
+  // of room in the Kie stock says how much room there is (2026-10-26, owner).
   async function adjustCredits(sign: 1 | -1) {
     const n = Number(creditAmount);
     if (!Number.isInteger(n) || n <= 0 || creditReason.trim().length < 3) {
       setActionError(t('admin.userDetail.creditsInvalid'));
       return;
     }
-    await runAction(() =>
-      api(`/api/admin/users/${user.id}/credits`, {
-        method: 'POST',
-        body: { delta: sign * n, reason: creditReason.trim() },
-      }),
-    );
-    setCreditAmount('');
-    setCreditReason('');
+    setBusy(true);
+    setActionError(null);
+    setStockNote(null);
+    try {
+      const res = await api<{ creditsBalance: number; room: number | null }>(
+        `/api/admin/users/${user.id}/credits`,
+        { method: 'POST', body: { delta: sign * n, reason: creditReason.trim() } },
+      );
+      setCreditAmount('');
+      setCreditReason('');
+      if (res.room !== null) {
+        setStockNote(t('admin.userDetail.stockRoom', { room: res.room.toLocaleString(intl) }));
+      }
+      await load();
+    } catch (err) {
+      const body = err instanceof ApiError ? err.body : {};
+      const num = (k: string) => Number(body[k] ?? 0).toLocaleString(intl);
+      if (err instanceof ApiError && err.code === 'STOCK_TOO_LOW') {
+        setActionError(
+          t('admin.userDetail.stockTooLow', {
+            room: num('room'),
+            balance: num('balance'),
+            circulation: num('circulation'),
+          }),
+        );
+      } else if (err instanceof ApiError && err.code === 'STOCK_UNKNOWN') {
+        setActionError(t('admin.userDetail.stockUnknown'));
+      } else {
+        setActionError(t('admin.userDetail.actionError'));
+      }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -242,8 +270,14 @@ export default function AdminUserDetailPage() {
               {user.creditsBalance.toLocaleString(intl)} {t('app.creditsUnit')}
             </div>
           </div>
-          <p className="mb-2 text-[12.5px] font-medium text-[#17161F]">
+          <p className="text-[12.5px] font-medium text-[#17161F]">
             {t('admin.userDetail.creditsAdjust')}
+          </p>
+          <p className="mb-2 text-[11.5px] leading-[1.5] text-[#8A8896]">
+            {t('admin.userDetail.creditsStockNote')}{' '}
+            <Link href="/admin/stock-kie" className="text-[#2948FC] hover:underline">
+              {t('admin.userDetail.creditsStockLink')}
+            </Link>
           </p>
           <div className="flex flex-col gap-2">
             <input
@@ -278,6 +312,7 @@ export default function AdminUserDetailPage() {
                 {t('admin.userDetail.creditsRemove')}
               </button>
             </div>
+            {stockNote ? <p className="text-[11.5px] text-[#1E7A3D]">{stockNote}</p> : null}
           </div>
         </section>
       </div>

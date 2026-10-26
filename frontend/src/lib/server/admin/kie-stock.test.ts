@@ -4,7 +4,13 @@ import { prismaMock } from '@/test-utils/prisma-mock';
 const { mockAccounting } = vi.hoisted(() => ({ mockAccounting: vi.fn() }));
 vi.mock('./accounting', () => ({ computeAccounting: mockAccounting }));
 
-import { computeKieStock, coverageLevel } from './kie-stock';
+import {
+  computeKieStock,
+  coverageLevel,
+  readStockBalance,
+  stockRefusal,
+  stockRoom,
+} from './kie-stock';
 
 const ALL = { revenueXof: 36000, kieXof: 300, kieCredits: 100, maketouFeeXof: 2880 };
 
@@ -84,5 +90,51 @@ describe('computeKieStock', () => {
     expect(s.coverage).toBeNull();
     expect(s.level).toBe('red');
     expect(s.imagesLeft.every((r) => r.images === null)).toBe(true);
+  });
+});
+
+// The room a hand-given credit has to fit in (2026-10-26, owner).
+describe('the room in the stock', () => {
+  it('reads Kie only when there is an account to read', async () => {
+    expect(await readStockBalance(false, async () => 500)).toEqual({ kind: 'open' });
+    expect(await readStockBalance(true, async () => 500)).toEqual({ kind: 'known', balance: 500 });
+    expect(
+      await readStockBalance(true, async () => {
+        throw new Error('down');
+      }),
+    ).toEqual({ kind: 'unknown' });
+    // No key: Kie answers null rather than throwing.
+    expect(await readStockBalance(true, async () => null)).toEqual({ kind: 'unknown' });
+  });
+
+  it('is the balance less what the accounts already hold', () => {
+    expect(stockRoom({ kind: 'known', balance: 10_000 }, 7_000)).toBe(3_000);
+    expect(stockRoom({ kind: 'unknown' }, 7_000)).toBeNull();
+    expect(stockRoom({ kind: 'open' }, 7_000)).toBeNull();
+  });
+
+  it('lets a gift through up to the room, and refuses beyond it', () => {
+    const known = { kind: 'known' as const, balance: 10_000 };
+    expect(stockRefusal(known, 3_000, 7_000)).toBeNull();
+    expect(stockRefusal(known, 3_001, 7_000)).toEqual({
+      error: 'STOCK_TOO_LOW',
+      requested: 3_001,
+      room: 3_000,
+      balance: 10_000,
+      circulation: 7_000,
+    });
+  });
+
+  it('refuses rather than guessing when the balance is unknown, and never without an account', () => {
+    expect(stockRefusal({ kind: 'unknown' }, 10, 0)).toEqual({ error: 'STOCK_UNKNOWN' });
+    expect(stockRefusal({ kind: 'open' }, 10_000, 0)).toBeNull();
+  });
+
+  it('taking credits back is always allowed: it gives room back', () => {
+    // The circulation falls by what was removed, so the room rises by as much.
+    const known = { kind: 'known' as const, balance: 1_000 };
+    expect(stockRefusal(known, -500, 5_000)).toBeNull();
+    expect(stockRoom(known, 5_000)).toBe(-4_000);
+    expect(stockRoom(known, 4_500)).toBe(-3_500);
   });
 });

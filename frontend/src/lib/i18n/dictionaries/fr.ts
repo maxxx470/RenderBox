@@ -817,6 +817,14 @@ const fr = {
   'admin.userDetail.creditsRemove': 'Retirer',
   'admin.userDetail.creditsInvalid':
     'Indiquez un nombre entier de crédits et une raison d’au moins 3 caractères.',
+  'admin.userDetail.creditsStockNote':
+    'Un ajout doit tenir dans le stock Kie ; un retrait y revient.',
+  'admin.userDetail.creditsStockLink': 'Voir le stock',
+  'admin.userDetail.stockRoom': 'Il reste {room} crédits de marge dans le stock Kie.',
+  'admin.userDetail.stockTooLow':
+    'Refusé : le stock Kie ne le couvre pas. Solde Kie {balance} crédits, {circulation} déjà détenus par les comptes, soit {room} de marge. Rechargez le stock ou donnez moins.',
+  'admin.userDetail.stockUnknown':
+    'Refusé : Kie n’a pas donné son solde, impossible de savoir ce qu’il reste. Réessayez dans un instant.',
   'admin.userDetail.rendersTitle': 'Derniers rendus',
   'admin.userDetail.rendersAll': 'Tous ses rendus',
   'admin.userDetail.noRenders': 'Aucun rendu.',

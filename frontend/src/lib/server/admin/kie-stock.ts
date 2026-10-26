@@ -31,6 +31,68 @@ export function coverageLevel(coverage: number | null): CoverageLevel {
   return 'green';
 }
 
+// The room left in the stock, used when an admin gives or takes credits back
+// by hand (2026-10-26, owner: « si on lui ajoute un nombre de crédits que le
+// stock n'atteint pas, ça devrait refuser »). Taking credits back from an
+// account lowers the circulation, so they come back into the room on their
+// own — nothing is lost.
+
+export type StockBalance =
+  /** No Kie account at all: the renders run on the direct keys and a site
+   *  credit answers to no stock, so a gift is not held back. */
+  | { kind: 'open' }
+  /** Kie refused to say (bad key, no answer): the room cannot be guessed, so
+   *  a gift waits rather than promising credits that may not exist. */
+  | { kind: 'unknown' }
+  | { kind: 'known'; balance: number };
+
+/** Reads Kie's balance for that decision — read only, as everywhere else. */
+export async function readStockBalance(
+  configured: boolean,
+  readBalance: () => Promise<number | null>,
+): Promise<StockBalance> {
+  if (!configured) return { kind: 'open' };
+  const balance = await readBalance().catch(() => null);
+  return balance === null ? { kind: 'unknown' } : { kind: 'known', balance };
+}
+
+/** The room a gift has to fit in: the balance minus what every account
+ *  already holds. Null when there is no stock to respect, or when the balance
+ *  could not be read. */
+export function stockRoom(stock: StockBalance, circulation: number): number | null {
+  return stock.kind === 'known' ? stock.balance - circulation : null;
+}
+
+export type StockRefusal =
+  | { error: 'STOCK_UNKNOWN' }
+  | {
+      error: 'STOCK_TOO_LOW';
+      requested: number;
+      room: number;
+      balance: number;
+      circulation: number;
+    };
+
+/** Why this hand adjustment cannot go through, or null when it can. Taking
+ *  credits back (a negative delta) is always allowed: it gives room back. */
+export function stockRefusal(
+  stock: StockBalance,
+  delta: number,
+  circulation: number,
+): StockRefusal | null {
+  if (delta <= 0 || stock.kind === 'open') return null;
+  if (stock.kind === 'unknown') return { error: 'STOCK_UNKNOWN' };
+  const room = stock.balance - circulation;
+  if (delta <= room) return null;
+  return {
+    error: 'STOCK_TOO_LOW',
+    requested: delta,
+    room,
+    balance: stock.balance,
+    circulation,
+  };
+}
+
 export interface KieTopUpRow {
   id: string;
   createdAt: string;
