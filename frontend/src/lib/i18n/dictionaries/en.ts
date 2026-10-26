@@ -794,6 +794,12 @@ const en: Record<keyof typeof fr, string> = {
   'admin.userDetail.creditsRemove': 'Remove',
   'admin.userDetail.creditsInvalid':
     'Enter a whole number of credits and a reason of at least 3 characters.',
+  'consent.title': 'Audience measurement',
+  'consent.body':
+    'We would like to count visits with Google Analytics, to learn what is useful to you. Nothing is measured until you accept, and your workspace never is.',
+  'consent.legal': 'Read more',
+  'consent.accept': 'Accept',
+  'consent.refuse': 'Refuse',
   'admin.userDetail.creditsStockNote':
     'Credits given away must fit in the Kie stock; credits taken back return to it.',
   'admin.userDetail.creditsStockLink': 'See the stock',

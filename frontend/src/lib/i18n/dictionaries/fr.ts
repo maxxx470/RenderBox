@@ -817,6 +817,12 @@ const fr = {
   'admin.userDetail.creditsRemove': 'Retirer',
   'admin.userDetail.creditsInvalid':
     'Indiquez un nombre entier de crédits et une raison d’au moins 3 caractères.',
+  'consent.title': 'Mesure d’audience',
+  'consent.body':
+    'Nous aimerions compter les visites avec Google Analytics pour savoir ce qui vous est utile. Rien n’est mesuré tant que vous n’avez pas accepté, et votre espace de travail ne l’est jamais.',
+  'consent.legal': 'En savoir plus',
+  'consent.accept': 'Accepter',
+  'consent.refuse': 'Refuser',
   'admin.userDetail.creditsStockNote':
     'Un ajout doit tenir dans le stock Kie ; un retrait y revient.',
   'admin.userDetail.creditsStockLink': 'Voir le stock',

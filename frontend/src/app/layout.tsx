@@ -4,7 +4,9 @@ import './globals.css';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LocaleProvider } from '@/lib/i18n/LocaleContext';
+import { headers } from 'next/headers';
 import { requestLocale } from '@/lib/i18n/request-locale';
+import { Analytics } from './Analytics';
 import { OG_IMAGE, SEO_COPY, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { VisitorCountryProvider } from '@/lib/visitor-country';
 import { FxRatesProvider } from '@/lib/fx-rates';
@@ -74,6 +76,9 @@ export default async function RootLayout({
   // The visitor's own FR / EN choice first; otherwise the language of the
   // country their IP is in (French-speaking → fr, anything else → en).
   const { locale, country } = await requestLocale();
+  // The nonce the proxy minted for this request: Google Analytics' scripts
+  // carry it, so the policy admits them like Next's own (lib/csp.ts).
+  const nonce = (await headers()).get('x-nonce');
   // Synchronous by design: it hands back whatever this instance already holds
   // and refreshes in the background, so no page ever waits on the rate API.
   const rates = getEurRates();
@@ -89,6 +94,10 @@ export default async function RootLayout({
       <body className={`${inter.className} bg-white text-[#17161F] antialiased`}>
         <PwaRegister />
         <LocaleProvider initialLocale={locale}>
+          {/* Measures the public pages, and only once accepted
+              (lib/analytics.ts). Inside the provider: its banner speaks the
+              visitor's language. */}
+          <Analytics nonce={nonce} />
           {/* The country also gives the plan card its local-currency line. */}
           <VisitorCountryProvider country={country}>
             {/* The country picks the currency, these give the day's rate. */}
