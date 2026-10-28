@@ -267,10 +267,16 @@ export async function POST(
 
       let referenceImages: { buffer: Buffer; mimeType: string }[] | undefined;
       if (editType === 'add_element') {
+        // Owner, 2026-10-28: « Ajouter » answered 503 to every request in
+        // production, which has no moderation provider — the action was
+        // dead. Same rule as the generator's reference images since
+        // 2026-10-25: the picture is private to the account and goes
+        // through, with its format still checked.
         const checked = await checkImageFile(
           referenceFile as File,
           ctx.requestId,
           'Reference image',
+          'send-unmoderated',
         );
         if (!checked.ok) return checked.res;
         referenceImages = [{ buffer: checked.buffer, mimeType: checked.mimeType }];

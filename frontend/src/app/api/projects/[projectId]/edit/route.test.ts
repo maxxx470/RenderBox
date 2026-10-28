@@ -422,17 +422,21 @@ describe('POST /api/projects/[projectId]/edit — add_element + moderation', () 
     expect(mockGenerate).not.toHaveBeenCalled();
   });
 
-  it('503s with MODERATION_NOT_CONFIGURED when moderation cannot run', async () => {
+  // 2026-10-28 (owner): this answered 503 and « Ajouter » was dead in
+  // production, which has no moderation provider. The reference is a private
+  // picture the account uploads for its own render — the same rule as the
+  // generator's reference images since 2026-10-25 — so it goes through.
+  it('still runs the edit when there is no moderation provider at all', async () => {
     const { ModerationNotConfiguredError } = await import('@/lib/server/moderation/moderate-image');
     mockModerateImage.mockRejectedValue(new ModerationNotConfiguredError());
     const res = await POST(
       makeReq(baseFields({ editType: 'add_element', zone: '' }), pngFile()),
       ctx(),
     );
-    expect(res.status).toBe(503);
-    const body = (await res.json()) as { code: string };
-    expect(body.code).toBe('MODERATION_NOT_CONFIGURED');
-    expect(mockGenerate).not.toHaveBeenCalled();
+    expect(res.status).toBe(201);
+    expect(mockGenerate).toHaveBeenCalled();
+    // The picture really reached the engine, rather than being dropped.
+    expect(mockGenerate.mock.calls[0]?.[1]?.referenceImages).toHaveLength(1);
   });
 
   it('415s on a magic-byte mismatch for the reference image', async () => {

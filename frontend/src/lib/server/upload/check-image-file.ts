@@ -12,6 +12,23 @@ export type ImageCheck =
   | { ok: false; res: NextResponse; code: string };
 
 /**
+ * What this gate does when the deployment has NO moderation provider at all.
+ *
+ * `refuse` answers 503 and the caller's feature is unavailable.
+ * `send-unmoderated` accepts the picture — size, MIME allow-list and magic
+ * bytes all still applied, only the content check skipped.
+ *
+ * The owner settled this on 2026-10-25 for the generator's reference images
+ * (« à la place de la fiche de matériel … des images de référence ») and
+ * reaffirmed it on 2026-10-28 for « Ajouter »: a reference is a private
+ * picture an account uploads for its own render, it is never published, and
+ * the product does not depend on a third-party moderation subscription.
+ * Where a provider IS configured, nothing changes: a flagged picture is
+ * still refused with 422.
+ */
+export type WhenUnconfigured = 'refuse' | 'send-unmoderated';
+
+/**
  * Size, MIME allow-list, magic bytes, then moderation — the gate for every
  * image a generation route receives besides the stored source: the
  * add_element reference and the annotate marked copy (edit route), the
@@ -23,6 +40,7 @@ export async function checkImageFile(
   file: File,
   requestId: string,
   what: string,
+  whenUnconfigured: WhenUnconfigured = 'refuse',
 ): Promise<ImageCheck> {
   const headers = { 'x-request-id': requestId };
   const allowedMime = (process.env.UPLOAD_ALLOWED_MIME ?? 'image/jpeg,image/png,image/webp')
@@ -70,6 +88,10 @@ export async function checkImageFile(
     moderation = await moderateImage(buf, file.type);
   } catch (e) {
     if (e instanceof ModerationNotConfiguredError) {
+      if (whenUnconfigured === 'send-unmoderated') {
+        log.warn('image accepted without a content check: no moderation provider', { what });
+        return { ok: true, buffer: buf, mimeType: file.type };
+      }
       return {
         ok: false,
         code: 'MODERATION_NOT_CONFIGURED',
