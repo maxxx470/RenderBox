@@ -22,13 +22,6 @@ export default function ExemplePage() {
   const t = useTranslations();
   const { locale } = useLocale();
 
-  const materialRows = [
-    { label: t('exemple.materialsFacade'), value: t('exemple.materialsFacadeValue') },
-    { label: t('exemple.materialsRoof'), value: t('exemple.materialsRoofValue') },
-    { label: t('exemple.materialsJoinery'), value: t('exemple.materialsJoineryValue') },
-    { label: t('exemple.materialsGround'), value: t('exemple.materialsGroundValue') },
-  ];
-
   return (
     <main className="min-h-screen bg-white">
       <SiteHeader links cta={{ href: '/app', label: t('landing.navStart') }} />
@@ -96,29 +89,6 @@ export default function ExemplePage() {
             </section>
           );
         })}
-
-        {/* After the galleries, not before: the sheet explains how they hold
-            together, which only means something once you have seen them. */}
-        <section className="mt-14">
-          <h2 className="font-[family-name:var(--font-display)] text-[19px] font-bold text-[#17161F]">
-            {t('exemple.materialsTitle')}
-          </h2>
-          <p className="mt-2 max-w-[62ch] text-[14px] leading-[1.55] text-[#6B6878]">
-            {t('exemple.materialsIntro')}
-          </p>
-          <div className="mt-4 rounded-[16px] bg-[#F7F7FA] p-5">
-            <dl className="grid grid-cols-1 gap-4 min-[560px]:grid-cols-2">
-              {materialRows.map((r) => (
-                <div key={r.label}>
-                  <dt className={`text-[10.5px] uppercase tracking-wide text-[#8A8896] ${MONO}`}>
-                    {r.label}
-                  </dt>
-                  <dd className="mt-0.5 text-[14px] font-medium text-[#17161F]">{r.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </section>
 
         <section className="mt-14 rounded-[20px] bg-[linear-gradient(135deg,#435CFE_0%,#2948FC_48%,#1E36D6_100%)] px-6 py-10 text-center">
           <h2 className="mb-5 font-[family-name:var(--font-display)] text-[20px] font-semibold text-white">

@@ -37,12 +37,7 @@ import type { EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { PRESETS, type PresetKey } from '@/lib/server/generation/presets';
 import { ambianceText } from '@/lib/server/generation/ambiance-text';
-import {
-  TEMPLATE_KEYS,
-  TEMPLATES,
-  type SkyOption,
-  type TemplateKey,
-} from '@/lib/server/generation/templates';
+import { TEMPLATE_KEYS, TEMPLATES, type TemplateKey } from '@/lib/server/generation/templates';
 import { FAN_SLOTS, FanCarousel, TemplateFanCard } from './fan';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ACCEPTED_UPLOAD_TYPES } from './upload-types';
@@ -133,8 +128,6 @@ export function GenerationHome({
   // A template picked in the fan (owner, 2026-10-10): the server builds its
   // prompt from the key (2026-10-19, D1); the bar holds the user's own note.
   const [template, setTemplate] = useState<TemplateKey | null>(null);
-  // Exterior day's sky (D2): lightly hazy unless the user asks for sun.
-  const [sky, setSky] = useState<SkyOption>('hazy');
   // The source: a new photo through the paperclip (stored on the first
   // render, then `stored` too), or a recent image picked in the column.
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -201,13 +194,6 @@ export function GenerationHome({
     setPreset(next);
     setTemplate(null);
     writeAmbiance(next);
-  }
-
-  // The sky chip no longer rewrites the bar: « Jour extérieur » states its
-  // own sky in the owner's dictated text, which is definitive. It is still
-  // sent with the request and stored with the render.
-  function changeSky(next: SkyOption) {
-    setSky(next);
   }
 
   function clearTemplate() {
@@ -406,8 +392,6 @@ export function GenerationHome({
             ambianceText: ambianceKey ? prompt.trim() || undefined : undefined,
             customPrompt: ambianceKey ? undefined : prompt.trim() || undefined,
             template: template ?? undefined,
-            // The sky of Exterior day, picked as a template or in the menu.
-            sky: (template ?? preset) === 'jour_ext' ? sky : undefined,
             // 'auto' is the absence of a request, so it is not sent at all.
             ratio: ratio === 'auto' ? undefined : ratio,
             resolution,
@@ -810,11 +794,9 @@ export function GenerationHome({
                     label: TEMPLATES[template].label[locale],
                     image: TEMPLATES[template].image,
                     onClear: clearTemplate,
-                    sky: template === 'jour_ext' ? { value: sky, onChange: changeSky } : undefined,
                   }
                 : null
             }
-            presetSky={preset === 'jour_ext' ? { value: sky, onChange: changeSky } : undefined}
             onSubmit={() => {
               if (!sourceSrc || sendDisabled) return;
               // No plan, or not enough credits for this render: the plans

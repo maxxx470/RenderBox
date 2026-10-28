@@ -18,7 +18,7 @@ import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { PLAN_FEATURES, type PricingTier, type PricingTierId } from '@/lib/pricing-tiers';
 import { imageRange } from '@/lib/provider-cost';
-import { localPrice } from '@/lib/local-currency';
+import { localPrice, usdPrice } from '@/lib/local-currency';
 import { useVisitorCountry } from '@/lib/visitor-country';
 import { useEurRates } from '@/lib/fx-rates';
 
@@ -69,10 +69,21 @@ export function PricingCard({
   const name = t(TIER_NAME_KEY[tier.id]);
   // The price in the visitor's currency where we know it (« ≈ 9,15 € »),
   // the dollar line otherwise; payment is in FCFA either way.
-  const local = localPrice(tier.priceXof, useVisitorCountry(), intl, useEurRates());
+  const rates = useEurRates();
+  const country = useVisitorCountry();
+  // Where the country has no currency of its own here — the CFA zone, where
+  // the price is already in FCFA — the dollar stands in, computed through the
+  // same rates (2026-10-28; a round number set by hand until then).
+  const equivalent =
+    localPrice(tier.priceXof, country, intl, rates) ?? usdPrice(tier.priceXof, intl, rates);
   // White type only on the featured card of the blue band.
   const light = tone === 'band' && tier.featured;
   const muted = light ? 'text-white/80' : 'text-[#6B6878]';
+  // The equivalence in the visitor's currency, in the brand red and bold
+  // (2026-10-28, owner). Red only where the ground is white: on the featured
+  // card of the blue band the type is white, and the charter's red on blue
+  // cannot be read — there it is white and bold.
+  const equivalence = light ? 'text-white font-bold' : 'text-[#C21F33] font-bold';
 
   const frame =
     tone === 'band'
@@ -109,11 +120,13 @@ export function PricingCard({
           </span>
           <span className={`text-[12px] ${muted}`}>{t('landing.pricingPeriod')}</span>
         </div>
-        <div className={`text-[12px] ${MONO} ${muted}`}>
-          {local
-            ? t('landing.pricingLocal', { amount: local })
-            : t('landing.pricingUsd', { amount: String(tier.priceUsdDisplay) })}
-        </div>
+        {/* `usdPrice` answers for every country the table knows, so the
+            line is only absent if a rate ever went missing. */}
+        {equivalent ? (
+          <div className={`text-[13px] ${MONO} ${equivalence}`}>
+            {t('landing.pricingLocal', { amount: equivalent })}
+          </div>
+        ) : null}
       </div>
       <ul className="flex flex-col gap-2.5">
         <CheckItem light={light}>

@@ -29,7 +29,6 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { TickSquare, Lock, Setting } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { PresetKey } from '@/lib/server/generation/presets';
-import { SKY_OPTIONS, type SkyOption } from '@/lib/server/generation/templates';
 import { ENGINE_NAMES, type EngineName } from '@/lib/server/generation/engines/types';
 import { ENGINE_COLORS, ENGINE_LABELS } from '@/lib/server/generation/engine-labels';
 import { EngineLogo } from '@/components/EngineLogo';
@@ -261,7 +260,6 @@ export function CommandBar({
   onPickElement,
   pickingElement,
   template = null,
-  presetSky,
   fill = false,
   versions,
   onVersionChange,
@@ -318,17 +316,16 @@ export function CommandBar({
   /**
    * A template of the image generator page is on (owner, 2026-10-10): its
    * chip takes the ambiance's place — the server builds the template's
-   * prompt, and no ambiance is sent with it. `sky`: Exterior day's sky
-   * choice (2026-10-19, D2), a second chip beside it.
+   * prompt, and no ambiance is sent with it. The « Ciel » chip that stood
+   * beside it is gone (2026-10-28, owner): since the owner's dictated
+   * prompts, « Jour extérieur » states its own sky, so the chip changed
+   * nothing — an inert control is a promise the render does not keep.
    */
   template?: {
     label: string;
     image: string;
     onClear: () => void;
-    sky?: { value: SkyOption; onChange: (v: SkyOption) => void } | undefined;
   } | null;
-  /** Exterior day picked in the ambiance menu: the same sky choice. */
-  presetSky?: { value: SkyOption; onChange: (v: SkyOption) => void } | undefined;
   /**
    * Take the column's full width instead of the centred 920px — the project
    * editor lines the bar up with the canvas above it (owner, 2026-10-08).
@@ -426,33 +423,6 @@ export function CommandBar({
       />,
     );
   }
-  // Exterior day's sky (2026-10-19, D2), beside its template or its ambiance.
-  const skyChip = (sky: { value: SkyOption; onChange: (v: SkyOption) => void }) => (
-    <span
-      key="sky"
-      role="group"
-      aria-label={t('app.skyLabel')}
-      className={`${CHIP_STATIC} gap-0.5 px-1 text-[#3D3B49]`}
-    >
-      <span className="px-1 text-[#8A8896]">{t('app.skyLabel')}</span>
-      {SKY_OPTIONS.map((v) => (
-        <button
-          key={v}
-          type="button"
-          aria-pressed={sky.value === v}
-          disabled={inputDisabled}
-          onClick={() => sky.onChange(v)}
-          className={`h-6 rounded-md px-2 transition-colors disabled:cursor-not-allowed ${
-            sky.value === v
-              ? 'bg-white font-semibold text-[#1E36D6] shadow-[0_1px_3px_rgba(23,22,31,0.12)]'
-              : 'hover:bg-[#E9E9EE]'
-          }`}
-        >
-          {t(v === 'hazy' ? 'app.skyHazy' : 'app.skySun')}
-        </button>
-      ))}
-    </span>
-  );
   if (mode === 'generate' && template) {
     settings.push(
       <span key="template" className={`${CHIP_BASE} pl-1`} title={t('app.templateChip')}>
@@ -484,8 +454,6 @@ export function CommandBar({
         </button>
       </span>,
     );
-    const sky = template.sky;
-    if (sky) settings.push(skyChip(sky));
   } else if (mode === 'generate') {
     settings.push(
       <PresetSelect
@@ -495,7 +463,6 @@ export function CommandBar({
         disabled={inputDisabled}
       />,
     );
-    if (presetSky) settings.push(skyChip(presetSky));
   }
   // Every mode chooses its ratio since 2026-10-08 (owner: every format, in
   // generation and in edits alike); 'auto' keeps the image's own framing.

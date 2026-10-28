@@ -6,6 +6,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-static';
 
 import { PRICING_TIERS } from '@/lib/pricing-tiers';
+import { usdPrice } from '@/lib/local-currency';
 import { describePrices } from '@/lib/provider-cost';
 import { TIKTOK_ACCOUNT, YOUTUBE_CHANNEL } from '@/lib/community-links';
 import { dictionaries } from '@/lib/i18n/dictionaries';
@@ -22,7 +23,7 @@ function body(): string {
   const fcfa = (n: number) => n.toLocaleString('en-US').replace(/,/g, ' ');
   const plans = PRICING_TIERS.map(
     (t) =>
-      `- ${en[NAMES[t.id]]}: ${fcfa(t.priceXof)} FCFA (about ${t.priceUsdDisplay} USD) for ${fcfa(
+      `- ${en[NAMES[t.id]]}: ${fcfa(t.priceXof)} FCFA (about ${usdPrice(t.priceXof, 'en-US') ?? '—'}) for ${fcfa(
         t.creditsPerMonth,
       )} credits, valid 30 days`,
   ).join('\n');

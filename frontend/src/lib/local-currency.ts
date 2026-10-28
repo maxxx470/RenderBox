@@ -164,6 +164,24 @@ export const COUNTRY_CURRENCY: Readonly<Record<string, string>> = {
  * `liveRates` is the daily refresh (units per euro); anything missing from it
  * falls back to the table above.
  */
+/**
+ * The same figure in dollars, for a visitor whose country has no currency of
+ * its own here — the CFA zone above all, where the price is already in FCFA.
+ *
+ * Computed through the same table as every other currency (2026-10-28): the
+ * card used to show a round number set by hand on each plan, so the dollar
+ * line alone never moved when a rate did, and it said « ≈ 10 $ » for what the
+ * table makes $10.25. A figure printed in bold red had better be the one the
+ * rates give.
+ */
+export function usdPrice(
+  priceXof: number,
+  intl: string,
+  liveRates?: Readonly<Record<string, number>> | null,
+): string | null {
+  return formatInCurrency(priceXof, 'USD', intl, liveRates);
+}
+
 export function localPrice(
   priceXof: number,
   country: string | null | undefined,
@@ -172,6 +190,16 @@ export function localPrice(
 ): string | null {
   const currency = country ? COUNTRY_CURRENCY[country.toUpperCase()] : undefined;
   if (!currency) return null;
+  return formatInCurrency(priceXof, currency, intl, liveRates);
+}
+
+/** One price, one currency: the day's rate when we have it, else the table's. */
+function formatInCurrency(
+  priceXof: number,
+  currency: string,
+  intl: string,
+  liveRates?: Readonly<Record<string, number>> | null,
+): string | null {
   const live = liveRates?.[currency];
   // A rate of 0 or a negative one would silently produce "0 €" — treat any
   // non-positive live value as missing rather than as an answer.

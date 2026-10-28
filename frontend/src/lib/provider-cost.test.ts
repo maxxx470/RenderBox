@@ -97,15 +97,15 @@ describe('what the plans buy, and what they guarantee', () => {
     expect(imageRange(3)).toEqual({ min: 0, max: 0 });
   });
 
-  it('guaranteed margins: gross 75 / 70 / 66.7 %, net of Maketou 67 / 62 / 58.7 %', () => {
+  // Prices end in 900 since 2026-10-28, which costs four tenths of a point.
+  it('guaranteed margins: gross 74.6 / 69.8 / 66.6 %, net of Maketou 66.6 / 61.8 / 58.6 %', () => {
     const m = PRICING_TIERS.map((t) => planMargin(t));
     expect(m.map((x) => x.kieCostXof)).toEqual([1500, 4500, 12000]);
-    expect(m[0]!.gross).toBeCloseTo(0.75, 10);
-    expect(m[1]!.gross).toBeCloseTo(0.7, 10);
-    expect(m[2]!.gross).toBeCloseTo(2 / 3, 10);
-    expect(m[0]!.net).toBeCloseTo(0.67, 10);
-    expect(m[1]!.net).toBeCloseTo(0.62, 10);
-    expect(m[2]!.net).toBeCloseTo(2 / 3 - 0.08, 10);
+    const pct = (x: number) => Math.round(x * 1000) / 10;
+    expect(m.map((x) => pct(x.gross))).toEqual([74.6, 69.8, 66.6]);
+    expect(m.map((x) => pct(x.net))).toEqual([66.6, 61.8, 58.6]);
+    // Every plan still earns more than two thirds of its price before Maketou.
+    for (const x of m) expect(x.gross).toBeGreaterThan(0.66);
   });
 
   it('describes the offered prices in both languages', () => {

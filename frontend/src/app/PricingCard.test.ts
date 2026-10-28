@@ -54,15 +54,17 @@ describe('PricingCard — one card for the landing and the Abonnement page', () 
 
   it('prints the figures of pricing-tiers.ts: price, dollar equivalent, credits with a thousands separator', () => {
     const [decouverte, standard, pro] = PRICING_TIERS;
-    expect(cardText(decouverte!, 'fr', 'band')).toContain('6 000 FCFA');
+    expect(cardText(decouverte!, 'fr', 'band')).toContain('5 900 FCFA');
     expect(cardText(decouverte!, 'fr', 'band')).toContain('500 crédits / mois');
     expect(cardText(standard!, 'fr', 'band')).toContain('1 500 crédits / mois');
     expect(cardText(pro!, 'fr', 'band')).toContain('4 000 crédits / mois');
-    expect(cardText(pro!, 'fr', 'band')).toContain('36 000 FCFA');
-    expect(cardText(pro!, 'fr', 'band')).toContain('≈ 58 $ US');
+    expect(cardText(pro!, 'fr', 'band')).toContain('35 900 FCFA');
+    // The dollar is computed from the rate table like every other currency
+    // (2026-10-28), not a round number written on each plan by hand.
+    expect(cardText(pro!, 'fr', 'band')).toContain('≈ 61,31 $US');
     expect(cardText(decouverte!, 'en', 'band')).toContain('500 credits / month');
     expect(cardText(pro!, 'en', 'band')).toContain('4,000 credits / month');
-    expect(cardText(pro!, 'en', 'band')).toContain('≈ $58 USD');
+    expect(cardText(pro!, 'en', 'band')).toContain('≈ $61.31');
   });
 
   it('lists the details in the agreed order, FR and EN, under the credits', () => {

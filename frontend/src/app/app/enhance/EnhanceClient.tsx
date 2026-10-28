@@ -78,6 +78,7 @@ import {
 } from '../request-error';
 import { EnhanceBar } from './EnhanceBar';
 import { fitForUpload } from '../fit-upload';
+import { useReferences } from '../references';
 
 const GRADIENT = 'bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6]';
 const HEADING =
@@ -189,6 +190,8 @@ export function EnhanceClient({
 
   const [file, setFile] = useState<File | null>(null);
   const [session, setSession] = useState<Session | null>(initialSession);
+  // The same pinned list as the generator (localStorage `rp-references`).
+  const { addReference, isReference, full } = useReferences();
   const [resultId, setResultId] = useState<string | null>(initialResultId);
   const [working, setWorking] = useState(false);
   const [recent, setRecent] = useState<RecentRenderCardData[]>(recentRenders);
@@ -447,6 +450,25 @@ export function EnhanceClient({
                           className={`rounded-lg ${GRADIENT} px-3 py-1.5 text-[12px] font-semibold text-white transition-[filter] hover:brightness-110 disabled:opacity-50`}
                         >
                           {t('app.genUseAsSource')}
+                        </button>
+                      )}
+                      {/* The same picture kept as a reference, as under a
+                          render on the generator (owner, 2026-10-28): the two
+                          pages share one list, so an image improved here can
+                          carry its materials into the next sketch. */}
+                      {session && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            addReference({ projectId: session.projectId, nodeId: resultId })
+                          }
+                          disabled={working || full || isReference(resultId)}
+                          title={isReference(resultId) ? t('app.genIsReference') : undefined}
+                          className="rounded-lg bg-[#F2F2F5] px-3 py-1.5 text-[12px] font-semibold text-[#3D3B49] transition-colors hover:bg-[#E9E9EE] disabled:opacity-50"
+                        >
+                          {isReference(resultId)
+                            ? t('app.genIsReference')
+                            : t('app.genUseAsReference')}
                         </button>
                       )}
                       <a
