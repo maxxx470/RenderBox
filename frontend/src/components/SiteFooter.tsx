@@ -15,7 +15,9 @@
 // The ground is the DEEP end of the gradient (#2948FC → #1A2BB0), not the
 // bright #435CFE: white 13px text needs 4.5:1, which #435CFE (3.3:1) misses.
 import Link from 'next/link';
-import { useTranslations } from '@/lib/i18n/LocaleContext';
+import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
+import { UC } from '@/app/rendu/copy';
+import { USE_CASES, useCasePath } from '@/app/rendu/use-cases';
 import { TikTokMark } from '@/app/HeroProof';
 import { SOCIAL } from '@/app/social';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
@@ -26,6 +28,7 @@ const HEADING = 'mb-3.5 text-[13px] font-semibold text-white';
 
 export function SiteFooter({ ctaHref = '/app' }: { ctaHref?: string }) {
   const t = useTranslations();
+  const { locale } = useLocale();
 
   return (
     <footer className="mx-auto max-w-[1180px] px-4 pb-6 pt-6">
@@ -69,6 +72,20 @@ export function SiteFooter({ ctaHref = '/app' }: { ctaHref?: string }) {
               </Link>
               <Link href="/exemple" className={LINK}>
                 {t('landing.navExamples')}
+              </Link>
+            </div>
+            {/* The use-case pages (2026-10-28). Site-wide links: every public
+                page then points at them, which is how a crawler finds them
+                from wherever it lands. Five of eleven, then the hub. */}
+            <div>
+              <h2 className={HEADING}>{UC.footerHeading[locale]}</h2>
+              {USE_CASES.slice(0, 5).map((uc) => (
+                <Link key={uc.slug} href={useCasePath(uc.slug)} className={LINK}>
+                  {uc.h1[locale]}
+                </Link>
+              ))}
+              <Link href="/rendu" className={LINK}>
+                {UC.allCases[locale]}
               </Link>
             </div>
             <div>

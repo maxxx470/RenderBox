@@ -10,7 +10,8 @@ import { usdPrice } from '@/lib/local-currency';
 import { describePrices } from '@/lib/provider-cost';
 import { TIKTOK_ACCOUNT, YOUTUBE_CHANNEL } from '@/lib/community-links';
 import { dictionaries } from '@/lib/i18n/dictionaries';
-import { localizedPath, SITE_URL } from '@/lib/seo';
+import { langPath, localizedPath, SITE_URL } from '@/lib/seo';
+import { USE_CASES, useCasePath } from '@/app/rendu/use-cases';
 
 const NAMES = {
   decouverte: 'landing.pricingTierDecouverteName',
@@ -35,6 +36,13 @@ function body(): string {
     .join('\n\n');
   const page = (p: 'home' | 'info' | 'exemple' | 'legal', lang: 'en' | 'fr') =>
     `${SITE_URL}${localizedPath(p, lang)}`;
+  // The use-case pages (2026-10-28): an assistant asked « how do I turn a
+  // SketchUp capture into a render » should be able to name the page that
+  // answers exactly that, rather than only the home page.
+  const useCases = USE_CASES.map(
+    (uc) =>
+      `- [${uc.h1.en}](${SITE_URL}${langPath(useCasePath(uc.slug), 'en')}): ${uc.seo.en.description}`,
+  ).join('\n');
 
   return `# RenderPro
 
@@ -60,6 +68,13 @@ ${plans}
 - [Render examples](${page('exemple', 'en')}): renders across several projects ([en français](${page('exemple', 'fr')}))
 - [What's new](${page('info', 'en')}): changelog and feature videos ([en français](${page('info', 'fr')}))
 - [Legal notice and privacy](${page('legal', 'en')})
+
+## What RenderPro does, case by case
+
+Each of these pages describes one use, says what image to give and shows
+examples. Every one exists in English and in French (add \`?lang=fr\`).
+
+${useCases}
 
 ## FAQ
 

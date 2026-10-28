@@ -5,13 +5,23 @@ import { describe, it, expect } from 'vitest';
 import sitemap from './sitemap';
 import robots from './robots';
 import { INDEXED_PAGES, SEO_PATHS, SITE_URL } from '@/lib/seo';
+import { USE_CASES, useCasePath } from '@/app/rendu/use-cases';
 
 const entries = sitemap();
 
 describe('the sitemap', () => {
   it('names one entry per public page, and only those', () => {
-    expect(entries).toHaveLength(INDEXED_PAGES.length);
+    // The four fixed pages, the /rendu hub, and one page per use case.
+    expect(entries).toHaveLength(INDEXED_PAGES.length + 1 + USE_CASES.length);
     expect(new Set(entries.map((e) => e.url)).size).toBe(entries.length);
+  });
+
+  it('lists the use-case hub and every use-case page', () => {
+    const urls = entries.map((e) => e.url);
+    expect(urls).toContain(`${SITE_URL}/rendu`);
+    for (const uc of USE_CASES) {
+      expect(urls, uc.slug).toContain(`${SITE_URL}${useCasePath(uc.slug)}`);
+    }
   });
 
   it('gives absolute addresses on the canonical domain', () => {

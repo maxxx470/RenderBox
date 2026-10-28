@@ -109,16 +109,27 @@ export const SEO_COPY: Record<SeoPage, Record<Locale, { title: string; descripti
   },
 };
 
-/** The address of a page in one language. */
-export function localizedPath(page: SeoPage, locale: Locale): string {
-  return `${SEO_PATHS[page]}?lang=${locale}`;
+/** The address of ANY public page in one language. Every page of the site
+ *  takes this shape, the five fixed ones and the use-case pages under
+ *  /rendu alike (see app/rendu/use-cases.ts). */
+export function langPath(path: string, locale: Locale): string {
+  return `${path}?lang=${locale}`;
 }
 
-/** The bare address of a page, the group's `x-default` — absolute, because a
- *  relative `/` resolves against metadataBase to an origin with no trailing
- *  slash, which is not the address anyone links to. */
+/** The address of a page in one language. */
+export function localizedPath(page: SeoPage, locale: Locale): string {
+  return langPath(SEO_PATHS[page], locale);
+}
+
+/** The bare address of any path, the group's `x-default` — absolute, because
+ *  a relative `/` resolves against metadataBase to an origin with no
+ *  trailing slash, which is not the address anyone links to. */
+export function canonicalFor(path: string): string {
+  return `${SITE_URL}${path}`;
+}
+
 export function canonicalUrl(page: SeoPage): string {
-  return page === 'home' ? `${SITE_URL}/` : `${SITE_URL}${SEO_PATHS[page]}`;
+  return canonicalFor(SEO_PATHS[page]);
 }
 
 /** When each page's content last really changed, by hand — the sitemap used
@@ -132,6 +143,22 @@ export const LAST_MODIFIED: Record<Exclude<SeoPage, 'info' | 'connexion'>, strin
   legal: '2026-10-13',
 };
 
+/** Any public address, described for search engines. The five fixed pages go
+ *  through pageMetadata below; the use-case pages under /rendu build one of
+ *  these from their own copy. */
+export interface SeoDocument {
+  /** The bare path from the site root, e.g. `/` or `/rendu/croquis-en-rendu`. */
+  path: string;
+  title: string;
+  description: string;
+  /** false puts a `noindex` on the page (it stays crawlable: a blocked page
+   *  can never be read, so its noindex would never be seen). */
+  index: boolean;
+  /** true sends the title exactly as written, without the root layout's
+   *  « %s · RenderPro » template — for a title that already carries the name. */
+  absoluteTitle?: boolean;
+}
+
 /**
  * What a public page tells search engines, in the language it shows.
  *
@@ -140,36 +167,53 @@ export const LAST_MODIFIED: Record<Exclude<SeoPage, 'info' | 'connexion'>, strin
  * The canonical follows it, so no address ever points its canonical at
  * another one.
  */
-export function pageMetadata(
-  page: SeoPage,
+export function documentMetadata(
+  doc: SeoDocument,
   locale: Locale,
   explicitLang: Locale | null = null,
 ): Metadata {
-  const { title, description } = SEO_COPY[page][locale];
-  const url = explicitLang ? localizedPath(page, explicitLang) : canonicalUrl(page);
+  const { path, title, description } = doc;
+  const url = explicitLang ? langPath(path, explicitLang) : canonicalFor(path);
   return {
-    // The home title already carries the name; the others get « · RenderPro ».
-    title: page === 'home' ? { absolute: title } : title,
+    title: doc.absoluteTitle ? { absolute: title } : title,
     description,
     alternates: {
       canonical: url,
       languages: {
-        fr: localizedPath(page, 'fr'),
-        en: localizedPath(page, 'en'),
-        'x-default': canonicalUrl(page),
+        fr: langPath(path, 'fr'),
+        en: langPath(path, 'en'),
+        'x-default': canonicalFor(path),
       },
     },
     openGraph: {
       type: 'website',
       siteName: SITE_NAME,
       url,
-      title: page === 'home' ? title : `${title} · ${SITE_NAME}`,
+      title: doc.absoluteTitle ? title : `${title} · ${SITE_NAME}`,
       description,
       locale: locale === 'fr' ? 'fr_FR' : 'en_US',
       alternateLocale: locale === 'fr' ? 'en_US' : 'fr_FR',
       images: [OG_IMAGE],
     },
     twitter: { card: 'summary_large_image', title, description, images: [OG_IMAGE.url] },
-    ...(INDEXED_PAGES.includes(page) ? {} : { robots: { index: false, follow: true } }),
+    ...(doc.index ? {} : { robots: { index: false, follow: true } }),
   };
+}
+
+export function pageMetadata(
+  page: SeoPage,
+  locale: Locale,
+  explicitLang: Locale | null = null,
+): Metadata {
+  return documentMetadata(
+    {
+      path: SEO_PATHS[page],
+      ...SEO_COPY[page][locale],
+      index: INDEXED_PAGES.includes(page),
+      // The home title already carries the name; the others get « · RenderPro ».
+      absoluteTitle: page === 'home',
+    },
+    locale,
+    explicitLang,
+  );
 }

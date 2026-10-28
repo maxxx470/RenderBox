@@ -31,6 +31,8 @@ import { useRouter } from 'next/navigation';
 import { Category, ChevronRight, Document, Image as ImageIcon, Plus, Swap } from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
+import { UC } from './rendu/copy';
+import { USE_CASES, useCasePath } from './rendu/use-cases';
 import { BEFORE_AFTER_PAIRS } from './before-after';
 import { PricingCard } from './PricingCard';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
@@ -826,6 +828,39 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               className={`inline-flex items-center rounded-xl ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
             >
               {t('landing.checklistCta')}
+            </Link>
+          </Reveal>
+        </section>
+
+        {/* USE CASES (2026-10-28) — the landing's own links into /rendu. Each
+            page carries one of the terms the trade searches; linking them from
+            here is what lets a crawler (and a visitor who arrived on the brand
+            name) reach them. See app/rendu/use-cases.ts. */}
+        <section className="py-14 min-[860px]:py-20">
+          <SectionHeader
+            eyebrow={UC.landingEyebrow[locale]}
+            title={UC.landingTitle[locale]}
+            subtitle={UC.landingSubtitle[locale]}
+          />
+          <Reveal delayMs={100}>
+            <div className="flex flex-wrap justify-center gap-2.5">
+              {USE_CASES.map((uc) => (
+                <Link
+                  key={uc.slug}
+                  href={useCasePath(uc.slug)}
+                  className="rounded-xl bg-[#F2F2F5] px-4 py-2.5 text-[13.5px] font-medium text-[#3D3B49] transition-colors hover:bg-[#EEF1FF] hover:text-[#1E36D6]"
+                >
+                  {uc.h1[locale]}
+                </Link>
+              ))}
+            </div>
+          </Reveal>
+          <Reveal delayMs={160} className="mt-8 flex justify-center">
+            <Link
+              href="/rendu"
+              className={`inline-flex items-center rounded-xl ${GRADIENT} px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-150 ease-out active:scale-[0.97]`}
+            >
+              {UC.allCases[locale]}
             </Link>
           </Reveal>
         </section>
