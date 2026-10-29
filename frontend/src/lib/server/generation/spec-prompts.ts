@@ -25,7 +25,7 @@ import 'server-only';
 import type { Locale } from '@/lib/i18n/dictionaries';
 import { ambiancePromptText } from './ambiance-prompts';
 import type { PresetKey } from './presets';
-import { toPromptLine, profileLight } from './render-profiles';
+import { referenceIntro, referenceLock, toPromptLine, profileLight } from './render-profiles';
 import {
   ENHANCE_OPTION_KEYS,
   type EnhanceAmbianceKey,
@@ -79,23 +79,6 @@ function requestLine(text: string): string[] {
  * geometry. A reference is a picture of another building; without that line
  * the engine reshapes the sketch to match it.
  */
-function referenceLine(count: number, locale: Locale): string[] {
-  if (count < 1) return [];
-  const fr =
-    count === 1
-      ? 'Une image de référence est jointe en plus de l’image source.'
-      : `${count} images de référence sont jointes en plus de l’image source.`;
-  const en =
-    count === 1
-      ? 'One reference image is attached besides the source image.'
-      : `${count} reference images are attached besides the source image.`;
-  return [
-    locale === 'fr'
-      ? `${fr} Reprenez-en les matériaux, la végétation et le ciel, et appliquez-les à l’image source pour que les deux rendus aillent ensemble. Ne reprenez RIEN d’autre de la référence : ni sa géométrie, ni ses volumes, ni son cadrage, ni ses ouvertures, qui restent exactement ceux de l’image source.`
-      : `${en} Take their materials, their vegetation and their sky, and apply them to the source image so that both renders belong together. Take NOTHING else from the references: not their geometry, not their volumes, not their framing, not their openings, which stay exactly those of the source image.`,
-  ];
-}
-
 /** The one sentence of the old MATERIALS & TEXTURE block that is still sent:
  *  the materials are data about THIS image, so they outlive the texts. */
 const KEEP_MATERIALS =
@@ -132,9 +115,11 @@ export function ambiancePrompt(input: {
   const materials = materialsText(input.materials);
   return [
     input.text ?? ambiancePromptText(input.preset, input.locale),
-    ...referenceLine(input.referenceCount ?? 0, input.locale),
+    ...referenceIntro(input.referenceCount ?? 0, input.locale),
     ...(materials === EVERY_MATERIAL_AS_SHOWN ? [] : [`Finishes: ${materials}. ${KEEP_MATERIALS}`]),
     ...requestLine(input.request),
+    // Last, deliberately: see referenceLock.
+    ...referenceLock(input.referenceCount ?? 0, input.locale),
   ].join('\n\n');
 }
 

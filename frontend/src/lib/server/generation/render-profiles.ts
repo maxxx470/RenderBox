@@ -19,6 +19,7 @@
 import 'server-only';
 import type { EngineName } from './engines/types';
 import type { SkyOption } from './templates';
+import type { Locale } from '@/lib/i18n/dictionaries';
 
 // ── Common blocks ─────────────────────────────────────────────────────────
 
@@ -233,6 +234,16 @@ export interface PromptSpec {
   avoid?: string;
   /** Pixel IA's FINAL CHECK, after "Before answering, verify: ". */
   check: string;
+  /**
+   * Lines sent LAST on both engines, after everything else — the final check
+   * included. Empty on every prompt that has no reference image, so the
+   * frozen prompts are untouched.
+   *
+   * It exists for the reference-image lock (2026-10-29): a constraint the
+   * engine must not trade away has to be the last thing it reads, and Visio's
+   * layout has no final-check block to put it in.
+   */
+  tail?: readonly string[];
 }
 
 const INTRO: Record<PromptSpec['kind'], { visio: string; pixel: string }> = {
@@ -265,6 +276,7 @@ export function formatPrompt(engine: EngineName, spec: PromptSpec): string {
       ...spec.request,
       ...spec.sections.map((s) => s.visio).filter((s) => s !== ''),
       ...(spec.avoid ? [`Avoid: ${spec.avoid}.`] : []),
+      ...(spec.tail ?? []),
     ].join('\n');
   }
   const blocks: string[][] = [[INTRO[spec.kind].pixel, spec.lock, ...spec.request]];
@@ -280,7 +292,51 @@ export function formatPrompt(engine: EngineName, spec: PromptSpec): string {
   }
   titles.push('FINAL CHECK');
   blocks.push([`Before answering, verify: ${spec.check}.`]);
-  return blocks.map((lines, i) => [`${i + 1}. ${titles[i]}`, ...lines].join('\n')).join('\n');
+  const numbered = blocks
+    .map((lines, i) => [`${i + 1}. ${titles[i]}`, ...lines].join('\n'))
+    .join('\n');
+  return spec.tail?.length ? [numbered, ...spec.tail].join('\n') : numbered;
+}
+
+export function referenceIntro(count: number, locale: Locale): string[] {
+  if (count < 1) return [];
+  // WHICH IMAGE IS WHICH (2026-10-29, owner: « le toit a changé de géométrie
+  // à cause de l'image de référence »). The engine is handed several images
+  // in one call — the source first, then the references (engines/kie.ts) —
+  // and until now the prompt said « besides the source image » without ever
+  // saying WHICH of them was the source. With nothing to go on but order, the
+  // model blends: it redrew the roof of the sketch to match the reference.
+  // Numbering them is the fix, and it costs one sentence.
+  const others =
+    count === 1
+      ? { fr: 'L’image 2 est une image de référence.', en: 'Image 2 is a reference image.' }
+      : {
+          fr: `Les images 2 à ${count + 1} sont des images de référence.`,
+          en: `Images 2 to ${count + 1} are reference images.`,
+        };
+  return [
+    locale === 'fr'
+      ? `L’image 1 est l’IMAGE SOURCE : c’est elle, et elle seule, que vous rendez. ${others.fr} Ce sont des photographies d’AUTRES bâtiments, fournies uniquement pour inspiration. Reprenez-en les matériaux, la végétation et le ciel, et appliquez-les à l’image 1.`
+      : `Image 1 is the SOURCE IMAGE: it is the one, and the only one, you render. ${others.en} They are photographs of OTHER buildings, supplied for inspiration only. Take their materials, their vegetation and their sky, and apply them to image 1.`,
+  ];
+}
+
+/**
+ * The geometry lock that answers the references — sent LAST, after everything
+ * else including the user's own request.
+ *
+ * Position is the point. The lock used to sit in the middle of the prompt and
+ * the last thing the engine read was the user's request, so « make the façade
+ * timber » arrived long after « keep the roof ». A constraint an engine must
+ * not trade away is the constraint it reads last.
+ */
+export function referenceLock(count: number, locale: Locale): string[] {
+  if (count < 1) return [];
+  return [
+    locale === 'fr'
+      ? `RÈGLE ABSOLUE SUR LES IMAGES DE RÉFÉRENCE : ne reprenez d’elles RIEN qui touche à la forme. Ni leur géométrie, ni leurs volumes, ni leur toiture ou la pente de leur toit, ni leurs ouvertures, ni leur nombre d’étages, ni leur cadrage, ni leur point de vue. La forme du bâtiment rendu est EXACTEMENT celle de l’image 1, jusqu’au moindre pan de toiture. Une référence ne donne que de la matière, de la végétation et du ciel.`
+      : `ABSOLUTE RULE ON THE REFERENCE IMAGES: take NOTHING from them that concerns shape. Not their geometry, not their volumes, not their roof or its pitch, not their openings, not their number of floors, not their framing, not their viewpoint. The shape of the rendered building is EXACTLY that of image 1, down to every roof plane. A reference gives material, vegetation and sky, and nothing else.`,
+  ];
 }
 
 // ── C0: no ambiance ───────────────────────────────────────────────────────
@@ -293,16 +349,28 @@ export function formatPrompt(engine: EngineName, spec: PromptSpec): string {
 export function lookSpec(input: {
   request?: string | undefined;
   materials: readonly { face: string; valeur: string }[];
+  /** Reference images handed to the engine with the source (2026-10-29). */
+  referenceCount?: number | undefined;
 }): PromptSpec {
   const request = targetedRequest(input.request);
   const hasRequest = request !== null;
   const project = projectMaterialLines(input.materials);
   const block = materialsBlock(hasRequest);
+  // Without an ambiance, the references were not mentioned to the engine AT
+  // ALL until 2026-10-29: it was handed two images and told nothing about the
+  // second one, which is the likeliest way a reference ended up reshaping a
+  // roof. C0 is written in English like the rest of this file.
+  const refs = input.referenceCount ?? 0;
+  const intro = referenceIntro(refs, 'en');
   return {
     kind: 'edit',
     lock: GEOMETRY_LOCK,
     request: request ? [request] : [],
+    ...(refs > 0 ? { tail: referenceLock(refs, 'en') } : {}),
     sections: [
+      ...(intro.length > 0
+        ? [{ title: 'REFERENCE IMAGES', visio: intro.join(' '), pixel: intro }]
+        : []),
       {
         title: 'LIGHT',
         visio: `Light: ${SOURCE_LIGHT.visio.charAt(0).toLowerCase()}${SOURCE_LIGHT.visio.slice(1)}`,

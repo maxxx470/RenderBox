@@ -70,6 +70,9 @@ export function buildGenerationPrompt(input: {
     lookSpec({
       request: input.customPrompt,
       materials: input.materialsSnapshot,
+      // Without this the no-ambiance path never told the engine what the
+      // extra images were (2026-10-29).
+      referenceCount: input.referenceCount ?? 0,
     }),
   );
 }

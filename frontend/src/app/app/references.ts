@@ -17,9 +17,14 @@
 // a source photo. Both end up as an image the account owns, which is what
 // lets the server check it before sending it to an engine.
 //
-// They STAY until they are removed (owner's choice): you pin a reference
-// once, then chain as many sketches as you like through it.
-import { useCallback, useEffect, useState } from 'react';
+// THEY LAST THE VISIT, NOT FOREVER (2026-10-29, owner: « l'image de
+// référence ne doit pas rester là toujours … quand le rendu est fini, si
+// l'utilisateur veut te ramener l'image, il le fait »). They used to be kept
+// in localStorage, so the same picture came back weeks later on a project
+// that had nothing to do with it — « l'image de référence est toujours la
+// même ». Now the list lives in memory only: you chain as many renders as you
+// like within one visit, and leaving or reloading the page clears it.
+import { useCallback, useState } from 'react';
 
 /** Owner's choice: enough for a building, its planting and its sky. */
 export const MAX_REFERENCES = 3;
@@ -29,46 +34,13 @@ export interface ReferenceImage {
   nodeId: string;
 }
 
-// Per-viewer convenience only: which images are pinned as references in THIS
-// browser. The renders themselves live on the server; losing this list costs
-// a couple of clicks, so a private window or cleared site data is fine.
-const STORAGE_KEY = 'rp-references';
-
-function read(): ReferenceImage[] {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(
-        (r): r is ReferenceImage =>
-          typeof r === 'object' &&
-          r !== null &&
-          typeof (r as ReferenceImage).nodeId === 'string' &&
-          typeof (r as ReferenceImage).projectId === 'string',
-      )
-      .slice(0, MAX_REFERENCES);
-  } catch {
-    return [];
-  }
-}
-
-function write(list: ReferenceImage[]): void {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  } catch {
-    // A full or blocked store must not break the page: the list simply does
-    // not survive the reload.
-  }
-}
-
 /**
- * The references pinned in this browser, and the two ways to change them.
+ * The references pinned right now, and the two ways to change them.
  *
- * Starts empty on the server and on the first paint, then fills in from the
- * store — reading it during render would make the server's HTML and the
- * browser's first HTML differ.
+ * Nothing is stored: the list starts empty on every load, which is the whole
+ * point — a reference belongs to the piece of work you are doing, not to the
+ * browser. One `useReferences` per page, so the panel and the command bar
+ * read the same list.
  */
 export function useReferences(): {
   references: ReferenceImage[];
@@ -79,10 +51,6 @@ export function useReferences(): {
 } {
   const [references, setReferences] = useState<ReferenceImage[]>([]);
 
-  useEffect(() => {
-    setReferences(read());
-  }, []);
-
   // The updater must stay a pure function of the current list (React may
   // call it twice), so the "already there / already full" answer is the
   // caller's: the buttons are disabled in both cases.
@@ -90,17 +58,13 @@ export function useReferences(): {
     setReferences((current) => {
       if (current.some((r) => r.nodeId === image.nodeId)) return current;
       if (current.length >= MAX_REFERENCES) return current;
-      const next = [...current, image];
-      write(next);
-      return next;
+      return [...current, image];
     });
   }, []);
 
   const removeReference = useCallback((nodeId: string) => {
     setReferences((current) => {
-      const next = current.filter((r) => r.nodeId !== nodeId);
-      write(next);
-      return next;
+      return current.filter((r) => r.nodeId !== nodeId);
     });
   }, []);
 

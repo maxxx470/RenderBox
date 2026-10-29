@@ -1162,10 +1162,16 @@ describe('POST /api/projects/[projectId]/generate — the reference images (2026
     ownedReferences([REF_A]);
     await POST(makeReq(validBody({ preset: 'jour_ext', referenceNodeIds: [REF_A] })), ctx());
     const prompt = engineInput().prompt;
-    expect(prompt).toContain('One reference image is attached besides the source image.');
+    // 2026-10-29: the prompt now NAMES which attached image is the source —
+    // the engine gets them all in one call and used to have only their order
+    // to go on, which is how a reference reshaped a building.
+    expect(prompt).toContain('Image 1 is the SOURCE IMAGE');
+    expect(prompt).toContain('Image 2 is a reference image.');
     expect(prompt).toContain('Take their materials, their vegetation and their sky');
-    // The reference is another building: its shape must never win.
-    expect(prompt).toContain('Take NOTHING else from the references');
+    // The reference is another building: its shape must never win, and the
+    // rule is the last thing the engine reads.
+    expect(prompt).toContain('ABSOLUTE RULE ON THE REFERENCE IMAGES');
+    expect(prompt.trimEnd().endsWith('and nothing else.')).toBe(true);
   });
 
   it('only loads images this account owns', async () => {
