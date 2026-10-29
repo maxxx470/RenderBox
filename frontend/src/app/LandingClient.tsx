@@ -963,6 +963,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               </Reveal>
             ))}
           </div>
+          {/* What the two figures on a card mean (2026-10-29): the big one is
+              converted for the reader, the red one is what is charged. The
+              in-app pages carry the same line. */}
+          <p className="mx-auto mt-5 max-w-[1040px] text-[10.5px] text-white/70">
+            {t('tarifs.usdNote')}
+          </p>
         </div>
       </section>
 

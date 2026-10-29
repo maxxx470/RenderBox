@@ -49,9 +49,9 @@ describe('isMaketouConfigured / getTierAmount', () => {
   it('returns the fixed XOF price for each tier', () => {
     // The amount charged follows pricing-tiers.ts; the Maketou product must
     // carry the same figure, which only its dashboard can say.
-    expect(getTierAmount('decouverte')).toBe(5900);
-    expect(getTierAmount('standard')).toBe(14900);
-    expect(getTierAmount('pro')).toBe(35900);
+    expect(getTierAmount('decouverte')).toBe(6000);
+    expect(getTierAmount('standard')).toBe(15000);
+    expect(getTierAmount('pro')).toBe(36000);
   });
 });
 

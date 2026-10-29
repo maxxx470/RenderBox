@@ -72,9 +72,11 @@ describe('computeKieStock', () => {
     expect(
       s.plans.map((p) => [p.id, Math.round(p.gross * 1000) / 10, Math.round(p.net * 1000) / 10]),
     ).toEqual([
-      ['decouverte', 74.6, 66.6],
-      ['standard', 69.8, 61.8],
-      ['pro', 66.6, 58.6],
+      // 2026-10-29: the round sums are back (6 000 / 15 000 / 36 000), so the
+      // margins land on their intended figures again.
+      ['decouverte', 75, 67],
+      ['standard', 70, 62],
+      ['pro', 66.7, 58.7],
     ]);
   });
 

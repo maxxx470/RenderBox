@@ -135,7 +135,7 @@ const en: Record<keyof typeof fr, string> = {
   'tarifs.alertEmpty':
     'You no longer have enough credits for a render. Pick a plan below: it starts a new 30-day period with all its credits.',
   'tarifs.usdNote':
-    'The figure in your currency is an approximate equivalent, for information only: payment is made in FCFA.',
+    'The figure above is indicative, converted into your currency at the day’s rate. Payment is made in FCFA, at the amount shown in red.',
   'tarifs.historyTitle': 'History',
   'tarifs.historyEmpty': 'No payments yet.',
   'tarifs.historyItem': '{tier} plan',
@@ -1185,7 +1185,6 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureCredits': '{count} credits / month',
-  'landing.pricingFeatureImages': '{min} to {max} images depending on the engine and size',
   'landing.pricingFeatureEngines': 'Two engines: Visio and Pixel AI',
   'landing.pricingFeaturePresets': '5 render ambiances',
   'landing.pricingFeatureEditing': 'Comment, Add and Enhance',

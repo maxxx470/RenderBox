@@ -156,6 +156,72 @@ export const COUNTRY_CURRENCY: Readonly<Record<string, string>> = {
 }; // prettier-ignore
 
 /**
+ * The countries that already pay in CFA francs — the eight of the West
+ * African union (XOF) and the six of the Central African one (XAF).
+ *
+ * They are absent from COUNTRY_CURRENCY on purpose (converting FCFA into
+ * FCFA says nothing), but the plan card has to TELL THEM APART from a country
+ * we simply have no rate for: a visitor in Abidjan is shown the FCFA figure
+ * alone, while a visitor in a country missing from the table is shown the
+ * dollar reference. Both would otherwise look like « no currency ».
+ */
+const CFA_COUNTRIES = [
+  // XOF — UEMOA
+  'BJ', 'BF', 'CI', 'GW', 'ML', 'NE', 'SN', 'TG',
+  // XAF — CEMAC
+  'CM', 'CF', 'TD', 'CG', 'GQ', 'GA',
+]; // prettier-ignore
+
+export function isCfaCountry(country: string | null | undefined): boolean {
+  return country ? CFA_COUNTRIES.includes(country.toUpperCase()) : false;
+}
+
+/** The currency a country's visitors are priced in, or null if we know none. */
+export function currencyFor(country: string | null | undefined): string | null {
+  if (!country) return null;
+  return COUNTRY_CURRENCY[country.toUpperCase()] ?? null;
+}
+
+/**
+ * The plan's REFERENCE PRICE (in US dollars) written in one currency —
+ * « 24,99 $ », « 22,71 € », « 3 850 ₹ ».
+ *
+ * 2026-10-29 (owner): the headline figure on a plan card is now the dollar
+ * price converted for the reader, and the FCFA sum charged sits under it. So
+ * the conversion starts from the DOLLAR, where it used to start from the
+ * FCFA. The rate table is still expressed per euro, so the dollar goes
+ * through the euro — one extra division, and the euro figure stays exact
+ * through the CFA peg for everything else that still converts from FCFA.
+ *
+ * Decimals are the currency's own, as Intl knows them: two for the euro, none
+ * for the yen or the dong. No hand-rolled rounding here — 24,99 $ must not
+ * become « 25 490 ₫ » rounded to the nearest ten when the currency's own
+ * convention says otherwise.
+ */
+export function referencePrice(
+  priceUsd: number,
+  currency: string,
+  intl: string,
+  liveRates?: Readonly<Record<string, number>> | null,
+): string | null {
+  const perEur = (code: string): number | null => {
+    const live = liveRates?.[code];
+    // A rate of 0 or a negative one would silently produce "0 €".
+    if (typeof live === 'number' && live > 0) return live;
+    return PER_EUR[code] ?? null;
+  };
+  const usdPerEur = perEur('USD');
+  const target = perEur(currency);
+  if (!usdPerEur || !target) return null;
+  const amount = (priceUsd / usdPerEur) * target;
+  return new Intl.NumberFormat(intl, {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'symbol',
+  }).format(amount);
+}
+
+/**
  * The FCFA price as text in the country's currency (« 9,15 € », « 1 380 DZD »),
  * or null when the country has none of the currencies above — which is the
  * case for the CFA franc zones, where the headline figure already is the

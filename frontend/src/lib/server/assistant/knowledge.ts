@@ -9,7 +9,6 @@
 import 'server-only';
 import { AMBIANCE_KEYS, PRESETS } from '@/lib/server/generation/presets';
 import { PRICING_TIERS } from '@/lib/pricing-tiers';
-import { usdPrice } from '@/lib/local-currency';
 import { ASSISTANT_COST, describePrices } from '@/lib/provider-cost';
 import { RATIO_KEYS } from '@/lib/server/generation/ratios';
 import { RESOLUTIONS, RESOLUTION_KEYS } from '@/lib/server/generation/resolutions';
@@ -33,7 +32,7 @@ export function buildRenderBoxDoc(): string {
   const presets = AMBIANCE_KEYS.map((k) => PRESETS[k].label.fr).join(', ');
   const tiers = PRICING_TIERS.map(
     (t) =>
-      `${TIER_NAME[t.id] ?? t.id} : ${t.creditsPerMonth.toLocaleString('fr-FR')} crédits par mois, ${t.priceXof.toLocaleString('fr-FR')} FCFA (${usdPrice(t.priceXof, 'fr-FR') ?? '—'})`,
+      `${TIER_NAME[t.id] ?? t.id} : ${t.creditsPerMonth.toLocaleString('fr-FR')} crédits par mois, ${t.priceUsd.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} $US de référence, facturés ${t.priceXof.toLocaleString('fr-FR')} FCFA`,
   ).join(' ; ');
   const m1 = ENGINE_LABELS.nanobanana;
   const m2 = ENGINE_LABELS.gpt_image;

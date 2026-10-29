@@ -102,8 +102,11 @@ describe('what the plans buy, and what they guarantee', () => {
     const m = PRICING_TIERS.map((t) => planMargin(t));
     expect(m.map((x) => x.kieCostXof)).toEqual([1500, 4500, 12000]);
     const pct = (x: number) => Math.round(x * 1000) / 10;
-    expect(m.map((x) => pct(x.gross))).toEqual([74.6, 69.8, 66.6]);
-    expect(m.map((x) => pct(x.net))).toEqual([66.6, 61.8, 58.6]);
+    // 2026-10-29: back to the round sums the plans were designed around, so
+    // the margins land exactly on their intended figures again (the 900-
+    // ending prices of 2026-10-28 cost four tenths of a point).
+    expect(m.map((x) => pct(x.gross))).toEqual([75, 70, 66.7]);
+    expect(m.map((x) => pct(x.net))).toEqual([67, 62, 58.7]);
     // Every plan still earns more than two thirds of its price before Maketou.
     for (const x of m) expect(x.gross).toBeGreaterThan(0.66);
   });

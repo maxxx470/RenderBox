@@ -136,7 +136,7 @@ const fr = {
   'tarifs.alertEmpty':
     'Il ne vous reste plus assez de crédits pour un rendu. Choisissez une formule ci-dessous : elle repart sur 30 jours avec tous ses crédits.',
   'tarifs.usdNote':
-    'Équivalence approximative dans votre devise, donnée à titre indicatif : le paiement se fait en FCFA.',
+    'Le montant du haut est indicatif, converti dans votre devise au taux du jour. Le paiement se fait en FCFA, au montant indiqué en rouge.',
   'tarifs.historyTitle': 'Historique',
   'tarifs.historyEmpty': 'Aucun paiement pour le moment.',
   'tarifs.historyItem': 'Formule {tier}',
@@ -1225,7 +1225,6 @@ const fr = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureCredits': '{count} crédits / mois',
-  'landing.pricingFeatureImages': 'De {min} à {max} images selon le moteur et la taille',
   'landing.pricingFeatureEngines': 'Deux moteurs : Visio et Pixel IA',
   'landing.pricingFeaturePresets': '5 ambiances de rendu',
   'landing.pricingFeatureEditing': 'Commenter, Ajouter et Améliorer',

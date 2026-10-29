@@ -17,8 +17,7 @@ import { TickSquare } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { PLAN_FEATURES, type PricingTier, type PricingTierId } from '@/lib/pricing-tiers';
-import { imageRange } from '@/lib/provider-cost';
-import { localPrice, usdPrice } from '@/lib/local-currency';
+import { currencyFor, isCfaCountry, referencePrice } from '@/lib/local-currency';
 import { useVisitorCountry } from '@/lib/visitor-country';
 import { useEurRates } from '@/lib/fx-rates';
 
@@ -67,23 +66,37 @@ export function PricingCard({
   const { t, locale } = useLocale();
   const intl = locale === 'fr' ? 'fr-FR' : 'en-US';
   const name = t(TIER_NAME_KEY[tier.id]);
-  // The price in the visitor's currency where we know it (« ≈ 9,15 € »),
-  // the dollar line otherwise; payment is in FCFA either way.
   const rates = useEurRates();
   const country = useVisitorCountry();
-  // Where the country has no currency of its own here — the CFA zone, where
-  // the price is already in FCFA — the dollar stands in, computed through the
-  // same rates (2026-10-28; a round number set by hand until then).
-  const equivalent =
-    localPrice(tier.priceXof, country, intl, rates) ?? usdPrice(tier.priceXof, intl, rates);
   // White type only on the featured card of the blue band.
   const light = tone === 'band' && tier.featured;
   const muted = light ? 'text-white/80' : 'text-[#6B6878]';
-  // The equivalence in the visitor's currency, in the brand red and bold
-  // (2026-10-28, owner). Red only where the ground is white: on the featured
-  // card of the blue band the type is white, and the charter's red on blue
-  // cannot be read — there it is white and bold.
-  const equivalence = light ? 'text-white font-bold' : 'text-[#C21F33] font-bold';
+
+  // 2026-10-29 (owner): the headline figure is the plan's DOLLAR reference,
+  // written in the reader's own currency; the FCFA sum actually charged sits
+  // under it, in bold red. The two lines swapped places — the FCFA used to be
+  // the big one.
+  //
+  //   on the dollar        elsewhere            in the CFA zone
+  //   $24.99 / month       ≈ 22,71 € / mois     15 000 FCFA / mois
+  //   15 000 FCFA          15 000 FCFA          (nothing: it is the same sum)
+  const cfa = isCfaCountry(country);
+  const currency = currencyFor(country);
+  const fcfa = `${tier.priceXof.toLocaleString(intl)} FCFA`;
+  // « ≈ » belongs only on a figure a rate produced. The dollar reference is
+  // exact, so a visitor on the dollar — and anyone whose currency we cannot
+  // convert to — reads it plainly.
+  const converted =
+    !cfa && currency && currency !== 'USD'
+      ? referencePrice(tier.priceUsd, currency, intl, rates)
+      : null;
+  const headline = cfa
+    ? fcfa
+    : (converted ?? referencePrice(tier.priceUsd, 'USD', intl, rates) ?? `$${tier.priceUsd}`);
+  // The charged sum, bold and in the brand red. Red only where the ground is
+  // white: on the featured card of the blue band the type is white, and the
+  // charter's red on blue cannot be read — there it is white and bold.
+  const charged = light ? 'text-white font-bold' : 'text-[#C21F33] font-bold';
 
   const frame =
     tone === 'band'
@@ -115,18 +128,14 @@ export function PricingCard({
           ) : null}
         </div>
         <div className="mt-4 flex items-baseline gap-1.5">
-          <span className="text-[28px] font-bold tracking-[-0.5px]">
-            {tier.priceXof.toLocaleString(intl)} FCFA
+          <span className={`text-[28px] font-bold tracking-[-0.5px] ${cfa ? charged : ''}`}>
+            {converted ? t('landing.pricingLocal', { amount: headline }) : headline}
           </span>
           <span className={`text-[12px] ${muted}`}>{t('landing.pricingPeriod')}</span>
         </div>
-        {/* `usdPrice` answers for every country the table knows, so the
-            line is only absent if a rate ever went missing. */}
-        {equivalent ? (
-          <div className={`text-[13px] ${MONO} ${equivalence}`}>
-            {t('landing.pricingLocal', { amount: equivalent })}
-          </div>
-        ) : null}
+        {/* In the CFA zone the sum above already IS what is charged — a second
+            line would print it twice. */}
+        {cfa ? null : <div className={`text-[13px] ${MONO} ${charged}`}>{fcfa}</div>}
       </div>
       <ul className="flex flex-col gap-2.5">
         <CheckItem light={light}>
@@ -135,12 +144,6 @@ export function PricingCard({
               count: tier.creditsPerMonth.toLocaleString(intl),
             })}
           </span>
-        </CheckItem>
-        <CheckItem light={light}>
-          {t('landing.pricingFeatureImages', {
-            min: imageRange(tier.creditsPerMonth).min.toLocaleString(intl),
-            max: imageRange(tier.creditsPerMonth).max.toLocaleString(intl),
-          })}
         </CheckItem>
         {PLAN_FEATURES.map((k) => (
           <CheckItem key={k} light={light}>
