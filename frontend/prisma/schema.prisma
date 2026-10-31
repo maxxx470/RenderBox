@@ -94,6 +94,17 @@ model User {
   city                    String?
   referralSource          String?
   onboardedAt             DateTime?
+  // Re-engagement e-mails (2026-10-31, owner). NULL = the account still
+  // receives them. Set by GET/POST /api/emails/unsubscribe from the link
+  // every relance carries, and it is final: nothing ever clears it but the
+  // user asking. It never silences the e-mails the account NEEDS — sign-in
+  // codes and receipts — which are not relances.
+  marketingUnsubscribedAt DateTime?
+  // Set when the address hard-bounced, so we stop writing to a dead or
+  // mistyped address (a bounce costs the sending domain as much as a spam
+  // complaint). Honoured by the relance eligibility check; nothing SETS it
+  // yet — that needs a Resend webhook, which waits for Resend itself.
+  emailBouncedAt          DateTime?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 
@@ -107,6 +118,7 @@ model User {
   projects          Project[]
   supportMessages   SupportMessage[]
   kieTopUps         KieTopUp[]
+  reengagements     ReengagementEmail[]
 
   @@index([email])
   @@index([role])
@@ -598,4 +610,28 @@ model KieTopUp {
 
   @@index([createdAt])
   @@index([adminId])
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Re-engagement e-mails (2026-10-31, owner: « ajoute les mails de relance
+// pour relancer les inscrits sur le site »).
+//
+// One row per relance actually sent. The row IS the memory of the
+// sequence: `dedupeKey` is unique, so a cron that runs twice — or two
+// instances running at the same instant — can never send the same relance
+// to the same person twice. Nothing is written before the send succeeds.
+//
+// `kind` is one of lib/server/reengagement/schedule.ts's kinds. The keys
+// of the one-shot kinds are `<userId>:<kind>`; the kinds that may come
+// back once per paid period carry that period in the key.
+// ───────────────────────────────────────────────────────────────────────
+model ReengagementEmail {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String
+  dedupeKey String   @unique
+  sentAt    DateTime @default(now())
+
+  @@index([userId, sentAt])
 }

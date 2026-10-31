@@ -3,12 +3,16 @@
 //
 // Guards the two things a reviewer of 9_phase7_materials_per_node must be
 // sure of before it runs on the shared database:
-//   - it sorts after every other folder (Prisma applies them in byte order
+//   - it runs after the migrations written before it (Prisma applies them in byte order
 //     of the name; a timestamp name would run before RenderNode exists);
 //   - it is strictly additive: every statement is on an allow-list, and
 //     nothing drops, alters, renames, updates or deletes existing data.
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import {
+  expectAppliedAfterEarlier,
+  migrationFoldersInApplyOrder,
+} from '@/test-utils/migration-order';
+import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 // Package root (frontend/), as in observability/runtime-enforcement.test.ts.
@@ -16,13 +20,11 @@ const ROOT = resolve(__dirname, '../../../..');
 const MIGRATIONS = join(ROOT, 'prisma/migrations');
 const NAME = '9_phase7_materials_per_node';
 
-const folders = readdirSync(MIGRATIONS).filter((f) => statSync(join(MIGRATIONS, f)).isDirectory());
 // CRLF on a Windows checkout (core.autocrlf), LF in Git and on Vercel: read
 // it the same either way.
 const sql = readFileSync(join(MIGRATIONS, NAME, 'migration.sql'), 'utf8').replace(/\r\n/g, '\n');
 
 /** Byte order of the folder name, the order Prisma applies migrations in. */
-const byteOrder = (a: string, b: string) => Buffer.compare(Buffer.from(a), Buffer.from(b));
 
 /** The statements, comments removed, whitespace collapsed. */
 const statements = sql
@@ -37,24 +39,12 @@ const NEW_TABLES = ['MaterialDetectionRun', 'MaterialDetection', 'MaterialCorrec
 
 describe(`migration ${NAME}`, () => {
   it('sorts after every migration folder that came before it', () => {
-    const sorted = [...folders].sort(byteOrder);
-    // Only the later phases (2026-10-13) may come after it.
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
-      '9_phase8_credits',
-      '9_phase9_auth_onboarding',
-      '9_phase9b_engine_versions',
-      '9_phase9c_user_engine_versions',
-      '9_phase9d_support_messages',
-      '9_phase9e_user_info_seen',
-      '9_phase9f_render_provider_credits',
-      '9_phase9g_render_sheet',
-      '9_phase9h_kie_credits',
-      '9_phase9i_building_sheets',
-    ]);
+    expectAppliedAfterEarlier(NAME);
     // ...and in particular after the folders that create what it references.
+    const order = migrationFoldersInApplyOrder();
     for (const dep of ['5_phase1_renderbox_core', '6_phase2_materials_memory']) {
-      expect(sorted.indexOf(dep)).toBeGreaterThanOrEqual(0);
-      expect(sorted.indexOf(dep)).toBeLessThan(sorted.indexOf(NAME));
+      expect(order.indexOf(dep)).toBeGreaterThanOrEqual(0);
+      expect(order.indexOf(dep)).toBeLessThan(order.indexOf(NAME));
     }
   });
 

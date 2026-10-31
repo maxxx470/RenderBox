@@ -2,11 +2,15 @@
 // Reads files only: no database, no Prisma engine, no network.
 //
 // What a reviewer of 9_phase8_credits must be sure of before it runs on the
-// shared database: it sorts after every other folder, it only adds (one
+// shared database: it runs after the migrations written before it, it only adds (one
 // column with a default, one CHECK), and its one UPDATE converts what each
 // ACTIVE plan has left at 50 credits a render — nothing is dropped.
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import {
+  expectAppliedAfterEarlier,
+  migrationFoldersInApplyOrder,
+} from '@/test-utils/migration-order';
+import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { PRICING_TIERS } from '@/lib/pricing-tiers';
 
@@ -15,10 +19,8 @@ const ROOT = resolve(__dirname, '../../../..');
 const MIGRATIONS = join(ROOT, 'prisma/migrations');
 const NAME = '9_phase8_credits';
 
-const folders = readdirSync(MIGRATIONS).filter((f) => statSync(join(MIGRATIONS, f)).isDirectory());
 // CRLF on a Windows checkout (core.autocrlf), LF in Git and on Vercel.
 const sql = readFileSync(join(MIGRATIONS, NAME, 'migration.sql'), 'utf8').replace(/\r\n/g, '\n');
-const byteOrder = (a: string, b: string) => Buffer.compare(Buffer.from(a), Buffer.from(b));
 const statements = sql
   .split('\n')
   .map((line) => line.replace(/--.*$/, ''))
@@ -29,21 +31,10 @@ const statements = sql
 
 describe(`migration ${NAME}`, () => {
   it('sorts after every migration folder that came before it (Prisma applies them in byte order)', () => {
-    const sorted = [...folders].sort(byteOrder);
-    // Only 9_phase9_auth_onboarding (2026-10-13) and 9_phase9b_engine_versions
-    // (2026-10-15) may come after it.
-    expect(sorted.slice(sorted.indexOf(NAME) + 1)).toEqual([
-      '9_phase9_auth_onboarding',
-      '9_phase9b_engine_versions',
-      '9_phase9c_user_engine_versions',
-      '9_phase9d_support_messages',
-      '9_phase9e_user_info_seen',
-      '9_phase9f_render_provider_credits',
-      '9_phase9g_render_sheet',
-      '9_phase9h_kie_credits',
-      '9_phase9i_building_sheets',
-    ]);
-    expect(sorted.indexOf('20260829225539_tier_quota')).toBeLessThan(sorted.indexOf(NAME));
+    expectAppliedAfterEarlier(NAME);
+    // ...and in particular after the tier-quota migration it builds on.
+    const order = migrationFoldersInApplyOrder();
+    expect(order.indexOf('20260829225539_tier_quota')).toBeLessThan(order.indexOf(NAME));
   });
 
   it('adds creditsBalance, not null with a default, and guards it with a CHECK >= 0', () => {

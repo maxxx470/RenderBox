@@ -4,6 +4,7 @@
   "crons": [
     { "path": "/api/cron/webhook-log-purge", "schedule": "0 0 * * *" },
     { "path": "/api/cron/email-job-purge", "schedule": "0 0 * * *" },
-    { "path": "/api/cron/account-purge", "schedule": "0 0 * * *" }
+    { "path": "/api/cron/account-purge", "schedule": "0 0 * * *" },
+    { "path": "/api/cron/reengagement", "schedule": "10 9 * * *" }
   ]
 }

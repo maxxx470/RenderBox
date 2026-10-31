@@ -1,23 +1,22 @@
 // Building sheets migration — offline shape checks. Reads files only.
 //
 // What a reviewer of 9_phase9i_building_sheets must be sure of before it runs
-// on the shared database (local = production): it sorts last, it creates the
+// on the shared database (local = production): it runs after the migrations written before it, it creates the
 // BuildingSheet table (deleted with its project) and adds one nullable column
 // to Generation — nothing dropped, deleted or rewritten. The Claude analysis
 // that used them was removed on 2026-10-23 (owner: « il n'y aura plus
 // d'analyse »); the table and the column stay in the base, unused.
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { expectAppliedAfterEarlier } from '@/test-utils/migration-order';
+import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const ROOT = resolve(__dirname, '../../../..');
 const MIGRATIONS = join(ROOT, 'prisma/migrations');
 const NAME = '9_phase9i_building_sheets';
 
-const folders = readdirSync(MIGRATIONS).filter((f) => statSync(join(MIGRATIONS, f)).isDirectory());
 // CRLF on a Windows checkout (core.autocrlf), LF in Git and on Vercel.
 const sql = readFileSync(join(MIGRATIONS, NAME, 'migration.sql'), 'utf8').replace(/\r\n/g, '\n');
-const byteOrder = (a: string, b: string) => Buffer.compare(Buffer.from(a), Buffer.from(b));
 const statements = sql
   .split('\n')
   .map((line) => line.replace(/--.*$/, ''))
@@ -28,8 +27,7 @@ const statements = sql
 
 describe(`migration ${NAME}`, () => {
   it('sorts after every existing migration folder', () => {
-    const sorted = [...folders].sort(byteOrder);
-    expect(sorted[sorted.length - 1]).toBe(NAME);
+    expectAppliedAfterEarlier(NAME);
   });
 
   it('creates the BuildingSheet table, its index and its link to the project', () => {

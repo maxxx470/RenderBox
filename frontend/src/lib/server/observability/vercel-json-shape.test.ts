@@ -6,7 +6,8 @@
 //
 // RenderBox runs on Vercel Hobby, which only permits once-per-day cron
 // schedules. Only the 3 crons that are genuinely daily
-// (webhook-log-purge / email-job-purge / account-purge) stay registered in
+// (webhook-log-purge / email-job-purge / account-purge / reengagement — the
+// relance pass, 2026-10-31) stay registered in
 // vercel.json. The 5 sub-daily crons (outbox-drain, email-queue-drain,
 // verification-cleanup, order-expiration, maketou-reconcile) still exist as
 // route.ts handlers guarded by verifyCronSecret, but are invoked by an
@@ -42,11 +43,11 @@ describe('vercel.json schema (CRON-07, D-20)', () => {
     expect(existsSync(VERCEL_JSON)).toBe(true);
   });
 
-  it('declares exactly 3 cron schedules (Hobby plan: daily-only)', () => {
+  it('declares exactly 4 cron schedules (Hobby plan: daily-only)', () => {
     if (!existsSync(VERCEL_JSON)) return; // skip silently when RED-by-design
     const cfg = JSON.parse(readFileSync(VERCEL_JSON, 'utf8')) as VercelConfig;
     expect(cfg.crons).toBeDefined();
-    expect(cfg.crons!.length).toBe(3);
+    expect(cfg.crons!.length).toBe(4);
   });
 
   it('every cron path matches /^\\/api\\/cron\\/[a-z-]+$/ and schedule is valid 5-field cron', () => {
@@ -72,13 +73,14 @@ describe('vercel.json schema (CRON-07, D-20)', () => {
     }
   });
 
-  it('declares schedules for the 3 daily-eligible crons (Hobby plan)', () => {
+  it('declares schedules for the 4 daily-eligible crons (Hobby plan)', () => {
     if (!existsSync(VERCEL_JSON)) return;
     const cfg = JSON.parse(readFileSync(VERCEL_JSON, 'utf8')) as VercelConfig;
     const paths = (cfg.crons ?? []).map((c) => c.path).sort();
     expect(paths).toEqual([
       '/api/cron/account-purge',
       '/api/cron/email-job-purge',
+      '/api/cron/reengagement',
       '/api/cron/webhook-log-purge',
     ]);
   });
