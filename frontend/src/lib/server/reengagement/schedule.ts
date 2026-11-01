@@ -224,3 +224,136 @@ export function pickReengagement(
 
   return null;
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+ * « Combien de relances ce compte a-t-il reçues, sur combien ? »
+ *
+ * (2026-11-01, owner: « ajoute une case dans le tableau où tu mets le
+ * nombre de relances sur le nombre total de relances … là je saurais
+ * exactement comment ça se passe ».)
+ *
+ * The same rules as pickReengagement, read the other way round: not « what
+ * is owed » but « how far through its sequence is this account ». Pure, so
+ * the back-office and the tests agree with the sender by construction.
+ *
+ * THE DENOMINATOR IS NOT ALWAYS FOUR. pickReengagement walks the prospect
+ * steps BACKWARDS and sends only the latest one due, so an account that was
+ * already three weeks old on the first pass gets the last-call e-mail ALONE
+ * and never another. Printing « 1 / 4 » for it would be a lie that never
+ * resolves — the owner would wait for three relances that are not coming.
+ * So the total is what this account can still receive plus what it already
+ * has: that account reads « 0 / 1 », then « 1 / 1 », and is done.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/** Which part of its life the account is in, for the relances' purposes. */
+export type ReengagementStage =
+  /** Never paid: the four-step sequence. */
+  | 'prospect'
+  /** A plan still running: at most two, once per paid period. */
+  | 'subscriber'
+  /** A plan that ended: two, keyed to that period. */
+  | 'lapsed'
+  /** No plan for 90 days: one invitation back per semester. */
+  | 'dormant'
+  /** Nothing applies — paid once with no period on record. */
+  | 'none';
+
+/** Why no further relance will go out, whatever the stage says. */
+export type ReengagementStop = 'unsubscribed' | 'bounced' | 'suspended' | 'deleted' | null;
+
+export interface ReengagementProgress {
+  stage: ReengagementStage;
+  /** Relances received in the window the stage counts. */
+  sent: number;
+  /** How many that window will ever bring, this one included. */
+  total: number;
+  /** Every relance ever sent to this account, all stages. */
+  lifetimeSent: number;
+  lastSentAt: Date | null;
+  /** Set = the sequence is over for good, and `sent / total` is history. */
+  stopped: ReengagementStop;
+}
+
+/**
+ * Of a time-based sequence, how many steps are done and how many this
+ * account will ever see — see the note above on why that is not `length`.
+ */
+function stepProgress(
+  steps: readonly { kind: ReengagementKind; afterDays: number }[],
+  isSent: (kind: ReengagementKind) => boolean,
+  elapsedMs: number,
+): { sent: number; total: number } {
+  const sent = steps.filter((s) => isSent(s.kind)).length;
+  let future = 0;
+  let latestDue: ReengagementKind | null = null;
+  for (const step of steps) {
+    if (elapsedMs >= step.afterDays * DAY_MS) latestDue = step.kind;
+    else future++;
+  }
+  // The latest due step is the only past one still sendable; the earlier
+  // ones are skipped for ever, so they are not part of this account's total.
+  const pending = latestDue !== null && !isSent(latestDue) ? 1 : 0;
+  return { sent, total: sent + future + pending };
+}
+
+export function reengagementProgress(facts: ReengagementFacts, now: Date): ReengagementProgress {
+  const nowMs = now.getTime();
+  const lastMs = lastSentAt(facts);
+  const base = {
+    lifetimeSent: facts.sent.length,
+    lastSentAt: lastMs > 0 ? new Date(lastMs) : null,
+    stopped: (facts.marketingUnsubscribedAt
+      ? 'unsubscribed'
+      : facts.emailBouncedAt
+        ? 'bounced'
+        : facts.deleted
+          ? 'deleted'
+          : facts.suspended
+            ? 'suspended'
+            : null) as ReengagementStop,
+  };
+
+  const periodStart = facts.tierPeriodStart;
+  const periodEndsMs = periodStart ? periodStart.getTime() + TIER_PERIOD_MS : null;
+  const tierActive = periodEndsMs !== null && periodEndsMs > nowMs;
+
+  // A subscriber: two relances per paid period, each on a state, not a date.
+  if (tierActive && periodStart) {
+    const inPeriod = (kind: ReengagementKind) =>
+      facts.sent.some((s) => s.kind === kind && s.sentAt >= periodStart);
+    const sent = (inPeriod('credits_low') ? 1 : 0) + (inPeriod('idle_subscriber') ? 1 : 0);
+    return { ...base, stage: 'subscriber', sent, total: 2 };
+  }
+
+  if (facts.hasPaid) {
+    if (periodEndsMs === null || !periodStart) {
+      return { ...base, stage: 'none', sent: 0, total: 0 };
+    }
+    const sinceEnd = nowMs - periodEndsMs;
+
+    // Dormant for a season: one invitation back, and not another for six months.
+    if (sinceEnd >= WINBACK_AFTER_MS) {
+      const lastWinback = facts.sent
+        .filter((s) => s.kind === 'winback')
+        .reduce((max, s) => Math.max(max, s.sentAt.getTime()), 0);
+      const sent = lastWinback > 0 && nowMs - lastWinback < WINBACK_EVERY_MS ? 1 : 0;
+      return { ...base, stage: 'dormant', sent, total: 1 };
+    }
+
+    const { sent, total } = stepProgress(
+      LAPSED_STEPS,
+      (kind) => facts.sent.some((s) => s.kind === kind && s.sentAt >= periodStart),
+      sinceEnd,
+    );
+    return { ...base, stage: 'lapsed', sent, total };
+  }
+
+  // A prospect: the four steps, of which it may only ever see the latest due.
+  const already = sentKinds(facts);
+  const { sent, total } = stepProgress(
+    PROSPECT_STEPS,
+    (kind) => already.has(kind),
+    nowMs - facts.createdAt.getTime(),
+  );
+  return { ...base, stage: 'prospect', sent, total };
+}

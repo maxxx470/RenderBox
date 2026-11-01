@@ -53,12 +53,42 @@ interface OrderRow {
   status: string;
   createdAt: string;
 }
+/** Each relance that went out to this account, newest first (2026-11-01). */
+interface RelanceSent {
+  kind: string;
+  sentAt: string;
+}
+interface RelanceDetail {
+  stage: 'prospect' | 'subscriber' | 'lapsed' | 'dormant' | 'none';
+  sent: number;
+  total: number;
+  lifetimeSent: number;
+  lastSentAt: string | null;
+  stopped: 'unsubscribed' | 'bounced' | 'suspended' | 'deleted' | null;
+  history: RelanceSent[];
+}
 interface DetailResponse {
   user: UserDetail;
   projects: ProjectRow[];
   orders: OrderRow[];
   renders: RenderRow[];
+  reengagement: RelanceDetail | null;
 }
+
+const RELANCE_STAGE_KEY: Record<RelanceDetail['stage'], TranslationKey> = {
+  prospect: 'admin.users.relanceStage.prospect',
+  subscriber: 'admin.users.relanceStage.subscriber',
+  lapsed: 'admin.users.relanceStage.lapsed',
+  dormant: 'admin.users.relanceStage.dormant',
+  none: 'admin.users.relanceStage.none',
+};
+
+const RELANCE_STOP_KEY: Record<NonNullable<RelanceDetail['stopped']>, TranslationKey> = {
+  unsubscribed: 'admin.users.relanceStop.unsubscribed',
+  bounced: 'admin.users.relanceStop.bounced',
+  suspended: 'admin.users.relanceStop.suspended',
+  deleted: 'admin.users.relanceStop.deleted',
+};
 
 const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -106,7 +136,15 @@ export default function AdminUserDetailPage() {
 
   const { user, projects, orders } = data;
   const renders = data.renders ?? [];
+  const relances = data.reengagement ?? null;
   const intl = locale === 'fr' ? 'fr-FR' : 'en-US';
+  // The nine relances are already named for /admin/relances — reuse those
+  // names so one e-mail is called the same thing everywhere in the admin.
+  const relanceName = (kind: string) => {
+    const key = `admin.relances.name.${kind}` as TranslationKey;
+    const s = t(key);
+    return s === key ? kind : s;
+  };
   // A key of the onboarding lists in words; anything else as stored.
   const word = (prefix: string, k: string | null) => {
     if (!k) return null;
@@ -402,6 +440,56 @@ export default function AdminUserDetailPage() {
           )}
         </section>
       </div>
+
+      {/* Les relances reçues par ce compte, chacune avec sa date (2026-11-01,
+          owner : « je saurais exactement comment ça se passe »). */}
+      {relances ? (
+        <section className="mb-3.5 rounded-[14px] bg-white p-4.5">
+          <div className="mb-3 flex flex-wrap items-center gap-2.5">
+            <h2 className="text-[13px] font-semibold text-[#17161F]">
+              {t('admin.users.relanceTitle')}
+            </h2>
+            {relances.total > 0 ? (
+              <span className="rounded-md bg-[#EEF1FF] px-2 py-0.5 font-[family-name:var(--font-mono)] text-[11.5px] font-semibold text-[#1E36D6]">
+                {relances.sent} / {relances.total}
+              </span>
+            ) : null}
+            <span className="text-[11.5px] text-[#8A8896]">
+              {t(RELANCE_STAGE_KEY[relances.stage])}
+            </span>
+            {relances.stopped ? (
+              <span className="rounded-md bg-[#FFE4E7] px-2 py-0.5 text-[11px] font-semibold text-[#C21F33]">
+                {t(RELANCE_STOP_KEY[relances.stopped])}
+              </span>
+            ) : null}
+          </div>
+          {relances.history.length === 0 ? (
+            <p className="text-[12.5px] text-[#8A8896]">{t('admin.users.relanceEmpty')}</p>
+          ) : (
+            <>
+              <ul className="flex flex-col gap-2">
+                {relances.history.map((r) => (
+                  <li
+                    key={`${r.kind}-${r.sentAt}`}
+                    className="flex items-center justify-between gap-3 text-[13px]"
+                  >
+                    <span className="min-w-0 truncate text-[#17161F]">{relanceName(r.kind)}</span>
+                    <span className="flex-shrink-0 font-[family-name:var(--font-mono)] text-[11.5px] text-[#6B6878]">
+                      {new Date(r.sentAt).toLocaleString(intl, {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-[11.5px] text-[#8A8896]">
+                {t('admin.users.relanceReserved')}
+              </p>
+            </>
+          )}
+        </section>
+      ) : null}
 
       <section className="rounded-[14px] bg-white p-4.5">
         <h2 className="mb-3.5 text-[13px] font-semibold text-[#17161F]">

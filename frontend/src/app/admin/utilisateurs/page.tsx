@@ -11,6 +11,23 @@ import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { TIER_NAME_KEY } from '../../PricingCard';
 
+/** How far this account is through its relance sequence (2026-11-01). */
+interface RelanceProgress {
+  stage: 'prospect' | 'subscriber' | 'lapsed' | 'dormant' | 'none';
+  sent: number;
+  total: number;
+  lifetimeSent: number;
+  lastSentAt: string | null;
+  stopped: 'unsubscribed' | 'bounced' | 'suspended' | 'deleted' | null;
+}
+
+const STOP_KEY: Record<NonNullable<RelanceProgress['stopped']>, TranslationKey> = {
+  unsubscribed: 'admin.users.relanceStop.unsubscribed',
+  bounced: 'admin.users.relanceStop.bounced',
+  suspended: 'admin.users.relanceStop.suspended',
+  deleted: 'admin.users.relanceStop.deleted',
+};
+
 interface UserRow {
   id: string;
   email: string;
@@ -26,6 +43,7 @@ interface UserRow {
   tierPeriodStart: string | null;
   creditsBalance: number;
   onboardedAt: string | null;
+  reengagement: RelanceProgress | null;
 }
 
 interface UsersPage {
@@ -142,7 +160,7 @@ export default function AdminUsersPage() {
         <p className="text-sm text-[#B8710B]">{t('admin.users.loadError')}</p>
       ) : (
         <div className="overflow-x-auto rounded-[18px] bg-white">
-          <table className="w-full min-w-[920px] border-collapse">
+          <table className="w-full min-w-[1020px] border-collapse">
             <thead>
               <tr>
                 <th className={TH}>{t('admin.users.colUser')}</th>
@@ -151,6 +169,9 @@ export default function AdminUsersPage() {
                 <th className={TH}>{t('admin.users.colPlan')}</th>
                 <th className={`${TH} text-right`}>{t('admin.users.colCredits')}</th>
                 <th className={`${TH} text-right`}>{t('admin.users.colRenders')}</th>
+                <th className={`${TH} text-right`} title={t('admin.users.relanceHint')}>
+                  {t('admin.users.colRelances')}
+                </th>
                 <th className={TH}>{t('admin.users.colStatus')}</th>
                 <th className={TH}>{t('admin.users.colJoined')}</th>
               </tr>
@@ -216,6 +237,28 @@ export default function AdminUsersPage() {
                       className={`${TD} text-right font-[family-name:var(--font-mono)] text-[12px]`}
                     >
                       {u.generationsCount}
+                    </td>
+                    <td className={`${TD} text-right`}>
+                      {u.reengagement && u.reengagement.total > 0 ? (
+                        <span className="inline-flex flex-col items-end gap-0.5">
+                          <span
+                            className={`rounded-md px-2 py-0.5 font-[family-name:var(--font-mono)] text-[11.5px] ${
+                              u.reengagement.sent > 0
+                                ? 'bg-[#EEF1FF] font-semibold text-[#1E36D6]'
+                                : 'text-[#8A8896]'
+                            }`}
+                          >
+                            {u.reengagement.sent} / {u.reengagement.total}
+                          </span>
+                          {u.reengagement.stopped ? (
+                            <span className="text-[10px] text-[#C21F33]">
+                              {t(STOP_KEY[u.reengagement.stopped])}
+                            </span>
+                          ) : null}
+                        </span>
+                      ) : (
+                        <span className="text-[#8A8896]">—</span>
+                      )}
                     </td>
                     <td className={TD}>
                       <span

@@ -24,6 +24,8 @@ import { prisma } from '@/lib/server/prisma';
 import { clampLimit, cursorWhere, buildPage, decodeCursor } from '@/lib/server/pagination/paginate';
 import { enforceAdminRateLimit } from '@/lib/server/middleware/rate-limit-by-userid';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { gatherReengagementFacts } from '@/lib/server/reengagement/facts';
+import { reengagementProgress } from '@/lib/server/reengagement/schedule';
 
 const USER_SELECT = {
   id: true,
@@ -110,14 +112,35 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       generationsByUser.set(g.project.userId, (generationsByUser.get(g.project.userId) ?? 0) + 1);
     }
 
+    // RenderPro (2026-11-01) — how far each account is through its relance
+    // sequence, so the table can say « 1 / 4 » instead of leaving the owner
+    // to guess whether anything went out. Batched, read-only; the numbers
+    // come from the same schedule.ts the sender obeys.
+    const now = new Date();
+    const { facts } = await gatherReengagementFacts(prisma, pageIds, now);
+
     const page = buildPage(rows, limit);
     return NextResponse.json(
       {
         ...page,
-        items: page.items.map((u) => ({
-          ...u,
-          generationsCount: generationsByUser.get(u.id) ?? 0,
-        })),
+        items: page.items.map((u) => {
+          const f = facts.get(u.id);
+          const p = f ? reengagementProgress(f, now) : null;
+          return {
+            ...u,
+            generationsCount: generationsByUser.get(u.id) ?? 0,
+            reengagement: p
+              ? {
+                  stage: p.stage,
+                  sent: p.sent,
+                  total: p.total,
+                  lifetimeSent: p.lifetimeSent,
+                  lastSentAt: p.lastSentAt?.toISOString() ?? null,
+                  stopped: p.stopped,
+                }
+              : null,
+          };
+        }),
       },
       { headers: { 'x-request-id': ctx.requestId } },
     );

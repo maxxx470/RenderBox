@@ -22,6 +22,8 @@ import { prisma } from '@/lib/server/prisma';
 import { logAdminAction } from '@/lib/server/admin/audit';
 import { enforceAdminRateLimit } from '@/lib/server/middleware/rate-limit-by-userid';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+import { gatherReengagementFacts } from '@/lib/server/reengagement/facts';
+import { reengagementProgress } from '@/lib/server/reengagement/schedule';
 
 const USER_SELECT = {
   id: true,
@@ -107,6 +109,14 @@ export async function GET(
     const orders = ordersRaw ?? [];
     const renders = rendersRaw ?? [];
 
+    // RenderPro (2026-11-01) — the relances this account has received, each
+    // with its date, plus where it stands in its sequence. The table says
+    // « 1 / 4 »; here the owner reads WHICH one went out and WHEN.
+    const now = new Date();
+    const { facts, history } = await gatherReengagementFacts(prisma, [id], now);
+    const f = facts.get(id);
+    const progress = f ? reengagementProgress(f, now) : null;
+
     return NextResponse.json(
       {
         user,
@@ -118,6 +128,20 @@ export async function GET(
         })),
         orders,
         renders,
+        reengagement: progress
+          ? {
+              stage: progress.stage,
+              sent: progress.sent,
+              total: progress.total,
+              lifetimeSent: progress.lifetimeSent,
+              lastSentAt: progress.lastSentAt?.toISOString() ?? null,
+              stopped: progress.stopped,
+              history: (history.get(id) ?? []).map((r) => ({
+                kind: r.kind,
+                sentAt: r.sentAt.toISOString(),
+              })),
+            }
+          : null,
       },
       { headers: { 'x-request-id': reqCtx.requestId } },
     );
