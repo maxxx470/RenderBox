@@ -1250,6 +1250,8 @@ const en: Record<keyof typeof fr, string> = {
     'Reminders are off: nothing is being sent. Read the nine texts below, then ask for the switch to be turned on — after that it is automatic, for good.',
   'admin.relances.noMailer':
     'No email can be sent: RESEND_API_KEY or EMAIL_FROM is missing on the server.',
+  'admin.relances.neverSent': '— No reminder has gone out yet.',
+  'admin.relances.lastSent': '— Last sent {when} · {day} in the past 24 h · {total} in all.',
   'admin.relances.sendToMe': 'Send it to me',
   'admin.relances.sending': 'Sending…',
   'admin.relances.sentTo': 'Sent to {email}. Check your inbox.',

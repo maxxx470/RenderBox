@@ -1290,6 +1290,9 @@ const fr = {
     'Les relances sont à l’arrêt : rien ne part. Lisez les neuf textes ci-dessous, puis demandez l’ouverture de l’interrupteur — ensuite tout est automatique, pour toujours.',
   'admin.relances.noMailer':
     'Aucun e-mail ne peut partir : il manque RESEND_API_KEY ou EMAIL_FROM sur le serveur.',
+  'admin.relances.neverSent': '— Aucune relance n’est encore partie.',
+  'admin.relances.lastSent':
+    '— Dernier envoi le {when} · {day} dans les 24 h · {total} depuis le début.',
   'admin.relances.sendToMe': 'Me l’envoyer',
   'admin.relances.sending': 'Envoi…',
   'admin.relances.sentTo': 'Envoyé à {email}. Regardez votre boîte.',

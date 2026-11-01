@@ -6,6 +6,7 @@ export const runtime = 'nodejs';
 import 'server-only';
 import { NextResponse, type NextRequest } from 'next/server';
 import { requireAdmin } from '@/lib/server/middleware';
+import { prisma } from '@/lib/server/prisma';
 import { enforceAdminRateLimit } from '@/lib/server/middleware/rate-limit-by-userid';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -14,6 +15,12 @@ export interface ReengagementStatus {
   enabled: boolean;
   /** RESEND_API_KEY + EMAIL_FROM are both in place. */
   mailerConfigured: boolean;
+  /** When the last relance went out — NULL = none ever (2026-11-01). */
+  lastSentAt: string | null;
+  /** How many have gone out since the start. */
+  sentTotal: number;
+  /** And in the last 24 h, so one glance says whether the cron ran. */
+  sentLastDay: number;
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -24,9 +31,22 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const limited = await enforceAdminRateLimit(auth.admin.id);
     if (limited) return limited;
 
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [last, sentTotal, sentLastDay] = await Promise.all([
+      prisma.reengagementEmail.findFirst({
+        select: { sentAt: true },
+        orderBy: { sentAt: 'desc' },
+      }),
+      prisma.reengagementEmail.count(),
+      prisma.reengagementEmail.count({ where: { sentAt: { gte: dayAgo } } }),
+    ]);
+
     const status: ReengagementStatus = {
       enabled: ['1', 'true'].includes((process.env.REENGAGEMENT_ENABLED ?? '').toLowerCase()),
       mailerConfigured: Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM),
+      lastSentAt: last?.sentAt.toISOString() ?? null,
+      sentTotal,
+      sentLastDay,
     };
 
     return NextResponse.json(status, {

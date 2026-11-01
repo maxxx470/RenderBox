@@ -83,6 +83,129 @@ export function localeForCountry(
   return 'en';
 }
 
+/**
+ * The same question, from a country the USER TYPED (2026-11-01).
+ *
+ * `User.country` comes from the onboarding, where the country is a free-text
+ * field with suggestions (lib/onboarding.ts) — so the real values in the base
+ * are « Togo », « myanmar », « Myanmar (Burma) », « Indian », and nothing.
+ * `localeForCountry` above expects an ISO code and would answer English to
+ * every one of them, Togo included: that is how the relance e-mails were
+ * about to go out in English to French-speaking accounts.
+ *
+ * So this reads NAMES, in French and in English, accents and case and
+ * parentheticals included, and still accepts a bare ISO code. Anything it
+ * does not recognise is English, the site's own rule for an unknown country.
+ */
+function normaliseCountry(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // accents
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, ' ') // « Myanmar (Burma) » → « Myanmar »
+    .replace(/[^a-z]+/g, ' ')
+    .trim();
+}
+
+/** Every francophone country as a reader would write it, either language. */
+const FRANCOPHONE_NAMES: ReadonlySet<string> = new Set(
+  [
+    // Europe
+    'France',
+    'Belgique',
+    'Belgium',
+    'Suisse',
+    'Switzerland',
+    'Luxembourg',
+    'Monaco',
+    // West and Central Africa
+    'Sénégal',
+    'Senegal',
+    "Côte d'Ivoire",
+    'Cote dIvoire',
+    'Ivory Coast',
+    'Mali',
+    'Burkina Faso',
+    'Burkina',
+    'Niger',
+    'Togo',
+    'Bénin',
+    'Benin',
+    'Guinée',
+    'Guinea',
+    'Guinée équatoriale',
+    'Equatorial Guinea',
+    'Cameroun',
+    'Cameroon',
+    'Gabon',
+    'Congo',
+    'République du Congo',
+    'Congo Brazzaville',
+    'RD Congo',
+    'RDC',
+    'République démocratique du Congo',
+    'DR Congo',
+    'Democratic Republic of the Congo',
+    'Congo Kinshasa',
+    'Centrafrique',
+    'République centrafricaine',
+    'Central African Republic',
+    'Tchad',
+    'Chad',
+    'Mauritanie',
+    'Mauritania',
+    // East Africa and the Indian Ocean
+    'Madagascar',
+    'Djibouti',
+    'Comores',
+    'Comoros',
+    'Burundi',
+    'Rwanda',
+    'Seychelles',
+    'Maurice',
+    'Île Maurice',
+    'Mauritius',
+    // North Africa
+    'Maroc',
+    'Morocco',
+    'Algérie',
+    'Algeria',
+    'Tunisie',
+    'Tunisia',
+    // Americas, Caribbean, Pacific
+    'Haïti',
+    'Haiti',
+    'Québec',
+    'Quebec',
+    'Vanuatu',
+    'Guadeloupe',
+    'Martinique',
+    'Guyane',
+    'French Guiana',
+    'Réunion',
+    'La Réunion',
+    'Mayotte',
+    'Polynésie française',
+    'French Polynesia',
+    'Tahiti',
+    'Nouvelle-Calédonie',
+    'New Caledonia',
+    'Saint-Pierre-et-Miquelon',
+    'Wallis-et-Futuna',
+    'Saint-Barthélemy',
+    'Saint-Martin',
+  ].map(normaliseCountry),
+);
+
+export function localeForCountryText(text: string | null | undefined): Locale {
+  if (!text) return FALLBACK_LOCALE;
+  const name = normaliseCountry(text);
+  if (!name) return FALLBACK_LOCALE;
+  // A bare ISO code, in case one is ever stored here.
+  if (name.length === 2 && FRANCOPHONE_COUNTRIES.has(name.toUpperCase())) return 'fr';
+  return FRANCOPHONE_NAMES.has(name) ? 'fr' : 'en';
+}
+
 /** The visitor's own choice first, then their country. */
 export function resolveLocale(input: {
   cookie: string | null | undefined;

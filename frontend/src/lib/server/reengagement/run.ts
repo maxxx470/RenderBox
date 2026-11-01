@@ -19,7 +19,7 @@ import 'server-only';
 import type { PrismaClient } from '@prisma/client';
 import type { Mailer } from '@/lib/server/email';
 import { createLogger } from '@/lib/server/logger';
-import { localeForCountry } from '@/lib/i18n/geo-locale';
+import { localeForCountryText } from '@/lib/i18n/geo-locale';
 import { offeredPrices } from '@/lib/provider-cost';
 import { relanceEmail } from './emails';
 import {
@@ -178,7 +178,9 @@ export async function runReengagement(input: RunReengagementInput): Promise<RunR
       continue;
     }
 
-    const locale = localeForCountry(user.country);
+    // The onboarding's country is free text (« Togo », « Myanmar (Burma) »),
+    // not an ISO code — localeForCountry would answer English to all of it.
+    const locale = localeForCountryText(user.country);
     const firstName = user.name?.trim().split(/\s+/)[0] ?? null;
     const mail = relanceEmail(pick.kind, {
       firstName: firstName && firstName.length > 0 ? firstName : null,

@@ -101,7 +101,21 @@ export default function AdminRelancesPage() {
             ? t('admin.relances.noMailer')
             : status.enabled
               ? t('admin.relances.onAuto')
-              : t('admin.relances.offWaiting')}
+              : t('admin.relances.offWaiting')}{' '}
+          {/* Whether the daily pass actually ran — otherwise nothing on this
+              page says so, and the owner has to ask. */}
+          <span className={`${MONO} font-normal`}>
+            {status.lastSentAt === null
+              ? t('admin.relances.neverSent')
+              : t('admin.relances.lastSent', {
+                  when: new Date(status.lastSentAt).toLocaleString(undefined, {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  }),
+                  day: String(status.sentLastDay),
+                  total: String(status.sentTotal),
+                })}
+          </span>
         </div>
       ) : null}
 
