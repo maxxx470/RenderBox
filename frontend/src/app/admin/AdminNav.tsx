@@ -4,7 +4,7 @@
 // drawn like the app's rail: white, full height against the left edge, a
 // hairline on its right, the logo row 63px, the current page on the blue
 // tint. Six sections — overview, messages (2026-10-17), users, renders,
-// payments, journal — and
+// payments, relances (2026-11-01), journal — and
 // the way back to the app at the bottom. Below 900px a floating bar at the
 // bottom, the same shape as the app's MobileNav.
 import Link from 'next/link';
@@ -15,6 +15,7 @@ import {
   Category,
   Chat,
   Document,
+  Send,
   Image as ImageIcon,
   Chart,
   User,
@@ -47,6 +48,12 @@ const NAV: { href: string; icon: typeof Category; label: TranslationKey; short: 
       icon: Chart,
       label: 'admin.navKieStock',
       short: 'admin.navKieStockShort',
+    },
+    {
+      href: '/admin/relances',
+      icon: Send,
+      label: 'admin.navRelances',
+      short: 'admin.navRelancesShort',
     },
     {
       href: '/admin/journal',

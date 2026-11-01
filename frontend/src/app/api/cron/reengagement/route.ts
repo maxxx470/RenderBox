@@ -30,6 +30,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const from = process.env.EMAIL_FROM;
     const secret = process.env.JWT_SECRET;
 
+    // The relances are OFF until the owner has read the nine texts on
+    // /admin/relances and turned them on (2026-11-01, owner: « on n'a pas
+    // encore décidé du texte du mail »). Off by default on purpose: a mail
+    // sent cannot be called back, and the keys being in place is not the
+    // same thing as the words being approved.
+    if (!['1', 'true'].includes((process.env.REENGAGEMENT_ENABLED ?? '').toLowerCase())) {
+      log.info('reengagement: off (REENGAGEMENT_ENABLED is not set), nothing sent', {
+        requestId: ctx.requestId,
+      });
+      return NextResponse.json(
+        { ok: true, skipped: 'disabled' },
+        { headers: { 'x-request-id': ctx.requestId } },
+      );
+    }
+
     if (!key || !from) {
       log.warn('reengagement: no mailer (RESEND_API_KEY / EMAIL_FROM missing), nothing sent', {
         requestId: ctx.requestId,
