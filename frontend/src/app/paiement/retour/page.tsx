@@ -16,7 +16,15 @@ import { api } from '@/lib/api';
 import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { SiteHeader } from '@/components/SiteHeader';
 
-type Outcome = 'checking' | 'PAID' | 'PENDING' | 'EXPIRED' | 'FAILED' | 'PENDING_TIMEOUT';
+type Outcome =
+  | 'checking'
+  | 'PAID'
+  | 'PENDING'
+  | 'EXPIRED'
+  | 'FAILED'
+  | 'PENDING_TIMEOUT'
+  /** The URL carried nothing to identify the payment — see the effect below. */
+  | 'UNKNOWN';
 
 const POLL_INTERVAL_MS = 5000;
 // ~2 minutes of watching. Past that the cron is the better place to wait: it
@@ -26,17 +34,24 @@ const MAX_POLLS = 24;
 export default function PaiementRetourPage() {
   const t = useTranslations();
   const searchParams = useSearchParams();
+  // The return URL we hand the provider carries ?orderId=. A provider that
+  // redirects to the fallback URL set in ITS OWN dashboard instead sends no
+  // orderId — it may send its payment token, and may send nothing at all.
   const orderId = searchParams.get('orderId');
+  const token = searchParams.get('token') ?? searchParams.get('tokenPay');
+  const ref = orderId
+    ? `orderId=${encodeURIComponent(orderId)}`
+    : token
+      ? `token=${encodeURIComponent(token)}`
+      : null;
   const [outcome, setOutcome] = useState<Outcome>('checking');
   const [elapsed, setElapsed] = useState(0);
   const pollCount = useRef(0);
 
   const check = useCallback(async (): Promise<Outcome> => {
-    if (!orderId) return 'FAILED';
+    if (!ref) return 'UNKNOWN';
     try {
-      const res = await api<{ status: string }>(
-        `/api/payments/verify?orderId=${encodeURIComponent(orderId)}`,
-      );
+      const res = await api<{ status: string }>(`/api/payments/verify?${ref}`);
       if (res.status === 'PAID') return 'PAID';
       if (res.status === 'EXPIRED' || res.status === 'FAILED') return res.status;
       return 'PENDING';
@@ -45,11 +60,15 @@ export default function PaiementRetourPage() {
       // "not settled yet" and let the next poll decide.
       return 'PENDING';
     }
-  }, [orderId]);
+  }, [ref]);
 
   useEffect(() => {
-    if (!orderId) {
-      setOutcome('FAILED');
+    // Nothing on the URL to go on. We genuinely do NOT know whether the
+    // payment went through, so we must not say it failed — a customer who
+    // just paid would read that as their money being gone. The cron settles
+    // the order within minutes either way; point them at their account.
+    if (!ref) {
+      setOutcome('UNKNOWN');
       return;
     }
 
@@ -77,7 +96,7 @@ export default function PaiementRetourPage() {
       clearInterval(tick);
       if (timer) clearTimeout(timer);
     };
-  }, [orderId, check]);
+  }, [ref, check]);
 
   async function checkAgain() {
     setOutcome('checking');
@@ -95,6 +114,10 @@ export default function PaiementRetourPage() {
     },
     EXPIRED: { title: t('paiementRetour.failedTitle'), body: t('paiementRetour.failedBody') },
     FAILED: { title: t('paiementRetour.failedTitle'), body: t('paiementRetour.failedBody') },
+    UNKNOWN: {
+      title: t('paiementRetour.unknownTitle'),
+      body: t('paiementRetour.unknownBody'),
+    },
   };
 
   const watching = outcome === 'PENDING';

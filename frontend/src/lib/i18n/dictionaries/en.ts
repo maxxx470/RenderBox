@@ -1017,6 +1017,12 @@ const en: Record<keyof typeof fr, string> = {
   'paiementRetour.failedTitle': 'Payment not completed',
   'paiementRetour.failedBody':
     'The payment could not be confirmed. Try again or use a different payment method.',
+  // When the return URL does not say which payment this is: we do not know,
+  // and we must not announce a failure to someone who has just paid
+  // (2026-11-01). The cron settles the order either way.
+  'paiementRetour.unknownTitle': 'Payment being processed',
+  'paiementRetour.unknownBody':
+    'We cannot identify this payment from this page. If it went through, your credits will reach your account within a few minutes — check your balance in Settings. Nothing is lost.',
   'paiementRetour.backButton': 'Back to settings',
 
   'legal.title': 'Legal',

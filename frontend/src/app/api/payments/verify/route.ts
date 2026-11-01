@@ -31,16 +31,22 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const auth = await requireAuth(req.headers.get('authorization'));
     if (auth instanceof NextResponse) return auth;
 
+    // Normally the return URL we handed the provider carries ?orderId=. But a
+    // provider may redirect to the fallback URL set in ITS dashboard instead,
+    // which has no orderId of ours on it — so a payment token is accepted too
+    // (2026-11-01). Either way the order is still checked against the signed-in
+    // account below, so neither parameter grants access to anything.
     const orderId = req.nextUrl.searchParams.get('orderId');
-    if (!orderId) {
+    const token = req.nextUrl.searchParams.get('token');
+    if (!orderId && !token) {
       return NextResponse.json(
-        { error: 'ORDER_ID_REQUIRED', message: 'orderId query param is required' },
+        { error: 'ORDER_ID_REQUIRED', message: 'orderId or token query param is required' },
         { status: 400, headers: { 'x-request-id': ctx.requestId } },
       );
     }
 
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
+    const order = await prisma.order.findFirst({
+      where: orderId ? { id: orderId } : { providerChargeId: token },
       select: {
         id: true,
         userId: true,

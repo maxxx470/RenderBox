@@ -1046,6 +1046,12 @@ const fr = {
   'paiementRetour.failedTitle': 'Paiement non abouti',
   'paiementRetour.failedBody':
     "Le paiement n'a pas pu être confirmé. Réessayez ou utilisez un autre moyen de paiement.",
+  // Quand l'URL de retour ne dit pas de quel paiement il s'agit : on ne sait
+  // pas, et on ne doit surtout pas annoncer un échec à quelqu'un qui vient de
+  // payer (2026-11-01). La commande est réglée par le cron dans tous les cas.
+  'paiementRetour.unknownTitle': 'Paiement en cours de traitement',
+  'paiementRetour.unknownBody':
+    'Nous ne pouvons pas identifier ce paiement depuis cette page. S’il a bien été effectué, vos crédits arrivent sur votre compte d’ici quelques minutes — vérifiez votre solde dans Paramètres. Rien n’est perdu.',
   'paiementRetour.backButton': 'Retour aux paramètres',
 
   'legal.title': 'Mentions légales',
