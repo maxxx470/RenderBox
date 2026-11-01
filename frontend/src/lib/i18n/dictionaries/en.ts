@@ -1219,6 +1219,17 @@ const en: Record<keyof typeof fr, string> = {
   'app.railGroupHelp': 'Help',
   'app.railGroupProfile': 'Profile',
   'app.railAccountSub': 'My account',
+  'admin.seo.title': 'Indexing',
+  'admin.seo.what':
+    'Announces your public pages to Bing, Yandex, Seznam and Naver through the IndexNow protocol. Worth doing after adding a page: the crawler comes sooner. It is not a guarantee of being indexed.',
+  'admin.seo.submit': 'Announce my {n} pages',
+  'admin.seo.sending': 'Sending…',
+  'admin.seo.submitted':
+    '{n} addresses announced. The engines will come by over the next few days.',
+  'admin.seo.refused': 'Refused by IndexNow (code {status}). The site key may be unreachable.',
+  'admin.seo.failed': 'IndexNow is unreachable. Nothing was sent.',
+  'admin.seo.google':
+    'Google does not take part in IndexNow: it comes through the sitemap and Search Console.',
   'admin.navRelances': 'Reminders',
   'admin.navRelancesShort': 'Reminders',
   'admin.relances.listTitle': 'The nine reminders',

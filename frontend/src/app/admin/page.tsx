@@ -18,6 +18,7 @@ import { TIER_NAME_KEY } from '../PricingCard';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { ApiUsageCard } from './ApiUsageCard';
 import { AccountingCard } from './AccountingCard';
+import { IndexNowCard } from './IndexNowCard';
 
 interface Count {
   key: string;
@@ -93,6 +94,9 @@ export default function AdminOverviewPage() {
 
       {/* What came in against what went out (owner, 2026-10-17). */}
       <AccountingCard />
+
+      {/* Announcing the published pages to Bing and the others (2026-11-01). */}
+      <IndexNowCard />
 
       <div className="grid grid-cols-2 gap-3 min-[1100px]:grid-cols-4">
         <Figure

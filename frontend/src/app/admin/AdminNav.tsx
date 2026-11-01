@@ -9,12 +9,13 @@
 // bottom, the same shape as the app's MobileNav.
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Category,
   Chat,
   Document,
+  MoreCircle,
   Send,
   Image as ImageIcon,
   Chart,
@@ -156,25 +157,61 @@ export function AdminNav({ role, email }: { role: string; email: string }) {
   );
 }
 
+/**
+ * The phone bar (2026-11-01, owner: « la nav bar de l'espace admin trop large
+ * sur le format téléphone »). It used to draw EVERY entry side by side, so it
+ * outgrew the screen as the back-office gained pages — seven entries at 60px
+ * need 456px, and a 390px phone offers 366. It now shows four and folds the
+ * rest behind « Plus », exactly as the app's own MobileNav does, and that
+ * menu is also the only way back to the app from a phone.
+ */
+const MOBILE_PRIMARY = 4;
+
 export function AdminMobileNav() {
   const t = useTranslations();
   const pathname = usePathname();
   const unread = useUnreadThreads(pathname);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onPointer = (e: PointerEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMoreOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [moreOpen]);
+
+  const main = NAV.slice(0, MOBILE_PRIMARY);
+  const more = NAV.slice(MOBILE_PRIMARY);
+  const moreActive = more.some((n) => isActive(pathname, n.href));
+
+  // One tap target: 58×52, five of them fit a 360px phone.
+  const item = (active: boolean) =>
+    `relative flex h-[52px] w-[58px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-medium transition-colors duration-150 ${
+      active ? 'bg-[#EEF1FF] text-[#1E36D6]' : 'text-[#3D3B49]'
+    }`;
 
   return (
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-40 min-[900px]:hidden">
-      <div className="pointer-events-auto flex justify-center px-3 pb-[calc(20px+env(safe-area-inset-bottom))] pt-3">
+      <div className="pointer-events-auto flex items-end justify-center px-3 pb-[calc(20px+env(safe-area-inset-bottom))] pt-3">
         <div className="flex items-center gap-1 rounded-2xl bg-white/95 p-1.5 shadow-[0_8px_30px_rgba(23,22,31,0.10)] backdrop-blur-md">
-          {NAV.map(({ href, icon: Icon, short }) => {
+          {main.map(({ href, icon: Icon, short }) => {
             const active = isActive(pathname, href);
             return (
               <Link
                 key={href}
                 href={href}
                 {...(active ? { 'aria-current': 'page' as const } : {})}
-                className={`relative flex h-[52px] w-[60px] flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-medium ${
-                  active ? 'bg-[#EEF1FF] text-[#1E36D6]' : 'text-[#3D3B49]'
-                }`}
+                className={item(active)}
               >
                 <Icon set="curved" size={19} primaryColor="#2948FC" />
                 <span className="max-w-full truncate px-1">{t(short)}</span>
@@ -184,6 +221,55 @@ export function AdminMobileNav() {
               </Link>
             );
           })}
+
+          <div className="relative" ref={moreRef}>
+            <button
+              type="button"
+              onClick={() => setMoreOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={moreOpen}
+              className={item(moreActive)}
+            >
+              <MoreCircle set="curved" size={19} primaryColor="#2948FC" />
+              <span>{t('app.mobileMore')}</span>
+            </button>
+
+            {moreOpen && (
+              <div
+                role="menu"
+                className="absolute bottom-full right-0 mb-3 w-60 rounded-2xl bg-white p-2 shadow-[0_12px_32px_rgba(23,22,31,0.14)]"
+              >
+                {more.map(({ href, icon: Icon, label }) => {
+                  const active = isActive(pathname, href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      role="menuitem"
+                      onClick={() => setMoreOpen(false)}
+                      {...(active ? { 'aria-current': 'page' as const } : {})}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-colors ${
+                        active ? 'bg-[#EEF1FF] text-[#1E36D6]' : 'text-[#3D3B49] hover:bg-[#F7F7FA]'
+                      }`}
+                    >
+                      <Icon set="curved" size={19} primaryColor="#2948FC" />
+                      {t(label)}
+                    </Link>
+                  );
+                })}
+
+                <Link
+                  href="/app"
+                  role="menuitem"
+                  onClick={() => setMoreOpen(false)}
+                  className="mt-1 flex w-full items-center gap-3 rounded-xl border-t border-[#ECECF2] px-3 pb-2.5 pt-3 text-[14px] font-medium text-[#3D3B49] transition-colors hover:bg-[#F7F7FA]"
+                >
+                  <ArrowLeft set="curved" size={19} primaryColor="#2948FC" />
+                  {t('admin.backToApp')}
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>

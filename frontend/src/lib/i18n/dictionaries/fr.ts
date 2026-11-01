@@ -1259,6 +1259,17 @@ const fr = {
   'app.railGroupHelp': 'Aide',
   'app.railGroupProfile': 'Profil',
   'app.railAccountSub': 'Mon compte',
+  'admin.seo.title': 'Indexation',
+  'admin.seo.what':
+    'Annonce vos pages publiques à Bing, Yandex, Seznam et Naver par le protocole IndexNow. Utile après l’ajout d’une page : le robot vient plus tôt. Ce n’est pas une garantie d’être indexé.',
+  'admin.seo.submit': 'Annoncer mes {n} pages',
+  'admin.seo.sending': 'Envoi…',
+  'admin.seo.submitted': '{n} adresses annoncées. Les moteurs passeront dans les prochains jours.',
+  'admin.seo.refused':
+    'Refusé par IndexNow (code {status}). La clé du site est peut-être injoignable.',
+  'admin.seo.failed': 'IndexNow est injoignable. Rien n’a été envoyé.',
+  'admin.seo.google':
+    'Google ne participe pas à IndexNow : il passe par le sitemap et la Search Console.',
   'admin.navRelances': 'Relances',
   'admin.navRelancesShort': 'Relances',
   'admin.relances.listTitle': 'Les neuf relances',
