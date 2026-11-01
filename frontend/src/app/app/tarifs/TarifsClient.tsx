@@ -17,15 +17,14 @@
 //
 // The dark summary card, the "included in every plan" list and the billing
 // facts of the 2026-10-06 version are gone (owner).
-import { useState } from 'react';
 import { Danger, Wallet } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { useToast } from '@/contexts/ToastContext';
-import { api } from '@/lib/api';
 import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import { imageRange } from '@/lib/provider-cost';
 import { PricingCard, TIER_NAME_KEY } from '../../PricingCard';
 import { AppSurface, type AppSurfaceProps } from '../AppSurface';
+import { useCheckout } from '../../checkout-phone';
 
 export interface PaymentRow {
   id: string;
@@ -52,12 +51,7 @@ export function TarifsClient({
   const { t, locale } = useLocale();
   const { toast } = useToast();
   const intl = locale === 'fr' ? 'fr-FR' : 'en-US';
-  const [checkoutTier, setCheckoutTier] = useState<PricingTierId | null>(null);
-  const [errors, setErrors] = useState<Record<PricingTierId, string | null>>({
-    decouverte: null,
-    standard: null,
-    pro: null,
-  });
+  const { start, busyTier: checkoutTier, errors, phonePrompt } = useCheckout();
 
   async function select(tier: PricingTierId) {
     // Free-access mode: there is no real account to attach a paid plan to,
@@ -67,18 +61,7 @@ export function TarifsClient({
       toast(t('tarifs.demoNote'), 'info');
       return;
     }
-    setCheckoutTier(tier);
-    setErrors((prev) => ({ ...prev, [tier]: null }));
-    try {
-      const res = await api<{ paymentUrl: string }>('/api/payments/checkout', {
-        method: 'POST',
-        body: { tier },
-      });
-      window.location.href = res.paymentUrl;
-    } catch {
-      setErrors((prev) => ({ ...prev, [tier]: t('landing.pricingError') }));
-      setCheckoutTier(null);
-    }
+    await start(tier);
   }
 
   const { tier, creditsBalance } = surface;
@@ -171,6 +154,7 @@ export function TarifsClient({
           </ul>
         )}
       </section>
+      {phonePrompt}
     </AppSurface>
   );
 }

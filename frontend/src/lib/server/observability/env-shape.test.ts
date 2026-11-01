@@ -109,4 +109,16 @@ describe('.env.example phase 6 additions (Maketou + account deletion)', () => {
   it('contains ACCOUNT_DELETION_GRACE_DAYS with a 30-day default', () => {
     expect(src).toContain('ACCOUNT_DELETION_GRACE_DAYS="30"');
   });
+
+  // MoneyFusion replaced Maketou on 2026-11-01. Its API URL is also its
+  // credential (no API key exists), so the example must declare it empty and
+  // say so — a real one committed here would let anyone take payments as us.
+  it('declares MONEYFUSION_API_URL empty, and warns that it is a secret', () => {
+    expect(src).toContain('MONEYFUSION_API_URL=""');
+    expect(src).toMatch(/MONEYFUSION_API_URL is BOTH the endpoint and the credential/);
+  });
+
+  it('warns about the IP allowlist, which no agent can satisfy', () => {
+    expect(src).toMatch(/IP addresses/i);
+  });
 });

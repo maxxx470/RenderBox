@@ -43,10 +43,14 @@ describe('shapeOutput', () => {
     expect(await size(shaped.imageBuffer)).toEqual([1536, 864]);
   });
 
+  // A real 11-megapixel Lanczos enlargement, which takes well over vitest's
+  // 5 s default on a loaded machine — it was the suite's most frequent false
+  // alarm. The work is genuinely slow, so it gets the time rather than a
+  // smaller assertion: 4K is the size customers actually ask for.
   it('enlarges to the long edge of the size asked for', async () => {
     const shaped = await shapeOutput(await png(1024, 1536), { ratio: '2:3', resolution: '4k' });
     expect(await size(shaped.imageBuffer)).toEqual([2731, 4096]);
-  });
+  }, 30_000);
 
   it('crops then enlarges when both are needed', async () => {
     const shaped = await shapeOutput(await png(1536, 1024), { ratio: '21:9', resolution: '2k' });

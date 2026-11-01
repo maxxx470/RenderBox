@@ -5,6 +5,7 @@ import {
   KIE_PRICES,
   KIE_USD_PER_CREDIT,
   MAKETOU_FEE_RATE,
+  MONEYFUSION_FEE_RATE,
   SHEET_COST,
   XOF_PER_CREDIT,
   XOF_PER_USD,
@@ -98,7 +99,7 @@ describe('what the plans buy, and what they guarantee', () => {
   });
 
   // Prices end in 900 since 2026-10-28, which costs four tenths of a point.
-  it('guaranteed margins: gross 74.6 / 69.8 / 66.6 %, net of Maketou 66.6 / 61.8 / 58.6 %', () => {
+  it('guaranteed margins: gross 75 / 70 / 66.7 %, net of the provider’s cut', () => {
     const m = PRICING_TIERS.map((t) => planMargin(t));
     expect(m.map((x) => x.kieCostXof)).toEqual([1500, 4500, 12000]);
     const pct = (x: number) => Math.round(x * 1000) / 10;
@@ -106,8 +107,12 @@ describe('what the plans buy, and what they guarantee', () => {
     // the margins land exactly on their intended figures again (the 900-
     // ending prices of 2026-10-28 cost four tenths of a point).
     expect(m.map((x) => pct(x.gross))).toEqual([75, 70, 66.7]);
-    expect(m.map((x) => pct(x.net))).toEqual([67, 62, 58.7]);
-    // Every plan still earns more than two thirds of its price before Maketou.
+    // Net is gross minus the payment provider's rate — MoneyFusion's since
+    // 2026-11-01 (2.5% per its documentation, still unconfirmed by the
+    // owner's contract), where it used to be Maketou's 8% for 67 / 62 / 58.7.
+    // Derived rather than pinned, so changing the rate does not come here.
+    expect(m.map((x) => pct(x.net))).toEqual(m.map((x) => pct(x.gross - MONEYFUSION_FEE_RATE)));
+    // Every plan still earns more than two thirds of its price before fees.
     for (const x of m) expect(x.gross).toBeGreaterThan(0.66);
   });
 

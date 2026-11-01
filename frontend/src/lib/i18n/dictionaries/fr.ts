@@ -792,6 +792,15 @@ const fr = {
   'admin.users.colCredits': 'Crédits',
   'admin.users.colRenders': 'Rendus',
   // Les relances reçues, dans le tableau et sur la fiche (2026-11-01).
+  // Le numéro que MoneyFusion exige, demandé une seule fois (2026-11-01).
+  'checkout.phoneTitle': 'Votre numéro de téléphone',
+  'checkout.phoneNote':
+    'Notre prestataire de paiement en a besoin pour le paiement mobile money. Il est enregistré sur votre compte, vous ne le saisirez qu’une fois.',
+  'checkout.phoneLabel': 'Numéro',
+  'checkout.phonePlaceholder': '07 00 00 00 00',
+  'checkout.phoneSubmit': 'Continuer vers le paiement',
+  'checkout.phoneSending': 'Un instant…',
+  'checkout.phoneCancel': 'Annuler',
   'admin.users.colRelances': 'Relances',
   'admin.users.relanceHint':
     'Relances déjà reçues, sur le nombre total que ce compte recevra. Le total dépend de son état : un inscrit qui a déjà passé la dernière étape n’en reçoit qu’une.',

@@ -1,9 +1,13 @@
 // GET /api/payments/verify?orderId=<id> — Phase 6. Called by the
-// /paiement/retour return page right after the customer bounces back from
-// Maketou's hosted checkout. Delegates the actual compare-and-swap crediting
-// to reconcileMaketouOrder(), the same helper the 5-minute reconciliation
-// cron uses — see maketou-reconcile.ts for why that makes double-crediting
-// impossible even if both race on the same cart.
+// /paiement/retour return page right after the customer bounces back from the
+// hosted checkout. Delegates the actual compare-and-swap crediting to the
+// provider's reconcile helper — the same one the webhook and the cron use, so
+// double-crediting is impossible even when they race on the same payment
+// (see moneyfusion-reconcile.ts / maketou-reconcile.ts).
+//
+// Routes on the ORDER's own provider, not on which one is configured today
+// (2026-11-01): a Maketou order made before the switch must still settle
+// after it.
 export const runtime = 'nodejs';
 
 import 'server-only';
@@ -12,7 +16,14 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { reconcileMaketouOrder } from '@/lib/server/payments/maketou-reconcile';
 import { MaketouNotConfiguredError, MaketouApiError } from '@/lib/server/payments/maketou';
+import { reconcileMoneyfusionOrder } from '@/lib/server/payments/moneyfusion-reconcile';
+import {
+  MoneyfusionNotConfiguredError,
+  MoneyfusionApiError,
+} from '@/lib/server/payments/moneyfusion';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
+
+const SETTLED_BY_US = ['maketou', 'moneyfusion'];
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
@@ -37,9 +48,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         providerChargeId: true,
         provider: true,
         metadata: true,
+        amount: true,
       },
     });
-    if (!order || order.userId !== auth.user.sub || order.provider !== 'maketou') {
+    if (!order || order.userId !== auth.user.sub || !SETTLED_BY_US.includes(order.provider)) {
       return NextResponse.json(
         { error: 'ORDER_NOT_FOUND', message: 'Order not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
@@ -47,20 +59,23 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
 
     try {
-      const result = await reconcileMaketouOrder(prisma, order);
+      const result =
+        order.provider === 'moneyfusion'
+          ? await reconcileMoneyfusionOrder(prisma, order)
+          : await reconcileMaketouOrder(prisma, order);
       return NextResponse.json(
         { status: result.status },
         { headers: { 'x-request-id': ctx.requestId } },
       );
     } catch (e) {
-      if (e instanceof MaketouNotConfiguredError) {
+      if (e instanceof MaketouNotConfiguredError || e instanceof MoneyfusionNotConfiguredError) {
         return NextResponse.json(
           { code: 'PAYMENT_PROVIDER_UNCONFIGURED', message: 'Payment provider not configured' },
           { status: 503, headers: { 'x-request-id': ctx.requestId } },
         );
       }
-      if (e instanceof MaketouApiError) {
-        // Transient provider-side hiccup — the 5-minute cron will retry.
+      if (e instanceof MaketouApiError || e instanceof MoneyfusionApiError) {
+        // Transient provider-side hiccup — the reconcile cron will retry.
         // Report the order's last-known local status rather than 502ing the
         // customer's return page.
         return NextResponse.json(

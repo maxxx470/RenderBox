@@ -29,8 +29,21 @@ export const KIE_USD_PER_CREDIT = 0.005;
 export const XOF_PER_USD = 600;
 /** One credit in FCFA (0.005 $ × 600 = 3 FCFA). */
 export const XOF_PER_CREDIT = KIE_USD_PER_CREDIT * XOF_PER_USD;
-/** Maketou's commission on each payment made through its API. */
+/** Maketou's commission. Kept for the record: Maketou never took a payment
+ *  (its four orders were all FAILED or EXPIRED) and MoneyFusion replaced it
+ *  on 2026-11-01. Nothing new is priced with it. */
 export const MAKETOU_FEE_RATE = 0.08;
+/**
+ * MoneyFusion's commission on each payment — a FALLBACK ONLY, and an
+ * estimate. MoneyFusion reports the exact `frais` it took on every
+ * transaction and the reconcile stores it on the order, so the accounts book
+ * the real figure; this rate is used only for an order whose reconcile never
+ * captured one. 2.5% is what MoneyFusion's own documentation example shows
+ * (frais 5 on a 200 payment) — **the owner has not confirmed the rate their
+ * contract actually carries**, and user reports mention higher. Override with
+ * MONEYFUSION_FEE_RATE once it is known; the margins below use it.
+ */
+export const MONEYFUSION_FEE_RATE = Number(process.env.MONEYFUSION_FEE_RATE ?? '') || 0.025;
 /** What the materials-sheet analysis cost (2026-10-19 → 23). The analysis is gone
  *  (2026-10-23): only used to refund one that was started and never finished. */
 export const SHEET_COST = 2;
@@ -141,7 +154,10 @@ export function planMargin(tier: Pick<PricingTier, 'priceXof' | 'creditsPerMonth
 } {
   const kieCostXof = tier.creditsPerMonth * XOF_PER_CREDIT;
   const gross = 1 - kieCostXof / tier.priceXof;
-  return { kieCostXof, gross, net: gross - MAKETOU_FEE_RATE };
+  // Net of the PAYMENT PROVIDER's cut — MoneyFusion's since 2026-11-01, not
+  // Maketou's 8%: quoting a retired provider's rate would understate every
+  // margin on the page. The rate itself is still unconfirmed, see above.
+  return { kieCostXof, gross, net: gross - MONEYFUSION_FEE_RATE };
 }
 
 /**

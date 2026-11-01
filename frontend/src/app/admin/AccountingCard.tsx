@@ -59,7 +59,7 @@ export function AccountingCard() {
           key: 'fee',
           label: t('admin.acc.feeLine', { pct: pct(data?.feeRate ?? 0) }),
           note: t('admin.acc.feeNote'),
-          xof: l.maketouFeeXof,
+          xof: l.providerFeeXof,
         },
         {
           key: 'kie',

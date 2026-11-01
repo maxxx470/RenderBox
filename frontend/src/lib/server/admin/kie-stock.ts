@@ -3,7 +3,7 @@ import type { PrismaClient } from '@prisma/client';
 import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import {
   KIE_USD_PER_CREDIT,
-  MAKETOU_FEE_RATE,
+  MONEYFUSION_FEE_RATE,
   XOF_PER_CREDIT,
   XOF_PER_USD,
   creditsValue,
@@ -124,7 +124,7 @@ export interface KieStock {
     revenueXof: number;
     kieCreditsConsumed: number;
     kieCostXof: number;
-    maketouFeeXof: number;
+    providerFeeXof: number;
     profitXof: number;
     /** profit / revenue; null without revenue. */
     margin: number | null;
@@ -142,7 +142,7 @@ export interface KieStock {
     usdPerCredit: number;
     xofPerUsd: number;
     xofPerCredit: number;
-    maketouFeeRate: number;
+    providerFeeRate: number;
   };
 }
 
@@ -180,7 +180,7 @@ export async function computeKieStock(
   const circulation = held._sum.creditsBalance ?? 0;
   const coverage = balance === null || circulation <= 0 ? null : balance / circulation;
   const all = accounting.periods.all;
-  const profitXof = all.revenueXof - all.kieXof - all.maketouFeeXof;
+  const profitXof = all.revenueXof - all.kieXof - all.providerFeeXof;
   const value = balance === null ? null : creditsValue(balance);
 
   return {
@@ -201,7 +201,7 @@ export async function computeKieStock(
       revenueXof: all.revenueXof,
       kieCreditsConsumed: all.kieCredits,
       kieCostXof: all.kieXof,
-      maketouFeeXof: all.maketouFeeXof,
+      providerFeeXof: all.providerFeeXof,
       profitXof,
       margin: all.revenueXof > 0 ? profitXof / all.revenueXof : null,
     },
@@ -223,7 +223,7 @@ export async function computeKieStock(
       usdPerCredit: KIE_USD_PER_CREDIT,
       xofPerUsd: XOF_PER_USD,
       xofPerCredit: XOF_PER_CREDIT,
-      maketouFeeRate: MAKETOU_FEE_RATE,
+      providerFeeRate: MONEYFUSION_FEE_RATE,
     },
   };
 }

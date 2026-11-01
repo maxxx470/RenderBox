@@ -769,6 +769,15 @@ const en: Record<keyof typeof fr, string> = {
   'admin.users.colCredits': 'Credits',
   'admin.users.colRenders': 'Renders',
   // The relances received, in the table and on the file (2026-11-01).
+  // The number MoneyFusion requires, asked once (2026-11-01).
+  'checkout.phoneTitle': 'Your phone number',
+  'checkout.phoneNote':
+    'Our payment provider needs it for mobile-money payments. It is saved on your account, so you will only enter it once.',
+  'checkout.phoneLabel': 'Number',
+  'checkout.phonePlaceholder': '07 00 00 00 00',
+  'checkout.phoneSubmit': 'Continue to payment',
+  'checkout.phoneSending': 'One moment…',
+  'checkout.phoneCancel': 'Cancel',
   'admin.users.colRelances': 'Relances',
   'admin.users.relanceHint':
     'Relances already received, out of the total this account will ever get. The total depends on its state: a sign-up already past the last step gets one only.',

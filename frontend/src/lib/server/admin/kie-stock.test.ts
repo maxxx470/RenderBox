@@ -11,8 +11,9 @@ import {
   stockRefusal,
   stockRoom,
 } from './kie-stock';
+import { MONEYFUSION_FEE_RATE } from '@/lib/provider-cost';
 
-const ALL = { revenueXof: 36000, kieXof: 300, kieCredits: 100, maketouFeeXof: 2880 };
+const ALL = { revenueXof: 36000, kieXof: 300, kieCredits: 100, providerFeeXof: 2880 };
 
 beforeEach(() => {
   mockAccounting.mockResolvedValue({ periods: { all: ALL } });
@@ -61,7 +62,7 @@ describe('computeKieStock', () => {
       revenueXof: 36000,
       kieCreditsConsumed: 100,
       kieCostXof: 300,
-      maketouFeeXof: 2880,
+      providerFeeXof: 2880,
       profitXof: 32820,
       margin: 32820 / 36000,
     });
@@ -73,10 +74,14 @@ describe('computeKieStock', () => {
       s.plans.map((p) => [p.id, Math.round(p.gross * 1000) / 10, Math.round(p.net * 1000) / 10]),
     ).toEqual([
       // 2026-10-29: the round sums are back (6 000 / 15 000 / 36 000), so the
-      // margins land on their intended figures again.
-      ['decouverte', 75, 67],
-      ['standard', 70, 62],
-      ['pro', 66.7, 58.7],
+      // gross margins land on their intended figures again.
+      // Net is gross minus the payment provider's rate — MoneyFusion's since
+      // 2026-11-01, where Maketou's 8% gave 67 / 62 / 58.7. Derived from the
+      // constant rather than pinned, so confirming the real rate with
+      // MoneyFusion does not mean editing this list.
+      ['decouverte', 75, Math.round((0.75 - MONEYFUSION_FEE_RATE) * 1000) / 10],
+      ['standard', 70, Math.round((0.7 - MONEYFUSION_FEE_RATE) * 1000) / 10],
+      ['pro', 66.7, Math.round((0.667 - MONEYFUSION_FEE_RATE) * 1000) / 10],
     ]);
   });
 
