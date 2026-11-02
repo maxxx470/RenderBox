@@ -812,6 +812,13 @@ const fr = {
   'admin.pay.okTitle': 'MoneyFusion accepte nos appels',
   'admin.pay.koTitle': 'MoneyFusion a refusé',
   'admin.pay.ipTitle': 'Adresse de sortie ({n} vue(s) sur cette passe)',
+  'admin.pay.phoneLabel': 'Tester avec un autre numéro (facultatif)',
+  'admin.pay.phonePlaceholder': '+33 6 12 34 56 78',
+  'admin.pay.phoneHelp':
+    'Les moyens de paiement affichés dépendent du pays du numéro, et leur API ne permet pas de les choisir. Mettez un numéro étranger pour voir ce qu’un client de ce pays se verrait proposer — carte bancaire comprise.',
+  'admin.pay.openPage': 'Ouvrir la page de paiement ({phone})',
+  'admin.pay.lookOnly':
+    'À REGARDER SEULEMENT, ne payez pas : cette session n’a aucune commande derrière elle, rien ne serait crédité.',
   'admin.pay.note':
     'Le test n’enregistre aucune commande et ne prélève rien : il ouvre une session de paiement chez eux puis la jette.',
   'admin.users.colRelances': 'Relances',

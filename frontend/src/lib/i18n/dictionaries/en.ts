@@ -789,6 +789,13 @@ const en: Record<keyof typeof fr, string> = {
   'admin.pay.okTitle': 'MoneyFusion accepts our calls',
   'admin.pay.koTitle': 'MoneyFusion refused',
   'admin.pay.ipTitle': 'Outbound address ({n} seen in this pass)',
+  'admin.pay.phoneLabel': 'Test with another number (optional)',
+  'admin.pay.phonePlaceholder': '+33 6 12 34 56 78',
+  'admin.pay.phoneHelp':
+    'The payment methods shown depend on the number’s country, and their API gives no way to choose them. Put a foreign number here to see what a customer from that country would be offered — bank card included.',
+  'admin.pay.openPage': 'Open the payment page ({phone})',
+  'admin.pay.lookOnly':
+    'LOOK ONLY, do not pay: this session has no order behind it, nothing would be credited.',
   'admin.pay.note':
     'The test records no order and charges nothing: it opens a payment session with them and throws it away.',
   'admin.users.colRelances': 'Relances',

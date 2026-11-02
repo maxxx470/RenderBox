@@ -29,6 +29,9 @@ interface CheckResult {
   amountSentXof?: number;
   reason?: string;
   region?: string | null;
+  phoneSent?: string;
+  paymentUrl?: string;
+  warning?: string;
 }
 
 interface EgressResult {
@@ -43,18 +46,24 @@ export function MoneyfusionCard() {
   const [check, setCheck] = useState<CheckResult | null>(null);
   const [egress, setEgress] = useState<EgressResult | null>(null);
   const [busy, setBusy] = useState<'check' | 'egress' | null>(null);
+  // Which methods a customer is offered is decided on MoneyFusion's page from
+  // the number we send, and their API has no field for it — so the only way
+  // to know what a customer in another country sees is to open that page with
+  // a number from there and look.
+  const [phone, setPhone] = useState('');
 
   const runCheck = useCallback(async () => {
     setBusy('check');
     setCheck(null);
     try {
-      setCheck(await api<CheckResult>('/api/admin/moneyfusion-check'));
+      const q = phone.trim() ? `?phone=${encodeURIComponent(phone.trim())}&url=1` : '';
+      setCheck(await api<CheckResult>(`/api/admin/moneyfusion-check${q}`));
     } catch (e) {
       setCheck({ ok: false, error: e instanceof Error ? e.message : String(e) });
     } finally {
       setBusy(null);
     }
-  }, []);
+  }, [phone]);
 
   const runEgress = useCallback(async () => {
     setBusy('egress');
@@ -99,6 +108,25 @@ export function MoneyfusionCard() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex min-w-[220px] flex-1 flex-col gap-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-[#8A8896]">
+            {t('admin.pay.phoneLabel')}
+          </span>
+          <input
+            type="tel"
+            inputMode="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder={t('admin.pay.phonePlaceholder')}
+            className="h-10 w-full rounded-xl border border-[#ECECF2] bg-white px-3.5 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896] focus:border-[#2948FC]"
+          />
+        </label>
+        <p className="min-w-[220px] flex-1 text-[12px] leading-relaxed text-[#8A8896]">
+          {t('admin.pay.phoneHelp')}
+        </p>
+      </div>
+
       {check ? (
         <div
           className={`rounded-xl p-3.5 ${check.ok ? 'bg-[#1E7A3D0F]' : 'bg-[#FFE4E7]'}`}
@@ -115,6 +143,21 @@ export function MoneyfusionCard() {
           </p>
           {check.hint && !check.ok ? (
             <p className="mt-1.5 text-[12px] leading-relaxed text-[#6B6878]">{check.hint}</p>
+          ) : null}
+          {check.paymentUrl ? (
+            <>
+              <a
+                href={check.paymentUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2.5 inline-flex h-9 items-center rounded-lg bg-[#2948FC] px-3.5 text-[12.5px] font-semibold text-white hover:bg-[#1E36D6]"
+              >
+                {t('admin.pay.openPage', { phone: check.phoneSent ?? '' })}
+              </a>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-[#C21F33]">
+                {t('admin.pay.lookOnly')}
+              </p>
+            </>
           ) : null}
         </div>
       ) : null}
