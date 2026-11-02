@@ -801,6 +801,19 @@ const fr = {
   'checkout.phoneSubmit': 'Continuer vers le paiement',
   'checkout.phoneSending': 'Un instant…',
   'checkout.phoneCancel': 'Annuler',
+  // Paiements — MoneyFusion, dans l'espace admin (2026-11-01).
+  'admin.pay.title': 'Paiements — MoneyFusion',
+  'admin.pay.what':
+    'Vérifiez que MoneyFusion accepte les appels de ce serveur. Leur filtrage par adresse IP est la seule chose qui puisse arrêter tous les paiements sans prévenir ; leur message d’erreur nomme l’adresse bloquée.',
+  'admin.pay.test': 'Tester la connexion',
+  'admin.pay.testing': 'Test en cours…',
+  'admin.pay.ip': 'Voir mon adresse IP',
+  'admin.pay.reading': 'Lecture…',
+  'admin.pay.okTitle': 'MoneyFusion accepte nos appels',
+  'admin.pay.koTitle': 'MoneyFusion a refusé',
+  'admin.pay.ipTitle': 'Adresse de sortie ({n} vue(s) sur cette passe)',
+  'admin.pay.note':
+    'Le test n’enregistre aucune commande et ne prélève rien : il ouvre une session de paiement chez eux puis la jette.',
   'admin.users.colRelances': 'Relances',
   'admin.users.relanceHint':
     'Relances déjà reçues, sur le nombre total que ce compte recevra. Le total dépend de son état : un inscrit qui a déjà passé la dernière étape n’en reçoit qu’une.',
