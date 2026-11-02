@@ -224,7 +224,7 @@ export default function AdminKieStockPage() {
                   'admin.stock.kieCost',
                   `${num(data.finances.kieCostXof)} FCFA (${num(data.finances.kieCreditsConsumed, 1)} ${t('admin.stock.credits')})`,
                 ],
-                ['admin.stock.maketouFee', `${num(data.finances.providerFeeXof)} FCFA`],
+                ['admin.stock.maketouFee', `${num(data.finances.maketouFeeXof)} FCFA`],
                 ['admin.stock.profit', `${num(data.finances.profitXof)} FCFA`],
                 [
                   'admin.stock.margin',
@@ -274,7 +274,7 @@ export default function AdminKieStockPage() {
               usd: String(data.constants.usdPerCredit).replace('.', locale === 'fr' ? ',' : '.'),
               rate: num(data.constants.xofPerUsd),
               credit: num(data.constants.xofPerCredit, 2),
-              fee: num(data.constants.providerFeeRate * 100),
+              fee: num(data.constants.maketouFeeRate * 100),
             })}
           </p>
         </section>

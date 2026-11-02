@@ -769,35 +769,6 @@ const en: Record<keyof typeof fr, string> = {
   'admin.users.colCredits': 'Credits',
   'admin.users.colRenders': 'Renders',
   // The relances received, in the table and on the file (2026-11-01).
-  // The number MoneyFusion requires, asked once (2026-11-01).
-  'checkout.phoneTitle': 'Your phone number',
-  'checkout.phoneNote':
-    'Our payment provider needs it for mobile-money payments. It is saved on your account, so you will only enter it once.',
-  'checkout.phoneLabel': 'Number',
-  'checkout.phonePlaceholder': '07 00 00 00 00',
-  'checkout.phoneSubmit': 'Continue to payment',
-  'checkout.phoneSending': 'One moment…',
-  'checkout.phoneCancel': 'Cancel',
-  // Payments — MoneyFusion, in the back-office (2026-11-01).
-  'admin.pay.title': 'Payments — MoneyFusion',
-  'admin.pay.what':
-    'Check that MoneyFusion accepts this server’s calls. Their IP allowlist is the one thing that can stop every payment without warning; their error names the blocked address.',
-  'admin.pay.test': 'Test the connection',
-  'admin.pay.testing': 'Testing…',
-  'admin.pay.ip': 'Show my IP address',
-  'admin.pay.reading': 'Reading…',
-  'admin.pay.okTitle': 'MoneyFusion accepts our calls',
-  'admin.pay.koTitle': 'MoneyFusion refused',
-  'admin.pay.ipTitle': 'Outbound address ({n} seen in this pass)',
-  'admin.pay.phoneLabel': 'Test with another number (optional)',
-  'admin.pay.phonePlaceholder': '+33 6 12 34 56 78',
-  'admin.pay.phoneHelp':
-    'The payment methods shown depend on the number’s country, and their API gives no way to choose them. Put a foreign number here to see what a customer from that country would be offered — bank card included.',
-  'admin.pay.openPage': 'Open the payment page ({phone})',
-  'admin.pay.lookOnly':
-    'LOOK ONLY, do not pay: this session has no order behind it, nothing would be credited.',
-  'admin.pay.note':
-    'The test records no order and charges nothing: it opens a payment session with them and throws it away.',
   'admin.users.colRelances': 'Relances',
   'admin.users.relanceHint':
     'Relances already received, out of the total this account will ever get. The total depends on its state: a sign-up already past the last step gets one only.',

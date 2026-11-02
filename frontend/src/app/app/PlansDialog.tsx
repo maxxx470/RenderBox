@@ -8,13 +8,13 @@
 //
 // Opened through the app chrome (`useAppChrome().openPlans(reason)`), from
 // the image generator, a project and the Améliorer page.
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { CloseSquare } from 'react-iconly';
+import { api } from '@/lib/api';
 import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { useToast } from '@/contexts/ToastContext';
 import { PricingCard } from '../PricingCard';
-import { useCheckout } from '../checkout-phone';
 
 export type PlansReason = 'noTier' | 'noCredits';
 /** What the refused request cost and what the account had (402). */
@@ -39,7 +39,12 @@ export function PlansDialog({
 }) {
   const { t } = useLocale();
   const { toast } = useToast();
-  const { start, busyTier: checkoutTier, errors, phonePrompt } = useCheckout();
+  const [checkoutTier, setCheckoutTier] = useState<PricingTierId | null>(null);
+  const [errors, setErrors] = useState<Record<PricingTierId, string | null>>({
+    decouverte: null,
+    standard: null,
+    pro: null,
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -54,7 +59,18 @@ export function PlansDialog({
       toast(t('tarifs.demoNote'), 'info');
       return;
     }
-    await start(tier);
+    setCheckoutTier(tier);
+    setErrors((prev) => ({ ...prev, [tier]: null }));
+    try {
+      const res = await api<{ paymentUrl: string }>('/api/payments/checkout', {
+        method: 'POST',
+        body: { tier },
+      });
+      window.location.href = res.paymentUrl;
+    } catch {
+      setErrors((prev) => ({ ...prev, [tier]: t('landing.pricingError') }));
+      setCheckoutTier(null);
+    }
   }
 
   return (
@@ -114,7 +130,6 @@ export function PlansDialog({
           <p className="mt-3 text-[10.5px] text-[#8A8896]">{t('tarifs.usdNote')}</p>
         </div>
       </div>
-      {phonePrompt}
     </div>
   );
 }

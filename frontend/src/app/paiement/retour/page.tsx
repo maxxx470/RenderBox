@@ -36,9 +36,9 @@ export default function PaiementRetourPage() {
   const searchParams = useSearchParams();
   // The return URL we hand the provider carries ?orderId=. A provider that
   // redirects to the fallback URL set in ITS OWN dashboard instead sends no
-  // orderId — it may send its payment token, and may send nothing at all.
+  // orderId — Maketou appends its cart id, and some send nothing at all.
   const orderId = searchParams.get('orderId');
-  const token = searchParams.get('token') ?? searchParams.get('tokenPay');
+  const token = searchParams.get('token') ?? searchParams.get('cartId') ?? searchParams.get('cart');
   const ref = orderId
     ? `orderId=${encodeURIComponent(orderId)}`
     : token

@@ -35,10 +35,10 @@ import { UC } from './rendu/copy';
 import { USE_CASES, useCasePath } from './rendu/use-cases';
 import { BEFORE_AFTER_PAIRS } from './before-after';
 import { PricingCard } from './PricingCard';
-import { useCheckout } from './checkout-phone';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { PublicMobileMenu } from '@/components/PublicMobileMenu';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import { Reveal } from './Reveal';
 import { PresentationVideo } from './PresentationVideo';
@@ -304,12 +304,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
   const { locale } = useLocale();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const {
-    start: startCheckout,
-    busyTier: checkoutTier,
-    errors: checkoutErrors,
-    phonePrompt,
-  } = useCheckout();
+  const [checkoutTier, setCheckoutTier] = useState<PricingTierId | null>(null);
+  const [checkoutErrors, setCheckoutErrors] = useState<Record<PricingTierId, string | null>>({
+    decouverte: null,
+    standard: null,
+    pro: null,
+  });
   const heroSentinelRef = useRef<HTMLDivElement>(null);
   const [pastHero, setPastHero] = useState(false);
   // The header stays at the top (owner, 2026-10-08); once the page has moved
@@ -351,7 +351,18 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
       router.push(ctaHref);
       return;
     }
-    await startCheckout(tier);
+    setCheckoutTier(tier);
+    setCheckoutErrors((prev) => ({ ...prev, [tier]: null }));
+    try {
+      const res = await api<{ paymentUrl: string }>('/api/payments/checkout', {
+        method: 'POST',
+        body: { tier },
+      });
+      window.location.href = res.paymentUrl;
+    } catch {
+      setCheckoutErrors((prev) => ({ ...prev, [tier]: t('landing.pricingError') }));
+      setCheckoutTier(null);
+    }
   }
 
   const faqItems = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => ({
@@ -997,7 +1008,6 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           from the end of the hero to the footer, so it repeats the one action
           the page exists for rather than a secondary link. */}
       <StickyBar visible={pastHero} href={startHref} label={t('landing.heroCtaPrimary')} />
-      {phonePrompt}
     </main>
   );
 }

@@ -1,11 +1,6 @@
 import 'server-only';
 import type { PrismaClient } from '@prisma/client';
-import {
-  MAKETOU_FEE_RATE,
-  MONEYFUSION_FEE_RATE,
-  XOF_PER_CREDIT,
-  XOF_PER_USD,
-} from '@/lib/provider-cost';
+import { MAKETOU_FEE_RATE, XOF_PER_CREDIT, XOF_PER_USD } from '@/lib/provider-cost';
 
 // The accounts of the back-office (2026-10-17, owner: « mon chiffre
 // d'affaires, ce que je gagne, tous les détails sur ce que je dépense … si je
@@ -20,14 +15,7 @@ import {
 
 // The dollar in FCFA (600, fixed by the owner on 2026-10-22), a credit in
 // FCFA (3) and Maketou's fee live in provider-cost.ts.
-export { MAKETOU_FEE_RATE, MONEYFUSION_FEE_RATE, XOF_PER_USD };
-
-/** Only the providers whose cut we know. Anything else books no fee at all
- *  rather than a figure borrowed from another price list. */
-const FEE_RATES: Readonly<Record<string, number>> = {
-  moneyfusion: MONEYFUSION_FEE_RATE,
-  maketou: MAKETOU_FEE_RATE,
-};
+export { MAKETOU_FEE_RATE, XOF_PER_USD };
 
 /** What the owner pays every month whatever the sales (hosting, domain,
  *  tools), in dollars, from the month it started (YYYY-MM). Empty until the
@@ -37,7 +25,7 @@ export const FIXED_COSTS: readonly { label: string; usdPerMonth: number; since: 
 export interface Ledger {
   revenueXof: number;
   orders: number;
-  providerFeeXof: number;
+  maketouFeeXof: number;
   kieXof: number;
   kieCredits: number;
   kieImages: number;
@@ -65,7 +53,7 @@ function emptyLedger(): Ledger {
   return {
     revenueXof: 0,
     orders: 0,
-    providerFeeXof: 0,
+    maketouFeeXof: 0,
     kieXof: 0,
     kieCredits: 0,
     kieImages: 0,
@@ -83,10 +71,10 @@ function add(a: Ledger, b: Ledger): Ledger {
 }
 
 function settle(l: Ledger): Ledger {
-  const expenses = l.providerFeeXof + l.kieXof + l.fixedXof;
+  const expenses = l.maketouFeeXof + l.kieXof + l.fixedXof;
   return {
     ...l,
-    providerFeeXof: Math.round(l.providerFeeXof),
+    maketouFeeXof: Math.round(l.maketouFeeXof),
     kieXof: Math.round(l.kieXof),
     kieCredits: Math.round(l.kieCredits * 100) / 100,
     fixedXof: Math.round(l.fixedXof),
@@ -103,15 +91,7 @@ export async function computeAccounting(
   const [orders, nodes] = await Promise.all([
     prisma.order.findMany({
       where: { status: 'PAID', currency: 'XOF' },
-      select: {
-        amount: true,
-        provider: true,
-        paidAt: true,
-        createdAt: true,
-        // MoneyFusion reports the fee it really took on each transaction, and
-        // the reconcile stores it here — no rate to guess (2026-11-01).
-        commissionAmount: true,
-      },
+      select: { amount: true, provider: true, paidAt: true, createdAt: true },
     }),
     prisma.renderNode.findMany({
       where: {
@@ -133,16 +113,7 @@ export async function computeAccounting(
     const l = at(monthKey(o.paidAt ?? o.createdAt));
     l.revenueXof += o.amount;
     l.orders++;
-    // The payment provider's cut. MoneyFusion reports the exact fee it took
-    // on each transaction and the reconcile stores it on the order, so the
-    // REAL figure is booked. Only an order whose reconcile never captured one
-    // falls back to a rate, and only for a provider whose rate we actually
-    // know — an order from any other provider books nothing rather than a
-    // fee invented from someone else's price list.
-    l.providerFeeXof +=
-      o.commissionAmount !== null && o.commissionAmount >= 0
-        ? o.commissionAmount
-        : o.amount * (FEE_RATES[o.provider] ?? 0);
+    if (o.provider === 'maketou') l.maketouFeeXof += o.amount * MAKETOU_FEE_RATE;
   }
   for (const n of nodes) {
     const l = at(monthKey(n.createdAt));
@@ -189,7 +160,7 @@ export async function computeAccounting(
     },
     months: chartKeys.map((key) => ({ key, ...settle({ ...at(key) }) })),
     xofPerUsd: Math.round(XOF_PER_USD * 100) / 100,
-    feeRate: MONEYFUSION_FEE_RATE,
+    feeRate: MAKETOU_FEE_RATE,
     fixedCosts: fixedCosts.map((c) => ({
       label: c.label,
       xofPerMonth: Math.round(c.usdPerMonth * XOF_PER_USD),

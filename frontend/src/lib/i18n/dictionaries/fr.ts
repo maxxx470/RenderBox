@@ -792,35 +792,6 @@ const fr = {
   'admin.users.colCredits': 'Crédits',
   'admin.users.colRenders': 'Rendus',
   // Les relances reçues, dans le tableau et sur la fiche (2026-11-01).
-  // Le numéro que MoneyFusion exige, demandé une seule fois (2026-11-01).
-  'checkout.phoneTitle': 'Votre numéro de téléphone',
-  'checkout.phoneNote':
-    'Notre prestataire de paiement en a besoin pour le paiement mobile money. Il est enregistré sur votre compte, vous ne le saisirez qu’une fois.',
-  'checkout.phoneLabel': 'Numéro',
-  'checkout.phonePlaceholder': '07 00 00 00 00',
-  'checkout.phoneSubmit': 'Continuer vers le paiement',
-  'checkout.phoneSending': 'Un instant…',
-  'checkout.phoneCancel': 'Annuler',
-  // Paiements — MoneyFusion, dans l'espace admin (2026-11-01).
-  'admin.pay.title': 'Paiements — MoneyFusion',
-  'admin.pay.what':
-    'Vérifiez que MoneyFusion accepte les appels de ce serveur. Leur filtrage par adresse IP est la seule chose qui puisse arrêter tous les paiements sans prévenir ; leur message d’erreur nomme l’adresse bloquée.',
-  'admin.pay.test': 'Tester la connexion',
-  'admin.pay.testing': 'Test en cours…',
-  'admin.pay.ip': 'Voir mon adresse IP',
-  'admin.pay.reading': 'Lecture…',
-  'admin.pay.okTitle': 'MoneyFusion accepte nos appels',
-  'admin.pay.koTitle': 'MoneyFusion a refusé',
-  'admin.pay.ipTitle': 'Adresse de sortie ({n} vue(s) sur cette passe)',
-  'admin.pay.phoneLabel': 'Tester avec un autre numéro (facultatif)',
-  'admin.pay.phonePlaceholder': '+33 6 12 34 56 78',
-  'admin.pay.phoneHelp':
-    'Les moyens de paiement affichés dépendent du pays du numéro, et leur API ne permet pas de les choisir. Mettez un numéro étranger pour voir ce qu’un client de ce pays se verrait proposer — carte bancaire comprise.',
-  'admin.pay.openPage': 'Ouvrir la page de paiement ({phone})',
-  'admin.pay.lookOnly':
-    'À REGARDER SEULEMENT, ne payez pas : cette session n’a aucune commande derrière elle, rien ne serait crédité.',
-  'admin.pay.note':
-    'Le test n’enregistre aucune commande et ne prélève rien : il ouvre une session de paiement chez eux puis la jette.',
   'admin.users.colRelances': 'Relances',
   'admin.users.relanceHint':
     'Relances déjà reçues, sur le nombre total que ce compte recevra. Le total dépend de son état : un inscrit qui a déjà passé la dernière étape n’en reçoit qu’une.',
