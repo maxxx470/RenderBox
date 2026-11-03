@@ -25,6 +25,7 @@
 // carries the session's `embedToken`. Legacy `izipaye.*` events are ignored.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CloseSquare, Danger, TickSquare } from 'react-iconly';
+import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { api } from '@/lib/api';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { useLocale } from '@/lib/i18n/LocaleContext';
@@ -227,94 +228,125 @@ export function MonerizCheckoutFrame({
       role="dialog"
       aria-modal="true"
       aria-labelledby="moneriz-title"
-      className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-[#17161F]/45 p-4 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-[80] flex flex-col bg-white"
     >
-      <div className="my-auto w-full max-w-[520px] overflow-hidden rounded-3xl bg-white shadow-[0_24px_80px_rgba(23,22,31,0.22)]">
-        <div className="flex items-center justify-between gap-3 border-b border-[#ECECF2] px-5 py-4">
+      {/* Full page on RenderPro, under our own logo (owner, 2026-11-03:
+          « est-ce que tu peux faire en sorte que ça remplisse toute la page
+          sur notre SaaS »). The payment form itself keeps a readable column
+          — a card field stretched across a 1900px screen is not a payment
+          page — but everything around it is ours. The logo and colours
+          INSIDE the frame are Moneriz's own theme, set in its dashboard
+          under Paramètres; nothing here can change them. */}
+      <div className="flex flex-shrink-0 items-center justify-between gap-3 border-b border-[#ECECF2] px-5 py-3.5">
+        <span className="flex min-w-0 items-center gap-2.5">
+          <BrandMark size="sm" />
+          <span className="hidden sm:inline">
+            <Wordmark />
+          </span>
+          <span
+            aria-hidden
+            className="hidden h-5 w-px flex-shrink-0 bg-[#ECECF2] sm:inline-block"
+          />
           <h2
             id="moneriz-title"
-            className="font-[family-name:var(--font-display)] text-[17px] font-extrabold text-[#17161F]"
+            className="truncate font-[family-name:var(--font-display)] text-[17px] font-extrabold text-[#17161F]"
           >
             {phase === 'paid' ? t('paiement.successTitle') : t('paiement.title')}
           </h2>
-          {(phase === 'paying' || phase === 'failed') && (
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label={t('paiement.close')}
-              className="rounded-lg p-1 text-[#6B6878] transition-colors hover:bg-[#F2F2F5] hover:text-[#17161F]"
-            >
-              <CloseSquare set="curved" size={22} primaryColor="currentColor" />
-            </button>
+        </span>
+        {(phase === 'paying' || phase === 'failed') && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('paiement.close')}
+            className="flex-shrink-0 rounded-lg p-1 text-[#6B6878] transition-colors hover:bg-[#F2F2F5] hover:text-[#17161F]"
+          >
+            <CloseSquare set="curved" size={22} primaryColor="currentColor" />
+          </button>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-[560px] px-4 py-6">
+          {phase === 'paid' ? (
+            <div className="flex flex-col items-center gap-4 py-12 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF1FF]">
+                <TickSquare set="curved" size={30} primaryColor="#1E36D6" />
+              </span>
+              <p className="text-[15px] leading-relaxed text-[#3D3B49]">
+                {t('paiement.successBody')}
+              </p>
+              <button
+                type="button"
+                onClick={done}
+                className="rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-3 text-[14px] font-semibold text-white transition-transform active:scale-[0.98]"
+              >
+                {t('paiement.successCta')}
+              </button>
+            </div>
+          ) : phase === 'failed' ? (
+            <div className="flex flex-col items-center gap-4 py-12 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFE4E7]">
+                <Danger set="curved" size={30} primaryColor="#C21F33" />
+              </span>
+              <p className="text-[15px] leading-relaxed text-[#3D3B49]">
+                {t('paiement.failedBody')}
+              </p>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-xl bg-[#F2F2F5] px-5 py-3 text-[14px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE]"
+              >
+                {t('paiement.failedCta')}
+              </button>
+            </div>
+          ) : (
+            <>
+              {phase === 'verifying' && (
+                <p className="mb-4 rounded-xl bg-[#EEF1FF] px-4 py-3 text-[13px] leading-relaxed text-[#1E36D6]">
+                  {t('paiement.verifying')}
+                </p>
+              )}
+              {resumeUrl && (
+                <p className="mb-4 rounded-xl bg-[#F7F7FA] px-4 py-3 text-[13px] leading-relaxed text-[#3D3B49]">
+                  {t('paiement.resumeBody')}{' '}
+                  <a
+                    href={resumeUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="font-semibold text-[#2948FC] underline"
+                  >
+                    {t('paiement.resumeLink')}
+                  </a>
+                </p>
+              )}
+              {/* No max-height and no CSS zoom: Moneriz drives the height
+                  through moneriz.resize and both break its layout. */}
+              {/* The sandbox is what keeps the customer on RenderPro. Without
+                  it (until 2026-11-03) Moneriz's page navigated OUR window to
+                  the successUrl the moment the payment succeeded, throwing the
+                  customer out of the dialog onto /paiement/retour. Its guide
+                  says the sandbox « ne donne pas le droit de naviguer la page
+                  parente » — we had simply not set one. Every token here is
+                  needed and no more: `allow-top-navigation` is the one
+                  deliberately absent, and `allow-same-origin` grants the frame
+                  its OWN origin (moneriz.com), never ours. */}
+              <iframe
+                ref={frameRef}
+                src={embedUrl}
+                onLoad={onFrameLoad}
+                title={t('paiement.title')}
+                allow="payment"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                className="block w-full border-0"
+                style={{ height }}
+              />
+              <p className="pt-4 text-center text-[12px] text-[#8A8896]">
+                {t('paiement.secureNote')}
+              </p>
+            </>
           )}
         </div>
-
-        {phase === 'paid' ? (
-          <div className="flex flex-col items-center gap-4 px-6 py-10 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF1FF]">
-              <TickSquare set="curved" size={30} primaryColor="#1E36D6" />
-            </span>
-            <p className="text-[15px] leading-relaxed text-[#3D3B49]">
-              {t('paiement.successBody')}
-            </p>
-            <button
-              type="button"
-              onClick={done}
-              className="rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-3 text-[14px] font-semibold text-white transition-transform active:scale-[0.98]"
-            >
-              {t('paiement.successCta')}
-            </button>
-          </div>
-        ) : phase === 'failed' ? (
-          <div className="flex flex-col items-center gap-4 px-6 py-10 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFE4E7]">
-              <Danger set="curved" size={30} primaryColor="#C21F33" />
-            </span>
-            <p className="text-[15px] leading-relaxed text-[#3D3B49]">{t('paiement.failedBody')}</p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl bg-[#F2F2F5] px-5 py-3 text-[14px] font-semibold text-[#17161F] transition-colors hover:bg-[#E9E9EE]"
-            >
-              {t('paiement.failedCta')}
-            </button>
-          </div>
-        ) : (
-          <>
-            {phase === 'verifying' && (
-              <p className="border-b border-[#D5DCFF] bg-[#EEF1FF] px-5 py-3 text-[13px] leading-relaxed text-[#1E36D6]">
-                {t('paiement.verifying')}
-              </p>
-            )}
-            {resumeUrl && (
-              <p className="border-b border-[#ECECF2] bg-[#F7F7FA] px-5 py-3 text-[13px] leading-relaxed text-[#3D3B49]">
-                {t('paiement.resumeBody')}{' '}
-                <a
-                  href={resumeUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="font-semibold text-[#2948FC] underline"
-                >
-                  {t('paiement.resumeLink')}
-                </a>
-              </p>
-            )}
-            {/* No max-height and no CSS zoom: Moneriz drives the height
-                through moneriz.resize and both break its layout. */}
-            <iframe
-              ref={frameRef}
-              src={embedUrl}
-              onLoad={onFrameLoad}
-              title={t('paiement.title')}
-              allow="payment"
-              className="block w-full border-0"
-              style={{ height }}
-            />
-            <p className="border-t border-[#ECECF2] px-5 py-3 text-center text-[12px] text-[#8A8896]">
-              {t('paiement.secureNote')}
-            </p>
-          </>
-        )}
       </div>
     </div>
   );

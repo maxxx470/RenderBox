@@ -32,7 +32,7 @@ import {
   resolveMonerizCountry,
   type MonerizCheckoutResult,
 } from '@/lib/server/payments/moneriz';
-import { getPricingTier } from '@/lib/pricing-tiers';
+import { getPricingTier, type PricingTierId } from '@/lib/pricing-tiers';
 import { createLogger } from '@/lib/server/logger';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
@@ -42,10 +42,22 @@ const ORDER_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24h — matches the order-expira
 
 const Body = z.object({ tier: z.enum(['decouverte', 'standard', 'pro']) });
 
-/** What the customer sees as the payment's label on Moneriz's page. */
-function sessionTitle(tier: string): string {
-  const name = tier.charAt(0).toUpperCase() + tier.slice(1);
-  return `RenderPro ${name}`;
+/**
+ * What the customer sees as the payment's label on Moneriz's page.
+ *
+ * Spelled out rather than derived from the tier id: capitalising
+ * `'decouverte'` printed « RenderPro Decouverte » on the payment page, with
+ * no accent, in front of the customer. The plan names are proper nouns and
+ * identical in French and English, so one map covers both.
+ */
+const TIER_NAMES: Readonly<Record<PricingTierId, string>> = {
+  decouverte: 'Découverte',
+  standard: 'Standard',
+  pro: 'Pro',
+};
+
+function sessionTitle(tier: PricingTierId): string {
+  return `RenderPro ${TIER_NAMES[tier]}`;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
