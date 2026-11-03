@@ -96,14 +96,14 @@ describe('.env.example phase 5 additions (CRON-05 + Phase 5 ENV)', () => {
 });
 
 // ───────────────────────────────────────────────────────────────────────
-// Phase 6 — Maketou payments + account-purge retention knob.
+// Phase 6 — account-purge retention knob. (The Maketou payment variables
+// that lived here were removed with Maketou itself on 2026-11-03.)
 // ───────────────────────────────────────────────────────────────────────
-describe('.env.example phase 6 additions (Maketou + account deletion)', () => {
+describe('.env.example phase 6 additions (account deletion)', () => {
   const src = readFileSync(ENV_EXAMPLE, 'utf8');
 
-  it('declares MAKETOU_API_KEY and MAKETOU_PRODUCT_ID with empty defaults', () => {
-    expect(src).toContain('MAKETOU_API_KEY=""');
-    expect(src).toContain('MAKETOU_PRODUCT_ID=""');
+  it('no longer declares any Maketou variable', () => {
+    expect(src).not.toContain('MAKETOU_');
   });
 
   it('contains ACCOUNT_DELETION_GRACE_DAYS with a 30-day default', () => {

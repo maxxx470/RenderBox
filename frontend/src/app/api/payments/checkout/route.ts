@@ -1,7 +1,6 @@
 // POST /api/payments/checkout — body { tier: "decouverte"|"standard"|"pro" }.
 // Creates a PENDING Order for that tier's fixed XOF amount and opens a
-// Moneriz checkout session for it (the provider since 2026-11-02, replacing
-// Maketou).
+// Moneriz checkout session for it (its only provider since 2026-11-02).
 //
 // The session is asked for in `iframe` mode (owner: « je préfère cette
 // version-là, il fait tout sur le site »), so the answer carries an
@@ -124,9 +123,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const base = {
       tier,
       reference: order.id,
-      email: user.email,
-      name: user.name,
-      phone: user.phone,
       title: sessionTitle(tier),
       successUrl: `${appUrl}/paiement/retour?orderId=${order.id}`,
       cancelUrl: `${appUrl}/paiement/retour?orderId=${order.id}`,

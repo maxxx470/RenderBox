@@ -1,6 +1,6 @@
 // The price in the visitor's own currency, for information only (owner,
 // 2026-10-16: « oui » to the currency study's recommendation). Payment stays
-// in FCFA: Maketou charges the price set on its product (payments/maketou.ts)
+// in FCFA: the amount we send is the amount charged (payments/moneriz.ts)
 // and nothing here changes what is charged. The plan card shows this line
 // under the FCFA figure, in the currency of the visitor's country (Vercel's
 // `x-vercel-ip-country`, the header that already picks the language).

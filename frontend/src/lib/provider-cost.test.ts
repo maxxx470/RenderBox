@@ -4,7 +4,7 @@ import {
   ASSISTANT_COST,
   KIE_PRICES,
   KIE_USD_PER_CREDIT,
-  MAKETOU_FEE_RATE,
+  MONERIZ_FEE_RATE,
   SHEET_COST,
   XOF_PER_CREDIT,
   XOF_PER_USD,
@@ -21,11 +21,11 @@ import { DEFAULT_ENGINE_VERSION, ENGINE_VERSION_KEYS } from './server/generation
 import { RESOLUTION_KEYS } from './server/generation/resolutions';
 
 describe('the constants (owner, 2026-10-22)', () => {
-  it('1 credit = 0.005 $, 1 $ = 600 FCFA, so 1 credit = 3 FCFA; Maketou 8 %', () => {
+  it('1 credit = 0.005 $, 1 $ = 600 FCFA, so 1 credit = 3 FCFA; commission 5 %', () => {
     expect(KIE_USD_PER_CREDIT).toBe(0.005);
     expect(XOF_PER_USD).toBe(600);
     expect(XOF_PER_CREDIT).toBe(3);
-    expect(MAKETOU_FEE_RATE).toBe(0.08);
+    expect(MONERIZ_FEE_RATE).toBe(0.05);
     expect(creditsValue(1000)).toEqual({ usd: 5, xof: 3000 });
   });
 
@@ -106,7 +106,7 @@ describe('what the plans buy, and what they guarantee', () => {
     // the margins land exactly on their intended figures again (the 900-
     // ending prices of 2026-10-28 cost four tenths of a point).
     expect(m.map((x) => pct(x.gross))).toEqual([75, 70, 66.7]);
-    // 2026-11-02: Moneriz takes 5 % where Maketou took 8 %, so every plan
+    // 2026-11-02: Moneriz takes 5 % where the previous provider took 8 %, so every plan
     // gained exactly three points of net margin (67 / 62 / 58.7 before).
     expect(m.map((x) => pct(x.net))).toEqual([70, 65, 61.7]);
     // Every plan still earns more than two thirds of its price before fees.

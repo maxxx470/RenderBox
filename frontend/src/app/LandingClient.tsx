@@ -342,7 +342,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
   async function handleSelectTier(tier: PricingTierId) {
     // Demo mode: nobody has a real identity to attach a paid tier to, and
     // there's no login wall to gate the checkout behind — send straight to
-    // /app instead of starting a Maketou checkout (see auth-disabled.ts).
+    // /app instead of starting a checkout (see auth-disabled.ts).
     if (ctaHref === '/app') {
       router.push('/app');
       return;
@@ -469,7 +469,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 asked, in the first thing the page says. The plans are priced
                 in FCFA and a large part of the audience has no bank card at
                 all, so « do I need a card to subscribe? » is the doubt that
-                stops them — and the answer is no: Maketou's checkout takes
+                stops them — and the answer is no: the checkout takes
                 mobile money too. A statement about the payment page, not a
                 promise of a free plan. It leads to the plans, where the
                 question is asked for real. */}

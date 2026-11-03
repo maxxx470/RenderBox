@@ -236,7 +236,7 @@ export function priceNotVerifiedResponse(requestId: string): NextResponse {
 
 /**
  * Activates or renews a tier — called once an Order actually transitions to
- * PAID (see maketou-reconcile.ts). The balance is SET to the plan's credits
+ * PAID (see moneriz-reconcile.ts). The balance is SET to the plan's credits
  * and the period restarts now: no carryover of unused credits, consistent
  * with a monthly subscription rather than a cumulative credit system. The
  * one exception: an account with no plan keeps the credits it was given by

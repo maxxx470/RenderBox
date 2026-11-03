@@ -55,7 +55,7 @@ describe('computeKieStock', () => {
     expect(row('gpt_image', '4k')).toBe(10);
   });
 
-  it('the finances: revenue less the Kie cost and Maketou, and the margin', async () => {
+  it('the finances: revenue less the Kie cost and the commission, and the margin', async () => {
     const s = await computeKieStock(prismaMock, async () => 1000, true);
     expect(s.finances).toEqual({
       revenueXof: 36000,
@@ -74,7 +74,7 @@ describe('computeKieStock', () => {
     ).toEqual([
       // 2026-10-29: the round sums are back (6 000 / 15 000 / 36 000), so the
       // margins land on their intended figures again. 2026-11-02: Moneriz's
-      // 5 % replaced Maketou's 8 %, so each net margin rose three points.
+      // 5 % replaced the previous provider's 8 %, so each net margin rose three points.
       ['decouverte', 75, 70],
       ['standard', 70, 65],
       ['pro', 66.7, 61.7],

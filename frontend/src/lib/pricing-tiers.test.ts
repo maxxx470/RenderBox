@@ -4,9 +4,9 @@ import { XOF_PER_USD } from './provider-cost';
 
 describe('pricing-tiers — the plans (credits are Kie credits since 2026-10-22)', () => {
   // 2026-10-29 (owner): the dollar is the reference, the FCFA is billed.
-  // **Each FCFA figure here is also the price of a Maketou product, set by
-  // hand on its dashboard**: Maketou charges what its product says, so a
-  // change here without the matching change in Maketou makes a customer read
+  // Moneriz is sent this exact amount, so the sum charged IS the sum the
+  // site advertises. That was NOT true of the previous provider, whose
+  // dashboard product decided the price — a change here made a customer read
   // one price and pay another. That is why the sums are pinned below rather
   // than merely computed — `billedXof` derives them from XOF_PER_USD, and a
   // change to that rate must fail here instead of quietly repricing the site.

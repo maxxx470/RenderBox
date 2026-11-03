@@ -101,7 +101,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     // Find the order by the session id, else by our own reference — both of
-    // which we set at checkout. Scoped to this provider so a Maketou cart id
+    // which we set at checkout. Scoped to this provider so another's id
     // can never be matched here.
     const sessionId = readEventSessionId(event);
     const orderId = readEventOrderId(event);

@@ -4,7 +4,7 @@
 // the whole interface and the command bar; only when he launches a render
 // without a plan or without enough credits does a small page open with the
 // plans, so he just picks one). The same three PricingCard as the landing and
-// /app/tarifs, the same checkout (POST /api/payments/checkout → Maketou).
+// /app/tarifs, the same checkout (POST /api/payments/checkout → Moneriz).
 //
 // Opened through the app chrome (`useAppChrome().openPlans(reason)`), from
 // the image generator, a project and the Améliorer page.

@@ -1,6 +1,6 @@
 // Single source of truth for RenderPro's 3 plans and their credits — read by
 // the shared plan card (PricingCard, on the landing AND on /app/tarifs), the
-// server-side Maketou checkout route and the credit gate
+// server-side Moneriz checkout route and the credit gate
 // (lib/server/generation/tier-quota.ts). Prices, credits and the list of what
 // a plan includes live HERE; what each action costs lives in
 // lib/provider-cost.ts (the Kie grid, 2026-10-22); the dictionaries only hold
@@ -32,15 +32,15 @@ export interface PricingTier {
 }
 
 /**
- * The dollar reference turned into the sum Maketou charges: times
+ * The dollar reference turned into the sum actually charged: times
  * `XOF_PER_USD`, rounded to the nearest hundred francs, because a price tag
  * of 5 994 FCFA reads as a mistake rather than as a price.
  *
  * Changing `XOF_PER_USD` therefore changes what every customer pays. A test
  * pins the three results (6 000 / 15 000 / 36 000) so that such a change
  * fails loudly instead of quietly charging a new amount — and it has to,
- * because **the price of each Maketou product is set by hand in Maketou's own
- * dashboard**: Maketou charges what its product says, not what the site
+ * because the previous provider's price was set by hand in ITS dashboard
+ * and it charged what its product said, not what the site
  * shows, and a gap between the two is a customer paying one price while
  * reading another.
  */
@@ -54,7 +54,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
   // 2026-10-29 (owner): the dollar is the reference price and the FCFA is
   // what is billed. 9.99 / 24.99 / 59.99 $ → 6 000 / 15 000 / 36 000 FCFA.
   // These three sums restore the exact margins the plans were designed for:
-  // 75 / 70 / 66.7 % gross, 67 / 62 / 58.7 % net of Maketou's 8 % (checked by
+  // 75 / 70 / 66.7 % gross, 70 / 65 / 61.7 % net of the 5 % commission (checked by
   // planMargin's test). The 5 900 / 14 900 / 35 900 of 2026-10-28, which cost
   // four tenths of a point, are gone.
   {

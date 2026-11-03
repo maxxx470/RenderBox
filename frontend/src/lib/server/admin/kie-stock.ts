@@ -3,7 +3,7 @@ import type { PrismaClient } from '@prisma/client';
 import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import {
   KIE_USD_PER_CREDIT,
-  MAKETOU_FEE_RATE,
+  MONERIZ_FEE_RATE,
   XOF_PER_CREDIT,
   XOF_PER_USD,
   creditsValue,
@@ -142,7 +142,7 @@ export interface KieStock {
     usdPerCredit: number;
     xofPerUsd: number;
     xofPerCredit: number;
-    maketouFeeRate: number;
+    providerFeeRate: number;
   };
 }
 
@@ -223,7 +223,7 @@ export async function computeKieStock(
       usdPerCredit: KIE_USD_PER_CREDIT,
       xofPerUsd: XOF_PER_USD,
       xofPerCredit: XOF_PER_CREDIT,
-      maketouFeeRate: MAKETOU_FEE_RATE,
+      providerFeeRate: MONERIZ_FEE_RATE,
     },
   };
 }

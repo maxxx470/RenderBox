@@ -2,7 +2,7 @@
 
 // « Comptabilité » on /admin (2026-10-17, owner: « combien je dépense, combien
 // je gagne … des graphiques si je suis en faillite ou si je gagne »): the
-// revenue, every expense (Maketou's fee, the Kie API, fixed costs), what is
+// revenue, every expense (the provider's fee, the Kie API, fixed costs), what is
 // left, for this month / last month / this year / since the start, and the
 // last 12 months in and out. Data: GET /api/admin/accounting
 // (lib/server/admin/accounting.ts).

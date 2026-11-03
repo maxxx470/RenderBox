@@ -68,7 +68,6 @@ describe('configuration', () => {
       monerizCheckout({
         tier: 'standard',
         reference: 'order-1',
-        email: 'a@b.c',
         title: 'x',
         successUrl: 'https://x/y',
         cancelUrl: 'https://x/y',
@@ -80,9 +79,9 @@ describe('configuration', () => {
 
 describe('getTierAmount', () => {
   it('is the plan price, which is the sum Moneriz will charge', () => {
-    // Unlike Maketou, whose dashboard product decided the price, this figure
-    // is sent in the request — so the site cannot advertise one sum and
-    // charge another.
+    // This figure is SENT in the request, so the site cannot advertise one
+    // sum and charge another — which is exactly what the previous provider
+    // did, its dashboard product deciding the price.
     expect(getTierAmount('decouverte')).toBe(6000);
     expect(getTierAmount('standard')).toBe(15000);
     expect(getTierAmount('pro')).toBe(36000);
@@ -109,11 +108,13 @@ describe('monerizCountry', () => {
 });
 
 describe('monerizCheckout', () => {
+  // Regression, 2026-11-03: the body carried a `customer` block copied from
+  // POST /v1/payments. A checkout session does not take one — « Les
+  // coordonnées, OTP et moyen de paiement sont collectés au checkout, pas
+  // dans cette requête » — and Moneriz refused every session because of it.
   const input = {
     tier: 'standard' as const,
     reference: 'order-1',
-    email: 'me@example.com',
-    name: 'Me',
     title: 'RenderPro Standard',
     successUrl: 'https://www.renderpro.app/paiement/retour?orderId=order-1',
     cancelUrl: 'https://www.renderpro.app/paiement/retour?orderId=order-1',
@@ -147,6 +148,13 @@ describe('monerizCheckout', () => {
 
     const sent = JSON.parse(init.body as string) as Record<string, unknown>;
     expect(sent.amount).toBe(15000);
+    // NO customer block. Moneriz's guide: « Les coordonnées, OTP et moyen de
+    // paiement sont collectés au checkout, pas dans cette requête. » Sending
+    // one is what POST /v1/payments takes, and it had every checkout session
+    // refused on 2026-11-03.
+    expect(sent).not.toHaveProperty('customer');
+    expect(sent).not.toHaveProperty('email');
+    expect(sent).not.toHaveProperty('phone');
     expect(sent.currency).toBe('XOF');
     expect(sent.reference).toBe('order-1');
     expect(sent.integrationMode).toBe('iframe');

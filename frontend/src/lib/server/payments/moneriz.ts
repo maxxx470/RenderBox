@@ -152,9 +152,6 @@ export interface MonerizCheckoutInput {
   tier: PricingTierId;
   /** Our Order id. Unique per order — Moneriz's `reference`. */
   reference: string;
-  email: string;
-  name?: string | null | undefined;
-  phone?: string | null | undefined;
   /** One of MONERIZ_COUNTRIES, or omitted to let Moneriz decide. */
   country?: MonerizCountry | undefined;
   /** Human title shown on the checkout page. */
@@ -363,11 +360,15 @@ export async function monerizCheckout(input: MonerizCheckoutInput): Promise<Mone
       ...(input.country ? { country: input.country } : {}),
       ...(input.integrationMode ? { integrationMode: input.integrationMode } : {}),
       ...(input.embedOrigin ? { embedOrigin: input.embedOrigin } : {}),
-      customer: {
-        email: input.email,
-        ...(input.name ? { name: input.name } : {}),
-        ...(input.phone ? { phone: input.phone } : {}),
-      },
+      // NO `customer` block. A checkout session's body is the one Moneriz
+      // documents — amount, currency, title, country, reference, metadata,
+      // successUrl, cancelUrl, expiresInMinutes, integrationMode,
+      // embedOrigin — and its guide is explicit: « Les coordonnées, OTP et
+      // moyen de paiement sont collectés au checkout, pas dans cette
+      // requête. » Sending the customer here is what `POST /v1/payments`
+      // (the direct-payment route we do not use) takes, and it got every
+      // session refused. The customer types their own details on the
+      // checkout page.
       metadata: { orderId: input.reference, ...(input.metadata ?? {}) },
     }),
     cache: 'no-store',

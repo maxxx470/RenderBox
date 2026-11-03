@@ -42,7 +42,7 @@ describe('GET /api/admin/stats', () => {
       activeAccounts: 124,
       suspendedAccounts: 4,
       generationsThisMonth: 3402,
-      maketouRevenueXof: 412000,
+      revenueXof: 412000,
     });
   });
 
@@ -52,8 +52,8 @@ describe('GET /api/admin/stats', () => {
     prismaMock.order.aggregate.mockResolvedValueOnce({ _sum: { amount: null } } as never);
 
     const res = await GET(makeReq());
-    const body = (await res.json()) as { maketouRevenueXof: number };
-    expect(body.maketouRevenueXof).toBe(0);
+    const body = (await res.json()) as { revenueXof: number };
+    expect(body.revenueXof).toBe(0);
   });
 
   it('propagates 403 from requireAdmin without hitting the DB', async () => {

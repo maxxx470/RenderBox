@@ -29,14 +29,12 @@ export const KIE_USD_PER_CREDIT = 0.005;
 export const XOF_PER_USD = 600;
 /** One credit in FCFA (0.005 $ × 600 = 3 FCFA). */
 export const XOF_PER_CREDIT = KIE_USD_PER_CREDIT * XOF_PER_USD;
-/** Maketou's commission on each payment made through its API. Kept for the
- *  orders already settled through Maketou, which the accounts still read. */
-export const MAKETOU_FEE_RATE = 0.08;
 /**
- * Moneriz's commission, the provider since 2026-11-02: 5 % deducted from
- * the payout (6 000 in, 300 of fee, 5 700 to the wallet), where Maketou's
- * 8 % was ADDED to the customer's total. So the plans gain three points of
- * net margin and the customer finally pays the advertised price.
+ * Moneriz's commission, the only provider since 2026-11-02: 5 % deducted
+ * from the payout (6 000 in, 300 of fee, 5 700 to the wallet), where the
+ * previous provider's 8 % was ADDED to the customer's total. So the plans
+ * gained three points of net margin and the customer pays the advertised
+ * price.
  */
 export const MONERIZ_FEE_RATE = 0.05;
 /** The commission of the provider now in use — what `planMargin` charges a

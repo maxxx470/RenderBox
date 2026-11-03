@@ -9,7 +9,7 @@
 // (webhook-log-purge / email-job-purge / account-purge / reengagement — the
 // relance pass, 2026-10-31) stay registered in
 // vercel.json. The 5 sub-daily crons (outbox-drain, email-queue-drain,
-// verification-cleanup, order-expiration, maketou-reconcile) still exist as
+// verification-cleanup, order-expiration) still exist as
 // route.ts handlers guarded by verifyCronSecret, but are invoked by an
 // external scheduler (e.g. cron-job.org) instead — see README.md
 // "Déploiement Vercel" for the exact URLs/schedules. Upgrading to Vercel Pro
@@ -98,13 +98,15 @@ describe('vercel.json schema (CRON-07, D-20)', () => {
     }
   });
 
-  it('the 5 sub-daily cron routes still exist for external-scheduler invocation', () => {
+  it('the 4 sub-daily cron routes still exist for external-scheduler invocation', () => {
+    // maketou-reconcile was the fifth until 2026-11-03, when Maketou was
+    // deleted: it had no payable order left (4 failed, 5 expired, none
+    // pending), so there was nothing for it to reconcile.
     const externallyScheduled = [
       'outbox-drain',
       'email-queue-drain',
       'verification-cleanup',
       'order-expiration',
-      'maketou-reconcile',
     ];
     for (const name of externallyScheduled) {
       expect(

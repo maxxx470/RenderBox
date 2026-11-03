@@ -31,7 +31,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         where: { kind: 'GENERATED', createdAt: { gte: startOfMonth } },
       }),
       prisma.order.aggregate({
-        where: { provider: 'maketou', status: 'PAID' },
+        where: { status: 'PAID' },
         _sum: { amount: true },
       }),
     ]);
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         activeAccounts,
         suspendedAccounts,
         generationsThisMonth,
-        maketouRevenueXof: revenue._sum.amount ?? 0,
+        revenueXof: revenue._sum.amount ?? 0,
       },
       { headers: { 'x-request-id': ctx.requestId } },
     );

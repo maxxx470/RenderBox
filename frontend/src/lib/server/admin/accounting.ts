@@ -1,17 +1,12 @@
 import 'server-only';
 import type { PrismaClient } from '@prisma/client';
-import {
-  MAKETOU_FEE_RATE,
-  MONERIZ_FEE_RATE,
-  XOF_PER_CREDIT,
-  XOF_PER_USD,
-} from '@/lib/provider-cost';
+import { MONERIZ_FEE_RATE, XOF_PER_CREDIT, XOF_PER_USD } from '@/lib/provider-cost';
 
 // The accounts of the back-office (2026-10-17, owner: « mon chiffre
 // d'affaires, ce que je gagne, tous les détails sur ce que je dépense … si je
 // suis en faillite ou si je gagne »): what came in (PAID orders, counted on
-// the day they were paid, as in insights.ts) against what went out — Maketou's
-// 8% on each payment, the Kie credits each image really cost
+// the day they were paid, as in insights.ts) against what went out — the
+// provider's commission on each payment, the Kie credits each image really cost
 // (RenderNode.providerCredits, stored since 2026-10-17) and the fixed monthly
 // costs listed below — month by month, in FCFA.
 //
@@ -19,8 +14,8 @@ import {
 // OpenAI keys (their price is billed by those accounts, not recorded here).
 
 // The dollar in FCFA (600, fixed by the owner on 2026-10-22), a credit in
-// FCFA (3) and Maketou's fee live in provider-cost.ts.
-export { MAKETOU_FEE_RATE, MONERIZ_FEE_RATE, XOF_PER_USD };
+// FCFA (3) and the provider's fee live in provider-cost.ts.
+export { MONERIZ_FEE_RATE, XOF_PER_USD };
 
 /**
  * Each payment provider's published commission. An order whose provider is
@@ -34,7 +29,6 @@ export { MAKETOU_FEE_RATE, MONERIZ_FEE_RATE, XOF_PER_USD };
  */
 export const FEE_RATES: Readonly<Record<string, number>> = {
   moneriz: MONERIZ_FEE_RATE,
-  maketou: MAKETOU_FEE_RATE,
 };
 
 /** What the owner pays every month whatever the sales (hosting, domain,

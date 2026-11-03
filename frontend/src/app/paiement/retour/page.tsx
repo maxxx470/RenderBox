@@ -1,4 +1,4 @@
-// /paiement/retour — Phase 6. Maketou has no reliable webhook, so THIS page
+// /paiement/retour — the page a hosted checkout returns to. THIS page
 // is one of the two places (alongside the 5-min reconciliation cron) that
 // ever finds out a payment succeeded — it actively calls the verify route
 // rather than trusting the redirect itself.
@@ -36,7 +36,7 @@ export default function PaiementRetourPage() {
   const searchParams = useSearchParams();
   // The return URL we hand the provider carries ?orderId=. A provider that
   // redirects to the fallback URL set in ITS OWN dashboard instead sends no
-  // orderId — Maketou appends its cart id, and some send nothing at all.
+  // orderId — a provider may append its own session id, or nothing at all.
   const orderId = searchParams.get('orderId');
   const token = searchParams.get('token') ?? searchParams.get('cartId') ?? searchParams.get('cart');
   const ref = orderId

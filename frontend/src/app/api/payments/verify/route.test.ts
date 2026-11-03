@@ -7,25 +7,26 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest, NextResponse } from 'next/server';
 
 vi.mock('@/lib/server/middleware', () => ({ requireAuth: vi.fn() }));
-vi.mock('@/lib/server/payments/maketou-reconcile', () => ({ reconcileMaketouOrder: vi.fn() }));
+vi.mock('@/lib/server/payments/moneriz-reconcile', () => ({ reconcileMonerizOrder: vi.fn() }));
 
 import { requireAuth } from '@/lib/server/middleware';
-import { reconcileMaketouOrder } from '@/lib/server/payments/maketou-reconcile';
-import { MaketouApiError, MaketouNotConfiguredError } from '@/lib/server/payments/maketou';
+import { reconcileMonerizOrder } from '@/lib/server/payments/moneriz-reconcile';
+import { MonerizApiError, MonerizNotConfiguredError } from '@/lib/server/payments/moneriz';
 import { GET } from './route';
 
 const mockRequireAuth = vi.mocked(requireAuth);
-const mockReconcile = vi.mocked(reconcileMaketouOrder);
+const mockReconcile = vi.mocked(reconcileMonerizOrder);
 const authedCtx = { user: { sub: 'user-1', email: 'me@example.com' } };
 
-const MAKETOU_ORDER = {
+const ORDER = {
   id: 'o1',
   userId: 'user-1',
   status: 'PENDING',
-  providerChargeId: 'cart-1',
-  provider: 'maketou',
+  providerChargeId: 'cs_1',
+  provider: 'moneriz',
   metadata: { tier: 'standard' },
   amount: 15000,
+  currency: 'XOF',
 };
 
 function makeReq(query?: string): NextRequest {
@@ -41,7 +42,7 @@ beforeEach(() => {
 
 describe('GET /api/payments/verify', () => {
   it("returns the reconciled status for the caller's own order", async () => {
-    prismaMock.order.findFirst.mockResolvedValueOnce(MAKETOU_ORDER as never);
+    prismaMock.order.findFirst.mockResolvedValueOnce(ORDER as never);
     mockReconcile.mockResolvedValueOnce({ changed: true, status: 'PAID' });
 
     const res = await GET(makeReq('orderId=o1'));
@@ -57,7 +58,7 @@ describe('GET /api/payments/verify', () => {
 
   it("404 when the order doesn't exist or belongs to another user", async () => {
     prismaMock.order.findFirst.mockResolvedValueOnce({
-      ...MAKETOU_ORDER,
+      ...ORDER,
       userId: 'someone-else',
     } as never);
     const res = await GET(makeReq('orderId=o1'));
@@ -78,23 +79,23 @@ describe('GET /api/payments/verify', () => {
 // of ours. Without this the customer's own payment could not be found.
 describe('finding the order by payment token', () => {
   it('looks the order up by providerChargeId when only a cart id is given', async () => {
-    prismaMock.order.findFirst.mockResolvedValueOnce(MAKETOU_ORDER as never);
+    prismaMock.order.findFirst.mockResolvedValueOnce(ORDER as never);
     mockReconcile.mockResolvedValueOnce({ changed: true, status: 'PAID' });
 
-    const res = await GET(makeReq('token=cart-1'));
+    const res = await GET(makeReq('token=cs_1'));
 
     expect(res.status).toBe(200);
     const where = prismaMock.order.findFirst.mock.calls[0]?.[0]?.where as Record<string, unknown>;
-    expect(where).toEqual({ providerChargeId: 'cart-1' });
+    expect(where).toEqual({ providerChargeId: 'cs_1' });
   });
 
   it('still refuses another account’s order found by token', async () => {
     prismaMock.order.findFirst.mockResolvedValueOnce({
-      ...MAKETOU_ORDER,
+      ...ORDER,
       userId: 'someone-else',
     } as never);
 
-    const res = await GET(makeReq('token=cart-1'));
+    const res = await GET(makeReq('token=cs_1'));
 
     // The token is not a credential: the order is still checked against the
     // signed-in account, so knowing a token grants nothing.
@@ -103,20 +104,20 @@ describe('finding the order by payment token', () => {
   });
 
   it('prefers the orderId when both are given', async () => {
-    prismaMock.order.findFirst.mockResolvedValueOnce(MAKETOU_ORDER as never);
+    prismaMock.order.findFirst.mockResolvedValueOnce(ORDER as never);
     mockReconcile.mockResolvedValueOnce({ changed: false, status: 'PENDING' });
 
-    await GET(makeReq('orderId=o1&token=cart-1'));
+    await GET(makeReq('orderId=o1&token=cs_1'));
 
     const where = prismaMock.order.findFirst.mock.calls[0]?.[0]?.where as Record<string, unknown>;
     expect(where).toEqual({ id: 'o1' });
   });
 });
 
-describe('when Maketou itself is unreachable', () => {
-  it('falls back to the last-known local status on a transient MaketouApiError', async () => {
-    prismaMock.order.findFirst.mockResolvedValueOnce(MAKETOU_ORDER as never);
-    mockReconcile.mockRejectedValueOnce(new MaketouApiError('boom', 502));
+describe('when Moneriz itself is unreachable', () => {
+  it('falls back to the last-known local status on a transient MonerizApiError', async () => {
+    prismaMock.order.findFirst.mockResolvedValueOnce(ORDER as never);
+    mockReconcile.mockRejectedValueOnce(new MonerizApiError('boom', 502));
 
     const res = await GET(makeReq('orderId=o1'));
 
@@ -126,19 +127,19 @@ describe('when Maketou itself is unreachable', () => {
     expect(await res.json()).toEqual({ status: 'PENDING' });
   });
 
-  it('503 when Maketou is not configured', async () => {
-    prismaMock.order.findFirst.mockResolvedValueOnce(MAKETOU_ORDER as never);
-    mockReconcile.mockRejectedValueOnce(new MaketouNotConfiguredError());
+  it('503 when Moneriz is not configured', async () => {
+    prismaMock.order.findFirst.mockResolvedValueOnce(ORDER as never);
+    mockReconcile.mockRejectedValueOnce(new MonerizNotConfiguredError());
 
     const res = await GET(makeReq('orderId=o1'));
 
     expect(res.status).toBe(503);
   });
 
-  it('404 for an order from another provider', async () => {
+  it('404 for an order from the removed provider — nothing of its can settle any more', async () => {
     prismaMock.order.findFirst.mockResolvedValueOnce({
-      ...MAKETOU_ORDER,
-      provider: 'bictorys',
+      ...ORDER,
+      provider: 'maketou',
     } as never);
     const res = await GET(makeReq('orderId=o1'));
     expect(res.status).toBe(404);
