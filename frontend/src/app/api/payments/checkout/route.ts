@@ -28,6 +28,7 @@ import {
   isMonerizConfigured,
   isMonerizEmbedSetupError,
   isMonerizIdentityError,
+  MonerizApiError,
   monerizCheckout,
   resolveMonerizCountry,
   type MonerizCheckoutResult,
@@ -170,10 +171,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         });
         try {
           checkout = await monerizCheckout({ ...base, integrationMode: 'redirect' });
-        } catch {
+        } catch (e2) {
+          log.warn('moneriz checkout: redirect refused too', {
+            orderId: order.id,
+            err: String(e2),
+            code: e2 instanceof MonerizApiError ? e2.code : null,
+            requestId: ctx.requestId,
+          });
           return failOrder(order.id, ctx.requestId);
         }
       } else {
+        // Without this line a refusal leaves no trace: the customer sees
+        // « could not start checkout » and the logs say nothing of why.
+        log.warn('moneriz checkout: session refused', {
+          orderId: order.id,
+          err: String(e),
+          code: e instanceof MonerizApiError ? e.code : null,
+          requestId: ctx.requestId,
+        });
         return failOrder(order.id, ctx.requestId);
       }
     }
