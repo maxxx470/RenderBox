@@ -282,9 +282,13 @@ function unwrapNumber(value: unknown): number | undefined {
 function readErrorParam(data: unknown): string | null {
   if (!data || typeof data !== 'object') return null;
   const err = (data as Record<string, unknown>).error;
-  if (!err || typeof err !== 'object') return null;
-  const param = (err as Record<string, unknown>).param;
-  return typeof param === 'string' && param ? param : null;
+  if (err && typeof err === 'object') {
+    const param = (err as Record<string, unknown>).param;
+    if (typeof param === 'string' && param) return param;
+  }
+  // No `param`: keep Moneriz's own words, short, so the log still says what
+  // was refused.
+  return JSON.stringify(data).slice(0, 300);
 }
 
 /** Moneriz reports `{ error: { code, param } }` on a 4xx. */
