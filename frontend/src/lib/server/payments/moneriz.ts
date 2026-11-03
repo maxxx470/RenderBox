@@ -279,6 +279,14 @@ function unwrapNumber(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
+function readErrorParam(data: unknown): string | null {
+  if (!data || typeof data !== 'object') return null;
+  const err = (data as Record<string, unknown>).error;
+  if (!err || typeof err !== 'object') return null;
+  const param = (err as Record<string, unknown>).param;
+  return typeof param === 'string' && param ? param : null;
+}
+
 /** Moneriz reports `{ error: { code, param } }` on a 4xx. */
 function readErrorCode(data: unknown): string | null {
   if (!data || typeof data !== 'object') return null;
@@ -353,8 +361,11 @@ export async function monerizCheckout(input: MonerizCheckoutInput): Promise<Mone
 
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
+    // `param` names the refused field on a VALIDATION_ERROR; without it a
+    // 400 says only that something in the body was wrong.
+    const param = readErrorParam(data);
     throw new MonerizApiError(
-      `Moneriz checkout failed (${res.status})`,
+      `Moneriz checkout failed (${res.status})${param ? ` param=${param}` : ''}`,
       res.status,
       readErrorCode(data),
     );
