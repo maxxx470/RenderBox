@@ -136,6 +136,10 @@ const en: Record<keyof typeof fr, string> = {
     'You no longer have enough credits for a render. Pick a plan below: it starts a new 30-day period with all its credits.',
   'tarifs.usdNote':
     'The figure above is indicative, converted into your currency at the day’s rate. Payment is made in FCFA, at the amount shown in red.',
+  'tarifs.methodsNote':
+    'Pay with Mobile Money in Benin, Burkina Faso, Côte d’Ivoire, Mali, Senegal and Togo. The available operators are shown at payment time. Bank cards are not available yet.',
+  'tarifs.methodsNoteWithCard':
+    'Pay with Mobile Money in Benin, Burkina Faso, Côte d’Ivoire, Mali, Senegal and Togo, or by bank card. The available methods are shown at payment time.',
   'tarifs.historyTitle': 'History',
   'tarifs.historyEmpty': 'No payments yet.',
   'tarifs.historyItem': '{tier} plan',

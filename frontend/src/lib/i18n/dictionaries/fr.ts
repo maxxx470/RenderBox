@@ -137,6 +137,10 @@ const fr = {
     'Il ne vous reste plus assez de crédits pour un rendu. Choisissez une formule ci-dessous : elle repart sur 30 jours avec tous ses crédits.',
   'tarifs.usdNote':
     'Le montant du haut est indicatif, converti dans votre devise au taux du jour. Le paiement se fait en FCFA, au montant indiqué en rouge.',
+  'tarifs.methodsNote':
+    'Paiement par Mobile Money au Bénin, au Burkina Faso, en Côte d’Ivoire, au Mali, au Sénégal et au Togo. Les opérateurs disponibles s’affichent au moment du paiement. La carte bancaire n’est pas encore disponible.',
+  'tarifs.methodsNoteWithCard':
+    'Paiement par Mobile Money au Bénin, au Burkina Faso, en Côte d’Ivoire, au Mali, au Sénégal et au Togo, ou par carte bancaire. Les moyens disponibles s’affichent au moment du paiement.',
   'tarifs.historyTitle': 'Historique',
   'tarifs.historyEmpty': 'Aucun paiement pour le moment.',
   'tarifs.historyItem': 'Formule {tier}',

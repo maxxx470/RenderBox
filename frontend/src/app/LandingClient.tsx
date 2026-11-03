@@ -54,6 +54,7 @@ import { StickyBar } from './StickyBar';
 import { HeroFan } from './HeroFan';
 import { HERO_CARDS } from './hero-cards';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
+import { paymentMethodsNoteKey } from '@/lib/payment-methods';
 
 // Tailwind's JIT scanner only detects complete, literal class-name tokens in
 // the source text — it can't see a class assembled at runtime from a plain
@@ -969,6 +970,12 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               in-app pages carry the same line. */}
           <p className="mx-auto mt-5 max-w-[1040px] text-[10.5px] text-white/70">
             {t('tarifs.usdNote')}
+          </p>
+          {/* What a customer can actually pay with. Mobile money is proven
+              (a real test payment, 2026-11-03); the card is not, so the
+              sentence says so. One constant switches it: lib/payment-methods.ts. */}
+          <p className="mx-auto mt-2 max-w-[1040px] text-[10.5px] text-white/70">
+            {t(paymentMethodsNoteKey())}
           </p>
         </div>
       </section>

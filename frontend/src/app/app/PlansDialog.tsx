@@ -15,6 +15,7 @@ import { useLocale } from '@/lib/i18n/LocaleContext';
 import { useToast } from '@/contexts/ToastContext';
 import { PricingCard } from '../PricingCard';
 import { MonerizCheckoutFrame, useMonerizCheckout } from '../MonerizCheckout';
+import { paymentMethodsNoteKey } from '@/lib/payment-methods';
 
 export type PlansReason = 'noTier' | 'noCredits';
 /** What the refused request cost and what the account had (402). */
@@ -130,6 +131,7 @@ export function PlansDialog({
               ))}
             </div>
             <p className="mt-3 text-[10.5px] text-[#8A8896]">{t('tarifs.usdNote')}</p>
+            <p className="mt-1.5 text-[10.5px] text-[#8A8896]">{t(paymentMethodsNoteKey())}</p>
           </div>
         </div>
       </div>

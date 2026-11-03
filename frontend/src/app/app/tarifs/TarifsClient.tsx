@@ -26,6 +26,7 @@ import { imageRange } from '@/lib/provider-cost';
 import { PricingCard, TIER_NAME_KEY } from '../../PricingCard';
 import { MonerizCheckoutFrame, useMonerizCheckout } from '../../MonerizCheckout';
 import { AppSurface, type AppSurfaceProps } from '../AppSurface';
+import { paymentMethodsNoteKey } from '@/lib/payment-methods';
 
 export interface PaymentRow {
   id: string;
@@ -143,7 +144,8 @@ export function TarifsClient({
         ))}
       </div>
 
-      <p className="mb-6 text-[10.5px] text-[#8A8896]">{t('tarifs.usdNote')}</p>
+      <p className="text-[10.5px] text-[#8A8896]">{t('tarifs.usdNote')}</p>
+      <p className="mb-6 mt-1.5 text-[10.5px] text-[#8A8896]">{t(paymentMethodsNoteKey())}</p>
 
       {/* Historique. */}
       <section className="mb-4 overflow-hidden rounded-xl bg-white shadow-[0_1px_2px_rgba(23,22,31,0.04)]">
