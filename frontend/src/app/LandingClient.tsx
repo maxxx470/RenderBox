@@ -54,7 +54,7 @@ import { StickyBar } from './StickyBar';
 import { HeroFan } from './HeroFan';
 import { HERO_CARDS } from './hero-cards';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
-import { paymentMethodsNoteKey } from '@/lib/payment-methods';
+import { heroPaymentPillKey, paymentMethodsNoteKey } from '@/lib/payment-methods';
 
 // Tailwind's JIT scanner only detects complete, literal class-name tokens in
 // the source text — it can't see a class assembled at runtime from a plain
@@ -486,7 +486,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
               <span className="rounded-md bg-gradient-to-br from-[#F34857] to-[#EF3E50] px-2.5 py-0.5 text-[11px] font-semibold text-white">
                 {t('landing.heroBadgePayment')}
               </span>
-              {t('landing.heroNoCard')}
+              {t(heroPaymentPillKey())}
               <ChevronRight set="curved" size={13} primaryColor="#6B6878" />
             </Link>
             {/* No Reveal wrapper here: rb-word-in is the entrance, and

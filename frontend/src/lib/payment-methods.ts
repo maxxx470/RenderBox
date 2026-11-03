@@ -22,12 +22,12 @@
  */
 
 /**
- * Set to `true` the day Moneriz confirms the card activation, and nothing
- * else: the three places that sell a plan read it through the dictionary key
- * below. Until then the copy says plainly that the card is not available,
- * which is a limitation, never a promise.
+ * Turned on 2026-11-03, the day Moneriz approved the identity file and then
+ * the card activation (owner: « maintenant la carte fonctionne »). Set it
+ * back to `false` and redeploy if the card ever stops being offered — the
+ * copy must never promise a method Moneriz's own page does not show.
  */
-export const CARD_PAYMENTS_ENABLED = false;
+export const CARD_PAYMENTS_ENABLED = true;
 
 /**
  * The six countries Moneriz covers for mobile money, in XOF only — the same
@@ -45,4 +45,17 @@ export const MOBILE_MONEY_COUNTRIES = ['BJ', 'BF', 'CI', 'ML', 'SN', 'TG'] as co
 /** Which sentence the pricing surfaces show, given the card's real state. */
 export function paymentMethodsNoteKey(): 'tarifs.methodsNote' | 'tarifs.methodsNoteWithCard' {
   return CARD_PAYMENTS_ENABLED ? 'tarifs.methodsNoteWithCard' : 'tarifs.methodsNote';
+}
+
+/**
+ * The landing hero's own pill, the red « Paiement » badge under the title.
+ *
+ * It reads « Pas de carte bancaire ? Le mobile money suffit » — reassuring
+ * while the card is off, and FALSE the day it is on, because it tells a
+ * reader there is no card. It follows the same constant so the two can never
+ * disagree: a landing that offers a card and a pill that denies it is worse
+ * than either alone.
+ */
+export function heroPaymentPillKey(): 'landing.heroNoCard' | 'landing.heroWithCard' {
+  return CARD_PAYMENTS_ENABLED ? 'landing.heroWithCard' : 'landing.heroNoCard';
 }

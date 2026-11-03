@@ -8,6 +8,7 @@ import { describe, it, expect } from 'vitest';
 import {
   CARD_PAYMENTS_ENABLED,
   MOBILE_MONEY_COUNTRIES,
+  heroPaymentPillKey,
   paymentMethodsNoteKey,
 } from './payment-methods';
 import fr from './i18n/dictionaries/fr';
@@ -43,5 +44,23 @@ describe('the payment-methods copy', () => {
     }
     expect(MOBILE_MONEY_COUNTRIES).toHaveLength(6);
     expect([...MOBILE_MONEY_COUNTRIES].sort()).toEqual(['BF', 'BJ', 'CI', 'ML', 'SN', 'TG']);
+  });
+});
+
+describe('the landing hero pill', () => {
+  it('denies the card only while the card is really off', () => {
+    // « Pas de carte bancaire ? Le mobile money suffit » reassures a reader
+    // today and lies the day the card is activated, so it must follow the
+    // same constant as the pricing copy — a landing that offers a card and a
+    // pill that denies it is worse than either alone.
+    expect(heroPaymentPillKey()).toBe(
+      CARD_PAYMENTS_ENABLED ? 'landing.heroWithCard' : 'landing.heroNoCard',
+    );
+    expect(fr['landing.heroNoCard']).toMatch(/pas de carte/i);
+    expect(en['landing.heroNoCard']).toMatch(/no bank card/i);
+    expect(fr['landing.heroWithCard']).toMatch(/carte bancaire/i);
+    expect(fr['landing.heroWithCard']).not.toMatch(/pas de carte/i);
+    expect(en['landing.heroWithCard']).toMatch(/bank card/i);
+    expect(en['landing.heroWithCard']).not.toMatch(/no bank card/i);
   });
 });

@@ -1165,6 +1165,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.menuClose': 'Close the menu',
   'landing.heroBadgePayment': 'Payment',
   'landing.heroNoCard': 'No bank card? Mobile money is enough.',
+  'landing.heroWithCard': 'Pay with mobile money or a bank card.',
   'landing.heroSubtitle':
     'Upload a photo, a sketch or an image export of your plans: RenderPro generates renders that stay consistent from one view to the next, materials included.',
   'landing.eyebrowResult': 'The result',

@@ -1208,6 +1208,7 @@ const fr = {
   'landing.menuClose': 'Fermer le menu',
   'landing.heroBadgePayment': 'Paiement',
   'landing.heroNoCard': 'Pas de carte bancaire ? Le mobile money suffit.',
+  'landing.heroWithCard': 'Payez par mobile money ou par carte bancaire.',
   'landing.heroSubtitle':
     "Importez une photo, un croquis ou l'export image de vos plans : RenderPro génère des rendus cohérents d'une vue à l'autre, matériaux compris.",
   'landing.eyebrowResult': 'Le résultat',
