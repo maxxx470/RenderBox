@@ -154,6 +154,17 @@ describe('monerizCheckout', () => {
     expect(sent.metadata).toMatchObject({ orderId: 'order-1' });
   });
 
+  it('gives the redirect fallback its own idempotency key', async () => {
+    fetchMock
+      .mockResolvedValueOnce(reply({ id: 'cs_1', embedUrl: 'https://m/integrer/cs_1' }, 201))
+      .mockResolvedValueOnce(reply({ id: 'cs_2', checkoutUrl: 'https://m/payer/cs_2' }, 201));
+    await monerizCheckout(input);
+    await monerizCheckout({ ...input, integrationMode: 'redirect', embedOrigin: undefined });
+    const key = (call: number) =>
+      (fetchMock.mock.calls[call]?.[1].headers as Record<string, string>)['Idempotency-Key'];
+    expect(key(0)).not.toBe(key(1));
+  });
+
   it('sends no customer block, which a checkout session refuses', async () => {
     fetchMock.mockResolvedValueOnce(
       reply({ id: 'cs_1', embedUrl: 'https://m/integrer/cs_1' }, 201),

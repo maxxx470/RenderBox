@@ -341,8 +341,16 @@ export async function monerizCheckout(input: MonerizCheckoutInput): Promise<Mone
     headers: {
       Authorization: `Bearer ${cfg.secretKey}`,
       'Content-Type': 'application/json',
-      // Moneriz asks for 16-128 chars. A cuid is 25; pad a shorter id.
-      'Idempotency-Key': input.reference.padEnd(16, '0').slice(0, 128),
+      // Moneriz asks for 16-128 chars. A cuid is 25; pad a shorter id. The
+      // redirect fallback gets its own key: a key already used with another
+      // body (the refused iframe request) answers 409 IDEMPOTENCY_KEY_REUSED,
+      // which is how the fallback failed on 2026-11-03.
+      'Idempotency-Key': (input.integrationMode === 'redirect'
+        ? `${input.reference}-redirect`
+        : input.reference
+      )
+        .padEnd(16, '0')
+        .slice(0, 128),
     },
     body: JSON.stringify({
       amount,
