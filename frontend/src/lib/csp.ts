@@ -30,6 +30,16 @@ const GA_HOSTS = [
 ];
 const gaConfigured = (): boolean => Boolean(process.env.NEXT_PUBLIC_GA_ID);
 
+/**
+ * Moneriz's checkout, mounted in an iframe on our own pages since
+ * 2026-11-02 so the customer pays without leaving RenderPro. Both the apex
+ * and a subdomain are named because the `embedUrl` Moneriz returns may sit
+ * on either. Without this, `frame-src` falls back to default-src 'self' and
+ * the payment frame would be blocked the day CSP_ENFORCE is turned on —
+ * silently, in the browser, which is the one place no test would catch it.
+ */
+const MONERIZ_FRAME_HOSTS = ['https://moneriz.com', 'https://*.moneriz.com'];
+
 /** Sentry's ingest hosts, only when a DSN is actually configured. */
 function connectSources(sentryDsn: string | undefined): string[] {
   const sources = ["'self'"];
@@ -68,6 +78,8 @@ export function buildCsp(options: {
     // next/font self-hosts its files at build time — no external font origin.
     `font-src 'self'`,
     `connect-src ${connectSources(sentryDsn).join(' ')}`,
+    // The payment checkout, framed on our page (see MONERIZ_FRAME_HOSTS).
+    `frame-src 'self' ${MONERIZ_FRAME_HOSTS.join(' ')}`,
     // The service worker (public/sw.js) and the web app manifest.
     `worker-src 'self'`,
     `manifest-src 'self'`,

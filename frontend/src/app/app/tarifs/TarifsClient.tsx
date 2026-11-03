@@ -21,10 +21,10 @@ import { useState } from 'react';
 import { Danger, Wallet } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { useToast } from '@/contexts/ToastContext';
-import { api } from '@/lib/api';
 import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import { imageRange } from '@/lib/provider-cost';
 import { PricingCard, TIER_NAME_KEY } from '../../PricingCard';
+import { MonerizCheckoutFrame, useMonerizCheckout } from '../../MonerizCheckout';
 import { AppSurface, type AppSurfaceProps } from '../AppSurface';
 
 export interface PaymentRow {
@@ -53,6 +53,7 @@ export function TarifsClient({
   const { toast } = useToast();
   const intl = locale === 'fr' ? 'fr-FR' : 'en-US';
   const [checkoutTier, setCheckoutTier] = useState<PricingTierId | null>(null);
+  const { session, start: startCheckout, close: closeCheckout } = useMonerizCheckout();
   const [errors, setErrors] = useState<Record<PricingTierId, string | null>>({
     decouverte: null,
     standard: null,
@@ -70,11 +71,11 @@ export function TarifsClient({
     setCheckoutTier(tier);
     setErrors((prev) => ({ ...prev, [tier]: null }));
     try {
-      const res = await api<{ paymentUrl: string }>('/api/payments/checkout', {
-        method: 'POST',
-        body: { tier },
-      });
-      window.location.href = res.paymentUrl;
+      // Opens the payment on this very page (the Moneriz iframe); it only
+      // leaves RenderPro if Moneriz refused the embed.
+      const ok = await startCheckout(tier);
+      if (!ok) throw new Error('checkout');
+      setCheckoutTier(null);
     } catch {
       setErrors((prev) => ({ ...prev, [tier]: t('landing.pricingError') }));
       setCheckoutTier(null);
@@ -171,6 +172,7 @@ export function TarifsClient({
           </ul>
         )}
       </section>
+      {session && <MonerizCheckoutFrame session={session} onClose={closeCheckout} />}
     </AppSurface>
   );
 }

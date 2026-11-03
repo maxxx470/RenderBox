@@ -36,7 +36,7 @@ describe('computeAccounting — the accounts in /admin', () => {
     expect(a.periods.month).toMatchObject({
       revenueXof: 21_000,
       orders: 2,
-      maketouFeeXof: 1_680,
+      providerFeeXof: 1_680,
       kieXof: Math.round(kie),
       kieCredits: 24,
       kieImages: 2,
@@ -44,9 +44,9 @@ describe('computeAccounting — the accounts in /admin', () => {
       expensesXof: Math.round(1_680 + kie),
       resultXof: Math.round(21_000 - 1_680 - kie),
     });
-    expect(a.periods.lastMonth).toMatchObject({ revenueXof: 36_000, maketouFeeXof: 2_880 });
+    expect(a.periods.lastMonth).toMatchObject({ revenueXof: 36_000, providerFeeXof: 2_880 });
     expect(a.periods.year.revenueXof).toBe(57_000);
-    expect(a.periods.all).toMatchObject({ revenueXof: 63_000, maketouFeeXof: 4_560 });
+    expect(a.periods.all).toMatchObject({ revenueXof: 63_000, providerFeeXof: 4_560 });
     expect(a.months).toHaveLength(12);
     expect(a.months[0]?.key).toBe('2025-11');
     expect(a.months.at(-1)).toMatchObject({ key: '2026-10', revenueXof: 21_000 });

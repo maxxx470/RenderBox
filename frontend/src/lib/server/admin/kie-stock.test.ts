@@ -12,7 +12,7 @@ import {
   stockRoom,
 } from './kie-stock';
 
-const ALL = { revenueXof: 36000, kieXof: 300, kieCredits: 100, maketouFeeXof: 2880 };
+const ALL = { revenueXof: 36000, kieXof: 300, kieCredits: 100, providerFeeXof: 2880 };
 
 beforeEach(() => {
   mockAccounting.mockResolvedValue({ periods: { all: ALL } });
@@ -61,7 +61,7 @@ describe('computeKieStock', () => {
       revenueXof: 36000,
       kieCreditsConsumed: 100,
       kieCostXof: 300,
-      maketouFeeXof: 2880,
+      providerFeeXof: 2880,
       profitXof: 32820,
       margin: 32820 / 36000,
     });
@@ -73,10 +73,11 @@ describe('computeKieStock', () => {
       s.plans.map((p) => [p.id, Math.round(p.gross * 1000) / 10, Math.round(p.net * 1000) / 10]),
     ).toEqual([
       // 2026-10-29: the round sums are back (6 000 / 15 000 / 36 000), so the
-      // margins land on their intended figures again.
-      ['decouverte', 75, 67],
-      ['standard', 70, 62],
-      ['pro', 66.7, 58.7],
+      // margins land on their intended figures again. 2026-11-02: Moneriz's
+      // 5 % replaced Maketou's 8 %, so each net margin rose three points.
+      ['decouverte', 75, 70],
+      ['standard', 70, 65],
+      ['pro', 66.7, 61.7],
     ]);
   });
 

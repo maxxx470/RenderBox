@@ -224,7 +224,7 @@ export default function AdminKieStockPage() {
                   'admin.stock.kieCost',
                   `${num(data.finances.kieCostXof)} FCFA (${num(data.finances.kieCreditsConsumed, 1)} ${t('admin.stock.credits')})`,
                 ],
-                ['admin.stock.maketouFee', `${num(data.finances.maketouFeeXof)} FCFA`],
+                ['admin.stock.maketouFee', `${num(data.finances.providerFeeXof)} FCFA`],
                 ['admin.stock.profit', `${num(data.finances.profitXof)} FCFA`],
                 [
                   'admin.stock.margin',

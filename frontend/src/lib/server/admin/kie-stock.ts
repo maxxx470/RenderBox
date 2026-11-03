@@ -124,7 +124,7 @@ export interface KieStock {
     revenueXof: number;
     kieCreditsConsumed: number;
     kieCostXof: number;
-    maketouFeeXof: number;
+    providerFeeXof: number;
     profitXof: number;
     /** profit / revenue; null without revenue. */
     margin: number | null;
@@ -180,7 +180,7 @@ export async function computeKieStock(
   const circulation = held._sum.creditsBalance ?? 0;
   const coverage = balance === null || circulation <= 0 ? null : balance / circulation;
   const all = accounting.periods.all;
-  const profitXof = all.revenueXof - all.kieXof - all.maketouFeeXof;
+  const profitXof = all.revenueXof - all.kieXof - all.providerFeeXof;
   const value = balance === null ? null : creditsValue(balance);
 
   return {
@@ -201,7 +201,7 @@ export async function computeKieStock(
       revenueXof: all.revenueXof,
       kieCreditsConsumed: all.kieCredits,
       kieCostXof: all.kieXof,
-      maketouFeeXof: all.maketouFeeXof,
+      providerFeeXof: all.providerFeeXof,
       profitXof,
       margin: all.revenueXof > 0 ? profitXof / all.revenueXof : null,
     },

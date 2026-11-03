@@ -29,8 +29,19 @@ export const KIE_USD_PER_CREDIT = 0.005;
 export const XOF_PER_USD = 600;
 /** One credit in FCFA (0.005 $ × 600 = 3 FCFA). */
 export const XOF_PER_CREDIT = KIE_USD_PER_CREDIT * XOF_PER_USD;
-/** Maketou's commission on each payment made through its API. */
+/** Maketou's commission on each payment made through its API. Kept for the
+ *  orders already settled through Maketou, which the accounts still read. */
 export const MAKETOU_FEE_RATE = 0.08;
+/**
+ * Moneriz's commission, the provider since 2026-11-02: 5 % deducted from
+ * the payout (6 000 in, 300 of fee, 5 700 to the wallet), where Maketou's
+ * 8 % was ADDED to the customer's total. So the plans gain three points of
+ * net margin and the customer finally pays the advertised price.
+ */
+export const MONERIZ_FEE_RATE = 0.05;
+/** The commission of the provider now in use — what `planMargin` charges a
+ *  plan against. One line to change if the provider ever changes again. */
+export const PROVIDER_FEE_RATE = MONERIZ_FEE_RATE;
 /** What the materials-sheet analysis cost (2026-10-19 → 23). The analysis is gone
  *  (2026-10-23): only used to refund one that was started and never finished. */
 export const SHEET_COST = 2;
@@ -132,7 +143,8 @@ export function creditsValue(credits: number): { usd: number; xof: number } {
 
 /**
  * The margin a plan guarantees even if every credit is spent: what its
- * credits cost on Kie against its price, then less Maketou's commission.
+ * credits cost on Kie against its price, then less the payment provider's
+ * commission (Moneriz's 5 % since 2026-11-02).
  */
 export function planMargin(tier: Pick<PricingTier, 'priceXof' | 'creditsPerMonth'>): {
   kieCostXof: number;
@@ -141,7 +153,7 @@ export function planMargin(tier: Pick<PricingTier, 'priceXof' | 'creditsPerMonth
 } {
   const kieCostXof = tier.creditsPerMonth * XOF_PER_CREDIT;
   const gross = 1 - kieCostXof / tier.priceXof;
-  return { kieCostXof, gross, net: gross - MAKETOU_FEE_RATE };
+  return { kieCostXof, gross, net: gross - PROVIDER_FEE_RATE };
 }
 
 /**

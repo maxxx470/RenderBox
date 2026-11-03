@@ -1,6 +1,11 @@
 import 'server-only';
 import type { PrismaClient } from '@prisma/client';
-import { MAKETOU_FEE_RATE, XOF_PER_CREDIT, XOF_PER_USD } from '@/lib/provider-cost';
+import {
+  MAKETOU_FEE_RATE,
+  MONERIZ_FEE_RATE,
+  XOF_PER_CREDIT,
+  XOF_PER_USD,
+} from '@/lib/provider-cost';
 
 // The accounts of the back-office (2026-10-17, owner: « mon chiffre
 // d'affaires, ce que je gagne, tous les détails sur ce que je dépense … si je
@@ -15,7 +20,22 @@ import { MAKETOU_FEE_RATE, XOF_PER_CREDIT, XOF_PER_USD } from '@/lib/provider-co
 
 // The dollar in FCFA (600, fixed by the owner on 2026-10-22), a credit in
 // FCFA (3) and Maketou's fee live in provider-cost.ts.
-export { MAKETOU_FEE_RATE, XOF_PER_USD };
+export { MAKETOU_FEE_RATE, MONERIZ_FEE_RATE, XOF_PER_USD };
+
+/**
+ * Each payment provider's published commission. An order whose provider is
+ * not listed books NOTHING rather than a guessed figure — booking an
+ * invented fee against a real sale is worse than booking none, because it
+ * silently understates the profit and nobody can tell it was invented.
+ *
+ * Orders settled since 2026-11-02 carry their real fee in
+ * `Order.commissionAmount`, which wins over this table; the rates are what
+ * price the history, where no fee was recorded.
+ */
+export const FEE_RATES: Readonly<Record<string, number>> = {
+  moneriz: MONERIZ_FEE_RATE,
+  maketou: MAKETOU_FEE_RATE,
+};
 
 /** What the owner pays every month whatever the sales (hosting, domain,
  *  tools), in dollars, from the month it started (YYYY-MM). Empty until the
@@ -25,7 +45,7 @@ export const FIXED_COSTS: readonly { label: string; usdPerMonth: number; since: 
 export interface Ledger {
   revenueXof: number;
   orders: number;
-  maketouFeeXof: number;
+  providerFeeXof: number;
   kieXof: number;
   kieCredits: number;
   kieImages: number;
@@ -53,7 +73,7 @@ function emptyLedger(): Ledger {
   return {
     revenueXof: 0,
     orders: 0,
-    maketouFeeXof: 0,
+    providerFeeXof: 0,
     kieXof: 0,
     kieCredits: 0,
     kieImages: 0,
@@ -71,10 +91,10 @@ function add(a: Ledger, b: Ledger): Ledger {
 }
 
 function settle(l: Ledger): Ledger {
-  const expenses = l.maketouFeeXof + l.kieXof + l.fixedXof;
+  const expenses = l.providerFeeXof + l.kieXof + l.fixedXof;
   return {
     ...l,
-    maketouFeeXof: Math.round(l.maketouFeeXof),
+    providerFeeXof: Math.round(l.providerFeeXof),
     kieXof: Math.round(l.kieXof),
     kieCredits: Math.round(l.kieCredits * 100) / 100,
     fixedXof: Math.round(l.fixedXof),
@@ -91,7 +111,13 @@ export async function computeAccounting(
   const [orders, nodes] = await Promise.all([
     prisma.order.findMany({
       where: { status: 'PAID', currency: 'XOF' },
-      select: { amount: true, provider: true, paidAt: true, createdAt: true },
+      select: {
+        amount: true,
+        provider: true,
+        commissionAmount: true,
+        paidAt: true,
+        createdAt: true,
+      },
     }),
     prisma.renderNode.findMany({
       where: {
@@ -113,7 +139,15 @@ export async function computeAccounting(
     const l = at(monthKey(o.paidAt ?? o.createdAt));
     l.revenueXof += o.amount;
     l.orders++;
-    if (o.provider === 'maketou') l.maketouFeeXof += o.amount * MAKETOU_FEE_RATE;
+    // The real commission when the order recorded one (Moneriz writes
+    // `commissionAmount` at settlement, from the sum actually settled),
+    // else the provider's published rate. Nothing is invented for a
+    // provider whose cut we do not know: it books zero rather than a guess.
+    if (o.commissionAmount !== null && o.commissionAmount > 0) {
+      l.providerFeeXof += o.commissionAmount;
+    } else {
+      l.providerFeeXof += o.amount * (FEE_RATES[o.provider] ?? 0);
+    }
   }
   for (const n of nodes) {
     const l = at(monthKey(n.createdAt));
@@ -160,7 +194,8 @@ export async function computeAccounting(
     },
     months: chartKeys.map((key) => ({ key, ...settle({ ...at(key) }) })),
     xofPerUsd: Math.round(XOF_PER_USD * 100) / 100,
-    feeRate: MAKETOU_FEE_RATE,
+    // The rate of the provider now in use, for the page's own caption.
+    feeRate: MONERIZ_FEE_RATE,
     fixedCosts: fixedCosts.map((c) => ({
       label: c.label,
       xofPerMonth: Math.round(c.usdPerMonth * XOF_PER_USD),

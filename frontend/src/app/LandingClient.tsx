@@ -38,7 +38,7 @@ import { PricingCard } from './PricingCard';
 import { LanguageInlineSwitch } from '@/components/LanguageToggle';
 import { PublicMobileMenu } from '@/components/PublicMobileMenu';
 import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api';
+import { MonerizCheckoutFrame, useMonerizCheckout } from './MonerizCheckout';
 import { PRICING_TIERS, type PricingTierId } from '@/lib/pricing-tiers';
 import { Reveal } from './Reveal';
 import { PresentationVideo } from './PresentationVideo';
@@ -305,6 +305,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [checkoutTier, setCheckoutTier] = useState<PricingTierId | null>(null);
+  const { session, start: startCheckout, close: closeCheckout } = useMonerizCheckout();
   const [checkoutErrors, setCheckoutErrors] = useState<Record<PricingTierId, string | null>>({
     decouverte: null,
     standard: null,
@@ -354,11 +355,11 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
     setCheckoutTier(tier);
     setCheckoutErrors((prev) => ({ ...prev, [tier]: null }));
     try {
-      const res = await api<{ paymentUrl: string }>('/api/payments/checkout', {
-        method: 'POST',
-        body: { tier },
-      });
-      window.location.href = res.paymentUrl;
+      // Opens the payment on this very page (the Moneriz iframe); it only
+      // leaves RenderPro if Moneriz refused the embed.
+      const ok = await startCheckout(tier);
+      if (!ok) throw new Error('checkout');
+      setCheckoutTier(null);
     } catch {
       setCheckoutErrors((prev) => ({ ...prev, [tier]: t('landing.pricingError') }));
       setCheckoutTier(null);
@@ -1008,6 +1009,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           from the end of the hero to the footer, so it repeats the one action
           the page exists for rather than a secondary link. */}
       <StickyBar visible={pastHero} href={startHref} label={t('landing.heroCtaPrimary')} />
+
+      {session && <MonerizCheckoutFrame session={session} onClose={closeCheckout} />}
     </main>
   );
 }

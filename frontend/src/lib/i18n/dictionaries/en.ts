@@ -995,6 +995,21 @@ const en: Record<keyof typeof fr, string> = {
   'parametres.paymentsAll': 'See all',
   'parametres.paid': 'Paid',
 
+  // Paying on our own page (the Moneriz iframe, 2026-11-02). No amount, no
+  // credit figure and no payment method named here: prices live in
+  // pricing-tiers.ts, and Moneriz's own page says what it accepts — naming a
+  // method here would promise one that may not be enabled.
+  'paiement.title': 'Your payment',
+  'paiement.close': 'Close',
+  'paiement.secureNote': 'Payment secured by Moneriz. You stay on RenderPro.',
+  'paiement.verifying': 'Payment received, confirming with your provider…',
+  'paiement.successTitle': 'Payment confirmed',
+  'paiement.successBody': 'Thank you — your plan is active and your credits are available.',
+  'paiement.successCta': 'Start generating',
+  'paiement.failedBody': 'The payment did not go through. Nothing was charged. You can try again.',
+  'paiement.failedCta': 'Try again',
+  'paiement.resumeBody': 'Your bank requires a check that this window cannot display.',
+  'paiement.resumeLink': 'Finish the payment in a new tab',
   'paiementRetour.checking': 'Verifying your payment…',
   'paiementRetour.paidTitle': 'Payment confirmed',
   'paiementRetour.paidBody': 'Thank you — your payment was received.',

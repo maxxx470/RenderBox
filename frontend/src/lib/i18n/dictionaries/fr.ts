@@ -1024,6 +1024,24 @@ const fr = {
   'parametres.paymentsAll': 'Tout voir',
   'parametres.paid': 'Payé',
 
+  // Le paiement sur notre propre page (iframe Moneriz, 2026-11-02). Aucun
+  // montant, aucun nombre de crédits et aucun moyen de paiement ici : les
+  // prix vivent dans pricing-tiers.ts, et c'est la page de Moneriz qui dit
+  // ce qu'elle accepte — l'annoncer ici serait une promesse qu'on ne tient
+  // pas si la carte bancaire n'est pas activée.
+  'paiement.title': 'Votre paiement',
+  'paiement.close': 'Fermer',
+  'paiement.secureNote': 'Paiement sécurisé par Moneriz. Vous restez sur RenderPro.',
+  'paiement.verifying': 'Paiement reçu, nous confirmons auprès de votre opérateur…',
+  'paiement.successTitle': 'Paiement confirmé',
+  'paiement.successBody': 'Merci — votre formule est active et vos crédits sont disponibles.',
+  'paiement.successCta': 'Commencer à générer',
+  'paiement.failedBody':
+    "Le paiement n'a pas abouti. Aucun montant n'a été prélevé. Vous pouvez réessayer.",
+  'paiement.failedCta': 'Réessayer',
+  'paiement.resumeBody':
+    'Votre banque demande une vérification que cette fenêtre ne peut pas afficher.',
+  'paiement.resumeLink': 'Terminer le paiement dans un nouvel onglet',
   'paiementRetour.checking': 'Vérification du paiement…',
   'paiementRetour.paidTitle': 'Paiement confirmé',
   'paiementRetour.paidBody': 'Merci — votre paiement a bien été reçu.',
