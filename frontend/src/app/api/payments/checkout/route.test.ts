@@ -155,25 +155,45 @@ describe('POST /api/payments/checkout', () => {
 
   it('does not retry a refusal that is not about the embed', async () => {
     withUserAndOrder();
-    mockCheckout.mockRejectedValueOnce(new MonerizApiError('boom', 500, 'SERVER_ERROR'));
+    mockCheckout.mockRejectedValueOnce(new MonerizApiError('nope', 400, 'VALIDATION_ERROR'));
+
+    await POST(makeReq());
+    expect(mockCheckout).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails the Order on a refusal that proves no session was created', async () => {
+    withUserAndOrder();
+    // A 4xx naming its own code: Moneriz created nothing, so the Order is
+    // dead and can say so at once.
+    mockCheckout.mockRejectedValueOnce(new MonerizApiError('nope', 400, 'VALIDATION_ERROR'));
 
     const res = await POST(makeReq());
     expect(res.status).toBe(502);
-    expect(mockCheckout).toHaveBeenCalledTimes(1);
     expect(prismaMock.order.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: { status: 'FAILED' } }),
     );
   });
 
-  it('marks the Order FAILED and returns 502 when the checkout throws', async () => {
+  it('leaves the Order payable when the outcome is unknown, instead of declaring it dead', async () => {
     withUserAndOrder();
+    // A network error or a timeout: a session may exist and may still be
+    // paid. Failing the Order here would lie about an order being paid.
     mockCheckout.mockRejectedValueOnce(new Error('network'));
 
     const res = await POST(makeReq());
-    expect(res.status).toBe(502);
-    expect(prismaMock.order.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { status: 'FAILED' } }),
-    );
+    expect(res.status).toBe(503);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.code).toBe('PAYMENT_RESULT_UNKNOWN');
+    expect(prismaMock.order.update).not.toHaveBeenCalled();
+  });
+
+  it('treats a Moneriz 5xx as unknown too, not as a certain refusal', async () => {
+    withUserAndOrder();
+    mockCheckout.mockRejectedValueOnce(new MonerizApiError('boom', 500, 'SERVER_ERROR'));
+
+    const res = await POST(makeReq());
+    expect(res.status).toBe(503);
+    expect(prismaMock.order.update).not.toHaveBeenCalled();
   });
 
   it('503 PAYMENT_PROVIDER_UNCONFIGURED without a secret key — no Order is created', async () => {

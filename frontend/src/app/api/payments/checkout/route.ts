@@ -26,6 +26,7 @@ import { prisma } from '@/lib/server/prisma';
 import {
   getTierAmount,
   isMonerizConfigured,
+  isMonerizCertainRefusal,
   isMonerizEmbedSetupError,
   isMonerizIdentityError,
   monerizCheckout,
@@ -170,11 +171,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         });
         try {
           checkout = await monerizCheckout({ ...base, integrationMode: 'redirect' });
-        } catch {
-          return failOrder(order.id, ctx.requestId);
+        } catch (e2) {
+          return endOrder(order.id, ctx.requestId, isMonerizCertainRefusal(e2));
         }
       } else {
-        return failOrder(order.id, ctx.requestId);
+        return endOrder(order.id, ctx.requestId, isMonerizCertainRefusal(e));
       }
     }
 
@@ -219,14 +220,36 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * Moneriz never opened a session when this is reached, so there is no
- * partial-charge risk in marking the Order FAILED at once instead of
- * waiting for the 24 h sweep.
+ * What to do with the Order when no session could be opened — and the whole
+ * point is that the two cases are NOT the same.
+ *
+ * `certain` means Moneriz refused on its own terms (a 4xx with an error
+ * code): nothing was created, so the Order is failed at once rather than
+ * sitting PENDING until the 24 h sweep.
+ *
+ * Otherwise the outcome is UNKNOWN — a timeout, a network error, a 5xx, or a
+ * reply we could not read. Moneriz's guide is explicit that a session may
+ * exist in that case and may still be paid. Failing the Order here would
+ * declare dead an order a customer is in the middle of paying, so it stays
+ * PENDING and expires on its own. (Even then nothing is lost: a late success
+ * settles a FAILED order too — `SETTLEABLE_AS_PAID` in moneriz-reconcile.ts
+ * — but the Order should not lie about itself in the meantime.)
  */
-async function failOrder(orderId: string, requestId: string): Promise<NextResponse> {
-  await prisma.order.update({ where: { id: orderId }, data: { status: 'FAILED' } });
+async function endOrder(
+  orderId: string,
+  requestId: string,
+  certain: boolean,
+): Promise<NextResponse> {
+  if (certain) {
+    await prisma.order.update({ where: { id: orderId }, data: { status: 'FAILED' } });
+    return NextResponse.json(
+      { code: 'PAYMENT_PROVIDER_ERROR', message: 'Could not start checkout' },
+      { status: 502, headers: { 'x-request-id': requestId } },
+    );
+  }
+  log.warn('moneriz checkout: outcome unknown, order left payable', { orderId, requestId });
   return NextResponse.json(
-    { code: 'PAYMENT_PROVIDER_ERROR', message: 'Could not start checkout' },
-    { status: 502, headers: { 'x-request-id': requestId } },
+    { code: 'PAYMENT_RESULT_UNKNOWN', message: 'Could not confirm the checkout — please retry' },
+    { status: 503, headers: { 'x-request-id': requestId } },
   );
 }

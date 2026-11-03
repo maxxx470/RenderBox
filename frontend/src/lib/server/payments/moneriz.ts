@@ -88,6 +88,27 @@ export function isMonerizIdentityError(e: unknown): boolean {
 }
 
 /**
+ * How long we wait on Moneriz before giving up. Its own example uses 8 s.
+ * Without a timeout a hung call holds the route open until the platform's
+ * limit, with a customer watching a spinner and no way to tell them why.
+ */
+export const MONERIZ_TIMEOUT_MS = 8000;
+
+/**
+ * Whether a failure PROVES that no session was created.
+ *
+ * Moneriz's guide insists on this distinction, and it decides what we do
+ * with the Order. A validation refusal — a 4xx naming its own `error.code` —
+ * created nothing, so the Order can be failed at once. A timeout, a network
+ * error, a 5xx or a reply we could not read leave the outcome UNKNOWN: a
+ * session may exist and be paid minutes later, so the Order must stay
+ * payable rather than be declared dead under a customer who is paying.
+ */
+export function isMonerizCertainRefusal(e: unknown): boolean {
+  return e instanceof MonerizApiError && e.code !== null && e.status >= 400 && e.status < 500;
+}
+
+/**
  * A PAYMENT's lifecycle. `reversed` is a refund or a chargeback.
  *
  * Not to be confused with the SESSION's own status below: they are two
@@ -349,6 +370,8 @@ export async function monerizCheckout(input: MonerizCheckoutInput): Promise<Mone
       },
       metadata: { orderId: input.reference, ...(input.metadata ?? {}) },
     }),
+    cache: 'no-store',
+    signal: AbortSignal.timeout(MONERIZ_TIMEOUT_MS),
   });
 
   const data: unknown = await res.json().catch(() => null);
@@ -445,6 +468,8 @@ export async function monerizVerifySession(sessionId: string): Promise<MonerizSe
   const res = await fetch(`${cfg.baseUrl}/checkout-sessions/${encodeURIComponent(sessionId)}`, {
     method: 'GET',
     headers: { Authorization: `Bearer ${cfg.secretKey}` },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(MONERIZ_TIMEOUT_MS),
   });
 
   const data: unknown = await res.json().catch(() => null);
