@@ -154,6 +154,15 @@ describe('monerizCheckout', () => {
     expect(sent.metadata).toMatchObject({ orderId: 'order-1' });
   });
 
+  it('sends no customer block, which a checkout session refuses', async () => {
+    fetchMock.mockResolvedValueOnce(
+      reply({ id: 'cs_1', embedUrl: 'https://m/integrer/cs_1' }, 201),
+    );
+    await monerizCheckout(input);
+    const sent = JSON.parse(fetchMock.mock.calls[0]?.[1].body as string) as Record<string, unknown>;
+    expect(sent).not.toHaveProperty('customer');
+  });
+
   it('omits the country when it is not one Moneriz covers', async () => {
     fetchMock.mockResolvedValueOnce(
       reply({ id: 'cs_1', embedUrl: 'https://m/integrer/cs_1' }, 201),

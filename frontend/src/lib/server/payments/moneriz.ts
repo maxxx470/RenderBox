@@ -354,11 +354,11 @@ export async function monerizCheckout(input: MonerizCheckoutInput): Promise<Mone
       ...(input.country ? { country: input.country } : {}),
       ...(input.integrationMode ? { integrationMode: input.integrationMode } : {}),
       ...(input.embedOrigin ? { embedOrigin: input.embedOrigin } : {}),
-      customer: {
-        email: input.email,
-        ...(input.name ? { name: input.name } : {}),
-        ...(input.phone ? { phone: input.phone } : {}),
-      },
+      // No `customer`: the body is strict and a checkout session refuses it
+      // with 400 VALIDATION_ERROR (« Unrecognized key(s) in object:
+      // 'customer' », seen 2026-11-03). Moneriz's guide: « Les coordonnées,
+      // OTP et moyen de paiement sont collectés au checkout, pas dans cette
+      // requête. »
       metadata: { orderId: input.reference, ...(input.metadata ?? {}) },
     }),
   });
