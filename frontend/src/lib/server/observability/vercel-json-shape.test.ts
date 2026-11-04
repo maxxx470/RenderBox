@@ -115,4 +115,26 @@ describe('vercel.json schema (CRON-07, D-20)', () => {
       ).toBe(true);
     }
   });
+  it('every cron declared in vercel.json answers GET, not only POST', () => {
+    // Vercel Cron invokes its schedules with GET. A route that exports
+    // POST alone answers 405 to every scheduled call and the job never
+    // runs -- silently, because nothing on our side errors. That is
+    // exactly what happened to /api/cron/reengagement, declared on
+    // 2026-10-31 and 405ing every day until 2026-11-04: not one relance
+    // was ever considered. Checked against vercel.json rather than a
+    // hard-coded list, so a cron added later is covered the day it is
+    // declared. The sub-daily routes are deliberately out of scope --
+    // they are driven by an external scheduler that POSTs them.
+    const cfg = JSON.parse(readFileSync(VERCEL_JSON, 'utf8')) as VercelConfig;
+    for (const c of cfg.crons ?? []) {
+      const name = c.path.replace('/api/cron/', '');
+      const src = readFileSync(resolve(APP_API_CRON, name, 'route.ts'), 'utf8');
+      const answersGet =
+        /export\s+const\s+GET\s*=/.test(src) || /export\s+async\s+function\s+GET\s*\(/.test(src);
+      expect(
+        answersGet,
+        `${c.path} is scheduled by Vercel (which sends GET) but its route exports no GET -- every scheduled call will 405 and the job will never run`,
+      ).toBe(true);
+    }
+  });
 });

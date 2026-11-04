@@ -55,7 +55,7 @@ function fakePrisma(
 function user(over: Partial<FakeUser> = {}): FakeUser {
   return {
     id: 'u1',
-    email: 'awa@example.com',
+    email: 'awa@gmail.com',
     name: 'Awa Diop',
     country: 'SN',
     createdAt: new Date(NOW.getTime() - 2 * DAY),
@@ -88,7 +88,7 @@ describe('one pass of the relance sender', () => {
     expect(result.sent).toBe(1);
     expect(created).toHaveLength(1);
     expect(created[0]!.kind).toBe('prospect_day1');
-    expect(sent[0]!.to).toBe('awa@example.com');
+    expect(sent[0]!.to).toBe('awa@gmail.com');
     // Senegal reads French.
     expect(sent[0]!.html).toContain('Bonjour Awa');
   });
@@ -162,9 +162,39 @@ describe('one pass of the relance sender', () => {
     expect(where.deletedAt).toBeNull();
   });
 
+  it('sends nothing to an address that cannot receive mail, and writes no row', async () => {
+    // The production base holds five such accounts (@localhost,
+    // @example.com), all ACTIVE and none unsubscribed, so they pass the
+    // query's filters. Sending to them would be five hard bounces on the
+    // first pass, from the same domain the sign-in codes leave from.
+    const seeds = [
+      user({ id: 's1', email: 'dev-bypass@localhost' }),
+      user({ id: 's2', email: 'admin@example.com' }),
+      user({ id: 's3', email: 'unverified@example.com' }),
+    ];
+    const { prisma } = fakePrisma([...seeds, user({ id: 'real', email: 'awa@gmail.com' })]);
+    const { mailer, sent } = fakeMailer();
+
+    const result = await runReengagement({ prisma, mailer, secret: SECRET, now: NOW });
+
+    expect(sent.map((m) => m.to)).toEqual(['awa@gmail.com']);
+    expect(result.sent).toBe(1);
+    expect(result.undeliverable).toBe(3);
+    // `looked` counts who could actually be written to, not who the
+    // query returned — otherwise the cron log overstates the reach.
+    expect(result.looked).toBe(1);
+    // No row for a dropped account: the relance stays owed, not burnt.
+    const created = (
+      prisma.reengagementEmail.create as unknown as {
+        mock: { calls: [{ data: { userId: string } }][] };
+      }
+    ).mock.calls.map((c) => c[0].data.userId);
+    expect(created).toEqual(['real']);
+  });
+
   it('stops at the send limit, so a cold start cannot blast the list', async () => {
     const many = Array.from({ length: 10 }, (_, i) =>
-      user({ id: `u${i}`, email: `u${i}@example.com` }),
+      user({ id: `u${i}`, email: `u${i}@gmail.com` }),
     );
     const { prisma } = fakePrisma(many);
     const { mailer, sent } = fakeMailer();

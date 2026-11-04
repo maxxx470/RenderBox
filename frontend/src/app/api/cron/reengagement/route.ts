@@ -78,3 +78,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   });
 }
+
+// Vercel Cron sends GET, not POST — without this alias the scheduled
+// invocation answers 405 and the pass never runs. It is exactly what
+// happened here: the relance cron was declared in vercel.json on
+// 2026-10-31 and fired every day at 09:10 into a 405 until 2026-11-04,
+// so not one relance was ever considered. The three older daily crons
+// carried the alias; this one was written without it and nothing failed
+// loudly, because a cron that 405s is silent on our side.
+// vercel-json-shape.test.ts now asserts the alias on every declared cron.
+export const GET = POST;

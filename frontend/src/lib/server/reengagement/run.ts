@@ -30,6 +30,7 @@ import {
   type SentRelance,
 } from './schedule';
 import { unsubscribeUrl } from './unsubscribe-token';
+import { isDeliverableAddress } from './deliverable';
 
 const log = createLogger();
 
@@ -53,6 +54,12 @@ export interface RunReengagementResult {
   sent: number;
   failed: number;
   byKind: Record<string, number>;
+  /**
+   * Accounts dropped because their address cannot receive mail at all.
+   * Reported so the cron log says it out loud rather than the pass
+   * quietly looking at fewer people than the base holds.
+   */
+  undeliverable?: number;
 }
 
 /** The cheapest render the command bar offers, in credits. */
@@ -87,10 +94,22 @@ export async function runReengagement(input: RunReengagementInput): Promise<RunR
     take: CANDIDATE_LIMIT,
   });
 
-  result.looked = candidates.length;
-  if (candidates.length === 0) return result;
+  // An address that cannot receive mail is dropped BEFORE anything else,
+  // and no row is written for it, so it stays merely owed rather than
+  // burnt. The query above cannot catch these: the five seed accounts in
+  // production (@localhost, @example.com) are ACTIVE, not unsubscribed
+  // and not bounced, so they passed every filter — and would have been
+  // five hard bounces out of nineteen on the very first send, from the
+  // same domain the sign-in codes leave from. `emailBouncedAt` is set by
+  // nothing yet, so the guard has to be here, on the way out.
+  const reachable = candidates.filter((u) => isDeliverableAddress(u.email));
+  const undeliverable = candidates.length - reachable.length;
+  if (undeliverable > 0) result.undeliverable = undeliverable;
 
-  const ids = candidates.map((u) => u.id);
+  result.looked = reachable.length;
+  if (reachable.length === 0) return result;
+
+  const ids = reachable.map((u) => u.id);
 
   // Who has ever paid — the owner's stop rule.
   const paidRows = await prisma.order.groupBy({
@@ -114,7 +133,7 @@ export async function runReengagement(input: RunReengagementInput): Promise<RunR
   }
 
   // The last render, needed only for subscribers whose plan is running.
-  const activeIds = candidates
+  const activeIds = reachable
     .filter(
       (u) => u.tierPeriodStart && u.tierPeriodStart.getTime() + TIER_PERIOD_MS > now.getTime(),
     )
@@ -147,7 +166,7 @@ export async function runReengagement(input: RunReengagementInput): Promise<RunR
 
   const cheapest = cheapestRenderCost();
 
-  for (const user of candidates) {
+  for (const user of reachable) {
     if (result.sent >= sendLimit) break;
 
     const facts: ReengagementFacts = {
