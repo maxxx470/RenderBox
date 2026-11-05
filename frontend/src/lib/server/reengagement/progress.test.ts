@@ -4,6 +4,7 @@
 // pickReengagement will not send.
 import { describe, it, expect } from 'vitest';
 import {
+  REENGAGEMENT_BACKFILL_BEFORE,
   reengagementProgress,
   pickReengagement,
   PROSPECT_STEPS,
@@ -81,24 +82,30 @@ describe('reengagementProgress — a prospect', () => {
   // THE ONE THAT MATTERS. pickReengagement sends the LAST due step alone to
   // an account that was already old on the first pass, then stops for ever.
   // « 0 / 4 » would be a promise of three relances that never come.
+  // These describe the ORDINARY rule, so the account is created after
+  // REENGAGEMENT_BACKFILL_BEFORE and the clock moved past it. An older
+  // account is in the one-off catch-up cohort, counted out of four.
+  const AFTER_CUTOFF = new Date(REENGAGEMENT_BACKFILL_BEFORE.getTime() + DAY);
+  const LATER = new Date(AFTER_CUTOFF.getTime() + 40 * DAY);
+
   it('an account already past the last step is owed ONE, so 0 / 1', () => {
-    const f = facts({ createdAt: new Date(NOW.getTime() - 40 * DAY) });
-    const p = reengagementProgress(f, NOW);
+    const f = facts({ createdAt: AFTER_CUTOFF });
+    const p = reengagementProgress(f, LATER);
     expect(p.sent).toBe(0);
     expect(p.total).toBe(1);
     // And the sender agrees: exactly one relance is due, the last call.
-    expect(pickReengagement(f, NOW, 'u1')?.kind).toBe('prospect_day18');
+    expect(pickReengagement(f, LATER, 'u1')?.kind).toBe('prospect_day18');
   });
 
   it('and once that one is sent it reads 1 / 1, with nothing more due', () => {
     const f = facts({
-      createdAt: new Date(NOW.getTime() - 40 * DAY),
-      sent: [sent('prospect_day18', 4)],
+      createdAt: AFTER_CUTOFF,
+      sent: [{ kind: 'prospect_day18' as const, sentAt: new Date(LATER.getTime() - 4 * DAY) }],
     });
-    const p = reengagementProgress(f, NOW);
+    const p = reengagementProgress(f, LATER);
     expect(p.sent).toBe(1);
     expect(p.total).toBe(1);
-    expect(pickReengagement(f, NOW, 'u1')).toBeNull();
+    expect(pickReengagement(f, LATER, 'u1')).toBeNull();
   });
 
   // The invariant behind all of the above, walked over every age.

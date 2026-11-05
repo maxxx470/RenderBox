@@ -64,6 +64,33 @@ export const PROSPECT_STEPS: readonly { kind: ReengagementKind; afterDays: numbe
   { kind: 'prospect_day10', afterDays: 10 },
   { kind: 'prospect_day18', afterDays: 18 },
 ];
+/**
+ * The one-off catch-up cohort (2026-11-05).
+ *
+ * Every account created BEFORE this instant receives the four prospect
+ * relances in order, whatever its age; everyone who signs up after it
+ * follows the ordinary schedule, where an account already old on its
+ * first pass gets the last call alone.
+ *
+ * Why this date and not the day the feature shipped (2026-10-31): the
+ * cron answered 405 to every scheduled call until 2026-11-05, so not one
+ * relance had ever actually left. Every account on the base at this
+ * moment is therefore « someone who was there before the relances
+ * existed », which is exactly the cohort the owner asked to reach.
+ *
+ * It is a constant, not an env var: it decides who receives e-mail, and
+ * that belongs in a commit someone can read, not in a dashboard field.
+ * Moving it later would re-open the sequence for accounts that already
+ * finished it — the `already.has(step.kind)` check is what stops a second
+ * copy, so a change here is safe but never silent.
+ */
+export const REENGAGEMENT_BACKFILL_BEFORE = new Date('2026-11-05T00:00:00.000Z');
+
+/** Is this account part of that one-off catch-up? */
+export function isBackfillCohort(createdAt: Date): boolean {
+  return createdAt.getTime() < REENGAGEMENT_BACKFILL_BEFORE.getTime();
+}
+
 /** A subscriber who has rendered nothing for this long. */
 export const IDLE_AFTER_MS = 14 * DAY_MS;
 /** After the paid period ended. */
@@ -213,6 +240,30 @@ export function pickReengagement(
 
   // ── A prospect: four relances, then silence for ever. ────────────────
   const ageMs = nowMs - facts.createdAt.getTime();
+
+  // The accounts that were already signed up before the first relance ever
+  // left get the WHOLE sequence, from day 1, however old they are (owner,
+  // 2026-11-05: « peu importe la durée de l'utilisateur sur le SaaS, il
+  // devra forcément avoir les 4 relances, sans exception … je veux pouvoir
+  // faire revenir ceux qui étaient déjà inscrits avant qu'on intègre cette
+  // fonction-là »).
+  //
+  // They are a one-off cohort, not a rule change: anyone signing up after
+  // the cutoff follows the normal schedule below. The whole difference is
+  // the DIRECTION this loop walks.
+  if (isBackfillCohort(facts.createdAt)) {
+    // Forward: the first step they have not had yet. Every threshold is
+    // long past for these accounts, so the pace is set by MIN_GAP_MS
+    // alone — one relance every three days, the four spread over nine,
+    // which is close to the natural cadence and never a burst.
+    for (const step of PROSPECT_STEPS) {
+      if (ageMs < step.afterDays * DAY_MS) break;
+      if (already.has(step.kind)) continue;
+      return { kind: step.kind, dedupeKey: `${userId}:${step.kind}` };
+    }
+    return null;
+  }
+
   // Walk from the last step back: an account that was already old when this
   // feature shipped gets the LAST-CALL e-mail alone, not four in twelve days.
   for (let i = PROSPECT_STEPS.length - 1; i >= 0; i--) {
@@ -350,6 +401,17 @@ export function reengagementProgress(facts: ReengagementFacts, now: Date): Reeng
 
   // A prospect: the four steps, of which it may only ever see the latest due.
   const already = sentKinds(facts);
+
+  // Unless it is in the catch-up cohort, which receives all four in order
+  // however old it is. Counting it with stepProgress would print « 1 / 1 »
+  // for a 30-day-old account and hide the three relances still coming —
+  // the exact lie the denominator rule exists to prevent, in the other
+  // direction.
+  if (isBackfillCohort(facts.createdAt)) {
+    const sent = PROSPECT_STEPS.filter((step) => already.has(step.kind)).length;
+    return { ...base, stage: 'prospect', sent, total: PROSPECT_STEPS.length };
+  }
+
   const { sent, total } = stepProgress(
     PROSPECT_STEPS,
     (kind) => already.has(kind),

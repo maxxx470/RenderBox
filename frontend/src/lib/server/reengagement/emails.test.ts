@@ -108,9 +108,27 @@ describe('a prospect is never told to launch a render they cannot pay for', () =
     });
   }
 
-  it('and the last call says plainly that a plan is needed', () => {
-    expect(mail('prospect_day18', 'fr').text).toContain('formule');
-    expect(mail('prospect_day18', 'en').text.toLowerCase()).toContain('plan');
+  // Reversed on 2026-11-05 (owner: « s'il y a des textes qui font penser
+  // a une promotion et tout, j'aimerais que tu les supprimes », taking the
+  // Wispr Flow announcement in their own inbox as the model -- product
+  // copy, no selling). The last call used to name the plan plainly and
+  // link to the pricing page; it now points at the public example pages,
+  // which need no account. The half of the rule that matters is untouched
+  // and sits just above: no relance may promise a render the reader
+  // cannot run.
+  it('and no prospect relance sells a plan or links to pricing', () => {
+    for (const kind of PROSPECT) {
+      for (const locale of ['fr', 'en'] as const) {
+        const m = mail(kind, locale);
+        const body = `${m.subject} ${m.text}`.toLowerCase();
+        // « plan » alone is not forbidden: « un plan 2D » is what these
+        // e-mails are about.
+        for (const word of ['formule', 'tarif', 'pricing', 'abonnement', 'subscription']) {
+          expect(body, `${kind}/${locale} says « ${word} »`).not.toContain(word);
+        }
+        expect(m.html, `${kind}/${locale} links to pricing`).not.toContain('tarifs');
+      }
+    }
   });
 });
 
@@ -169,15 +187,23 @@ describe('the links point at the live site in the reader’s language', () => {
   }
 });
 
-describe('the emoji the owner asked for are there', () => {
-  it('every relance carries at least one', () => {
-    for (const kind of REENGAGEMENT_KINDS) {
-      for (const locale of ['fr', 'en'] as const) {
+describe('no emoji anywhere, subject or body', () => {
+  // The owner validated emoji in the body on 2026-10-31 and this block
+  // asserted they were present. They removed them on 2026-11-05, taking
+  // the Wispr Flow announcement in their own inbox as the model: product
+  // copy, no decoration, and not one emoji in it. The assertion is
+  // inverted rather than deleted so the reversal is on the record.
+  for (const kind of REENGAGEMENT_KINDS) {
+    for (const locale of ['fr', 'en'] as const) {
+      it(`${kind}/${locale}`, () => {
         const m = mail(kind, locale);
-        expect(/\p{Extended_Pictographic}/u.test(`${m.subject}${m.text}`), kind).toBe(true);
-      }
+        const scan = `${m.subject} ${m.text}`;
+        // The arrow in a CTA label is punctuation, not an emoji.
+        const found = [...scan].filter((ch) => /\p{Extended_Pictographic}/u.test(ch) && ch !== '→');
+        expect(found, `${kind}/${locale} still carries ${found.join('')}`).toEqual([]);
+      });
     }
-  });
+  }
 });
 
 describe('the shape of the e-mail', () => {

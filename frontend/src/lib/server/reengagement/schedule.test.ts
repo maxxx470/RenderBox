@@ -6,8 +6,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   pickReengagement,
+  reengagementProgress,
+  REENGAGEMENT_BACKFILL_BEFORE,
   TIER_PERIOD_MS,
   type ReengagementFacts,
+  type ReengagementKind,
   type SentRelance,
 } from './schedule';
 
@@ -65,17 +68,25 @@ describe('a prospect gets four relances, then silence for ever', () => {
     }
   });
 
+  // These two describe the ORDINARY rule, so their accounts are created
+  // after REENGAGEMENT_BACKFILL_BEFORE. An account older than that cutoff
+  // is in the one-off catch-up cohort and walks the four steps forward
+  // instead — its own tests are at the bottom of this file.
+  const AFTER_CUTOFF = new Date(REENGAGEMENT_BACKFILL_BEFORE.getTime() + DAY);
+  const laterThan = (days: number) => new Date(AFTER_CUTOFF.getTime() + days * DAY);
+
   it('after the fourth, nothing — not on day 19, not on day 400', () => {
-    const history = [sent('prospect_day18', daysAgo(5))];
-    expect(pickReengagement(facts({ createdAt: daysAgo(23), sent: history }), NOW, U)).toBeNull();
-    const old = new Date(NOW.getTime() + 400 * DAY);
-    expect(pickReengagement(facts({ createdAt: daysAgo(23), sent: history }), old, U)).toBeNull();
+    const now = laterThan(23);
+    const history = [sent('prospect_day18', new Date(now.getTime() - 5 * DAY))];
+    expect(pickReengagement(facts({ createdAt: AFTER_CUTOFF, sent: history }), now, U)).toBeNull();
+    const old = new Date(now.getTime() + 400 * DAY);
+    expect(pickReengagement(facts({ createdAt: AFTER_CUTOFF, sent: history }), old, U)).toBeNull();
   });
 
   it('an account already old on the first pass gets the LAST CALL alone', () => {
     // Nobody receives four e-mails in twelve days because the feature
     // shipped after they signed up.
-    const pick = pickReengagement(facts({ createdAt: daysAgo(40) }), NOW, U);
+    const pick = pickReengagement(facts({ createdAt: AFTER_CUTOFF }), laterThan(40), U);
     expect(pick?.kind).toBe('prospect_day18');
   });
 
@@ -293,5 +304,74 @@ describe('the dedupe key', () => {
       U,
     );
     expect(pick?.dedupeKey).toContain('2026-09-22');
+  });
+});
+
+describe('the one-off catch-up cohort (2026-11-05)', () => {
+  // The owner's rule: everyone already signed up before the first relance
+  // ever left receives all four, in order, however old the account is.
+  // Anyone who signs up after the cutoff keeps the ordinary schedule.
+  const before = new Date(REENGAGEMENT_BACKFILL_BEFORE.getTime() - 60 * DAY);
+  const after = new Date(REENGAGEMENT_BACKFILL_BEFORE.getTime() + DAY);
+  const later = new Date(REENGAGEMENT_BACKFILL_BEFORE.getTime() + 90 * DAY);
+
+  it('walks an old account through all four, in order', () => {
+    const sent: { kind: ReengagementKind; sentAt: Date }[] = [];
+    const seen: ReengagementKind[] = [];
+    let now = new Date(REENGAGEMENT_BACKFILL_BEFORE.getTime() + DAY);
+
+    for (let pass = 0; pass < 40; pass++) {
+      const pick = pickReengagement(facts({ createdAt: before, sent: [...sent] }), now, 'u1');
+      if (pick) {
+        seen.push(pick.kind);
+        sent.push({ kind: pick.kind, sentAt: now });
+      }
+      now = new Date(now.getTime() + DAY);
+    }
+
+    expect(seen).toEqual(['prospect_day1', 'prospect_day4', 'prospect_day10', 'prospect_day18']);
+  });
+
+  it('never sends two inside the 72 h gap, so the four are not a burst', () => {
+    const sent = [{ kind: 'prospect_day1' as ReengagementKind, sentAt: new Date(after) }];
+    const pick = pickReengagement(
+      facts({ createdAt: before, sent }),
+      new Date(after.getTime() + DAY),
+      'u1',
+    );
+    expect(pick).toBeNull();
+  });
+
+  it('leaves an account created after the cutoff on the ordinary rule', () => {
+    // Old enough that every step is due: the normal schedule gives it the
+    // last call ALONE, and nothing before it.
+    const pick = pickReengagement(facts({ createdAt: after, sent: [] }), later, 'u2');
+    expect(pick?.kind).toBe('prospect_day18');
+  });
+
+  it('counts the cohort out of four, not out of one', () => {
+    // stepProgress would print « 0 / 1 » for a 60-day-old account and hide
+    // the three relances still coming.
+    const p = reengagementProgress(facts({ createdAt: before, sent: [] }), later);
+    expect(p.total).toBe(4);
+    expect(p.sent).toBe(0);
+  });
+
+  it('still stops dead on the first payment', () => {
+    const pick = pickReengagement(
+      facts({ createdAt: before, hasPaid: true, sent: [] }),
+      later,
+      'u1',
+    );
+    expect(pick).toBeNull();
+  });
+
+  it('still obeys an unsubscribe', () => {
+    const pick = pickReengagement(
+      facts({ createdAt: before, marketingUnsubscribedAt: new Date(before), sent: [] }),
+      later,
+      'u1',
+    );
+    expect(pick).toBeNull();
   });
 });

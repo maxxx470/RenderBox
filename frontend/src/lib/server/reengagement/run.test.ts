@@ -4,6 +4,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PrismaClient } from '@prisma/client';
 import { runReengagement } from './run';
+import { REENGAGEMENT_BACKFILL_BEFORE } from './schedule';
 
 const SECRET = 'a-secret-long-enough-to-be-a-jwt-secret-0123456789';
 const NOW = new Date('2026-11-01T09:00:00.000Z');
@@ -259,12 +260,17 @@ describe('one pass of the relance sender', () => {
   });
 
   it('says nothing to an account that already had its last call', async () => {
-    const { prisma } = fakePrisma([user({ createdAt: new Date(NOW.getTime() - 40 * DAY) })], {
+    // Created after REENGAGEMENT_BACKFILL_BEFORE, so this is the ordinary
+    // rule: the last call alone, then silence. An older account is in the
+    // one-off catch-up cohort and would still be owed the first three.
+    const after = new Date(REENGAGEMENT_BACKFILL_BEFORE.getTime() + DAY);
+    const later = new Date(after.getTime() + 40 * DAY);
+    const { prisma } = fakePrisma([user({ createdAt: after })], {
       alreadySent: [{ userId: 'u1', kind: 'prospect_day18' }],
     });
     const { mailer, sent } = fakeMailer();
 
-    const result = await runReengagement({ prisma, mailer, secret: SECRET, now: NOW });
+    const result = await runReengagement({ prisma, mailer, secret: SECRET, now: later });
 
     expect(result.sent).toBe(0);
     expect(sent).toHaveLength(0);
