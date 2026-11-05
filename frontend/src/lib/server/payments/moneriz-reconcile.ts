@@ -38,9 +38,13 @@
  */
 import 'server-only';
 import type { Order, PrismaClient } from '@prisma/client';
-import { getOrderMetadataTier } from '@/lib/pricing-tiers';
+import { getOrderMetadataTier, getPricingTier, type PricingTierId } from '@/lib/pricing-tiers';
 import { MONERIZ_FEE_RATE } from '@/lib/provider-cost';
 import { activateTier } from '@/lib/server/generation/tier-quota';
+import { readStockBalance } from '@/lib/server/admin/kie-stock';
+import { saleStockAlert, notifyAdminsOfSaleStock } from '@/lib/server/admin/stock-alert';
+import { getKieBalance, isKieConfigured } from '@/lib/server/generation/engines/kie';
+import { log } from '@/lib/server/observability/log';
 import { monerizKeyMode, monerizVerifySession, type MonerizSessionResult } from './moneriz';
 
 export interface MonerizReconcileResult {
@@ -208,8 +212,65 @@ export async function reconcileMonerizOrder(
     // Only the caller that actually won the CAS reaches here — the loser
     // (updated.count === 0) never double-activates the tier.
     const tier = getOrderMetadataTier(order.metadata);
-    if (tier) await activateTier(prisma, order.userId, tier);
+    if (tier) {
+      await activateTier(prisma, order.userId, tier);
+      // Then, and only then, look at whether the stock can cover what was
+      // just sold. This can NEVER fail the payment: the customer is paid
+      // up and credited by the line above, and an alert that throws would
+      // turn a successful sale into a 500. Hence the catch that swallows
+      // everything, and why it runs after the activation rather than
+      // around it.
+      await alertAdminsIfStockShort(prisma, order.id, tier).catch((err: unknown) => {
+        log.error('stock alert failed after a sale, payment unaffected', {
+          orderId: order.id,
+          err: String(err),
+        });
+      });
+    }
   }
 
   return { changed: won, status: won ? decision.status : order.status };
+}
+
+/**
+ * Warn the admins when a sale leaves the Kie stock short (2026-11-05).
+ *
+ * Read-only on Kie, and deliberately best-effort: a sale is never held
+ * back and never fails because this could not run. The circulation is
+ * read AFTER the activation, so the credits just sold are counted — the
+ * question being « can the stock cover what the accounts now hold », not
+ * what they held a second ago.
+ */
+async function alertAdminsIfStockShort(
+  prisma: PrismaClient,
+  orderId: string,
+  tier: PricingTierId,
+): Promise<void> {
+  const pricing = getPricingTier(tier);
+  if (!pricing) return;
+
+  const stock = await readStockBalance(isKieConfigured(), () => getKieBalance());
+  if (stock.kind !== 'known') return;
+
+  const agg = await prisma.user.aggregate({
+    _sum: { creditsBalance: true },
+    where: { deletedAt: null },
+  });
+
+  const alert = saleStockAlert({
+    stock,
+    circulation: agg._sum.creditsBalance ?? 0,
+    soldCredits: pricing.creditsPerMonth,
+  });
+  if (!alert) return;
+
+  const sent = await notifyAdminsOfSaleStock(prisma, orderId, alert);
+  log.warn('kie stock short after a sale', {
+    orderId,
+    level: alert.level,
+    balance: alert.balance,
+    circulation: alert.circulation,
+    missing: alert.missing,
+    adminsNotified: sent,
+  });
 }

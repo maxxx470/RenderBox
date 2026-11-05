@@ -184,6 +184,21 @@ describe('reconcileMonerizOrder', () => {
     expect(mockActivate).toHaveBeenCalledWith(prismaMock, 'user-1', 'standard');
   });
 
+  it('a broken stock alert never costs the customer their plan', async () => {
+    // The alert reads Kie and writes notifications AFTER the activation.
+    // If any of that throws -- Kie down, a notification insert failing --
+    // the sale must still stand: the customer has paid and been credited,
+    // and turning that into a 500 would be the worst outcome of all.
+    mockVerify.mockResolvedValueOnce(session());
+    const boom = new Error('kie is down');
+    prismaMock.user.aggregate.mockRejectedValueOnce(boom);
+
+    const res = await reconcileMonerizOrder(prismaMock, { ...ORDER });
+
+    expect(res).toMatchObject({ changed: true, status: 'PAID' });
+    expect(mockActivate).toHaveBeenCalledTimes(1);
+  });
+
   it('the loser of the race never double-activates', async () => {
     // Two callers (the webhook and the return page) on the same session: the
     // second UPDATE matches zero rows.
