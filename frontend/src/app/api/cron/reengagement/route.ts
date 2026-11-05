@@ -8,7 +8,7 @@ import { verifyCronSecret } from '@/lib/server/cron/auth';
 import { prisma } from '@/lib/server/prisma';
 import { createMailer } from '@/lib/server/email';
 import { createLogger } from '@/lib/server/logger';
-import { runReengagement } from '@/lib/server/reengagement/run';
+import { runReengagement, SEND_LIMIT } from '@/lib/server/reengagement/run';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const log = createLogger();
@@ -64,11 +64,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    // Two operator controls, both behind the CRON_SECRET this route
+    // already demands, so only Vercel's scheduler and the owner can use
+    // them (2026-11-05).
+    //
+    // `dryRun=1` decides everything and sends nothing — the only way to
+    // rehearse the FIRST pass, whose blast radius is real people.
+    // `limit=N` caps the sends, so that first pass can be a canary of one
+    // before the whole list goes. Neither is a backdoor: without the
+    // secret this route answers 401 before reading a single parameter,
+    // and the switch and the mailer checks above still apply.
+    const params = req.nextUrl.searchParams;
+    const dryRun = ['1', 'true'].includes((params.get('dryRun') ?? '').toLowerCase());
+    const rawLimit = Number(params.get('limit'));
+    const sendLimit =
+      Number.isInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, SEND_LIMIT) : SEND_LIMIT;
+
     const result = await runReengagement({
       prisma,
       mailer: createMailer({ RESEND_API_KEY: key, EMAIL_FROM: from }),
       secret,
       requestId: ctx.requestId,
+      sendLimit,
+      ...(dryRun ? { dryRun: true } : {}),
     });
 
     log.info('reengagement tick', { ...result, requestId: ctx.requestId });

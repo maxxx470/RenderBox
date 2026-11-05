@@ -193,6 +193,52 @@ describe('one pass of the relance sender', () => {
     expect(created).toEqual(['real']);
   });
 
+  it('a dry run decides everything, sends nothing and writes nothing', async () => {
+    // The only way to rehearse the FIRST pass: its blast radius is real
+    // people, so « who would get what » has to be answerable without
+    // spending anyone's place in the sequence.
+    const many = Array.from({ length: 4 }, (_, i) =>
+      user({ id: `u${i}`, email: `u${i}@gmail.com` }),
+    );
+    const { prisma } = fakePrisma(many);
+    const { mailer, sent } = fakeMailer();
+
+    const result = await runReengagement({
+      prisma,
+      mailer,
+      secret: SECRET,
+      now: NOW,
+      dryRun: true,
+    });
+
+    expect(sent).toHaveLength(0);
+    expect(result.sent).toBe(0);
+    expect(result.wouldSend?.total).toBe(4);
+    expect(
+      (prisma.reengagementEmail.create as unknown as { mock: { calls: unknown[] } }).mock.calls,
+    ).toHaveLength(0);
+  });
+
+  it('a dry run obeys the same ceiling, so it cannot overpromise', async () => {
+    const many = Array.from({ length: 10 }, (_, i) =>
+      user({ id: `u${i}`, email: `u${i}@gmail.com` }),
+    );
+    const { prisma } = fakePrisma(many);
+    const { mailer, sent } = fakeMailer();
+
+    const result = await runReengagement({
+      prisma,
+      mailer,
+      secret: SECRET,
+      now: NOW,
+      sendLimit: 3,
+      dryRun: true,
+    });
+
+    expect(result.wouldSend?.total).toBe(3);
+    expect(sent).toHaveLength(0);
+  });
+
   it('stops at the send limit, so a cold start cannot blast the list', async () => {
     const many = Array.from({ length: 10 }, (_, i) =>
       user({ id: `u${i}`, email: `u${i}@gmail.com` }),

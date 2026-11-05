@@ -47,6 +47,19 @@ export interface RunReengagementInput {
   now?: Date;
   sendLimit?: number;
   requestId?: string;
+  /**
+   * Decide everything, send nothing, write nothing (2026-11-05).
+   *
+   * The first real pass cannot be rehearsed any other way: the only
+   * honest question before switching the relances on is « who exactly
+   * would receive what, right now, from the server's own point of view »,
+   * and a unit test cannot answer it because the answer depends on the
+   * production base. With this on, the pass walks the same candidates
+   * through the same `pickReengagement` and fills `wouldSend`, but no
+   * `ReengagementEmail` row is created and `mailer.send` is never called
+   * — so nobody's place in the sequence is spent and no mail can escape.
+   */
+  dryRun?: boolean;
 }
 
 export interface RunReengagementResult {
@@ -60,6 +73,11 @@ export interface RunReengagementResult {
    * quietly looking at fewer people than the base holds.
    */
   undeliverable?: number;
+  /**
+   * Set only on a dry run: what the pass WOULD have sent, per relance,
+   * and to how many people in total. `sent` stays 0, because nothing was.
+   */
+  wouldSend?: { total: number; byKind: Record<string, number> };
 }
 
 /** The cheapest render the command bar offers, in credits. */
@@ -166,7 +184,10 @@ export async function runReengagement(input: RunReengagementInput): Promise<RunR
   const cheapest = cheapestRenderCost();
 
   for (const user of reachable) {
-    if (result.sent >= sendLimit) break;
+    // A dry run counts against the SAME ceiling, so its prediction cannot
+    // promise more than the real pass would actually send.
+    const done = input.dryRun ? (result.wouldSend?.total ?? 0) : result.sent;
+    if (done >= sendLimit) break;
 
     const facts: ReengagementFacts = {
       createdAt: user.createdAt,
@@ -185,6 +206,15 @@ export async function runReengagement(input: RunReengagementInput): Promise<RunR
 
     const pick = pickReengagement(facts, now, user.id);
     if (!pick) continue;
+
+    // A dry run stops here, BEFORE the reservation and before the send:
+    // it reports the decision and leaves the account exactly as it was.
+    if (input.dryRun) {
+      const would = (result.wouldSend ??= { total: 0, byKind: {} });
+      would.total++;
+      would.byKind[pick.kind] = (would.byKind[pick.kind] ?? 0) + 1;
+      continue;
+    }
 
     // Reserve it first: the unique dedupeKey is what makes this at-most-once.
     try {
