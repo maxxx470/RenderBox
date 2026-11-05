@@ -163,10 +163,11 @@ describe('one pass of the relance sender', () => {
   });
 
   it('sends nothing to an address that cannot receive mail, and writes no row', async () => {
-    // The production base holds five such accounts (@localhost,
-    // @example.com), all ACTIVE and none unsubscribed, so they pass the
-    // query's filters. Sending to them would be five hard bounces on the
-    // first pass, from the same domain the sign-in codes leave from.
+    // Shapes taken from the five seed accounts in production. Those five
+    // are soft-deleted, so the query already excludes them -- this pins
+    // the case the query does NOT cover: an undeliverable address on a
+    // live account. The sign-in codes leave from the same domain as the
+    // relances, so one bounce is not a cosmetic problem.
     const seeds = [
       user({ id: 's1', email: 'dev-bypass@localhost' }),
       user({ id: 's2', email: 'admin@example.com' }),

@@ -1,21 +1,27 @@
 // Addresses a relance must never be sent to, because they cannot receive
 // mail at all (2026-11-04).
 //
-// Why this exists. The production base holds five seed accounts —
-// dev-bypass@localhost, demo@localhost, admin@example.com,
-// user@example.com, unverified@example.com — and the candidate query in
-// run.ts filters on unsubscribed / bounced / ACTIVE / deleted, which none
-// of them is. So the first pass would have sent five relances into
-// domains that are reserved, by standard, to never accept mail: five hard
-// bounces out of nineteen addresses, on the very first send from a domain
-// with no sending history.
+// Why this exists. Belt and braces, NOT a rescue: the candidate query
+// in run.ts already filters on `deletedAt: null`, and the five seed
+// accounts in production (dev-bypass@localhost, demo@localhost,
+// admin@example.com, user@example.com, unverified@example.com) all
+// carry a `deletedAt` from October, so they were never candidates. A
+// dry run against the real base reports `undeliverable: 0`.
 //
-// That is the one failure this feature cannot afford. The sign-in codes
-// leave from the SAME domain (Resend, EMAIL_FROM), so a reputation burnt
-// by relances takes the login flow down with it — CLAUDE.md's own reason
-// for making the schedule so conservative. And `emailBouncedAt` is set by
-// nothing yet (it waits on a Resend webhook), so a bounce would not even
-// stop the next relance: the guard has to be on the way out, not after.
+// (An earlier version of this comment claimed those five would have
+// been five hard bounces on the first pass. That was wrong — it was
+// written before `deletedAt` was read — and it is corrected here
+// rather than quietly deleted, because the wrong reason is the kind of
+// thing that gets copied into the next guard.)
+//
+// What the guard is really for: nothing guarantees a future
+// undeliverable address will also be soft-deleted, and `emailBouncedAt`
+// is still set by nothing (it waits on a Resend webhook), so a bounce
+// would not even stop the next relance. The sign-in codes leave from
+// the SAME domain as the relances, so a reputation burnt by them takes
+// the login flow down with it — CLAUDE.md's own reason for making the
+// schedule so conservative. Cheap insurance on the one failure this
+// feature cannot afford.
 //
 // The list is NOT a blocklist of addresses we dislike. It is the set IANA
 // reserves for documentation and testing, which by definition can never

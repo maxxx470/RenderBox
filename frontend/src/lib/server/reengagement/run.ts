@@ -96,12 +96,11 @@ export async function runReengagement(input: RunReengagementInput): Promise<RunR
 
   // An address that cannot receive mail is dropped BEFORE anything else,
   // and no row is written for it, so it stays merely owed rather than
-  // burnt. The query above cannot catch these: the five seed accounts in
-  // production (@localhost, @example.com) are ACTIVE, not unsubscribed
-  // and not bounced, so they passed every filter — and would have been
-  // five hard bounces out of nineteen on the very first send, from the
-  // same domain the sign-in codes leave from. `emailBouncedAt` is set by
-  // nothing yet, so the guard has to be here, on the way out.
+  // burnt. Belt and braces: the query above already excludes soft-deleted
+  // accounts, which is what the five seed addresses in production turned
+  // out to be. It guards the case where an undeliverable address is NOT
+  // soft-deleted — and `emailBouncedAt` is set by nothing yet, so a bounce
+  // would not stop the next relance either.
   const reachable = candidates.filter((u) => isDeliverableAddress(u.email));
   const undeliverable = candidates.length - reachable.length;
   if (undeliverable > 0) result.undeliverable = undeliverable;
