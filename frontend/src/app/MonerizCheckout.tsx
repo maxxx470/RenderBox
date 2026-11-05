@@ -29,8 +29,6 @@ import { BrandMark, Wordmark } from '@/components/BrandMark';
 import { api } from '@/lib/api';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { useLocale } from '@/lib/i18n/LocaleContext';
-import { useVisitorCountry } from '@/lib/visitor-country';
-import { outOfZoneHintKey } from '@/lib/payment-methods';
 
 /** What the checkout route answers. */
 interface CheckoutSession {
@@ -109,11 +107,6 @@ export function MonerizCheckoutFrame({
   }, []);
 
   const embedUrl = session.embedUrl ?? '';
-
-  // The visitor's own country, from the same header that picks the
-  // language and the currency — never User.country, which is free text.
-  const visitorCountry = useVisitorCountry();
-  const cardOnlyHint = outOfZoneHintKey(visitorCountry);
   const expectedOrigin = (() => {
     try {
       return new URL(embedUrl).origin;
@@ -338,18 +331,6 @@ export function MonerizCheckoutFrame({
                   needed and no more: `allow-top-navigation` is the one
                   deliberately absent, and `allow-same-origin` grants the frame
                   its OWN origin (moneriz.com), never ours. */}
-              {/* The one thing we can still do for a customer Moneriz
-                  cannot be told about: say what to look for. Two thirds of
-                  the sign-ups are outside the six mobile-money countries,
-                  and the only two outside customers who ever reached this
-                  page both left within a quarter of an hour without
-                  finding the card tab. Moneriz's own documentation offers
-                  no way to pre-select a method, so the help lives here. */}
-              {cardOnlyHint && (
-                <p className="mb-4 rounded-xl border border-[#D5DCFF] bg-[#EEF1FF] px-4 py-3 text-[13px] leading-relaxed text-[#1E36D6]">
-                  {t(cardOnlyHint)}
-                </p>
-              )}
               <iframe
                 ref={frameRef}
                 src={embedUrl}

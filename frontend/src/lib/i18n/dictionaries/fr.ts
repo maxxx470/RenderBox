@@ -1036,12 +1036,6 @@ const fr = {
   'paiement.title': 'Votre paiement',
   'paiement.close': 'Fermer',
   'paiement.secureNote': 'Paiement sécurisé par Moneriz. Vous restez sur RenderPro.',
-  // Shown only to a visitor whose country has no mobile money, and only
-  // while the card is really activated. It does not promise a screen: it
-  // tells them what to look for on Moneriz's own page, which we cannot
-  // pre-select (2026-11-05).
-  'paiement.cardOnlyHint':
-    'Dans votre pays, le paiement se fait par carte bancaire. Choisissez « Carte bancaire » sur la page ci-dessous.',
   'paiement.verifying': 'Paiement reçu, nous confirmons auprès de votre opérateur…',
   'paiement.successTitle': 'Paiement confirmé',
   'paiement.successBody': 'Merci — votre formule est active et vos crédits sont disponibles.',
