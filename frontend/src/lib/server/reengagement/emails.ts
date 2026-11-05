@@ -80,31 +80,50 @@ function layout(body: Body, ctx: RelanceContext): RelanceEmail {
       ? 'Vous recevez cet e-mail parce que vous avez créé un compte RenderPro.'
       : 'You are receiving this because you created a RenderPro account.';
 
+  // ── Why this looks so plain (2026-11-05, owner: « je veux qu'elles
+  // s'affichent dans la boîte mail elle-même, pas dans la liste des
+  // promos ») ──────────────────────────────────────────────────────────
+  //
+  // Gmail's tab is a per-recipient heuristic: nothing can FORCE Primary,
+  // and any claim otherwise is false. What can be done is to stop
+  // sending the signals that say « bulk marketing ». The first version
+  // sent nearly all of them at once — a grey page behind a white rounded
+  // card, a brand name as letterhead, a hidden preheader and a solid
+  // blue CTA button. That is the shape of a newsletter, and it was read
+  // as one.
+  //
+  // So: no card, no background, no letterhead, no preheader, and the
+  // call to action is an ordinary underlined link inside a sentence,
+  // the way a person writing to another person would paste it.
+  //
+  // What deliberately did NOT change: the List-Unsubscribe header and
+  // this footer link stay. Dropping them would win the Primary tab for
+  // about a week and then lose the domain, because a reader with no way
+  // out clicks « Spam » instead — and the sign-in codes leave from that
+  // same domain. Promotions is delivered mail; spam is not.
   const blocks = body.paragraphs
-    .map((p) => {
-      const safe = htmlEscape(p);
-      if (p.startsWith('•')) {
-        return `<p style="margin:6px 0 6px 4px;font:400 15px/1.6 Inter,Helvetica,Arial,sans-serif;color:#3D3B49">${safe.replace('•', '')}</p>`;
+    .map((para) => {
+      const safe = htmlEscape(para);
+      if (para.startsWith('•')) {
+        return `<p style="margin:6px 0 6px 14px;color:#3D3B49">${safe.replace('•', '')}</p>`;
       }
-      return `<p style="margin:0 0 16px;font:400 15px/1.65 Inter,Helvetica,Arial,sans-serif;color:#17161F">${safe}</p>`;
+      return `<p style="margin:0 0 14px">${safe}</p>`;
     })
     .join('');
 
-  const button = body.cta
-    ? `<p style="margin:28px 0"><a href="${htmlEscape(body.cta.href)}" style="background:${BLUE};color:#ffffff;text-decoration:none;font:600 15px/1 Inter,Helvetica,Arial,sans-serif;padding:14px 22px;border-radius:12px;display:inline-block">${htmlEscape(body.cta.label)}</a></p>`
+  // A sentence with a link in it, not a button on a coloured slab.
+  const action = body.cta
+    ? `<p style="margin:0 0 14px"><a href="${htmlEscape(body.cta.href)}" style="color:${BLUE}">${htmlEscape(body.cta.label)}</a></p>`
     : '';
 
   const html =
-    `<div style="display:none;max-height:0;overflow:hidden">${htmlEscape(body.preheader)}</div>` +
-    `<div style="background:#EEEEF1;padding:28px 16px"><div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:20px;padding:32px 28px">` +
-    `<p style="margin:0 0 20px;font:700 18px/1 Poppins,Helvetica,Arial,sans-serif;color:${BLUE}">RenderPro</p>` +
-    `<p style="margin:0 0 16px;font:400 15px/1.65 Inter,Helvetica,Arial,sans-serif;color:#17161F">${htmlEscape(hello)}</p>` +
+    `<div style="max-width:560px;font:400 15px/1.6 -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#17161F">` +
+    `<p style="margin:0 0 14px">${htmlEscape(hello)}</p>` +
     blocks +
-    button +
-    `<p style="margin:24px 0 0;font:400 15px/1.65 Inter,Helvetica,Arial,sans-serif;color:#17161F">${htmlEscape(body.signature)}</p>` +
-    `<hr style="border:none;border-top:1px solid #ECECF2;margin:28px 0 16px">` +
-    `<p style="margin:0;font:400 12px/1.6 Inter,Helvetica,Arial,sans-serif;color:#8A8896">${htmlEscape(unsubNote)} <a href="${htmlEscape(ctx.unsubscribeUrl)}" style="color:#6B6878">${unsubLabel}</a>.</p>` +
-    `</div></div>`;
+    action +
+    `<p style="margin:18px 0 0">${htmlEscape(body.signature)}</p>` +
+    `<p style="margin:22px 0 0;font-size:12px;color:#8A8896">${htmlEscape(unsubNote)} <a href="${htmlEscape(ctx.unsubscribeUrl)}" style="color:#8A8896">${unsubLabel}</a>.</p>` +
+    `</div>`;
 
   const text = [
     hello,
@@ -135,7 +154,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'prospect_day1':
       return fr
         ? {
-            subject: '🎨 Voici ce que RenderPro fait de votre image',
+            subject: 'Voici ce que RenderPro fait de votre image',
             preheader: 'Un croquis, une capture SketchUp, un plan 2D, une photo.',
             paragraphs: [
               'Vous avez créé votre compte RenderPro hier — merci. 🙏',
@@ -151,7 +170,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '🎨 Here is what RenderPro makes of your image',
+            subject: 'Here is what RenderPro makes of your image',
             preheader: 'A sketch, a SketchUp capture, a 2D plan, a photo.',
             paragraphs: [
               'You created your RenderPro account yesterday — thank you. 🙏',
@@ -170,7 +189,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'prospect_day4':
       return fr
         ? {
-            subject: '💡 Tout ce que RenderPro sait faire d’une seule image',
+            subject: 'Tout ce que RenderPro sait faire d’une seule image',
             preheader: 'Rendu de jour, de nuit, intérieur, plan 3D, axonométrie éclatée…',
             paragraphs: [
               'Vous n’avez pas encore lancé de rendu — peut-être que vous ne saviez pas par où commencer. Voici ce que RenderPro fait, à partir d’une seule image : 👇',
@@ -188,7 +207,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '💡 Everything RenderPro can do with one image',
+            subject: 'Everything RenderPro can do with one image',
             preheader: 'Day render, night render, interior, 3D plan, exploded axonometric…',
             paragraphs: [
               'You haven’t run a render yet — maybe you weren’t sure where to start. Here is what RenderPro does from a single image: 👇',
@@ -209,7 +228,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'prospect_day10':
       return fr
         ? {
-            subject: '🤔 Quelque chose vous bloque ?',
+            subject: 'Quelque chose vous bloque ?',
             preheader: 'Répondez en une ligne — une vraie personne lit.',
             paragraphs: [
               'Vous vous êtes inscrit sur RenderPro, mais vous n’avez rien lancé. Je préfère demander plutôt que deviner : qu’est-ce qui vous retient ?',
@@ -220,7 +239,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '🤔 Is something in the way?',
+            subject: 'Is something in the way?',
             preheader: 'Reply in one line — a real person reads it.',
             paragraphs: [
               'You signed up for RenderPro but haven’t run anything yet. I’d rather ask than guess: what’s holding you back?',
@@ -234,7 +253,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'prospect_day18':
       return fr
         ? {
-            subject: '👋 Dernier e-mail de notre part',
+            subject: 'Dernier e-mail de notre part',
             preheader: 'On arrête là — votre compte, lui, reste ouvert.',
             paragraphs: [
               'C’est le dernier e-mail que nous vous envoyons : vous ne serez plus relancé. ✋',
@@ -245,7 +264,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '👋 Our last email',
+            subject: 'Our last email',
             preheader: 'We stop here — your account stays open.',
             paragraphs: [
               'This is the last email we will send you: no more reminders. ✋',
@@ -259,7 +278,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'credits_low':
       return fr
         ? {
-            subject: '⏳ Il ne vous reste presque plus de crédits',
+            subject: 'Il ne vous reste presque plus de crédits',
             preheader: 'Vos prochains rendus pourraient être refusés.',
             paragraphs: [
               'Votre solde arrive à son terme : vos prochains rendus risquent d’être refusés faute de crédits. ⏳',
@@ -270,7 +289,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '⏳ You are almost out of credits',
+            subject: 'You are almost out of credits',
             preheader: 'Your next renders may be refused.',
             paragraphs: [
               'Your balance is running out: your next renders may be refused for lack of credits. ⏳',
@@ -284,7 +303,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'idle_subscriber':
       return fr
         ? {
-            subject: '👀 Votre rendu est toujours dans votre galerie',
+            subject: 'Votre rendu est toujours dans votre galerie',
             preheader: 'Deux choses que beaucoup découvrent après coup.',
             paragraphs: [
               'Votre galerie n’a pas bougé depuis deux semaines, et votre formule tourne. 📂',
@@ -296,7 +315,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '👀 Your render is still sitting in your gallery',
+            subject: 'Your render is still sitting in your gallery',
             preheader: 'Two things most people find out later.',
             paragraphs: [
               'Your gallery hasn’t moved in two weeks, and your plan is running. 📂',
@@ -311,7 +330,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'lapsed_day7':
       return fr
         ? {
-            subject: '📂 Votre formule RenderPro est arrivée à son terme',
+            subject: 'Votre formule RenderPro est arrivée à son terme',
             preheader: 'Vos images restent dans votre galerie.',
             paragraphs: [
               'Votre formule s’est terminée la semaine dernière, et les crédits non utilisés d’une période ne se reportent pas. 📅',
@@ -321,7 +340,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '📂 Your RenderPro plan has ended',
+            subject: 'Your RenderPro plan has ended',
             preheader: 'Your images stay in your gallery.',
             paragraphs: [
               'Your plan ended last week, and unused credits from a period do not carry over. 📅',
@@ -334,7 +353,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'lapsed_day30':
       return fr
         ? {
-            subject: '🙏 Une question avant qu’on vous laisse tranquille',
+            subject: 'Une question avant qu’on vous laisse tranquille',
             preheader: 'Une ligne suffit — c’est le dernier e-mail sur ce sujet.',
             paragraphs: [
               'Un mois sans formule RenderPro. C’est notre dernier e-mail à ce sujet. ✋',
@@ -345,7 +364,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '🙏 One question before we leave you alone',
+            subject: 'One question before we leave you alone',
             preheader: 'One line is enough — last email on this.',
             paragraphs: [
               'A month without a RenderPro plan. This is our last email about it. ✋',
@@ -359,7 +378,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
     case 'winback':
       return fr
         ? {
-            subject: '✨ RenderPro a changé depuis votre dernier rendu',
+            subject: 'RenderPro a changé depuis votre dernier rendu',
             preheader: 'Images de référence, nouvelles ambiances, « Améliorer ».',
             paragraphs: [
               'Ça fait un moment. 👋 Le produit n’est plus celui que vous avez utilisé :',
@@ -372,7 +391,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             signature: SIGN_FR,
           }
         : {
-            subject: '✨ RenderPro has changed since your last render',
+            subject: 'RenderPro has changed since your last render',
             preheader: 'Reference images, new ambiances, “Enhance”.',
             paragraphs: [
               'It has been a while. 👋 The product is no longer the one you used:',

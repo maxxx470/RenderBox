@@ -179,3 +179,36 @@ describe('the emoji the owner asked for are there', () => {
     }
   });
 });
+
+describe('the shape that keeps these out of the Promotions tab', () => {
+  // Gmail's tab is a per-recipient heuristic and nothing can force
+  // Primary (2026-11-05, owner: « je veux qu'elles s'affichent dans la
+  // boîte mail elle-même »). What CAN be done is to stop sending the
+  // signals that say « bulk marketing » — so the ones that were removed
+  // are pinned here, or the newsletter shape creeps back one commit at
+  // a time and nobody notices until the open rate falls.
+  for (const kind of REENGAGEMENT_KINDS) {
+    for (const locale of ['fr', 'en'] as const) {
+      const m = mail(kind, locale);
+
+      it(`${kind}/${locale}: no emoji in the subject line`, () => {
+        // The single heaviest Promotions signal. The body keeps the
+        // owner's emoji — the test above pins that they are still there.
+        expect(/\p{Extended_Pictographic}/u.test(m.subject), m.subject).toBe(false);
+      });
+
+      it(`${kind}/${locale}: no button, no card, no letterhead, no preheader`, () => {
+        expect(m.html, 'a coloured CTA slab reads as marketing').not.toContain('border-radius');
+        expect(m.html, 'no page background behind a card').not.toContain('background:#EEEEF1');
+        expect(m.html, 'hidden preheader text is a newsletter tell').not.toContain('display:none');
+      });
+
+      it(`${kind}/${locale}: the way out survives all of it`, () => {
+        // Non-negotiable: dropping this wins Primary for a week, then
+        // loses the domain to spam complaints -- and the sign-in codes
+        // leave from that same domain.
+        expect(m.html).toContain(UNSUB.replace(/&/g, '&amp;'));
+      });
+    }
+  }
+});
