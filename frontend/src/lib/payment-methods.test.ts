@@ -9,6 +9,8 @@ import {
   CARD_PAYMENTS_ENABLED,
   MOBILE_MONEY_COUNTRIES,
   heroPaymentPillKey,
+  isMobileMoneyCountry,
+  outOfZoneHintKey,
   paymentMethodsNoteKey,
 } from './payment-methods';
 import fr from './i18n/dictionaries/fr';
@@ -62,5 +64,57 @@ describe('the landing hero pill', () => {
     expect(fr['landing.heroWithCard']).not.toMatch(/pas de carte/i);
     expect(en['landing.heroWithCard']).toMatch(/bank card/i);
     expect(en['landing.heroWithCard']).not.toMatch(/no bank card/i);
+  });
+});
+
+describe('the out-of-zone hint', () => {
+  // The two real customers who ever reached the payment page from outside
+  // the zone -- Yangon and Innsbruck -- left within a quarter of an hour
+  // without finding the card tab. This sentence exists for them.
+  it('speaks to a visitor whose country has no mobile money', () => {
+    for (const code of ['MM', 'AT', 'IN', 'CA', 'FR', 'US']) {
+      expect(outOfZoneHintKey(code), code).toBe('paiement.cardOnlyHint');
+    }
+  });
+
+  it('stays silent in the six covered countries', () => {
+    for (const code of MOBILE_MONEY_COUNTRIES) {
+      expect(outOfZoneHintKey(code), code).toBeNull();
+    }
+  });
+
+  it('stays silent when the country is unknown', () => {
+    // Off Vercel, or a visitor with no country header: a guess is not
+    // worth a wrong instruction.
+    for (const code of [null, undefined, '']) {
+      expect(outOfZoneHintKey(code)).toBeNull();
+    }
+  });
+
+  it('is case- and whitespace-insensitive, so a header cannot slip past', () => {
+    expect(outOfZoneHintKey('tg')).toBeNull();
+    expect(outOfZoneHintKey(' TG ')).toBeNull();
+    expect(isMobileMoneyCountry('ci')).toBe(true);
+  });
+
+  it('never points at the card while the card is off', () => {
+    // Stranding an out-of-zone customer on a method that is not activated
+    // is worse than saying nothing. The constant is the single switch.
+    if (!CARD_PAYMENTS_ENABLED) {
+      expect(outOfZoneHintKey('MM')).toBeNull();
+    } else {
+      expect(outOfZoneHintKey('MM')).toBe('paiement.cardOnlyHint');
+    }
+  });
+
+  it('the sentence it points to exists in both languages and names no operator', () => {
+    for (const dict of [fr, en]) {
+      const line = dict['paiement.cardOnlyHint'];
+      expect(line, 'the hint must exist').toBeTruthy();
+      // Same rule as every other payment claim: Moneriz syncs its
+      // catalogue every 72 h, so naming an operator is a promise we
+      // cannot keep true.
+      expect(line).not.toMatch(/moov|wave|orange money|mixx|mtn/i);
+    }
   });
 });

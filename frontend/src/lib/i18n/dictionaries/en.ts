@@ -1006,6 +1006,8 @@ const en: Record<keyof typeof fr, string> = {
   'paiement.title': 'Your payment',
   'paiement.close': 'Close',
   'paiement.secureNote': 'Payment secured by Moneriz. You stay on RenderPro.',
+  'paiement.cardOnlyHint':
+    'In your country, payment is made by bank card. Choose “Bank card” on the page below.',
   'paiement.verifying': 'Payment received, confirming with your provider…',
   'paiement.successTitle': 'Payment confirmed',
   'paiement.successBody': 'Thank you — your plan is active and your credits are available.',

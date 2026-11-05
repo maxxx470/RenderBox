@@ -59,3 +59,54 @@ export function paymentMethodsNoteKey(): 'tarifs.methodsNote' | 'tarifs.methodsN
 export function heroPaymentPillKey(): 'landing.heroNoCard' | 'landing.heroWithCard' {
   return CARD_PAYMENTS_ENABLED ? 'landing.heroWithCard' : 'landing.heroNoCard';
 }
+
+/**
+ * Does Moneriz's mobile money cover this visitor's country?
+ *
+ * The code is an ISO-3166 alpha-2 from `x-vercel-ip-country` (the same
+ * header that picks the language and the currency) — NEVER `User.country`,
+ * which is free text from the onboarding and holds « myanmar », « Myanmar
+ * (Burma) », « Österreich » and « Indian » in production.
+ */
+export function isMobileMoneyCountry(code: string | null | undefined): boolean {
+  if (!code) return false;
+  const up = code.trim().toUpperCase();
+  return (MOBILE_MONEY_COUNTRIES as readonly string[]).includes(up);
+}
+
+/**
+ * The line shown above the payment frame to a visitor whose country has no
+ * mobile money — or null, when there is nothing useful to say.
+ *
+ * **Why this exists** (2026-11-05, owner, after reading the two real
+ * attempts out of the production base). Both outside customers who ever
+ * tried to buy were out of zone: one in Yangon, one in Innsbruck. Both
+ * opened the payment page, saw Moov Money and Wave, recognised nothing,
+ * and left — in 13 and 11 minutes. Two thirds of the sign-ups are outside
+ * the six countries, Myanmar being the first country of all, ahead of Togo.
+ *
+ * Moneriz CANNOT be asked to pre-select the card: its own documentation
+ * lists every field a checkout session takes and none of them chooses,
+ * restricts or orders the methods — « Le client choisit ensuite son moyen
+ * de paiement ». The one endpoint that takes a `paymentType` is the
+ * advanced `POST /v1/payments`, where we would collect the card number
+ * ourselves and inherit PCI scope and 3-D Secure.
+ *
+ * So the help goes where we are still in control: our own page, in the
+ * seconds before the frame opens. It does not change what Moneriz shows,
+ * it tells the customer what to look for in it.
+ *
+ * It returns null when the card is off (`CARD_PAYMENTS_ENABLED`), because
+ * pointing an out-of-zone customer at a method that is not activated would
+ * strand them worse than silence; and null for a covered country, where
+ * mobile money is the natural path and the sentence would only add noise.
+ * An unknown country also gets null: off Vercel, and for the visitors whose
+ * country header is missing, a guess is not worth a wrong instruction.
+ */
+export function outOfZoneHintKey(
+  visitorCountry: string | null | undefined,
+): 'paiement.cardOnlyHint' | null {
+  if (!CARD_PAYMENTS_ENABLED) return null;
+  if (!visitorCountry) return null;
+  return isMobileMoneyCountry(visitorCountry) ? null : 'paiement.cardOnlyHint';
+}
