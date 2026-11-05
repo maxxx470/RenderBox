@@ -180,35 +180,70 @@ describe('the emoji the owner asked for are there', () => {
   });
 });
 
-describe('the shape that keeps these out of the Promotions tab', () => {
-  // Gmail's tab is a per-recipient heuristic and nothing can force
-  // Primary (2026-11-05, owner: « je veux qu'elles s'affichent dans la
-  // boîte mail elle-même »). What CAN be done is to stop sending the
-  // signals that say « bulk marketing » — so the ones that were removed
-  // are pinned here, or the newsletter shape creeps back one commit at
-  // a time and nobody notices until the open rate falls.
+describe('the shape of the e-mail', () => {
+  // An earlier version of this block asserted « no border-radius, no
+  // card, no letterhead » on the theory that a designed e-mail is what
+  // sends Gmail's Promotions tab. The owner disproved it with a
+  // counter-example: a full newsletter -- logo, serif headline, hero
+  // images, buttons, social icons, postal address -- sitting in their
+  // Primary tab. Those assertions were pinning a wrong belief, so they
+  // are gone rather than quietly loosened. What stays are the things
+  // that are true on their own terms.
   for (const kind of REENGAGEMENT_KINDS) {
     for (const locale of ['fr', 'en'] as const) {
       const m = mail(kind, locale);
 
       it(`${kind}/${locale}: no emoji in the subject line`, () => {
-        // The single heaviest Promotions signal. The body keeps the
-        // owner's emoji — the test above pins that they are still there.
+        // Not a deliverability claim -- a house rule. The reference the
+        // owner chose has none either, and the body keeps the emoji they
+        // validated (pinned by the test above).
         expect(/\p{Extended_Pictographic}/u.test(m.subject), m.subject).toBe(false);
       });
 
-      it(`${kind}/${locale}: no button, no card, no letterhead, no preheader`, () => {
-        expect(m.html, 'a coloured CTA slab reads as marketing').not.toContain('border-radius');
-        expect(m.html, 'no page background behind a card').not.toContain('background:#EEEEF1');
-        expect(m.html, 'hidden preheader text is a newsletter tell').not.toContain('display:none');
+      it(`${kind}/${locale}: the preheader is read aloud, not hidden`, () => {
+        // It used to sit in a `display:none` div, written for the inbox
+        // list and invisible once opened. It is now the subtitle under
+        // the headline, so the reader sees the sentence it was written
+        // to be.
+        expect(m.html).not.toContain('display:none');
+        // And the subject is shown as a display headline, not only in
+        // the envelope, so the opened mail says what it is about.
+        expect(m.html).toContain('Georgia');
       });
 
-      it(`${kind}/${locale}: the way out survives all of it`, () => {
-        // Non-negotiable: dropping this wins Primary for a week, then
-        // loses the domain to spam complaints -- and the sign-in codes
-        // leave from that same domain.
+      it(`${kind}/${locale}: the way out survives every redesign`, () => {
+        // Non-negotiable. A reader with no way out clicks « Spam », and
+        // the sign-in codes leave from this same domain.
         expect(m.html).toContain(UNSUB.replace(/&/g, '&amp;'));
       });
     }
+  }
+});
+
+describe('what an inbox forces that a browser does not', () => {
+  for (const kind of REENGAGEMENT_KINDS) {
+    const m = mail(kind, 'fr');
+
+    it(`${kind}: every image is absolute and carries alt text`, () => {
+      // A mail client has no origin to resolve a relative path against,
+      // and Gmail hides images until a sender is trusted -- so the mail
+      // must still read with every picture missing.
+      const imgs = [...m.html.matchAll(/<img[^>]*>/g)].map((x) => x[0]);
+      expect(imgs.length).toBeGreaterThan(0);
+      for (const img of imgs) {
+        expect(img, 'image must be absolute').toMatch(/src="https:\/\//);
+        expect(img, 'image must carry alt').toMatch(/alt="/);
+      }
+    });
+
+    it(`${kind}: every gradient has a solid colour under it`, () => {
+      // Outlook drops background-image. Without the fallback the brand
+      // band would paint white text on white.
+      const count = (re: RegExp) => [...m.html.matchAll(re)].length;
+      expect(count(/background-image:linear-gradient/g)).toBeGreaterThan(0);
+      // The band declares bgcolor + background-color; the button declares
+      // `background:` before its image. Neither may rely on the gradient.
+      expect(m.html).toContain('bgcolor=');
+    });
   }
 });

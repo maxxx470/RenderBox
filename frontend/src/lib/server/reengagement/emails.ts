@@ -61,7 +61,25 @@ interface Body {
   signature: string;
 }
 
+// The charter's blues (CLAUDE.md), plus the one red highlight it allows
+// per screen. Spelled out here rather than imported: this module renders
+// into an inbox, where no stylesheet of ours is loaded.
 const BLUE = '#2948FC';
+const BLUE_BRIGHT = '#435CFE';
+const BLUE_DEEP = '#1E36D6';
+const RED = '#F34857';
+const INK = '#17161F';
+const INK2 = '#3D3B49';
+const MUTED = '#8A8896';
+const LINE = '#ECECF2';
+const TINT = '#F4F6FF';
+const GROUND = '#EEEEF1';
+
+// Absolute URLs: a mail client has no origin to resolve a path against.
+// Served from public/brand/ and checked live before this was written.
+const SITE = 'https://www.renderpro.app';
+const LOGO_WHITE = `${SITE}/brand/logo-renderpro-blanc.png`;
+const MARK = `${SITE}/brand/mark-72.png`;
 
 function layout(body: Body, ctx: RelanceContext): RelanceEmail {
   const hello =
@@ -80,50 +98,95 @@ function layout(body: Body, ctx: RelanceContext): RelanceEmail {
       ? 'Vous recevez cet e-mail parce que vous avez créé un compte RenderPro.'
       : 'You are receiving this because you created a RenderPro account.';
 
-  // ── Why this looks so plain (2026-11-05, owner: « je veux qu'elles
-  // s'affichent dans la boîte mail elle-même, pas dans la liste des
-  // promos ») ──────────────────────────────────────────────────────────
+  // ── The shape of these e-mails (2026-11-05) ─────────────────────────
   //
-  // Gmail's tab is a per-recipient heuristic: nothing can FORCE Primary,
-  // and any claim otherwise is false. What can be done is to stop
-  // sending the signals that say « bulk marketing ». The first version
-  // sent nearly all of them at once — a grey page behind a white rounded
-  // card, a brand name as letterhead, a hidden preheader and a solid
-  // blue CTA button. That is the shape of a newsletter, and it was read
-  // as one.
+  // Two earlier designs were wrong, and both are worth recording so the
+  // next person does not repeat them. The first was a small newsletter
+  // card and landed in Gmail's Promotions tab. The second was stripped
+  // bare — no card, no button, no letterhead — on the theory that design
+  // is what Gmail reads. The owner then produced a counter-example that
+  // settles it: a Wispr Flow announcement, a full newsletter with a logo
+  // image, a serif display headline, hero pictures, buttons and a postal
+  // address, sitting in their Primary tab.
   //
-  // So: no card, no background, no letterhead, no preheader, and the
-  // call to action is an ordinary underlined link inside a sentence,
-  // the way a person writing to another person would paste it.
+  // So design does NOT decide the tab, and holding these e-mails plain
+  // bought nothing. What separates the two senders is measurable
+  // elsewhere: wispr.ai publishes DMARC `p=reject` with a reporting
+  // address and years of engaged volume; renderpro.app sits at `p=none`
+  // with no rua and sent its first bulk mail on 2026-11-05. Reputation
+  // is earned, not configured.
   //
-  // What deliberately did NOT change: the List-Unsubscribe header and
-  // this footer link stay. Dropping them would win the Primary tab for
-  // about a week and then lose the domain, because a reader with no way
-  // out clicks « Spam » instead — and the sign-in codes leave from that
-  // same domain. Promotions is delivered mail; spam is not.
+  // This layout is therefore designed on purpose, in the charter's own
+  // blues, opening on the brand the way the reference does.
+  //
+  // Three things an inbox forces that a browser does not:
+  //   · the logo is a hosted PNG at an absolute URL — a mail client
+  //     cannot resolve a relative path, and every image carries alt
+  //     text because Gmail hides images until a sender is trusted, so
+  //     the e-mail must still read with every picture missing;
+  //   · the gradient carries a solid `background-color` under it, since
+  //     Outlook drops `background-image` and would otherwise paint white
+  //     text on white;
+  //   · the display face is Georgia, not Poppins — web fonts do not load
+  //     in most clients, and Georgia is the one serif present on all of
+  //     them.
+  //
+  // What no redesign may remove: the List-Unsubscribe header and the
+  // footer link. A reader with no way out clicks « Spam », and the
+  // sign-in codes leave from this same domain.
   const blocks = body.paragraphs
     .map((para) => {
       const safe = htmlEscape(para);
       if (para.startsWith('•')) {
-        return `<p style="margin:6px 0 6px 14px;color:#3D3B49">${safe.replace('•', '')}</p>`;
+        return (
+          `<tr><td style="padding:0 0 12px"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>` +
+          `<td width="18" valign="top" style="padding-top:8px"><div style="width:5px;height:5px;border-radius:3px;background:${RED}"></div></td>` +
+          `<td style="font-size:16px;line-height:1.65;color:${INK2}">${safe.replace('•', '').trim()}</td>` +
+          `</tr></table></td></tr>`
+        );
       }
-      return `<p style="margin:0 0 14px">${safe}</p>`;
+      return `<tr><td style="padding:0 0 18px;font-size:16px;line-height:1.68;color:${INK}">${safe}</td></tr>`;
     })
     .join('');
 
-  // A sentence with a link in it, not a button on a coloured slab.
   const action = body.cta
-    ? `<p style="margin:0 0 14px"><a href="${htmlEscape(body.cta.href)}" style="color:${BLUE}">${htmlEscape(body.cta.label)}</a></p>`
+    ? `<tr><td align="center" style="padding:14px 0 6px">` +
+      `<a href="${htmlEscape(body.cta.href)}" style="display:inline-block;background:${BLUE};background-image:linear-gradient(135deg,${BLUE_BRIGHT} 0%,${BLUE} 48%,${BLUE_DEEP} 100%);color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;padding:15px 30px;border-radius:12px">${htmlEscape(body.cta.label)}</a>` +
+      `</td></tr>`
     : '';
 
+  const eyebrow = ctx.locale === 'fr' ? 'RENDU ARCHITECTURAL PAR IA' : 'AI ARCHITECTURAL RENDERING';
+
   const html =
-    `<div style="max-width:560px;font:400 15px/1.6 -apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#17161F">` +
-    `<p style="margin:0 0 14px">${htmlEscape(hello)}</p>` +
+    `<div style="background:${GROUND};padding:28px 14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">` +
+    `<table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden">` +
+    // ── The brand band: the white lockup on the charter gradient. ──
+    `<tr><td align="center" bgcolor="${BLUE}" style="background-color:${BLUE};background-image:linear-gradient(135deg,${BLUE_BRIGHT} 0%,${BLUE} 48%,${BLUE_DEEP} 100%);padding:38px 28px 34px">` +
+    `<img src="${LOGO_WHITE}" width="188" height="47" alt="RenderPro" style="display:block;border:0;width:188px;height:auto;max-width:70%">` +
+    `<div style="height:16px;line-height:16px">&nbsp;</div>` +
+    `<div style="font-size:10.5px;font-weight:700;letter-spacing:2.4px;color:#C9D2FF">${eyebrow}</div>` +
+    `</td></tr>` +
+    // ── The subject, promoted to a display headline. ──
+    `<tr><td style="padding:40px 34px 0">` +
+    `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">` +
+    `<tr><td align="center" style="font-family:Georgia,'Times New Roman',serif;font-size:32px;line-height:1.22;color:${INK};padding:0 0 14px">${htmlEscape(body.subject)}</td></tr>` +
+    // The preheader, which used to hide in an invisible div, read aloud.
+    `<tr><td align="center" style="font-size:16px;line-height:1.55;color:${MUTED};padding:0 0 28px">${htmlEscape(body.preheader)}</td></tr>` +
+    `<tr><td style="padding:0 0 26px"><div style="height:2px;width:42px;margin:0 auto;background:${RED};border-radius:2px"></div></td></tr>` +
+    `<tr><td style="padding:0 0 18px;font-size:16px;line-height:1.68;color:${INK}">${htmlEscape(hello)}</td></tr>` +
     blocks +
     action +
-    `<p style="margin:18px 0 0">${htmlEscape(body.signature)}</p>` +
-    `<p style="margin:22px 0 0;font-size:12px;color:#8A8896">${htmlEscape(unsubNote)} <a href="${htmlEscape(ctx.unsubscribeUrl)}" style="color:#8A8896">${unsubLabel}</a>.</p>` +
-    `</div>`;
+    `<tr><td style="padding:26px 0 0;font-size:16px;line-height:1.68;color:${INK}">${htmlEscape(body.signature)}</td></tr>` +
+    `<tr><td style="padding:30px 0 34px"><div style="height:1px;background:${LINE}"></div></td></tr>` +
+    `</table></td></tr>` +
+    // ── Footer: the mark, then the way out. ──
+    `<tr><td align="center" bgcolor="${TINT}" style="background-color:${TINT};padding:26px 30px 28px">` +
+    `<img src="${MARK}" width="26" height="26" alt="" style="display:block;border:0;width:26px;height:26px">` +
+    `<div style="height:12px;line-height:12px">&nbsp;</div>` +
+    `<div style="font-size:12px;line-height:1.7;color:${MUTED}">${htmlEscape(unsubNote)}<br>` +
+    `<a href="${htmlEscape(ctx.unsubscribeUrl)}" style="color:${BLUE_DEEP};text-decoration:underline">${unsubLabel}</a></div>` +
+    `</td></tr>` +
+    `</table></div>`;
 
   const text = [
     hello,
