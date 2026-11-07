@@ -11,6 +11,7 @@ import {
   VIDEO_MODEL_KEYS,
   isVideoRequestShapeValid,
   supportsMode,
+  videoAutoRatioFor,
   videoRatioChoicesFor,
   videoResolutionsFor,
 } from './video-models';
@@ -245,27 +246,31 @@ describe('the architectural preservation engine', () => {
     }
   });
 
-  it('never offers an engine s own word for « follow the image » as a frame', () => {
-    // Veo spells it « Auto » and Seedance « adaptive ». The interface already
-    // has one row for that behaviour — sending nothing — so listing them
-    // beside it would be two controls doing one thing.
+  it('offers EVERY ratio the engine takes, in the engine s own words', () => {
+    // 2026-11-07, owner: « mets tous les aspect ratios disponibles ». An
+    // earlier version hid « Auto » and « adaptive »; the catalogue is the
+    // list, whole.
     for (const key of VIDEO_MODEL_KEYS) {
-      expect(videoRatioChoicesFor(key)).not.toContain('Auto');
-      expect(videoRatioChoicesFor(key)).not.toContain('adaptive');
-      // Everything still offered is a real value the catalogue holds.
-      for (const r of videoRatioChoicesFor(key)) {
-        expect(VIDEO_MODELS[key].capabilities.ratios).toContain(r);
+      const caps = VIDEO_MODELS[key].capabilities;
+      expect(videoRatioChoicesFor(key)).toEqual(caps.ratios);
+      for (const r of caps.ratios) {
         expect(
           isVideoRequestShapeValid({
             model: key,
-            mode: VIDEO_MODELS[key].capabilities.modes[0]!,
-            duration: VIDEO_MODELS[key].capabilities.durations[0]!,
-            resolution: videoResolutionsFor(key, VIDEO_MODELS[key].capabilities.durations[0]!)[0]!,
+            mode: caps.modes[0]!,
+            duration: caps.durations[0]!,
+            resolution: videoResolutionsFor(key, caps.durations[0]!)[0]!,
             ratio: r,
           }),
         ).toBe(true);
       }
     }
+    // Veo and Seedance name their own « follow the image » value, so the menu
+    // adds no row of its own; Kling and Gemini Omni have none, so it does.
+    expect(videoAutoRatioFor('veo-3-1')).toBe('Auto');
+    expect(videoAutoRatioFor('seedance-2-5')).toBe('adaptive');
+    expect(videoAutoRatioFor('kling-3-0')).toBeNull();
+    expect(videoAutoRatioFor('gemini-omni')).toBeNull();
   });
 
   it('keeps the owner s dictated text untouched', () => {

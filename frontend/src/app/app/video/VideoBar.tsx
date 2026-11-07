@@ -27,6 +27,7 @@ import { videoPrice } from '@/lib/provider-cost';
 import {
   VIDEO_MODELS,
   VIDEO_MODEL_KEYS,
+  videoAutoRatioFor,
   videoRatioChoicesFor,
   videoResolutionsFor,
   type VideoModelKey,
@@ -225,6 +226,9 @@ export function VideoBar({
   const caps = engine.capabilities;
   const resolutions = videoResolutionsFor(state.model, state.duration);
   const ratios = videoRatioChoicesFor(state.model);
+  /** Some engines name their own « follow the source image » value; those
+   *  need no extra row, the catalogue already holds it. */
+  const ownAuto = videoAutoRatioFor(state.model);
   const cost = videoPrice(state.model, state.duration, state.resolution);
   /** Does this engine's endpoint really accept a closing frame? Veo 3.1,
    *  Seedance 2.5, Kling 3.0 and Wan 2.7 do; Hailuo takes one image and
@@ -379,12 +383,15 @@ export function VideoBar({
               </Popover>
             </div>
 
-            {/* The frame. Drawn only where the engine really has an
-            aspect-ratio parameter — Wan follows the source image and Hailuo
-            has no such field, so for those two there is nothing to choose and
-            nothing is shown. « Auto » is first and is the default: it sends
-            no ratio at all, which is how the clip keeps the render's own
-            framing. */}
+            {/* The aspect ratio. EVERY ratio the engine takes is listed
+            (owner, 2026-11-07: « mets tous les aspect ratios disponibles »),
+            in the engine's own words — « Auto », « adaptive », 21:9. The chip
+            is drawn only where the engine really has the parameter: Wan
+            follows the source image and Hailuo has no such field, so for
+            those two there is nothing to choose and nothing is shown.
+            The « Format auto » row is added only for engines with no auto
+            value of their own (Kling, Gemini Omni); it sends no ratio at
+            all, which is how the clip keeps the render's framing. */}
             {ratios.length > 0 && (
               <div className="relative">
                 <button
@@ -392,21 +399,26 @@ export function VideoBar({
                   onClick={() => setMenu(menu === 'ratio' ? null : 'ratio')}
                   className={`cursor-pointer ${CHIP_BASE}`}
                 >
-                  {state.ratio ?? t('video.ratioAuto')}
+                  {/* The chip says exactly what the ticked row says, so
+                  « adaptive » on Seedance and « Auto » on Veo rather than one
+                  wording over another's value. */}
+                  {state.ratio ?? ownAuto ?? t('video.ratioAuto')}
                   <Chevron />
                 </button>
                 <Popover open={menu === 'ratio'} onClose={close}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onChange({ ratio: null });
-                      close();
-                    }}
-                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
-                  >
-                    {t('video.ratioAuto')}
-                    {state.ratio === null && <Check />}
-                  </button>
+                  {ownAuto === null && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange({ ratio: null });
+                        close();
+                      }}
+                      className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
+                    >
+                      {t('video.ratioAuto')}
+                      {state.ratio === null && <Check />}
+                    </button>
+                  )}
                   {ratios.map((r) => (
                     <button
                       key={r}
@@ -418,7 +430,7 @@ export function VideoBar({
                       className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
                     >
                       {r}
-                      {r === state.ratio && <Check />}
+                      {(r === state.ratio || (state.ratio === null && r === ownAuto)) && <Check />}
                     </button>
                   ))}
                 </Popover>

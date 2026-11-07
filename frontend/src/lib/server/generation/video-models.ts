@@ -346,13 +346,26 @@ export function isVideoRequestShapeValid(input: {
 }
 
 /**
- * The ratios to OFFER, which is not the catalogue list: « Auto » (Veo) and
- * « adaptive » (Seedance) are the engines' own names for « follow the source
- * image », and the interface already has one row for that — sending nothing.
- * Listing them beside it would be two controls for one behaviour.
+ * Every ratio the engine takes, offered as it is (2026-11-07, owner: « mets
+ * tous les aspect ratios disponibles »).
+ *
+ * An earlier version hid « Auto » (Veo) and « adaptive » (Seedance) on the
+ * grounds that the menu's own « Format auto » row already meant that. It is
+ * the owner's call, and the answer was all of them: these are the engines'
+ * own words, they appear in their documentation, and a professional who reads
+ * « adaptive » on Kie should find « adaptive » here. The synthetic row is now
+ * drawn only where the engine has no auto value of its own.
  */
 export function videoRatioChoicesFor(key: VideoModelKey): readonly string[] {
-  return VIDEO_MODELS[key].capabilities.ratios.filter((r) => r !== 'Auto' && r !== 'adaptive');
+  return VIDEO_MODELS[key].capabilities.ratios;
+}
+
+/** Does this engine name its own « follow the source image » value? When it
+ *  does, that value is the default and the menu needs no extra row. */
+export function videoAutoRatioFor(key: VideoModelKey): string | null {
+  return (
+    VIDEO_MODELS[key].capabilities.ratios.find((r) => r === 'Auto' || r === 'adaptive') ?? null
+  );
 }
 
 /**
