@@ -2,6 +2,8 @@
 // sends nothing. These tests pin the three places where the owner's brief and
 // Kie's real schema disagree, so a future edit cannot quietly re-add a
 // capability the endpoint does not have.
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_VIDEO_MODEL,
@@ -35,6 +37,9 @@ describe('the video catalogue', () => {
       // file exists, so a missing logo is a visible gap and not a silence.
       expect(m.vendor.length).toBeGreaterThan(0);
       expect(m.logo).toMatch(/^\/video-engines\/[a-z]+\.webp$/);
+      // And the file is really there: a card whose mark 404s looks broken,
+      // not sober. The same check the use-case pages make on their pictures.
+      expect(existsSync(join(process.cwd(), 'public', m.logo))).toBe(true);
       expect(m.capabilities.modes.length).toBeGreaterThan(0);
       expect(m.capabilities.durations.length).toBeGreaterThan(0);
       expect(m.capabilities.resolutions.length).toBeGreaterThan(0);
