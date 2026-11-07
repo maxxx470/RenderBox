@@ -187,6 +187,8 @@ const en: Record<keyof typeof fr, string> = {
   'video.notePlaceholder': 'Anything to add? (optional)',
   'video.sound': 'Sound',
   'video.soundOn': 'Sound included',
+  'video.soundOff': 'Silent video',
+  'video.soundAlways': 'This engine always produces sound.',
   'video.credits': 'credits',
   'video.priceUnknown': 'This combination has no verified price yet.',
   'video.send': 'Start the animation',

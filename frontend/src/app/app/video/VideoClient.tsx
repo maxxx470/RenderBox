@@ -301,7 +301,21 @@ export function VideoClient({
                       className="w-full rounded-xl bg-white object-contain"
                     />
                   ) : (
-                    <div className="flex h-44 items-center justify-center rounded-xl bg-white px-4 text-center text-[13px] text-[#8A8896]">
+                    // The same shape as the video card beside it (owner,
+                    // 2026-11-07: « j'aime le logo que tu as mis dans "Votre
+                    // vidéo apparaîtra ici" … de l'autre côté aussi on peut
+                    // faire un truc comme ça »). The mark is the Galerie
+                    // tile, because what the card asks for is one of the
+                    // account's own images — not a new render.
+                    <div className="flex h-44 flex-col items-center justify-center gap-2 rounded-xl bg-white px-4 text-center text-[13px] text-[#8A8896]">
+                      <img
+                        src="/rail/images.webp"
+                        alt=""
+                        aria-hidden
+                        width={36}
+                        height={36}
+                        className="h-9 w-9 rounded-lg bg-white opacity-80"
+                      />
                       {t('video.pickSource')}
                     </div>
                   )}

@@ -190,6 +190,8 @@ const fr = {
   'video.notePlaceholder': 'Une précision ? (facultatif)',
   'video.sound': 'Son',
   'video.soundOn': 'Son inclus',
+  'video.soundOff': 'Vidéo muette',
+  'video.soundAlways': 'Ce moteur produit toujours du son.',
   'video.credits': 'crédits',
   'video.priceUnknown': "Ce réglage n'a pas encore de prix vérifié.",
   'video.send': "Lancer l'animation",

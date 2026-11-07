@@ -18,7 +18,8 @@
 // sound switch, the durations and the sizes are all read from the engine's
 // own catalogue, and what does not apply is not drawn.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { CHIP_BASE, CHIP_SLOT } from '../chip';
+import { VolumeOff, VolumeUp } from 'react-iconly';
+import { CHIP_ACTIVE, CHIP_BASE, CHIP_SLOT, CHIP_STATIC } from '../chip';
 import { GLOW, SendButton } from '../CommandBar';
 import { ACCEPTED_UPLOAD_TYPES } from '../upload-types';
 import { useLocale } from '@/lib/i18n/LocaleContext';
@@ -372,17 +373,43 @@ export function VideoBar({
               </Popover>
             </div>
 
-            {/* A sound switch only where there is something to switch. */}
+            {/* The sound switch, only where there is something to switch.
+            It SWAPS the whole chip class (CHIP_ACTIVE / CHIP_BASE) instead of
+            appending a background to CHIP_BASE — that was the 2026-11-07 bug
+            the owner met on Seedance (« le bouton pour ajouter le son … il
+            n'est pas actif »): CHIP_BASE already carries `bg-[#F2F2F5]` and a
+            `hover:` background, so a second `bg-[…]` of equal specificity won
+            or lost on stylesheet order, and the chip looked identical on and
+            off. The flag itself always reached Kie (`generate_audio` on
+            Seedance, `sound` on Kling); what was broken was the user being
+            able to see it. The glyph changes too, so the state does not rest
+            on colour alone. */}
             {caps.audio === 'toggle' && (
               <button
                 type="button"
+                aria-pressed={state.audio}
+                title={state.audio ? t('video.soundOn') : t('video.soundOff')}
                 onClick={() => onChange({ audio: !state.audio })}
-                className={`cursor-pointer ${CHIP_BASE} ${
-                  state.audio ? 'bg-[#EEF1FF] text-[#1E36D6]' : ''
-                }`}
+                className={`cursor-pointer ${state.audio ? CHIP_ACTIVE : CHIP_BASE}`}
               >
-                {t('video.sound')}
+                {state.audio ? (
+                  <VolumeUp set="curved" size={15} primaryColor="#ffffff" />
+                ) : (
+                  <VolumeOff set="curved" size={15} primaryColor="#3D3B49" />
+                )}
+                {state.audio ? t('video.soundOn') : t('video.sound')}
               </button>
+            )}
+
+            {/* Veo produces sound on every clip and has no parameter for it.
+            Saying so as a read-only chip is the honest half of the owner's
+            rule: never offer a control the engine lacks, but do not leave the
+            user hunting for a sound switch that cannot exist. */}
+            {caps.audio === 'always' && (
+              <span className={CHIP_STATIC} title={t('video.soundAlways')}>
+                <VolumeUp set="curved" size={15} primaryColor="#8A8896" />
+                {t('video.soundOn')}
+              </span>
             )}
 
             {/* The model chooser, where Krea puts it: last before the send. */}
