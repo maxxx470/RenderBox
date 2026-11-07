@@ -2,17 +2,21 @@
 
 // The right-hand column of the video workspace (2026-11-07, owner: « je
 // propose que les éléments … un peu comme sur la page générée où il y a une
-// bande verticale à droite »).
+// bande verticale à droite », then « que tous les éléments tiennent dans la
+// hauteur et la largeur de l'écran … qu'on n'ait pas besoin de scroller »).
 //
-// Same role as « À améliorer » on Enhance and « Images récentes » on the
-// generator: a vertical white band flush against the right edge, holding the
-// choices that describe the SHOT — how the camera moves, what is allowed to
-// move with it, and how much. The command bar keeps what describes the FILE:
-// the source, the words, the size, the duration and the engine.
+// EVERYTHING HAS TO FIT, and that is what drove this layout. Twelve camera
+// movements as a list of rows, eleven elements as a cloud of chips and the
+// intensities underneath came to roughly 900px of column — taller than the
+// screen gives it. As GRIDS OF TILES the same twenty-three choices take
+// about half that, and a tile is read faster than a line of text.
 //
-// Splitting them that way is why the bar stopped being a wall of chips: the
-// twelve movements and the eleven elements never fitted a single row, and
-// laid flat across the page they read as a form rather than a workspace.
+// The icons are the owner's, generated as the rail's were — but in ONE flat
+// colour, not the rail's coloured app tiles (« je veux pas qu'il y ait trop
+// de couleurs … des couleurs unies »). A tile whose icon is not there yet
+// shows its caption alone rather than a broken image, so the column works
+// before and after the pictures land.
+import { useState } from 'react';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { CHIP_ACTIVE, CHIP_BASE } from '../chip';
 import {
@@ -22,13 +26,67 @@ import {
   ENVIRONMENT_ELEMENTS,
   ENVIRONMENT_KEYS,
   INTENSITY_KEYS,
+  cameraIcon,
+  cameraShort,
+  environmentIcon,
+  environmentShort,
   type CameraMoveKey,
   type EnvironmentKey,
   type IntensityKey,
 } from '@/lib/server/generation/video-moves';
 
 const LABEL =
-  'mb-2 block font-[family-name:var(--font-mono)] text-[11px] font-medium uppercase tracking-[0.14em] text-[#8A8896]';
+  'mb-1.5 block font-[family-name:var(--font-mono)] text-[10.5px] font-medium uppercase tracking-[0.14em] text-[#8A8896]';
+
+/** The screen gives the column about 740px; six renders keep « Images
+ *  récentes » from pushing the settings out of sight. The whole set stays
+ *  one click away in the Galerie. */
+const RECENT_SHOWN = 6;
+
+/**
+ * One choice: its icon over a short caption. The picture is 20px of flat
+ * ink, so the chosen state is carried by the TILE — blue tint, blue caption
+ * — and never by recolouring a raster, which never looks right.
+ */
+function Tile({
+  icon,
+  caption,
+  title,
+  on,
+  onClick,
+}: {
+  icon: string;
+  caption: string;
+  title: string;
+  on: boolean;
+  onClick: () => void;
+}) {
+  const [hasIcon, setHasIcon] = useState(true);
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-pressed={on}
+      onClick={onClick}
+      className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 transition-colors ${
+        on ? 'bg-[#EEF1FF] text-[#1E36D6]' : 'bg-[#F4F4F7] text-[#3D3B49] hover:bg-[#E9E9EE]'
+      }`}
+    >
+      {hasIcon && (
+        <img
+          src={icon}
+          alt=""
+          aria-hidden
+          width={20}
+          height={20}
+          className="h-5 w-5"
+          onError={() => setHasIcon(false)}
+        />
+      )}
+      <span className="w-full text-center text-[10.5px] font-medium leading-tight">{caption}</span>
+    </button>
+  );
+}
 
 export function VideoSettings({
   camera,
@@ -56,55 +114,45 @@ export function VideoSettings({
   const lang = locale === 'fr' ? 'fr' : 'en';
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <div>
         <span className={LABEL}>{t('video.camera')}</span>
-        {/* One per line: twelve movements read as a list, not as a cloud. */}
-        <div className="flex flex-col gap-1">
-          {CAMERA_MOVE_KEYS.map((key) => {
-            const on = key === camera;
-            return (
-              <button
-                key={key}
-                type="button"
-                aria-pressed={on}
-                onClick={() => onChange({ camera: key })}
-                className={`flex w-full cursor-pointer items-center rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors ${
-                  on
-                    ? 'bg-[#EEF1FF] font-semibold text-[#1E36D6]'
-                    : 'text-[#3D3B49] hover:bg-[#F4F4F7]'
-                }`}
-              >
-                {CAMERA_MOVES[key][lang]}
-              </button>
-            );
-          })}
+        <div className="grid grid-cols-3 gap-1.5">
+          {CAMERA_MOVE_KEYS.map((key) => (
+            <Tile
+              key={key}
+              icon={cameraIcon(key)}
+              caption={cameraShort(key, lang)}
+              title={CAMERA_MOVES[key][lang]}
+              on={key === camera}
+              onClick={() => onChange({ camera: key })}
+            />
+          ))}
         </div>
       </div>
 
       <div>
         <span className={LABEL}>{t('video.environment')}</span>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="grid grid-cols-4 gap-1.5">
           {ENVIRONMENT_KEYS.map((key) => {
             const on = environment.includes(key);
             return (
-              <button
+              <Tile
                 key={key}
-                type="button"
-                aria-pressed={on}
+                icon={environmentIcon(key)}
+                caption={environmentShort(key, lang)}
+                title={ENVIRONMENT_ELEMENTS[key][lang]}
+                on={on}
                 onClick={() =>
                   onChange({
                     environment: on ? environment.filter((k) => k !== key) : [...environment, key],
                   })
                 }
-                className={`cursor-pointer ${on ? CHIP_ACTIVE : CHIP_BASE}`}
-              >
-                {ENVIRONMENT_ELEMENTS[key][lang]}
-              </button>
+              />
             );
           })}
         </div>
-        <p className="mt-2 text-[12px] leading-relaxed text-[#8A8896]">
+        <p className="mt-1.5 text-[11px] leading-snug text-[#8A8896]">
           {t('video.environmentNote')}
         </p>
       </div>
@@ -126,14 +174,11 @@ export function VideoSettings({
         </div>
       </div>
 
-      {/* « Images récentes » belongs in this column, three per row, exactly
-          where the image generator keeps it — not as a strip across the
-          stage, which is what pushed the video panel off to one side. */}
       {recent.length > 0 && (
         <div>
           <span className={LABEL}>{t('video.recent')}</span>
           <div className="grid grid-cols-3 gap-1.5">
-            {recent.map((r) => (
+            {recent.slice(0, RECENT_SHOWN).map((r) => (
               <button
                 key={r.id}
                 type="button"
