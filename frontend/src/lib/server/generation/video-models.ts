@@ -90,6 +90,17 @@ export interface VideoModel {
   label: string;
   /** The badge under the name on the selector card. */
   positioning: { fr: string; en: string };
+  /** The company behind the engine, shown on the selector card beside its
+   *  own mark (owner, 2026-11-07: « il faudra que les moteurs s'affichent
+   *  avec leurs logos d'origine »). Unlike the image engines, which are
+   *  deliberately never named by vendor, a professional picking a video
+   *  engine wants to know whose it is. */
+  vendor: string;
+  /** The vendor's mark, a square on white in public/video-engines/. The file
+   *  is the vendor's own trademark, used to identify their product and
+   *  nothing else — never redrawn, never recoloured to the charter. A missing
+   *  file leaves the card showing the name alone, which a test allows. */
+  logo: string;
   /** The exact string Kie expects in the request's top-level `model`. Never
    *  derive it from `key`: `kling-3.0/video` and `hailuo/2-3-…` have shapes of
    *  their own, and a guessed identifier is a 404 the user pays for in time. */
@@ -110,6 +121,8 @@ export interface VideoModel {
 const VEO_3_1: VideoModel = {
   key: 'veo-3-1',
   label: 'Google Veo 3.1',
+  vendor: 'Google DeepMind',
+  logo: '/video-engines/veo.webp',
   positioning: { fr: 'Photoréalisme premium', en: 'Premium photorealism' },
   endpoint: 'veo-3-1',
   capabilities: {
@@ -137,6 +150,8 @@ const VEO_3_1: VideoModel = {
 const SEEDANCE_2_5: VideoModel = {
   key: 'seedance-2-5',
   label: 'Seedance 2.5',
+  vendor: 'ByteDance',
+  logo: '/video-engines/seedance.webp',
   positioning: { fr: 'Multimodal avancé', en: 'Advanced multimodal' },
   endpoint: 'bytedance/seedance-2-5',
   capabilities: {
@@ -167,6 +182,8 @@ const SEEDANCE_2_5: VideoModel = {
 const KLING_3_0: VideoModel = {
   key: 'kling-3-0',
   label: 'Kling 3.0',
+  vendor: 'Kuaishou',
+  logo: '/video-engines/kling.webp',
   positioning: { fr: 'Mouvement cinématique', en: 'Cinematic motion' },
   endpoint: 'kling-3.0/video',
   capabilities: {
@@ -193,6 +210,8 @@ const KLING_3_0: VideoModel = {
 const WAN_2_7: VideoModel = {
   key: 'wan-2-7',
   label: 'Wan 2.7',
+  vendor: 'Alibaba',
+  logo: '/video-engines/wan.webp',
   positioning: { fr: 'Références et contrôle', en: 'Reference & control' },
   endpoint: 'wan/2-7-image-to-video',
   capabilities: {
@@ -222,6 +241,8 @@ const WAN_2_7: VideoModel = {
 const HAILUO_2_3: VideoModel = {
   key: 'hailuo-2-3',
   label: 'Hailuo 2.3',
+  vendor: 'MiniMax',
+  logo: '/video-engines/hailuo.webp',
   positioning: { fr: 'Prix fixe par vidéo', en: 'Flat price per video' },
   endpoint: 'hailuo/2-3-image-to-video-standard',
   capabilities: {
@@ -251,6 +272,8 @@ const HAILUO_2_3: VideoModel = {
 const GEMINI_OMNI: VideoModel = {
   key: 'gemini-omni',
   label: 'Gemini Omni',
+  vendor: 'Google',
+  logo: '/video-engines/gemini.webp',
   positioning: { fr: 'Multimodal par références', en: 'Reference multimodal' },
   endpoint: 'gemini-omni-video',
   capabilities: {

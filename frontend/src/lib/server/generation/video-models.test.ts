@@ -30,6 +30,11 @@ describe('the video catalogue', () => {
       // A guessed identifier is a 404 the user pays for in waiting.
       expect(m.endpoint.length).toBeGreaterThan(0);
       expect(m.docs).toMatch(/^https:\/\/docs\.kie\.ai\//);
+      // The owner asked for the vendors' own marks on the cards, so every
+      // engine must name its vendor and point at a file — even before the
+      // file exists, so a missing logo is a visible gap and not a silence.
+      expect(m.vendor.length).toBeGreaterThan(0);
+      expect(m.logo).toMatch(/^\/video-engines\/[a-z]+\.webp$/);
       expect(m.capabilities.modes.length).toBeGreaterThan(0);
       expect(m.capabilities.durations.length).toBeGreaterThan(0);
       expect(m.capabilities.resolutions.length).toBeGreaterThan(0);
