@@ -3,21 +3,22 @@
 // The video command bar (2026-11-07, owner: « Je t'ai bien demandé de mettre
 // une commande bar … tu mettras sur la commande bar un drop down qui permet
 // de choisir le modèle pour faire la vidéo », pointing at Krea's Seedance
-// Studio).
+// Studio; then « réajuste la commande » against the image generator).
 //
-// Same shape as Krea's — one bar holding the prompt, a row of small controls,
-// and the model chooser on the right beside the send button — but drawn in
-// RenderPro's own language, not Krea's: a WHITE frame on the grey ground, the
-// grey composer panel, the soft-filled chips and the brand gradient, exactly
-// as the image generator's CommandBar does. The owner's first instruction on
-// that bar still stands: « en blanc et non noir ».
+// Same shape as the image generator's CommandBar, which is the reference:
+// a WHITE frame on the grey ground (« en blanc et non noir »), a grey
+// composer panel holding what is pinned and the words, the owner's sparkle
+// tile beside it, and under them one row of soft-filled chips — each a
+// DROPDOWN, not a line of toggles. Six size buttons and three duration
+// buttons side by side read as a form; « 720p ⌄ » and « 4s ⌄ » read as a
+// setting, which is what the generator does with Ambiance, Auto and 1K.
 //
-// THE ONE RULE THAT DRIVES EVERY CONTROL HERE, from the brief: never show a
-// capability the chosen engine does not really have. So the end-frame slot,
-// the sound switch, the durations and the sizes are all read from the
-// engine's own catalogue, and a control that does not apply is not drawn.
+// THE RULE THAT DRIVES EVERY CONTROL, from the owner's brief: never show a
+// capability the chosen engine does not really have. The end-frame slot, the
+// sound switch, the durations and the sizes are all read from the engine's
+// own catalogue, and what does not apply is not drawn.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { CHIP_ACTIVE, CHIP_BASE, CHIP_SLOT } from '../chip';
+import { CHIP_BASE, CHIP_SLOT } from '../chip';
 import { SendButton } from '../CommandBar';
 import { ACCEPTED_UPLOAD_TYPES } from '../upload-types';
 import { useLocale } from '@/lib/i18n/LocaleContext';
@@ -41,11 +42,13 @@ function Popover({
   onClose,
   children,
   align = 'left',
+  wide = false,
 }: {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
   align?: 'left' | 'right';
+  wide?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -68,9 +71,9 @@ function Popover({
   return (
     <div
       ref={ref}
-      className={`absolute bottom-[calc(100%+8px)] z-30 max-h-[340px] w-[280px] overflow-y-auto rounded-2xl bg-white p-2 shadow-[0_12px_32px_rgba(23,22,31,0.16)] ${
-        align === 'right' ? 'right-0' : 'left-0'
-      }`}
+      className={`absolute bottom-[calc(100%+8px)] z-30 max-h-[320px] overflow-y-auto rounded-2xl bg-white p-2 shadow-[0_12px_32px_rgba(23,22,31,0.16)] ${
+        wide ? 'w-[280px]' : 'w-[150px]'
+      } ${align === 'right' ? 'right-0' : 'left-0'}`}
     >
       {children}
     </div>
@@ -107,6 +110,74 @@ function Chevron() {
   );
 }
 
+/**
+ * One pinned image: the picture itself, with a cross to take it off again
+ * (owner, 2026-11-07: « quand on les ajoute, on peut avoir la possibilité de
+ * les supprimer et ajouter une autre image si on veut »). Clicking the
+ * picture opens the file picker, so replacing one is a single click rather
+ * than remove-then-add.
+ */
+function PinnedImage({
+  nodeId,
+  label,
+  onReplace,
+  onRemove,
+}: {
+  nodeId: string;
+  label: string;
+  onReplace: (file: File) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <span className="relative inline-flex flex-shrink-0">
+      <label className="cursor-pointer" title={label}>
+        <img
+          src={`/api/render-nodes/${nodeId}/image?size=thumb`}
+          alt={label}
+          className="h-9 w-12 rounded-md object-cover ring-1 ring-[#D5DCFF]"
+        />
+        <input
+          type="file"
+          className="hidden"
+          accept={ACCEPTED_UPLOAD_TYPES.join(',')}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onReplace(file);
+            e.target.value = '';
+          }}
+        />
+      </label>
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={label}
+        className="absolute -right-1.5 -top-1.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-md bg-[#17161F] text-[10px] leading-none text-white"
+      >
+        ×
+      </button>
+    </span>
+  );
+}
+
+/** An empty slot: the « + » that takes an image from the computer. */
+function AddSlot({ label, onPick }: { label: string; onPick: (file: File) => void }) {
+  return (
+    <label className={`cursor-pointer ${CHIP_SLOT}`} title={label}>
+      + {label}
+      <input
+        type="file"
+        className="hidden"
+        accept={ACCEPTED_UPLOAD_TYPES.join(',')}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onPick(file);
+          e.target.value = '';
+        }}
+      />
+    </label>
+  );
+}
+
 export interface VideoBarState {
   model: VideoModelKey;
   camera: CameraMoveKey;
@@ -124,7 +195,7 @@ export function VideoBar({
   sourceThumbId,
   endThumbId,
   onAttach,
-  onPickEnd,
+  onClearSource,
   onClearEnd,
   onSend,
   busy,
@@ -133,15 +204,15 @@ export function VideoBar({
   onChange: (next: Partial<VideoBarState>) => void;
   sourceThumbId: string | null;
   endThumbId: string | null;
-  onAttach: (file: File) => void;
-  onPickEnd: () => void;
+  onAttach: (file: File, slot: 'source' | 'end') => void;
+  onClearSource: () => void;
   onClearEnd: () => void;
   onSend: () => void;
   busy: boolean;
 }) {
   const { t, locale } = useLocale();
   const lang = locale === 'fr' ? 'fr' : 'en';
-  const [menu, setMenu] = useState<'model' | null>(null);
+  const [menu, setMenu] = useState<'model' | 'size' | 'duration' | null>(null);
   const [query, setQuery] = useState('');
 
   const engine = VIDEO_MODELS[state.model];
@@ -167,63 +238,38 @@ export function VideoBar({
 
   return (
     <div className="rounded-[24px] bg-white p-3 shadow-[0_8px_28px_rgba(23,22,31,0.08)]">
-      {/* ── The composer: what is pinned, then the words ──────────────── */}
       <div className="flex items-stretch gap-3">
         <div className="min-w-0 flex-1 rounded-2xl bg-[#F4F4F7] p-3">
+          {/* What is pinned. An image that IS there shows itself — the « + »
+              that put it there is gone, which is the whole point of pinning
+              it (owner: « Quand on ajoute une image de départ, elle est là
+              directement. Il n'y a plus encore ajout d'image au départ »). */}
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {sourceThumbId ? (
-              <img
-                src={`/api/render-nodes/${sourceThumbId}/image?size=thumb`}
-                alt={t('video.source')}
-                className="h-8 w-11 rounded-md object-cover ring-1 ring-[#D5DCFF]"
+              <PinnedImage
+                nodeId={sourceThumbId}
+                label={t('video.source')}
+                onReplace={(file) => onAttach(file, 'source')}
+                onRemove={onClearSource}
               />
-            ) : null}
-            {/* The « + » takes an image from the computer too (owner,
-                2026-11-07: « en cliquant sur le +, il doit aussi pouvoir
-                ajouter des images extérieures au site »). The strip of
-                recent renders stays the quick way; this is the other one. */}
-            <label className={`cursor-pointer ${CHIP_SLOT}`} title={t('video.addImage')}>
-              + {t('video.addImage')}
-              <input
-                type="file"
-                className="hidden"
-                accept={ACCEPTED_UPLOAD_TYPES.join(',')}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) onAttach(file);
-                  e.target.value = '';
-                }}
-              />
-            </label>
+            ) : (
+              <AddSlot label={t('video.addImage')} onPick={(file) => onAttach(file, 'source')} />
+            )}
 
-            {/* Drawn only where the endpoint really takes an end frame. */}
-            {caps.modes.includes('first_last') && (
+            {/* The end frame only exists once there is a start, and only on
+                the engines whose endpoint really takes one. */}
+            {sourceThumbId && caps.modes.includes('first_last') && (
               <>
                 <span className="text-[13px] text-[#8A8896]">→</span>
                 {endThumbId ? (
-                  <span className="relative inline-flex">
-                    <img
-                      src={`/api/render-nodes/${endThumbId}/image?size=thumb`}
-                      alt={t('video.endFrame')}
-                      className="h-8 w-11 rounded-md object-cover ring-1 ring-[#D5DCFF]"
-                    />
-                    <button
-                      type="button"
-                      onClick={onClearEnd}
-                      aria-label={t('video.noEndFrame')}
-                      className="absolute -right-1.5 -top-1.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-md bg-[#17161F] text-[10px] leading-none text-white"
-                    >
-                      ×
-                    </button>
-                  </span>
+                  <PinnedImage
+                    nodeId={endThumbId}
+                    label={t('video.endFrame')}
+                    onReplace={(file) => onAttach(file, 'end')}
+                    onRemove={onClearEnd}
+                  />
                 ) : (
-                  <button
-                    type="button"
-                    onClick={onPickEnd}
-                    className={`cursor-pointer ${CHIP_SLOT}`}
-                  >
-                    + {t('video.endFrame')}
-                  </button>
+                  <AddSlot label={t('video.endFrame')} onPick={(file) => onAttach(file, 'end')} />
                 )}
               </>
             )}
@@ -238,10 +284,8 @@ export function VideoBar({
           />
         </div>
 
-        {/* The owner's own sparkle tile, the same button the image
-            generator sends with — not a second, invented one. It carries the
-            cost, and `big` hides it below 640px where the small twin in the
-            controls row takes over. */}
+        {/* The owner's own sparkle tile, the button the image generator
+            sends with — not a second, invented one. It carries the cost. */}
         <SendButton
           big
           label={t('video.send')}
@@ -252,42 +296,75 @@ export function VideoBar({
         />
       </div>
 
-      {/* ── The controls ─────────────────────────────────────────────── */}
+      {/* ── One row of dropdown chips, as the generator has ──────────── */}
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {/* Size and duration, from the engine's own catalogue. */}
-        {resolutions.map((r) => (
+        <div className="relative">
           <button
-            key={r}
             type="button"
-            onClick={() => onChange({ resolution: r })}
-            className={`cursor-pointer ${r === state.resolution ? CHIP_ACTIVE : CHIP_BASE}`}
+            onClick={() => setMenu(menu === 'size' ? null : 'size')}
+            className={`cursor-pointer ${CHIP_BASE}`}
           >
-            {r}
+            {state.resolution}
+            <Chevron />
           </button>
-        ))}
-        {caps.durations.map((d) => (
+          <Popover open={menu === 'size'} onClose={close}>
+            {resolutions.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => {
+                  onChange({ resolution: r });
+                  close();
+                }}
+                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
+              >
+                {r}
+                {r === state.resolution && <Check />}
+              </button>
+            ))}
+          </Popover>
+        </div>
+
+        <div className="relative">
           <button
-            key={d}
             type="button"
-            onClick={() => onChange({ duration: d })}
-            className={`cursor-pointer ${d === state.duration ? CHIP_ACTIVE : CHIP_BASE}`}
+            onClick={() => setMenu(menu === 'duration' ? null : 'duration')}
+            className={`cursor-pointer ${CHIP_BASE}`}
           >
-            {d}s
+            {state.duration}s
+            <Chevron />
           </button>
-        ))}
+          <Popover open={menu === 'duration'} onClose={close}>
+            {caps.durations.map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => {
+                  onChange({ duration: d });
+                  close();
+                }}
+                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
+              >
+                {d}s{d === state.duration && <Check />}
+              </button>
+            ))}
+          </Popover>
+        </div>
 
         {/* A sound switch only where there is something to switch. */}
         {caps.audio === 'toggle' && (
           <button
             type="button"
             onClick={() => onChange({ audio: !state.audio })}
-            className={`cursor-pointer ${state.audio ? CHIP_ACTIVE : CHIP_BASE}`}
+            className={`cursor-pointer ${CHIP_BASE} ${
+              state.audio ? 'bg-[#EEF1FF] text-[#1E36D6]' : ''
+            }`}
           >
             {t('video.sound')}
           </button>
         )}
 
-        {/* ── The model chooser, where Krea puts it: last before send ── */}
+        {/* The model chooser, where Krea puts it: last before the send. */}
         <div className="relative ml-auto">
           <button
             type="button"
@@ -298,7 +375,7 @@ export function VideoBar({
             {engine.label}
             <Chevron />
           </button>
-          <Popover open={menu === 'model'} onClose={close} align="right">
+          <Popover open={menu === 'model'} onClose={close} align="right" wide>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -344,11 +421,7 @@ export function VideoBar({
           </Popover>
         </div>
 
-        {/* The price, read by the same function the server will debit with. */}
-        <span className="font-[family-name:var(--font-mono)] text-[12px] text-[#6B6878]">
-          {cost === null ? '—' : `${cost} ${t('video.credits')}`}
-        </span>
-
+        {/* The small twin of the send tile, for phones. */}
         <SendButton
           big={false}
           label={t('video.send')}

@@ -35,6 +35,9 @@ export function VideoSettings({
   environment,
   intensity,
   onChange,
+  recent,
+  sourceId,
+  onPickRecent,
 }: {
   camera: CameraMoveKey;
   environment: EnvironmentKey[];
@@ -44,6 +47,10 @@ export function VideoSettings({
     environment?: EnvironmentKey[];
     intensity?: IntensityKey;
   }) => void;
+  /** The account's own renders, in the column as on the generator. */
+  recent: readonly { id: string; projectName: string }[];
+  sourceId: string | null;
+  onPickRecent: (id: string) => void;
 }) {
   const { t, locale } = useLocale();
   const lang = locale === 'fr' ? 'fr' : 'en';
@@ -118,6 +125,34 @@ export function VideoSettings({
           ))}
         </div>
       </div>
+
+      {/* « Images récentes » belongs in this column, three per row, exactly
+          where the image generator keeps it — not as a strip across the
+          stage, which is what pushed the video panel off to one side. */}
+      {recent.length > 0 && (
+        <div>
+          <span className={LABEL}>{t('video.recent')}</span>
+          <div className="grid grid-cols-3 gap-1.5">
+            {recent.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                title={r.projectName}
+                onClick={() => onPickRecent(r.id)}
+                className={`aspect-[4/3] w-full cursor-pointer overflow-hidden rounded-lg ${
+                  r.id === sourceId ? 'ring-2 ring-[#2948FC]' : 'ring-1 ring-[#ECECF2]'
+                }`}
+              >
+                <img
+                  src={`/api/render-nodes/${r.id}/image?size=thumb`}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

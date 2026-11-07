@@ -84,8 +84,6 @@ export function VideoClient({
   // nobody had chosen.
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [endId, setEndId] = useState<string | null>(null);
-  /** Which slot the thumbnails and the « + » fill. */
-  const [picking, setPicking] = useState<'source' | 'end'>('source');
   /** The settings column, a drawer below 900px. */
   const [panelOpen, setPanelOpen] = useState(false);
   const [recent, setRecent] = useState(recentRenders);
@@ -150,7 +148,7 @@ export function VideoClient({
    * route a source photo takes — magic bytes checked server-side — and the
    * node it creates becomes the source like any other.
    */
-  async function attach(file: File) {
+  async function attach(file: File, slot: 'source' | 'end') {
     if (uploading || busy) return;
     setUploading(true);
     setError(null);
@@ -182,12 +180,8 @@ export function VideoClient({
         return;
       }
       const node = (await res.json()) as { id: string };
-      if (picking === 'end') {
-        setEndId(node.id);
-        setPicking('source');
-      } else {
-        setSourceId(node.id);
-      }
+      if (slot === 'end') setEndId(node.id);
+      else setSourceId(node.id);
       // It is one of the account's images now, so it joins the strip.
       setRecent((list) => [
         {
@@ -326,43 +320,6 @@ export function VideoClient({
             </div>
           )}
 
-          {recent.length > 0 && (
-            <div className="mt-4">
-              <p className={CAPTION}>
-                {picking === 'end' ? t('video.endFrame') : t('video.recent')}
-              </p>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {recent.map((r) => {
-                  const on = picking === 'end' ? r.id === endId : r.id === sourceId;
-                  return (
-                    <button
-                      key={r.id}
-                      type="button"
-                      title={r.projectName}
-                      onClick={() => {
-                        if (picking === 'end') {
-                          setEndId(r.id);
-                          setPicking('source');
-                        } else {
-                          setSourceId(r.id);
-                        }
-                      }}
-                      className={`h-[54px] w-[72px] flex-shrink-0 cursor-pointer overflow-hidden rounded-lg ${
-                        on ? 'ring-2 ring-[#2948FC]' : 'ring-1 ring-[#ECECF2]'
-                      }`}
-                    >
-                      <img
-                        src={`/api/render-nodes/${r.id}/image?size=thumb`}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {error && (
             <p className="mt-4 rounded-xl bg-[#FFE4E7] px-4 py-3 text-[13px] text-[#C21F33]">
               {error === 'INSUFFICIENT_CREDITS' || error === 'NO_ACTIVE_TIER'
@@ -429,8 +386,11 @@ export function VideoClient({
             onChange={(next) => setState((s) => ({ ...s, ...next }))}
             sourceThumbId={sourceId}
             endThumbId={endId}
-            onAttach={(file) => void attach(file)}
-            onPickEnd={() => setPicking('end')}
+            onAttach={(file, slot) => void attach(file, slot)}
+            onClearSource={() => {
+              setSourceId(null);
+              setEndId(null);
+            }}
             onClearEnd={() => setEndId(null)}
             onSend={() => void send()}
             busy={busy || uploading}
@@ -458,6 +418,12 @@ export function VideoClient({
             environment={state.environment}
             intensity={state.intensity}
             onChange={(next) => setState((s) => ({ ...s, ...next }))}
+            recent={recent}
+            sourceId={sourceId}
+            onPickRecent={(id) => {
+              setSourceId(id);
+              setPanelOpen(false);
+            }}
           />
         </aside>
       </>
