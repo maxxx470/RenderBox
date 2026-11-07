@@ -272,111 +272,127 @@ export function VideoClient({
           </button>
         </div>
 
-        <section className="min-h-0 flex-1 overflow-y-auto px-3.5 py-4 min-[900px]:px-5">
-          {recent.length === 0 && !sourceId ? (
-            <p className="py-16 text-center text-[13.5px] text-[#6B6878]">{t('video.noRender')}</p>
-          ) : (
-            <div className="grid gap-4 min-[860px]:grid-cols-2">
-              <figure className="m-0">
-                <figcaption className={CAPTION}>{t('video.source')}</figcaption>
-                {sourceId ? (
-                  <img
-                    src={`/api/render-nodes/${sourceId}/image`}
-                    alt=""
-                    className="w-full rounded-xl bg-white object-contain"
-                  />
-                ) : (
-                  <div className="flex h-44 items-center justify-center rounded-xl bg-white px-4 text-center text-[13px] text-[#8A8896]">
-                    {t('video.pickSource')}
-                  </div>
-                )}
-              </figure>
-              <figure className="m-0">
-                <figcaption className={CAPTION}>{t('video.result')}</figcaption>
-                {latestReady ? (
-                  <video
-                    src={`/api/video/jobs/${latestReady.id}/file`}
-                    controls
-                    playsInline
-                    preload="none"
-                    className="w-full rounded-xl bg-black"
-                  />
-                ) : (
-                  <div className="flex h-44 flex-col items-center justify-center gap-2 rounded-xl bg-white px-4 text-center text-[13px] text-[#8A8896]">
-                    {/* The module's own mark — the engine cards wear their
-                        vendor's logo, so this one speaks for the module. */}
+        <section className="min-h-0 flex-1 overflow-y-auto px-2.5 pt-4 min-[640px]:px-5 min-[640px]:pt-5">
+          {/* On a phone the header already names the page (owner,
+              2026-10-15), so this title is desktop-only — the same block
+              the image generator opens with. */}
+          <div className="mb-4 max-[899px]:hidden">
+            <h2 className="mb-1 font-[family-name:var(--font-display)] text-base font-semibold text-[#17161F]">
+              {t('video.title')}
+            </h2>
+            <p className="text-[13px] text-[#8A8896]">{t('video.subtitle')}</p>
+          </div>
+          {/* The stage fills the height it is given and centres what
+              is in it, as the generator's fan does — otherwise a short
+              empty state sits at the top of a grey void. */}
+          <div className="mx-auto flex min-h-full max-w-[920px] flex-col justify-center gap-4 pb-2">
+            {recent.length === 0 && !sourceId ? (
+              <p className="rounded-2xl bg-white px-6 py-14 text-center text-[13.5px] text-[#6B6878]">
+                {t('video.noRender')}
+              </p>
+            ) : (
+              <div className="grid gap-4 min-[860px]:grid-cols-2">
+                <figure className="m-0">
+                  <figcaption className={CAPTION}>{t('video.source')}</figcaption>
+                  {sourceId ? (
                     <img
-                      src="/engines/video.webp"
+                      src={`/api/render-nodes/${sourceId}/image`}
                       alt=""
-                      aria-hidden
-                      width={36}
-                      height={36}
-                      className="h-9 w-9 rounded-lg bg-white opacity-80"
+                      className="w-full rounded-xl bg-white object-contain"
                     />
-                    {working ? t('video.statusRunning') : t('video.resultEmpty')}
-                  </div>
-                )}
-              </figure>
-            </div>
-          )}
-
-          {error && (
-            <p className="mt-4 rounded-xl bg-[#FFE4E7] px-4 py-3 text-[13px] text-[#C21F33]">
-              {error === 'INSUFFICIENT_CREDITS' || error === 'NO_ACTIVE_TIER'
-                ? t('video.errorCredits')
-                : error === 'PRICE_NOT_VERIFIED'
-                  ? t('video.priceUnknown')
-                  : t('video.errorGeneric')}
-            </p>
-          )}
-
-          {jobs.length > 0 && (
-            <div className="mt-5">
-              <p className={CAPTION}>{t('video.yourClips')}</p>
-              <ul className="flex flex-col gap-2">
-                {jobs.map((job) => (
-                  <li
-                    key={job.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-3 py-2.5"
-                  >
-                    <span className="flex items-center gap-2 text-[13px] text-[#17161F]">
+                  ) : (
+                    <div className="flex h-44 items-center justify-center rounded-xl bg-white px-4 text-center text-[13px] text-[#8A8896]">
+                      {t('video.pickSource')}
+                    </div>
+                  )}
+                </figure>
+                <figure className="m-0">
+                  <figcaption className={CAPTION}>{t('video.result')}</figcaption>
+                  {latestReady ? (
+                    <video
+                      src={`/api/video/jobs/${latestReady.id}/file`}
+                      controls
+                      playsInline
+                      preload="none"
+                      className="w-full rounded-xl bg-black"
+                    />
+                  ) : (
+                    <div className="flex h-44 flex-col items-center justify-center gap-2 rounded-xl bg-white px-4 text-center text-[13px] text-[#8A8896]">
+                      {/* The module's own mark — the engine cards wear their
+                        vendor's logo, so this one speaks for the module. */}
                       <img
-                        src={
-                          VIDEO_MODELS[job.model as VideoModelKey]?.logo ?? '/engines/video.webp'
-                        }
+                        src="/engines/video.webp"
                         alt=""
                         aria-hidden
-                        className="h-4 w-4 rounded bg-white"
+                        width={36}
+                        height={36}
+                        className="h-9 w-9 rounded-lg bg-white opacity-80"
                       />
-                      {VIDEO_MODELS[job.model as VideoModelKey]?.label ?? job.model} ·{' '}
-                      {job.duration}s · {job.resolution}
-                    </span>
-                    <span className="flex items-center gap-3">
-                      {job.status === 'SUCCEEDED' && (
-                        <a
-                          href={`/api/video/jobs/${job.id}/file`}
-                          className="text-[12.5px] font-semibold text-[#2948FC] hover:underline"
-                        >
-                          {t('video.open')}
-                        </a>
-                      )}
-                      <span
-                        className={`rounded-md px-2 py-0.5 text-[11.5px] font-semibold ${
-                          job.status === 'SUCCEEDED'
-                            ? 'bg-[#E3F3E9] text-[#1E7A3D]'
-                            : job.status === 'FAILED' || job.status === 'EXPIRED'
-                              ? 'bg-[#FFE4E7] text-[#C21F33]'
-                              : 'bg-[#EEF1FF] text-[#1E36D6]'
-                        }`}
-                      >
-                        {statusLabel[job.status]}
+                      {working ? t('video.statusRunning') : t('video.resultEmpty')}
+                    </div>
+                  )}
+                </figure>
+              </div>
+            )}
+
+            {error && (
+              <p className="mt-4 rounded-xl bg-[#FFE4E7] px-4 py-3 text-[13px] text-[#C21F33]">
+                {error === 'INSUFFICIENT_CREDITS' || error === 'NO_ACTIVE_TIER'
+                  ? t('video.errorCredits')
+                  : error === 'PRICE_NOT_VERIFIED'
+                    ? t('video.priceUnknown')
+                    : t('video.errorGeneric')}
+              </p>
+            )}
+
+            {jobs.length > 0 && (
+              <div className="mt-5">
+                <p className={CAPTION}>{t('video.yourClips')}</p>
+                <ul className="flex flex-col gap-2">
+                  {jobs.map((job) => (
+                    <li
+                      key={job.id}
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white px-3 py-2.5"
+                    >
+                      <span className="flex items-center gap-2 text-[13px] text-[#17161F]">
+                        <img
+                          src={
+                            VIDEO_MODELS[job.model as VideoModelKey]?.logo ?? '/engines/video.webp'
+                          }
+                          alt=""
+                          aria-hidden
+                          className="h-4 w-4 rounded bg-white"
+                        />
+                        {VIDEO_MODELS[job.model as VideoModelKey]?.label ?? job.model} ·{' '}
+                        {job.duration}s · {job.resolution}
                       </span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                      <span className="flex items-center gap-3">
+                        {job.status === 'SUCCEEDED' && (
+                          <a
+                            href={`/api/video/jobs/${job.id}/file`}
+                            className="text-[12.5px] font-semibold text-[#2948FC] hover:underline"
+                          >
+                            {t('video.open')}
+                          </a>
+                        )}
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-[11.5px] font-semibold ${
+                            job.status === 'SUCCEEDED'
+                              ? 'bg-[#E3F3E9] text-[#1E7A3D]'
+                              : job.status === 'FAILED' || job.status === 'EXPIRED'
+                                ? 'bg-[#FFE4E7] text-[#C21F33]'
+                                : 'bg-[#EEF1FF] text-[#1E36D6]'
+                          }`}
+                        >
+                          {statusLabel[job.status]}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </section>
 
         {/* The command bar, at the bottom of the page area. */}

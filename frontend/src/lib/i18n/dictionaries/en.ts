@@ -209,6 +209,7 @@ const en: Record<keyof typeof fr, string> = {
   'video.settings': 'Settings',
   'video.addImage': 'Image',
   'video.projectName': 'Video of {date}',
+  'video.startFrame': 'Start frame',
   'video.refunded': 'Your credits have been given back.',
   'enhance.title': 'Enhance',
   'enhance.barPlaceholder': 'Describe what to improve',

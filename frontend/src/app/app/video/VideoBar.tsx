@@ -19,7 +19,7 @@
 // own catalogue, and what does not apply is not drawn.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CHIP_BASE, CHIP_SLOT } from '../chip';
-import { SendButton } from '../CommandBar';
+import { GLOW, SendButton } from '../CommandBar';
 import { ACCEPTED_UPLOAD_TYPES } from '../upload-types';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { videoPrice } from '@/lib/provider-cost';
@@ -219,6 +219,10 @@ export function VideoBar({
   const caps = engine.capabilities;
   const resolutions = videoResolutionsFor(state.model, state.duration);
   const cost = videoPrice(state.model, state.duration, state.resolution);
+  /** Does this engine's endpoint really accept a closing frame? Veo 3.1,
+   *  Seedance 2.5, Kling 3.0 and Wan 2.7 do; Hailuo takes one image and
+   *  Gemini Omni takes references only, so they get a single slot. */
+  const takesEndFrame = caps.modes.includes('first_last');
 
   const close = () => {
     setMenu(null);
@@ -237,199 +241,218 @@ export function VideoBar({
   });
 
   return (
-    <div className="rounded-[24px] bg-white p-3 shadow-[0_8px_28px_rgba(23,22,31,0.08)]">
-      <div className="flex items-stretch gap-3">
-        <div className="min-w-0 flex-1 rounded-2xl bg-[#F4F4F7] p-3">
-          {/* What is pinned. An image that IS there shows itself — the « + »
+    // The generator's own framing, measured from CommandBar rather than
+    // guessed: the same outer padding, the same 920px ceiling so the bar
+    // lines up with the stage above it, the same soft light behind the
+    // frame, and z-20 so the menus open upwards over the page.
+    <div className="relative isolate z-20 px-2.5 pb-2.5 pt-3 min-[640px]:px-5 min-[640px]:pb-4 min-[640px]:pt-5">
+      <div className="relative mx-auto max-w-[920px]">
+        <div aria-hidden className={GLOW} />
+        <div className="rounded-[24px] bg-white p-2 shadow-[0_24px_60px_-28px_rgba(41,72,252,0.55),0_1px_2px_rgba(23,22,31,0.06)]">
+          <div className="flex items-stretch gap-3">
+            <div className="min-w-0 flex-1 rounded-2xl bg-[#F4F4F7] p-3">
+              {/* What is pinned. An image that IS there shows itself — the « + »
               that put it there is gone, which is the whole point of pinning
               it (owner: « Quand on ajoute une image de départ, elle est là
               directement. Il n'y a plus encore ajout d'image au départ »). */}
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            {sourceThumbId ? (
-              <PinnedImage
-                nodeId={sourceThumbId}
-                label={t('video.source')}
-                onReplace={(file) => onAttach(file, 'source')}
-                onRemove={onClearSource}
-              />
-            ) : (
-              <AddSlot label={t('video.addImage')} onPick={(file) => onAttach(file, 'source')} />
-            )}
-
-            {/* The end frame only exists once there is a start, and only on
-                the engines whose endpoint really takes one. */}
-            {sourceThumbId && caps.modes.includes('first_last') && (
-              <>
-                <span className="text-[13px] text-[#8A8896]">→</span>
-                {endThumbId ? (
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                {sourceThumbId ? (
                   <PinnedImage
-                    nodeId={endThumbId}
-                    label={t('video.endFrame')}
-                    onReplace={(file) => onAttach(file, 'end')}
-                    onRemove={onClearEnd}
+                    nodeId={sourceThumbId}
+                    label={takesEndFrame ? t('video.startFrame') : t('video.source')}
+                    onReplace={(file) => onAttach(file, 'source')}
+                    onRemove={onClearSource}
                   />
                 ) : (
-                  <AddSlot label={t('video.endFrame')} onPick={(file) => onAttach(file, 'end')} />
+                  <AddSlot
+                    label={takesEndFrame ? t('video.startFrame') : t('video.addImage')}
+                    onPick={(file) => onAttach(file, 'source')}
+                  />
                 )}
-              </>
-            )}
+
+                {/* BOTH slots appear as soon as an engine that takes a last
+                frame is chosen (owner, 2026-11-07: « pour les modèles qui
+                font last frame et first frame, tu dois mettre ça quand on
+                choisit le modèle : tu dois mettre les deux cases »). Waiting
+                for a start image to reveal the second one hid the engine's
+                whole point; whether to fill it stays the user's call. */}
+                {takesEndFrame && (
+                  <>
+                    <span className="text-[13px] text-[#8A8896]">→</span>
+                    {endThumbId ? (
+                      <PinnedImage
+                        nodeId={endThumbId}
+                        label={t('video.endFrame')}
+                        onReplace={(file) => onAttach(file, 'end')}
+                        onRemove={onClearEnd}
+                      />
+                    ) : (
+                      <AddSlot
+                        label={t('video.endFrame')}
+                        onPick={(file) => onAttach(file, 'end')}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+
+              <textarea
+                value={state.note}
+                onChange={(e) => onChange({ note: e.target.value })}
+                rows={2}
+                placeholder={t('video.notePlaceholder')}
+                className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-[#17161F] outline-none placeholder:text-[#8A8896]"
+              />
+            </div>
+
+            {/* The owner's own sparkle tile, the button the image generator
+            sends with — not a second, invented one. It carries the cost. */}
+            <SendButton
+              big
+              label={t('video.send')}
+              {...(cost === null ? {} : { cost })}
+              disabled={cost === null || !sourceThumbId}
+              busy={busy}
+              onClick={onSend}
+            />
           </div>
 
-          <textarea
-            value={state.note}
-            onChange={(e) => onChange({ note: e.target.value })}
-            rows={2}
-            placeholder={t('video.notePlaceholder')}
-            className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-[#17161F] outline-none placeholder:text-[#8A8896]"
-          />
-        </div>
-
-        {/* The owner's own sparkle tile, the button the image generator
-            sends with — not a second, invented one. It carries the cost. */}
-        <SendButton
-          big
-          label={t('video.send')}
-          {...(cost === null ? {} : { cost })}
-          disabled={cost === null || !sourceThumbId}
-          busy={busy}
-          onClick={onSend}
-        />
-      </div>
-
-      {/* ── One row of dropdown chips, as the generator has ──────────── */}
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMenu(menu === 'size' ? null : 'size')}
-            className={`cursor-pointer ${CHIP_BASE}`}
-          >
-            {state.resolution}
-            <Chevron />
-          </button>
-          <Popover open={menu === 'size'} onClose={close}>
-            {resolutions.map((r) => (
+          {/* ── One row of dropdown chips, as the generator has ──────────── */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="relative">
               <button
-                key={r}
                 type="button"
-                onClick={() => {
-                  onChange({ resolution: r });
-                  close();
-                }}
-                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
+                onClick={() => setMenu(menu === 'size' ? null : 'size')}
+                className={`cursor-pointer ${CHIP_BASE}`}
               >
-                {r}
-                {r === state.resolution && <Check />}
+                {state.resolution}
+                <Chevron />
               </button>
-            ))}
-          </Popover>
-        </div>
+              <Popover open={menu === 'size'} onClose={close}>
+                {resolutions.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => {
+                      onChange({ resolution: r });
+                      close();
+                    }}
+                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
+                  >
+                    {r}
+                    {r === state.resolution && <Check />}
+                  </button>
+                ))}
+              </Popover>
+            </div>
 
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMenu(menu === 'duration' ? null : 'duration')}
-            className={`cursor-pointer ${CHIP_BASE}`}
-          >
-            {state.duration}s
-            <Chevron />
-          </button>
-          <Popover open={menu === 'duration'} onClose={close}>
-            {caps.durations.map((d) => (
+            <div className="relative">
               <button
-                key={d}
                 type="button"
-                onClick={() => {
-                  onChange({ duration: d });
-                  close();
-                }}
-                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
+                onClick={() => setMenu(menu === 'duration' ? null : 'duration')}
+                className={`cursor-pointer ${CHIP_BASE}`}
               >
-                {d}s{d === state.duration && <Check />}
+                {state.duration}s
+                <Chevron />
               </button>
-            ))}
-          </Popover>
-        </div>
+              <Popover open={menu === 'duration'} onClose={close}>
+                {caps.durations.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => {
+                      onChange({ duration: d });
+                      close();
+                    }}
+                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
+                  >
+                    {d}s{d === state.duration && <Check />}
+                  </button>
+                ))}
+              </Popover>
+            </div>
 
-        {/* A sound switch only where there is something to switch. */}
-        {caps.audio === 'toggle' && (
-          <button
-            type="button"
-            onClick={() => onChange({ audio: !state.audio })}
-            className={`cursor-pointer ${CHIP_BASE} ${
-              state.audio ? 'bg-[#EEF1FF] text-[#1E36D6]' : ''
-            }`}
-          >
-            {t('video.sound')}
-          </button>
-        )}
-
-        {/* The model chooser, where Krea puts it: last before the send. */}
-        <div className="relative ml-auto">
-          <button
-            type="button"
-            onClick={() => setMenu(menu === 'model' ? null : 'model')}
-            className={`cursor-pointer ${CHIP_BASE}`}
-          >
-            <img src={engine.logo} alt="" aria-hidden className="h-4 w-4 rounded bg-white" />
-            {engine.label}
-            <Chevron />
-          </button>
-          <Popover open={menu === 'model'} onClose={close} align="right" wide>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('video.searchModels')}
-              className="mb-1 w-full rounded-lg bg-[#F4F4F7] px-2.5 py-2 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896]"
-            />
-            <p className="px-2.5 pb-1 pt-1 font-[family-name:var(--font-mono)] text-[10.5px] uppercase tracking-[0.14em] text-[#8A8896]">
-              {t('video.title')}
-            </p>
-            {matching.map((key) => {
-              const m = VIDEO_MODELS[key];
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => {
-                    onChange({ model: key });
-                    close();
-                  }}
-                  className="flex w-full cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-[#F4F6FF]"
-                >
-                  <img
-                    src={m.logo}
-                    alt=""
-                    aria-hidden
-                    className="mt-0.5 h-5 w-5 flex-shrink-0 rounded bg-white"
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[13px] font-semibold text-[#17161F]">
-                      {m.label}
-                    </span>
-                    <span className="block text-[11.5px] leading-snug text-[#8A8896]">
-                      {m.vendor} · {m.positioning[lang]}
-                    </span>
-                  </span>
-                  {key === state.model && <Check />}
-                </button>
-              );
-            })}
-            {matching.length === 0 && (
-              <p className="px-2.5 py-3 text-[12.5px] text-[#8A8896]">{t('video.noModel')}</p>
+            {/* A sound switch only where there is something to switch. */}
+            {caps.audio === 'toggle' && (
+              <button
+                type="button"
+                onClick={() => onChange({ audio: !state.audio })}
+                className={`cursor-pointer ${CHIP_BASE} ${
+                  state.audio ? 'bg-[#EEF1FF] text-[#1E36D6]' : ''
+                }`}
+              >
+                {t('video.sound')}
+              </button>
             )}
-          </Popover>
-        </div>
 
-        {/* The small twin of the send tile, for phones. */}
-        <SendButton
-          big={false}
-          label={t('video.send')}
-          {...(cost === null ? {} : { cost })}
-          disabled={cost === null || !sourceThumbId}
-          busy={busy}
-          onClick={onSend}
-        />
+            {/* The model chooser, where Krea puts it: last before the send. */}
+            <div className="relative ml-auto">
+              <button
+                type="button"
+                onClick={() => setMenu(menu === 'model' ? null : 'model')}
+                className={`cursor-pointer ${CHIP_BASE}`}
+              >
+                <img src={engine.logo} alt="" aria-hidden className="h-4 w-4 rounded bg-white" />
+                {engine.label}
+                <Chevron />
+              </button>
+              <Popover open={menu === 'model'} onClose={close} align="right" wide>
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t('video.searchModels')}
+                  className="mb-1 w-full rounded-lg bg-[#F4F4F7] px-2.5 py-2 text-[13px] text-[#17161F] outline-none placeholder:text-[#8A8896]"
+                />
+                <p className="px-2.5 pb-1 pt-1 font-[family-name:var(--font-mono)] text-[10.5px] uppercase tracking-[0.14em] text-[#8A8896]">
+                  {t('video.title')}
+                </p>
+                {matching.map((key) => {
+                  const m = VIDEO_MODELS[key];
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => {
+                        onChange({ model: key });
+                        close();
+                      }}
+                      className="flex w-full cursor-pointer items-start gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-[#F4F6FF]"
+                    >
+                      <img
+                        src={m.logo}
+                        alt=""
+                        aria-hidden
+                        className="mt-0.5 h-5 w-5 flex-shrink-0 rounded bg-white"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[13px] font-semibold text-[#17161F]">
+                          {m.label}
+                        </span>
+                        <span className="block text-[11.5px] leading-snug text-[#8A8896]">
+                          {m.vendor} · {m.positioning[lang]}
+                        </span>
+                      </span>
+                      {key === state.model && <Check />}
+                    </button>
+                  );
+                })}
+                {matching.length === 0 && (
+                  <p className="px-2.5 py-3 text-[12.5px] text-[#8A8896]">{t('video.noModel')}</p>
+                )}
+              </Popover>
+            </div>
+
+            {/* The small twin of the send tile, for phones. */}
+            <SendButton
+              big={false}
+              label={t('video.send')}
+              {...(cost === null ? {} : { cost })}
+              disabled={cost === null || !sourceThumbId}
+              busy={busy}
+              onClick={onSend}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -212,6 +212,7 @@ const fr = {
   'video.settings': 'Réglages',
   'video.addImage': 'Image',
   'video.projectName': 'Vidéo du {date}',
+  'video.startFrame': 'Image de départ',
   'video.refunded': 'Vos crédits vous ont été rendus.',
   'enhance.title': 'Améliorer',
   'enhance.barPlaceholder': 'Décrivez ce qu’il faut améliorer',
