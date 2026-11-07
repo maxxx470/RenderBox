@@ -18,6 +18,7 @@
 // engine's own catalogue, and a control that does not apply is not drawn.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CHIP_ACTIVE, CHIP_BASE, CHIP_SLOT } from '../chip';
+import { SendButton } from '../CommandBar';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { videoPrice } from '@/lib/provider-cost';
 import {
@@ -26,16 +27,10 @@ import {
   videoResolutionsFor,
   type VideoModelKey,
 } from '@/lib/server/generation/video-models';
-import {
-  ANIMATION_INTENSITY,
-  CAMERA_MOVES,
-  CAMERA_MOVE_KEYS,
-  ENVIRONMENT_ELEMENTS,
-  ENVIRONMENT_KEYS,
-  INTENSITY_KEYS,
-  type CameraMoveKey,
-  type EnvironmentKey,
-  type IntensityKey,
+import type {
+  CameraMoveKey,
+  EnvironmentKey,
+  IntensityKey,
 } from '@/lib/server/generation/video-moves';
 
 /** A popover that opens UPWARD, because the bar sits at the bottom of the
@@ -145,7 +140,7 @@ export function VideoBar({
 }) {
   const { t, locale } = useLocale();
   const lang = locale === 'fr' ? 'fr' : 'en';
-  const [menu, setMenu] = useState<'model' | 'camera' | 'moves' | null>(null);
+  const [menu, setMenu] = useState<'model' | null>(null);
   const [query, setQuery] = useState('');
 
   const engine = VIDEO_MODELS[state.model];
@@ -172,145 +167,84 @@ export function VideoBar({
   return (
     <div className="rounded-[24px] bg-white p-3 shadow-[0_8px_28px_rgba(23,22,31,0.08)]">
       {/* ── The composer: what is pinned, then the words ──────────────── */}
-      <div className="rounded-2xl bg-[#F4F4F7] p-3">
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={onPickSource}
-            className={sourceThumbId ? 'relative' : CHIP_SLOT}
-            title={t('video.source')}
-          >
-            {sourceThumbId ? (
-              <img
-                src={`/api/render-nodes/${sourceThumbId}/image?size=thumb`}
-                alt={t('video.source')}
-                className="h-8 w-11 cursor-pointer rounded-md object-cover ring-1 ring-[#D5DCFF]"
-              />
-            ) : (
-              <>+ {t('video.source')}</>
-            )}
-          </button>
+      <div className="flex items-stretch gap-3">
+        <div className="min-w-0 flex-1 rounded-2xl bg-[#F4F4F7] p-3">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onPickSource}
+              className={sourceThumbId ? 'relative' : CHIP_SLOT}
+              title={t('video.source')}
+            >
+              {sourceThumbId ? (
+                <img
+                  src={`/api/render-nodes/${sourceThumbId}/image?size=thumb`}
+                  alt={t('video.source')}
+                  className="h-8 w-11 cursor-pointer rounded-md object-cover ring-1 ring-[#D5DCFF]"
+                />
+              ) : (
+                <>+ {t('video.source')}</>
+              )}
+            </button>
 
-          {/* Drawn only where the endpoint really takes an end frame. */}
-          {caps.modes.includes('first_last') && (
-            <>
-              <span className="text-[13px] text-[#8A8896]">→</span>
-              {endThumbId ? (
-                <span className="relative inline-flex">
-                  <img
-                    src={`/api/render-nodes/${endThumbId}/image?size=thumb`}
-                    alt={t('video.endFrame')}
-                    className="h-8 w-11 rounded-md object-cover ring-1 ring-[#D5DCFF]"
-                  />
+            {/* Drawn only where the endpoint really takes an end frame. */}
+            {caps.modes.includes('first_last') && (
+              <>
+                <span className="text-[13px] text-[#8A8896]">→</span>
+                {endThumbId ? (
+                  <span className="relative inline-flex">
+                    <img
+                      src={`/api/render-nodes/${endThumbId}/image?size=thumb`}
+                      alt={t('video.endFrame')}
+                      className="h-8 w-11 rounded-md object-cover ring-1 ring-[#D5DCFF]"
+                    />
+                    <button
+                      type="button"
+                      onClick={onClearEnd}
+                      aria-label={t('video.noEndFrame')}
+                      className="absolute -right-1.5 -top-1.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-md bg-[#17161F] text-[10px] leading-none text-white"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ) : (
                   <button
                     type="button"
-                    onClick={onClearEnd}
-                    aria-label={t('video.noEndFrame')}
-                    className="absolute -right-1.5 -top-1.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-md bg-[#17161F] text-[10px] leading-none text-white"
+                    onClick={onPickEnd}
+                    className={`cursor-pointer ${CHIP_SLOT}`}
                   >
-                    ×
+                    + {t('video.endFrame')}
                   </button>
-                </span>
-              ) : (
-                <button type="button" onClick={onPickEnd} className={`cursor-pointer ${CHIP_SLOT}`}>
-                  + {t('video.endFrame')}
-                </button>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
+          </div>
+
+          <textarea
+            value={state.note}
+            onChange={(e) => onChange({ note: e.target.value })}
+            rows={2}
+            placeholder={t('video.notePlaceholder')}
+            className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-[#17161F] outline-none placeholder:text-[#8A8896]"
+          />
         </div>
 
-        <textarea
-          value={state.note}
-          onChange={(e) => onChange({ note: e.target.value })}
-          rows={2}
-          placeholder={t('video.notePlaceholder')}
-          className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-[#17161F] outline-none placeholder:text-[#8A8896]"
+        {/* The owner's own sparkle tile, the same button the image
+            generator sends with — not a second, invented one. It carries the
+            cost, and `big` hides it below 640px where the small twin in the
+            controls row takes over. */}
+        <SendButton
+          big
+          label={t('video.send')}
+          {...(cost === null ? {} : { cost })}
+          disabled={cost === null || !sourceThumbId}
+          busy={busy}
+          onClick={onSend}
         />
       </div>
 
       {/* ── The controls ─────────────────────────────────────────────── */}
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        {/* Camera movement */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMenu(menu === 'camera' ? null : 'camera')}
-            className={`cursor-pointer ${CHIP_BASE}`}
-          >
-            {CAMERA_MOVES[state.camera][lang]}
-            <Chevron />
-          </button>
-          <Popover open={menu === 'camera'} onClose={close}>
-            {CAMERA_MOVE_KEYS.map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => {
-                  onChange({ camera: key });
-                  close();
-                }}
-                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
-              >
-                {CAMERA_MOVES[key][lang]}
-                {key === state.camera && <Check />}
-              </button>
-            ))}
-          </Popover>
-        </div>
-
-        {/* What may move */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMenu(menu === 'moves' ? null : 'moves')}
-            className={`cursor-pointer ${state.environment.length > 0 ? CHIP_ACTIVE : CHIP_BASE}`}
-          >
-            {t('video.environment')}
-            {state.environment.length > 0 && ` · ${state.environment.length}`}
-            <Chevron />
-          </button>
-          <Popover open={menu === 'moves'} onClose={close}>
-            <p className="px-2.5 pb-1 pt-1 text-[11.5px] leading-snug text-[#8A8896]">
-              {t('video.environmentNote')}
-            </p>
-            {ENVIRONMENT_KEYS.map((key) => {
-              const on = state.environment.includes(key);
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() =>
-                    onChange({
-                      environment: on
-                        ? state.environment.filter((k) => k !== key)
-                        : [...state.environment, key],
-                    })
-                  }
-                  className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-[#3D3B49] hover:bg-[#F4F6FF]"
-                >
-                  {ENVIRONMENT_ELEMENTS[key][lang]}
-                  {on && <Check />}
-                </button>
-              );
-            })}
-          </Popover>
-        </div>
-
-        {/* Intensity — three steps, never a slider. */}
-        {INTENSITY_KEYS.map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onChange({ intensity: key })}
-            className={`cursor-pointer ${key === state.intensity ? CHIP_ACTIVE : CHIP_BASE}`}
-          >
-            {ANIMATION_INTENSITY[key][lang]}
-          </button>
-        ))}
-
-        <span className="mx-0.5 hidden h-5 w-px bg-[#ECECF2] min-[720px]:block" />
-
         {/* Size and duration, from the engine's own catalogue. */}
         {resolutions.map((r) => (
           <button
@@ -406,25 +340,14 @@ export function VideoBar({
           {cost === null ? '—' : `${cost} ${t('video.credits')}`}
         </span>
 
-        <button
-          type="button"
+        <SendButton
+          big={false}
+          label={t('video.send')}
+          {...(cost === null ? {} : { cost })}
+          disabled={cost === null || !sourceThumbId}
+          busy={busy}
           onClick={onSend}
-          disabled={busy || cost === null || !sourceThumbId}
-          aria-label={t('video.send')}
-          title={t('video.send')}
-          className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] text-white transition-[filter,transform] duration-150 ease-out enabled:hover:brightness-110 enabled:active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <svg viewBox="0 0 20 20" className="h-5 w-5" aria-hidden>
-            <path
-              d="M10 16V5M10 5l-4.5 4.5M10 5l4.5 4.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.9"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        />
       </div>
     </div>
   );
