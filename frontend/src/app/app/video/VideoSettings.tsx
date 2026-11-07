@@ -16,7 +16,6 @@
 // de couleurs … des couleurs unies »). A tile whose icon is not there yet
 // shows its caption alone rather than a broken image, so the column works
 // before and after the pictures land.
-import { useState } from 'react';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { CHIP_ACTIVE, CHIP_BASE } from '../chip';
 import {
@@ -44,14 +43,23 @@ const LABEL =
 const RECENT_SHOWN = 6;
 
 /**
- * One choice: its icon over a short caption. The picture is flat ink, so the
- * chosen state is carried by the TILE — blue tint, blue caption — and never
- * by recolouring a raster, which never looks right.
+ * One choice: its glyph over a short caption.
+ *
+ * The glyph is an ALPHA MASK, not a picture (2026-11-07, owner: « est-ce
+ * possible que tu mettes les images sur fond transparent et que, dans la
+ * sélection, toute la surface blanche devienne bleue … les traits de
+ * l'icône se mettent en blanc »). A white-backed raster showed its own
+ * white square against the column's grey, and a selected tile could only
+ * ever tint around it — « on ne sent même pas qu'on a sélectionné ». As a
+ * mask the file carries the SHAPE and the colour comes from `currentColor`,
+ * so the selected tile goes solid blue and the strokes turn white with it.
  *
  * 28px, not the 20px it started at: at 20 the four arrows of « Avancée » and
- * « Recul » collapsed into the same grey smudge and the two tiles could not
- * be told apart, which is the one thing these icons exist to prevent. The
- * eight extra pixels cost about 40px of column and the column has the room.
+ * « Recul » collapsed into the same smudge and the two tiles could not be
+ * told apart, which is the one thing these icons exist to prevent.
+ *
+ * A file that is not there yet simply paints nothing — no broken image, no
+ * error handler — and the caption still names the choice.
  */
 function Tile({
   icon,
@@ -66,7 +74,6 @@ function Tile({
   on: boolean;
   onClick: () => void;
 }) {
-  const [hasIcon, setHasIcon] = useState(true);
   return (
     <button
       type="button"
@@ -74,20 +81,23 @@ function Tile({
       aria-pressed={on}
       onClick={onClick}
       className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 transition-colors ${
-        on ? 'bg-[#EEF1FF] text-[#1E36D6]' : 'bg-[#F4F4F7] text-[#3D3B49] hover:bg-[#E9E9EE]'
+        on ? 'bg-[#2948FC] text-white' : 'bg-[#F4F4F7] text-[#3D3B49] hover:bg-[#E9E9EE]'
       }`}
     >
-      {hasIcon && (
-        <img
-          src={icon}
-          alt=""
-          aria-hidden
-          width={28}
-          height={28}
-          className="h-7 w-7"
-          onError={() => setHasIcon(false)}
-        />
-      )}
+      <span
+        aria-hidden
+        className="h-7 w-7 shrink-0 bg-current"
+        style={{
+          maskImage: `url("${icon}")`,
+          maskSize: 'contain',
+          maskPosition: 'center',
+          maskRepeat: 'no-repeat',
+          WebkitMaskImage: `url("${icon}")`,
+          WebkitMaskSize: 'contain',
+          WebkitMaskPosition: 'center',
+          WebkitMaskRepeat: 'no-repeat',
+        }}
+      />
       <span className="w-full text-center text-[10.5px] font-medium leading-tight">{caption}</span>
     </button>
   );
