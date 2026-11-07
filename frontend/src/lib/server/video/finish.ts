@@ -18,6 +18,7 @@ import { refundCredits } from '@/lib/server/generation/tier-quota';
 import { uploadBuffer } from '@/lib/server/upload/vercel-blob-client';
 import { createLogger } from '@/lib/server/logger';
 import { decideVideoSettlement, type VideoJobStatus } from './settle';
+import { isR2Configured, putVideo, videoKey } from './r2';
 import { downloadVideo, readVideoTask } from './kie-video';
 
 const log = createLogger();
@@ -68,13 +69,20 @@ export async function finishVideoJob(
   if (decision.store && record.videoUrl) {
     try {
       const { buffer, mimeType: type } = await downloadVideo(record.videoUrl);
-      // TODO(video): this lands on Vercel Blob, which the owner wants off
-      // Vercel's bandwidth. The R2 move is the next commit; the field and
-      // the proxy do not change, only where the bytes live.
-      const stored = await uploadBuffer(`video/${job.userId}/${job.id}.mp4`, buffer, type);
-      blobUrl = stored.blobUrl;
+      // R2 when it is configured: private, and read straight from a bucket
+      // whose egress is free instead of through Vercel's bandwidth. Without
+      // it the clip still lands somewhere and still works — on Vercel Blob,
+      // behind the proxy, which is correct and merely expensive.
+      if (isR2Configured()) {
+        const stored = await putVideo(videoKey(job.userId, job.id), buffer, type);
+        blobUrl = stored.marker;
+        sizeBytes = stored.bytes;
+      } else {
+        const stored = await uploadBuffer(`video/${job.userId}/${job.id}.mp4`, buffer, type);
+        blobUrl = stored.blobUrl;
+        sizeBytes = stored.bytes;
+      }
       mimeType = type;
-      sizeBytes = stored.bytes;
     } catch (err: unknown) {
       // Kie made the clip and charged for it; we simply could not fetch it
       // yet. Leaving the job open lets the sweeper retry rather than

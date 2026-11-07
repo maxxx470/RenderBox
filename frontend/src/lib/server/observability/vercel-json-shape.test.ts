@@ -98,7 +98,7 @@ describe('vercel.json schema (CRON-07, D-20)', () => {
     }
   });
 
-  it('the 4 sub-daily cron routes still exist for external-scheduler invocation', () => {
+  it('the 5 sub-daily cron routes still exist for external-scheduler invocation', () => {
     // maketou-reconcile was the fifth until 2026-11-03, when Maketou was
     // deleted: it had no payable order left (4 failed, 5 expired, none
     // pending), so there was nothing for it to reconcile.
@@ -107,6 +107,10 @@ describe('vercel.json schema (CRON-07, D-20)', () => {
       'email-queue-drain',
       'verification-cleanup',
       'order-expiration',
+      // 2026-11-07 — the video sweeper. Hobby allows a declared cron only
+      // once a day, and a daily sweep of a thirty-minute deadline would
+      // leave a user waiting half a day for credits they are already owed.
+      'video-sweep',
     ];
     for (const name of externallyScheduled) {
       expect(
