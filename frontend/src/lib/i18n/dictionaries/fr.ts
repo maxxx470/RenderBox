@@ -188,6 +188,7 @@ const fr = {
     'Le bâtiment reste immobile : seuls la caméra et les éléments cochés sont animés.',
   'video.intensity': 'Intensité',
   'video.notePlaceholder': 'Une précision ? (facultatif)',
+  'video.ratioAuto': 'Format auto',
   'video.sound': 'Son',
   'video.soundOn': 'Son inclus',
   'video.soundOff': 'Vidéo muette',

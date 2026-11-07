@@ -11,6 +11,7 @@ import {
   VIDEO_MODEL_KEYS,
   isVideoRequestShapeValid,
   supportsMode,
+  videoRatioChoicesFor,
   videoResolutionsFor,
 } from './video-models';
 import { VIDEO_PRICES, videoPrice, videoPriceGap } from '@/lib/provider-cost';
@@ -208,6 +209,63 @@ describe('the architectural preservation engine', () => {
     expect(CAMERA_MOVE_KEYS).toHaveLength(12);
     expect(ENVIRONMENT_KEYS).toHaveLength(11);
     expect(Object.keys(ANIMATION_INTENSITY)).toEqual(['subtle', 'natural', 'dynamic']);
+  });
+
+  // ── The frame (2026-11-07, owner: « j'ai oublié aspect ratio ») ──────────
+  it('refuses a ratio the engine has no parameter for', () => {
+    // Wan follows the source image and Hailuo has no such field at all. A
+    // named ratio there is a frame the user asked for and will not get, so it
+    // is refused before the debit rather than dropped in the adapter.
+    for (const model of ['wan-2-7', 'hailuo-2-3'] as const) {
+      expect(VIDEO_MODELS[model].capabilities.ratios).toEqual([]);
+      expect(videoRatioChoicesFor(model)).toEqual([]);
+      expect(
+        isVideoRequestShapeValid({
+          model,
+          mode: 'first',
+          duration: VIDEO_MODELS[model].capabilities.durations[0]!,
+          resolution: VIDEO_MODELS[model].capabilities.resolutions[0]!,
+          ratio: '16:9',
+        }),
+      ).toBe(false);
+    }
+  });
+
+  it('accepts no ratio at all on every engine — that is the default', () => {
+    for (const key of VIDEO_MODEL_KEYS) {
+      const caps = VIDEO_MODELS[key].capabilities;
+      expect(
+        isVideoRequestShapeValid({
+          model: key,
+          mode: caps.modes[0]!,
+          duration: caps.durations[0]!,
+          resolution: videoResolutionsFor(key, caps.durations[0]!)[0]!,
+        }),
+      ).toBe(true);
+    }
+  });
+
+  it('never offers an engine s own word for « follow the image » as a frame', () => {
+    // Veo spells it « Auto » and Seedance « adaptive ». The interface already
+    // has one row for that behaviour — sending nothing — so listing them
+    // beside it would be two controls doing one thing.
+    for (const key of VIDEO_MODEL_KEYS) {
+      expect(videoRatioChoicesFor(key)).not.toContain('Auto');
+      expect(videoRatioChoicesFor(key)).not.toContain('adaptive');
+      // Everything still offered is a real value the catalogue holds.
+      for (const r of videoRatioChoicesFor(key)) {
+        expect(VIDEO_MODELS[key].capabilities.ratios).toContain(r);
+        expect(
+          isVideoRequestShapeValid({
+            model: key,
+            mode: VIDEO_MODELS[key].capabilities.modes[0]!,
+            duration: VIDEO_MODELS[key].capabilities.durations[0]!,
+            resolution: videoResolutionsFor(key, VIDEO_MODELS[key].capabilities.durations[0]!)[0]!,
+            ratio: r,
+          }),
+        ).toBe(true);
+      }
+    }
   });
 
   it('keeps the owner s dictated text untouched', () => {

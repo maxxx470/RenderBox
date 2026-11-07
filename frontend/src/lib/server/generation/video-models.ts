@@ -319,17 +319,40 @@ export function videoResolutionsFor(key: VideoModelKey, duration: number): reado
   return all;
 }
 
-/** Is this duration × size pair sendable? The server's last word before Kie. */
+/**
+ * Is this duration × size × ratio set sendable? The server's last word before
+ * Kie.
+ *
+ * `ratio` is OPTIONAL and omitting it is the normal case — it means « follow
+ * the source image », which is what each adapter's own default does (Veo
+ * `Auto`, Seedance `adaptive`, no field at all on Kling and Gemini Omni).
+ * A ratio that IS named must be one the engine really takes: Wan and Hailuo
+ * have no aspect-ratio parameter whatsoever, so for them any named ratio is
+ * refused rather than quietly dropped — the user asked for a frame the engine
+ * cannot give, and that is worth saying before the credits move.
+ */
 export function isVideoRequestShapeValid(input: {
   model: VideoModelKey;
   mode: VideoMode;
   duration: number;
   resolution: string;
+  ratio?: string | undefined;
 }): boolean {
   const caps = VIDEO_MODELS[input.model].capabilities;
   if (!caps.modes.includes(input.mode)) return false;
   if (!caps.durations.includes(input.duration)) return false;
+  if (input.ratio !== undefined && !caps.ratios.includes(input.ratio)) return false;
   return videoResolutionsFor(input.model, input.duration).includes(input.resolution);
+}
+
+/**
+ * The ratios to OFFER, which is not the catalogue list: « Auto » (Veo) and
+ * « adaptive » (Seedance) are the engines' own names for « follow the source
+ * image », and the interface already has one row for that — sending nothing.
+ * Listing them beside it would be two controls for one behaviour.
+ */
+export function videoRatioChoicesFor(key: VideoModelKey): readonly string[] {
+  return VIDEO_MODELS[key].capabilities.ratios.filter((r) => r !== 'Auto' && r !== 'adaptive');
 }
 
 /**

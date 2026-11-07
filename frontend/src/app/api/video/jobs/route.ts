@@ -102,6 +102,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         mode: body.mode,
         duration: body.duration,
         resolution: body.resolution,
+        ...(body.ratio === undefined ? {} : { ratio: body.ratio }),
       })
     ) {
       return NextResponse.json({ error: 'UNSUPPORTED_SETTINGS' }, { status: 400 });

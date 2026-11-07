@@ -31,6 +31,7 @@ import { readErrorCode } from '../request-error';
 import {
   DEFAULT_VIDEO_MODEL,
   VIDEO_MODELS,
+  videoRatioChoicesFor,
   videoResolutionsFor,
   type VideoMode,
   type VideoModelKey,
@@ -75,6 +76,9 @@ export function VideoClient({
     intensity: 'natural',
     duration: firstCaps.durations[0] ?? 5,
     resolution: videoResolutionsFor(DEFAULT_VIDEO_MODEL, firstCaps.durations[0] ?? 5)[0] ?? '720p',
+    // Nothing chosen = the clip keeps the render's own framing. A default of
+    // 16:9 would silently recrop a portrait render.
+    ratio: null,
     audio: firstCaps.audio === 'always',
     note: '',
   });
@@ -106,6 +110,11 @@ export function VideoClient({
         ...s,
         duration,
         resolution: sizes.includes(s.resolution) ? s.resolution : (sizes[0] ?? '720p'),
+        // Engines do not spell their frames the same way (Kling has no 4:3,
+        // Wan has no ratio at all), so one the new engine cannot take falls
+        // back to « follow the image » rather than to a refusal after the
+        // click.
+        ratio: s.ratio && videoRatioChoicesFor(s.model).includes(s.ratio) ? s.ratio : null,
         audio: next.audio === 'toggle' ? s.audio : next.audio === 'always',
       };
     });
@@ -218,6 +227,7 @@ export function VideoClient({
           intensity: state.intensity,
           duration: state.duration,
           resolution: state.resolution,
+          ...(state.ratio ? { ratio: state.ratio } : {}),
           audio: state.audio,
           ...(state.note.trim() ? { request: state.note.trim() } : {}),
         }),

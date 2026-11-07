@@ -185,6 +185,7 @@ const en: Record<keyof typeof fr, string> = {
     'The building stays still: only the camera and the ticked elements are animated.',
   'video.intensity': 'Intensity',
   'video.notePlaceholder': 'Anything to add? (optional)',
+  'video.ratioAuto': 'Auto frame',
   'video.sound': 'Sound',
   'video.soundOn': 'Sound included',
   'video.soundOff': 'Silent video',
