@@ -184,3 +184,81 @@ export function describePrices(locale: 'fr' | 'en'): string {
     })
     .join(locale === 'fr' ? ' ; ' : '; ');
 }
+
+// ── Video (2026-11-07, owner's « Cahier de référence — AI VIDEO GENERATION »)
+// Prices read on kie.ai/pricing and on each model's page the same day. They
+// live here and not in video-models.ts because of this file's own rule: no
+// cost constant lives anywhere else.
+//
+// ⚠ NONE of these figures has been billed to our account yet. Kie publishes a
+// « from » price — the lowest option of a model, typically its smallest size —
+// and the real charge for a 1080p clip can be higher. So two safeguards, and
+// they are the reason `videoPrice` can return null:
+//   1. only the combinations priced below are sellable; anything else is
+//      refused with PRICE_NOT_VERIFIED, exactly as an unverified image
+//      version is. The offered resolutions are therefore the cheap ones until
+//      a paid test says what the others really cost.
+//   2. the debit is an ESTIMATE. Kie returns `creditsConsumed` on the finished
+//      task, so the caller reconciles: less than estimated is refunded, more
+//      than estimated is recorded and logged — never silently absorbed.
+// A per-second engine multiplies by the duration, a per-video engine does not,
+// which is why the two shapes are distinct rather than one number with a flag.
+
+/** How an engine bills. `second` × the clip's length, `video` as a flat sum
+ *  looked up by `${duration}|${resolution}`. */
+export type VideoBilling =
+  | { unit: 'second'; creditsPerSecond: number; resolutions: readonly string[] }
+  | { unit: 'video'; credits: Readonly<Record<string, number>> };
+
+/**
+ * The grid. A combination absent from it has no verified price and is refused.
+ *  - veo-3-1: per video, the Fast tier at 1080p (kie.ai/veo-3-1: Lite 35,
+ *    Fast 65, Quality 255). Quality is 255 credits — 765 FCFA of cost for one
+ *    clip — and is deliberately not offered until the owner asks for it.
+ *  - seedance-2-5 / kling-3-0 / wan-2-7: per second, at the base size only.
+ *  - hailuo-2-3: per video, the Standard tier's three real pairs (10 s does
+ *    not exist at 1080P, which is why that key is absent rather than null).
+ *  - gemini-omni: per video, flat.
+ */
+export const VIDEO_PRICES: Readonly<Record<string, VideoBilling>> = {
+  'veo-3-1': { unit: 'video', credits: { '4|1080p': 65, '6|1080p': 65, '8|1080p': 65 } },
+  'seedance-2-5': { unit: 'second', creditsPerSecond: 17, resolutions: ['720p'] },
+  'kling-3-0': { unit: 'second', creditsPerSecond: 15.1, resolutions: ['std'] },
+  'wan-2-7': { unit: 'second', creditsPerSecond: 16, resolutions: ['720p'] },
+  'hailuo-2-3': {
+    unit: 'video',
+    credits: { '6|768P': 30, '10|768P': 50, '6|1080P': 50 },
+  },
+  'gemini-omni': {
+    unit: 'video',
+    credits: { '4|720p': 63, '6|720p': 63, '8|720p': 63, '10|720p': 63 },
+  },
+};
+
+/**
+ * What one clip costs, in credits — or null when that engine × duration ×
+ * size has no verified price, which the route turns into 409
+ * PRICE_NOT_VERIFIED. Rounded UP: a fraction of a credit charged to us must
+ * never be a fraction we failed to charge (Kling bills 15.1 a second).
+ */
+export function videoPrice(model: string, duration: number, resolution: string): number | null {
+  const billing = VIDEO_PRICES[model];
+  if (!billing) return null;
+  if (billing.unit === 'video') {
+    return billing.credits[`${duration}|${resolution}`] ?? null;
+  }
+  if (!billing.resolutions.includes(resolution)) return null;
+  if (!Number.isFinite(duration) || duration <= 0) return null;
+  return Math.ceil(billing.creditsPerSecond * duration);
+}
+
+/**
+ * The gap between what we charged the user and what Kie really charged us.
+ * Positive = we over-estimated and owe a refund; negative = the clip cost
+ * more than we sold it for, which the admin must see rather than discover in
+ * the monthly accounts.
+ */
+export function videoPriceGap(estimated: number, actual: number | null): number {
+  if (actual === null || !Number.isFinite(actual) || actual < 0) return 0;
+  return estimated - actual;
+}
