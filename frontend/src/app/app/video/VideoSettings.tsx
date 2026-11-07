@@ -44,9 +44,14 @@ const LABEL =
 const RECENT_SHOWN = 6;
 
 /**
- * One choice: its icon over a short caption. The picture is 20px of flat
- * ink, so the chosen state is carried by the TILE — blue tint, blue caption
- * — and never by recolouring a raster, which never looks right.
+ * One choice: its icon over a short caption. The picture is flat ink, so the
+ * chosen state is carried by the TILE — blue tint, blue caption — and never
+ * by recolouring a raster, which never looks right.
+ *
+ * 28px, not the 20px it started at: at 20 the four arrows of « Avancée » and
+ * « Recul » collapsed into the same grey smudge and the two tiles could not
+ * be told apart, which is the one thing these icons exist to prevent. The
+ * eight extra pixels cost about 40px of column and the column has the room.
  */
 function Tile({
   icon,
@@ -77,9 +82,9 @@ function Tile({
           src={icon}
           alt=""
           aria-hidden
-          width={20}
-          height={20}
-          className="h-5 w-5"
+          width={28}
+          height={28}
+          className="h-7 w-7"
           onError={() => setHasIcon(false)}
         />
       )}
