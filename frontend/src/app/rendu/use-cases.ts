@@ -1381,6 +1381,271 @@ export const USE_CASES: readonly UseCase[] = [
       E('/ameliorer/immeuble-blanc.jpg'),
     ],
   },
+  // ── Video (2026-11-07, owner: « il faudra ajouter dans l'index, pour les
+  // indexations SEO et GEO, le fait que notre site puisse aussi faire les
+  // animations vidéo »). These two pages carry searches nobody could reach
+  // the site on before, because no page said RenderPro animates a render at
+  // all.
+  //
+  // What they are careful NOT to claim: no duration in seconds, no price, no
+  // engine named as a promise (the catalogue moves), and nothing about
+  // quality a first clip could contradict. The honest line they hold is the
+  // one the module is really built on — the building does not change, only
+  // the camera and the surroundings.
+  {
+    slug: 'animer-un-rendu',
+    lastModified: '2026-11-07',
+    seo: {
+      fr: {
+        title: 'Transformer un rendu en vidéo d’architecture',
+        description:
+          'Animez un rendu que vous avez déjà : la caméra bouge, le feuillage et le ciel vivent, le bâtiment ne change pas. Depuis Corona, V-Ray, Lumion, Enscape, D5 ou un croquis.',
+      },
+      en: {
+        title: 'Turn a render into an architectural video',
+        description:
+          'Animate a render you already have: the camera moves, foliage and sky come alive, the building does not change. From Corona, V-Ray, Lumion, Enscape, D5 or a sketch.',
+      },
+    },
+    h1: {
+      fr: 'Transformer un rendu en vidéo d’architecture',
+      en: 'Turn a render into an architectural video',
+    },
+    lede: {
+      fr: 'Votre image fixe devient une courte animation : un travelling, une orbite, un survol. Pas de modèle 3D à ré-exporter, pas de moteur de rendu à relancer — vous partez de l’image que vous avez déjà.',
+      en: 'Your still image becomes a short animation: a dolly, an orbit, a flyover. No 3D model to re-export, no render engine to set up again — you start from the image you already have.',
+    },
+    queries: {
+      fr: [
+        'transformer un rendu en vidéo',
+        'animer un rendu d’architecture',
+        'vidéo d’architecture par IA',
+        'image vers vidéo architecture',
+        'animation architecturale IA',
+      ],
+      en: [
+        'turn a render into a video',
+        'animate an architectural render',
+        'AI architectural animation',
+        'image to video architecture',
+        'archviz animation AI',
+      ],
+    },
+    hero: {
+      before: AB('/avant-apres/exterieur-croquis.jpg'),
+      after: AB('/avant-apres/exterieur-rendu.jpg'),
+    },
+    steps: {
+      fr: [
+        'Ouvrez Animer et choisissez un de vos rendus comme image de départ.',
+        'Choisissez le mouvement de caméra : avancée lente, orbite, survol, visite.',
+        'Cochez ce qui a le droit de bouger — arbres, nuages, eau, personnes — et l’intensité.',
+        'Lancez, puis téléchargez l’animation quand elle est prête.',
+      ],
+      en: [
+        'Open Animate and pick one of your renders as the starting image.',
+        'Choose the camera movement: slow push in, orbit, flyover, walkthrough.',
+        'Tick what may move — trees, clouds, water, people — and how much.',
+        'Send, then download the animation once it is ready.',
+      ],
+    },
+    sections: [
+      {
+        heading: {
+          fr: 'Le bâtiment ne bouge pas, la scène vit',
+          en: 'The building stays still, the scene comes alive',
+        },
+        body: {
+          fr: 'C’est la différence entre une animation d’architecture et une vidéo IA générique. Avant d’envoyer votre image au moteur, RenderPro lui impose de conserver la géométrie, les proportions, la forme de la toiture, les dalles, les poteaux, les ouvertures, les menuiseries et les matériaux de votre rendu, et de n’animer que la caméra et les éléments d’environnement que vous avez cochés. Aucun modèle ne garantit une fidélité parfaite — c’est pourquoi cette contrainte part à chaque génération, et pourquoi vous choisissez vous-même ce qui a le droit de bouger.',
+          en: 'This is what separates an architectural animation from a generic AI video. Before your image reaches the engine, RenderPro requires it to preserve the geometry, proportions, roof shape, slabs, columns, openings, joinery and materials of your render, and to animate only the camera and the environmental elements you ticked. No model guarantees perfect fidelity — which is why that constraint is sent on every generation, and why you decide what is allowed to move.',
+        },
+      },
+      {
+        heading: {
+          fr: 'Depuis Corona, V-Ray, Lumion, Enscape, D5, Blender',
+          en: 'From Corona, V-Ray, Lumion, Enscape, D5, Blender',
+        },
+        body: {
+          fr: 'RenderPro part d’une image, pas d’une scène. Un export JPG ou PNG de 3ds Max, SketchUp, Revit, Archicad, Blender ou de n’importe quel moteur de visualisation fait l’affaire, tout comme une capture d’écran de votre viewport, une photographie de maquette ou un rendu que RenderPro a lui-même produit. Aucun format CAO n’est demandé, rien n’est à installer, et votre scène d’origine n’est jamais modifiée.',
+          en: 'RenderPro starts from an image, not from a scene. A JPG or PNG export from 3ds Max, SketchUp, Revit, Archicad, Blender or any visualisation engine will do, as will a screenshot of your viewport, a photograph of a physical model, or a render RenderPro made itself. No CAD format is required, nothing is installed, and your original scene is never touched.',
+        },
+      },
+      {
+        heading: {
+          fr: 'Dire où la caméra part et où elle arrive',
+          en: 'Saying where the camera starts and where it ends',
+        },
+        body: {
+          fr: 'Certains moteurs acceptent une image de départ et une image de fin : vous donnez le premier et le dernier plan, et l’animation construit le trajet entre les deux. C’est la manière la plus sûre de tenir un mouvement précis, parce que la caméra ne décide plus seule où elle va. L’interface n’affiche cette case que sur les moteurs qui la prennent réellement en charge, jamais grisée sur les autres.',
+          en: 'Some engines accept a start image and an end image: you give the first and last frame, and the animation builds the path between them. It is the most reliable way to hold a precise movement, because the camera no longer decides on its own where it goes. The interface shows that slot only on the engines that really support it, never greyed out on the others.',
+        },
+      },
+    ],
+    faq: [
+      {
+        q: {
+          fr: 'Mon bâtiment peut-il se déformer ?',
+          en: 'Can my building get distorted?',
+        },
+        a: {
+          fr: 'C’est le risque que tout ce module cherche à écarter, et aucun moteur ne l’élimine complètement. La consigne de préservation part à chaque génération, et une intensité subtile avec peu d’éléments animés donne les résultats les plus stables. Si une animation dérive, relancez-la : chaque génération est un tirage.',
+          en: 'That is the risk this whole module works to avoid, and no engine removes it entirely. The preservation instruction is sent on every generation, and a subtle intensity with few animated elements gives the most stable results. If an animation drifts, run it again: each generation is one draw.',
+        },
+      },
+      {
+        q: {
+          fr: 'Puis-je choisir le moteur ?',
+          en: 'Can I choose the engine?',
+        },
+        a: {
+          fr: 'Oui. Plusieurs moteurs vidéo sont proposés, chacun avec ses durées, ses tailles et ses options propres, et l’interface n’affiche que ce que le moteur choisi accepte vraiment. Le coût en crédits s’affiche avant que vous lanciez.',
+          en: 'Yes. Several video engines are offered, each with its own durations, sizes and options, and the interface only shows what the chosen engine really accepts. The cost in credits is shown before you launch.',
+        },
+      },
+      {
+        q: {
+          fr: 'Que se passe-t-il si l’animation échoue ?',
+          en: 'What happens if an animation fails?',
+        },
+        a: {
+          fr: 'Vos crédits vous sont rendus automatiquement. Rien ne vous est facturé pour une animation qui n’a pas abouti.',
+          en: 'Your credits are given back automatically. Nothing is charged for an animation that did not complete.',
+        },
+      },
+    ],
+    gallery: [
+      L('/vitrine/residence-abidjan.webp'),
+      L('/vitrine/immeuble-nuit.webp'),
+      L('/vitrine/sejour-lin.webp'),
+      L('/vitrine/plan-3d.webp'),
+    ],
+  },
+  {
+    slug: 'video-presentation-projet',
+    lastModified: '2026-11-07',
+    seo: {
+      fr: {
+        title: 'Vidéo de présentation d’un projet d’architecture',
+        description:
+          'Présentez un projet en mouvement plutôt qu’en planche fixe : orbite sur la façade, survol du site, visite intérieure, à partir de vos rendus existants.',
+      },
+      en: {
+        title: 'Video presentation for an architecture project',
+        description:
+          'Present a project in motion rather than on a flat board: an orbit of the facade, a flyover of the site, an interior walkthrough, from the renders you already have.',
+      },
+    },
+    h1: {
+      fr: 'Présenter un projet en vidéo, à partir de vos rendus',
+      en: 'Present a project in video, from your renders',
+    },
+    lede: {
+      fr: 'Une planche fixe demande à votre client d’imaginer l’espace ; un mouvement de caméra le lui montre. Chaque rendu que vous avez déjà peut devenir un plan court, sans rouvrir votre logiciel 3D.',
+      en: 'A flat board asks your client to imagine the space; a camera movement shows it to them. Every render you already have can become a short shot, without reopening your 3D software.',
+    },
+    queries: {
+      fr: [
+        'vidéo de présentation projet architecture',
+        'animation 3D pour client architecte',
+        'visite virtuelle à partir d’un rendu',
+        'film de présentation immobilier IA',
+      ],
+      en: [
+        'architecture project presentation video',
+        'client presentation animation architect',
+        'virtual tour from a render',
+        'real estate presentation film AI',
+      ],
+    },
+    hero: {
+      before: AB('/avant-apres/interieur-croquis.jpg'),
+      after: AB('/avant-apres/interieur-rendu.jpg'),
+    },
+    steps: {
+      fr: [
+        'Rassemblez les rendus du projet : façade, intérieur, vue de nuit, plan aménagé.',
+        'Animez chacun avec le mouvement qui lui va : orbite pour un volume, visite pour un intérieur.',
+        'Gardez une intensité subtile sur les vues où la géométrie doit rester parfaitement lisible.',
+        'Téléchargez les plans et montez-les dans l’ordre de votre présentation.',
+      ],
+      en: [
+        'Gather the project renders: facade, interior, night view, furnished plan.',
+        'Animate each with the movement that suits it: an orbit for a volume, a walkthrough for an interior.',
+        'Keep a subtle intensity on the views where the geometry must stay perfectly legible.',
+        'Download the shots and edit them in the order of your presentation.',
+      ],
+    },
+    sections: [
+      {
+        heading: {
+          fr: 'Un mouvement par intention',
+          en: 'One movement per intention',
+        },
+        body: {
+          fr: 'Chaque mouvement raconte autre chose. Une avancée lente installe l’entrée et l’échelle du bâtiment. Une orbite fait comprendre un volume mieux qu’une axonométrie. Un survol situe le projet dans son site. Une visite intérieure donne la hauteur sous plafond et la profondeur d’une pièce. Une caméra fixe, enfin, avec seulement le feuillage et les nuages animés, suffit souvent pour une image d’attente ou une page d’accueil — c’est le réglage le plus fidèle, puisque rien ne se déplace.',
+          en: 'Each movement says something different. A slow push in establishes the entrance and the scale of the building. An orbit explains a volume better than an axonometric. A flyover places the project in its site. An interior walkthrough conveys ceiling height and the depth of a room. A static camera, finally, with only foliage and clouds moving, is often enough for a holding shot or a home page — and it is the most faithful setting, since nothing travels.',
+        },
+      },
+      {
+        heading: {
+          fr: 'Ce qui bouge, vous le choisissez',
+          en: 'You choose what moves',
+        },
+        body: {
+          fr: 'Arbres, feuillage, herbe, nuages, ciel, eau et piscine, reflets, personnes, véhicules, rideaux, lumière atmosphérique : chacun s’active séparément. Tout décocher donne une scène entièrement figée où seule la caméra se déplace — le réglage à préférer quand la lecture du bâtiment prime, par exemple pour un jury ou un dossier de permis. Les éléments animés sont nommés un par un au moteur, de sorte qu’il n’ajoute pas de son propre chef une foule ou une circulation que votre projet n’a pas.',
+          en: 'Trees, foliage, grass, clouds, sky, water and pool, reflections, people, vehicles, curtains, atmospheric light: each is switched on separately. Unticking everything gives a completely frozen scene where only the camera travels — the setting to prefer when reading the building matters most, for a jury or a planning file. The animated elements are named to the engine one by one, so it does not add a crowd or traffic your project never had.',
+        },
+      },
+      {
+        heading: {
+          fr: 'Des plans courts, montés ensuite',
+          en: 'Short shots, edited afterwards',
+        },
+        body: {
+          fr: 'RenderPro produit un plan à la fois, pas un film monté. C’est volontaire : un plan court reste fidèle, là où une longue séquence laisse le moteur dériver. En pratique, trois à six plans suffisent à présenter un projet, et vous les assemblez dans l’outil de montage de votre choix, avec votre musique et votre habillage. Chaque animation est téléchargeable en fichier vidéo standard.',
+          en: 'RenderPro produces one shot at a time, not an edited film. That is deliberate: a short shot stays faithful, where a long sequence lets the engine drift. In practice three to six shots are enough to present a project, and you assemble them in the editing tool of your choice, with your own music and titles. Each animation downloads as a standard video file.',
+        },
+      },
+    ],
+    faq: [
+      {
+        q: {
+          fr: 'Puis-je faire un film complet d’un seul coup ?',
+          en: 'Can I make a whole film in one go?',
+        },
+        a: {
+          fr: 'Non, et c’est un choix. RenderPro génère un plan court à la fois, parce que c’est la durée sur laquelle un moteur reste fidèle à votre bâtiment. Vous montez ensuite les plans entre eux.',
+          en: 'No, and that is a choice. RenderPro generates one short shot at a time, because that is the length over which an engine stays faithful to your building. You then edit the shots together.',
+        },
+      },
+      {
+        q: {
+          fr: 'Y a-t-il du son ?',
+          en: 'Is there sound?',
+        },
+        a: {
+          fr: 'Cela dépend du moteur : certains produisent une ambiance sonore, d’autres non, et l’interface le dit avant que vous lanciez. Pour une présentation client, la plupart des architectes remplacent de toute façon le son au montage.',
+          en: 'It depends on the engine: some produce an ambient soundtrack, others do not, and the interface says so before you launch. For a client presentation most architects replace the sound at the editing stage anyway.',
+        },
+      },
+      {
+        q: {
+          fr: 'Puis-je animer un rendu qui ne vient pas de RenderPro ?',
+          en: 'Can I animate a render that did not come from RenderPro?',
+        },
+        a: {
+          fr: 'Oui. Importez votre image comme vous importeriez une photo à transformer, puis animez-la. Elle rejoint vos images et devient une source comme une autre.',
+          en: 'Yes. Import your image as you would import a photo to transform, then animate it. It joins your images and becomes a source like any other.',
+        },
+      },
+    ],
+    gallery: [
+      L('/vitrine/esquisse-rendu.webp'),
+      L('/vitrine/residence-abidjan.webp'),
+      L('/vitrine/ameliorer.webp'),
+      L('/vitrine/immeuble-nuit.webp'),
+    ],
+  },
 ];
 
 /** The slug of every use-case page, in page order. */

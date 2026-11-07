@@ -63,6 +63,28 @@ function structuredData(locale: Locale) {
         operatingSystem: 'Web',
         description,
         inLanguage: locale,
+        // What the app can do, named for the engines that read this rather
+        // than the page (2026-11-07, owner: « ajoute dans l'index … le fait
+        // que notre site puisse aussi faire les animations vidéo »). Until
+        // today the graph described a render generator and nothing else, so
+        // nothing told a crawler the site also animates. Each line has to
+        // stay true of the product as it ships.
+        featureList:
+          locale === 'fr'
+            ? [
+                'Rendu photoréaliste à partir d’un croquis, d’un plan ou d’une capture 3D',
+                'Commenter un rendu point par point, ajouter un élément',
+                'Améliorer un rendu fait avec un autre logiciel',
+                'Animer un rendu en courte vidéo d’architecture, sans changer le bâtiment',
+                'Mouvements de caméra : travelling, orbite, survol, visite intérieure',
+              ]
+            : [
+                'Photorealistic render from a sketch, a plan or a 3D screenshot',
+                'Comment a render point by point, add an element',
+                'Enhance a render made with other software',
+                'Animate a render into a short architectural video, without changing the building',
+                'Camera movements: dolly, orbit, flyover, interior walkthrough',
+              ],
         publisher: { '@id': `${SITE_URL}/#organization` },
         offers: PRICING_TIERS.map((tier) => ({
           '@type': 'Offer',

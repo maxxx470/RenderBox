@@ -45,7 +45,7 @@ function body(): string {
 
   return `# RenderPro
 
-> RenderPro is a web app that turns architectural plans, sketches and 3D screenshots into photorealistic architectural renders in minutes, with AI. It is made for architects, engineers and design offices, building draughtspeople, developers and builders, in French and English, with plans priced in FCFA (West African CFA franc). Également en français : RenderPro transforme vos plans, esquisses et captures 3D en rendus architecturaux photoréalistes par IA.
+> RenderPro is a web app that turns architectural plans, sketches and 3D screenshots into photorealistic architectural renders in minutes, with AI, and animates those renders into short architectural videos. It is made for architects, engineers and design offices, building draughtspeople, developers and builders, in French and English, with plans priced in FCFA (West African CFA franc). Également en français : RenderPro transforme vos plans, esquisses et captures 3D en rendus architecturaux photoréalistes par IA, puis anime ces rendus en courtes vidéos d’architecture.
 
 ## What it does
 
@@ -54,6 +54,7 @@ function body(): string {
 - Comment: click points on a render and write the change for each (up to 8 comments); the rest of the image is kept.
 - Add: insert an element (furniture, people, trees…) from a reference picture.
 - Enhance: improve a render made with any other software (sharpness, detail, light, materials, sky, planting, life and atmosphere), each with an optional reference image.
+- Animate: turn a render into a short architectural video. The user picks one of their own renders, a camera movement (static, push in, pull out, pan, tilt, orbit, drone flyover, cinematic dolly, walkthrough), which surroundings may move (trees, foliage, grass, clouds, sky, water, reflections, people, vehicles, curtains, atmospheric light) and how much. The building itself is held still: geometry, proportions, roof, slabs, columns, openings, joinery and materials are preserved, and only the camera and the ticked elements are animated. Several video engines are offered, each with its own durations, sizes and options; some take a start and an end frame. Image to video only, never text to video.
 - Every ratio (1:1 to 21:9) and size (1K, 2K, 4K); every render is kept in a project tree; the user owns the renders, with no commercial-use limit.
 
 ## Pricing

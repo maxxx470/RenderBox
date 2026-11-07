@@ -39,9 +39,9 @@ describe('what gets submitted', () => {
     expect([...indexableUrls()].sort()).toEqual(fromSitemap);
   });
 
-  it('is sixteen absolute addresses on this host, with no duplicate', () => {
+  it('is eighteen absolute addresses on this host, with no duplicate', () => {
     const urls = indexableUrls();
-    expect(urls.length).toBe(16);
+    expect(urls.length).toBe(18);
     expect(new Set(urls).size).toBe(urls.length);
     for (const u of urls) expect(u.startsWith(`${SITE_URL}/`) || u === SITE_URL).toBe(true);
   });
