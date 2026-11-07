@@ -52,6 +52,7 @@ export type RailPage =
   | 'images'
   | 'generate'
   | 'enhance'
+  | 'video'
   | 'pricing'
   | 'settings'
   | 'admin'
@@ -71,6 +72,9 @@ const RAIL_TILES: Partial<Record<RailIconName, string>> = {
   projects: '/rail/images.webp',
   image: '/rail/image.webp',
   enhance: '/rail/enhance.webp',
+  // 2026-11-07 — the video module. The tile the owner generated, cut out of
+  // its transparency checkerboard and re-masked on white like the others.
+  video: '/rail/video.webp',
   info: '/rail/info.webp',
   settings: '/rail/parametres.webp',
   pricing: '/rail/abonnement.webp',
@@ -285,6 +289,7 @@ export function HomeSidebar({
                 link('/app/generer', t('app.modeGenerate'), 'image', 'generate')
               )}
               {link('/app/enhance', t('app.railEnhance'), 'enhance', 'enhance')}
+              {link('/app/video', t('app.railVideo'), 'video', 'video')}
             </nav>
           </div>
 

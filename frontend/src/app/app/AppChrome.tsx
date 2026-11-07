@@ -98,6 +98,7 @@ export function railPageFor(pathname: string): RailPage {
   if (pathname.startsWith('/app/images')) return 'images';
   if (pathname.startsWith('/app/generer')) return 'generate';
   if (pathname.startsWith('/app/enhance')) return 'enhance';
+  if (pathname.startsWith('/app/video')) return 'video';
   if (pathname.startsWith('/app/tarifs')) return 'pricing';
   if (pathname.startsWith('/app/info')) return 'info';
   if (pathname.startsWith('/parametres')) return 'settings';
@@ -109,6 +110,7 @@ const TITLE_KEY: Record<RailPage, TranslationKey> = {
   images: 'app.railImages',
   generate: 'app.genHomeTitle',
   enhance: 'enhance.title',
+  video: 'video.title',
   pricing: 'tarifs.title',
   info: 'app.railInfo',
   settings: 'parametres.title',

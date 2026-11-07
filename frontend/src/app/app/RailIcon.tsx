@@ -18,6 +18,7 @@ import {
   Setting,
   ShieldDone,
   Star,
+  Video,
   Wallet,
 } from 'react-iconly';
 
@@ -26,6 +27,7 @@ export type RailIconName =
   | 'projects'
   | 'image'
   | 'enhance'
+  | 'video'
   | 'pricing'
   | 'settings'
   | 'admin'
@@ -46,6 +48,7 @@ const ICON: Record<Exclude<RailIconName, 'clip'>, IconlyIcon> = {
   image: ImageIcon,
   // Iconly has no sparkle; the star is the closest "make it shine".
   enhance: Star,
+  video: Video,
   pricing: Wallet,
   settings: Setting,
   admin: ShieldDone,

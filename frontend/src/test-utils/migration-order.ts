@@ -45,6 +45,7 @@ export const MIGRATION_ORDER: readonly string[] = [
   '9_phase9h_kie_credits',
   '9_phase9i_building_sheets',
   '9_phase9j_reengagement',
+  '9_phase9k_video_jobs',
 ];
 
 const byteOrder = (a: string, b: string): number => Buffer.compare(Buffer.from(a), Buffer.from(b));
