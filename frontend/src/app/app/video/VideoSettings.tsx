@@ -49,7 +49,7 @@ export function VideoSettings({
   const lang = locale === 'fr' ? 'fr' : 'en';
 
   return (
-    <aside className="flex w-full flex-col gap-6 rounded-2xl bg-white p-4 min-[900px]:w-[300px] min-[900px]:flex-shrink-0">
+    <div className="flex flex-col gap-6">
       <div>
         <span className={LABEL}>{t('video.camera')}</span>
         {/* One per line: twelve movements read as a list, not as a cloud. */}
@@ -118,6 +118,6 @@ export function VideoSettings({
           ))}
         </div>
       </div>
-    </aside>
+    </div>
   );
 }

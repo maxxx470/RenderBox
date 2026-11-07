@@ -19,6 +19,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { CHIP_ACTIVE, CHIP_BASE, CHIP_SLOT } from '../chip';
 import { SendButton } from '../CommandBar';
+import { ACCEPTED_UPLOAD_TYPES } from '../upload-types';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import { videoPrice } from '@/lib/provider-cost';
 import {
@@ -122,7 +123,7 @@ export function VideoBar({
   onChange,
   sourceThumbId,
   endThumbId,
-  onPickSource,
+  onAttach,
   onPickEnd,
   onClearEnd,
   onSend,
@@ -132,7 +133,7 @@ export function VideoBar({
   onChange: (next: Partial<VideoBarState>) => void;
   sourceThumbId: string | null;
   endThumbId: string | null;
-  onPickSource: () => void;
+  onAttach: (file: File) => void;
   onPickEnd: () => void;
   onClearEnd: () => void;
   onSend: () => void;
@@ -170,22 +171,30 @@ export function VideoBar({
       <div className="flex items-stretch gap-3">
         <div className="min-w-0 flex-1 rounded-2xl bg-[#F4F4F7] p-3">
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={onPickSource}
-              className={sourceThumbId ? 'relative' : CHIP_SLOT}
-              title={t('video.source')}
-            >
-              {sourceThumbId ? (
-                <img
-                  src={`/api/render-nodes/${sourceThumbId}/image?size=thumb`}
-                  alt={t('video.source')}
-                  className="h-8 w-11 cursor-pointer rounded-md object-cover ring-1 ring-[#D5DCFF]"
-                />
-              ) : (
-                <>+ {t('video.source')}</>
-              )}
-            </button>
+            {sourceThumbId ? (
+              <img
+                src={`/api/render-nodes/${sourceThumbId}/image?size=thumb`}
+                alt={t('video.source')}
+                className="h-8 w-11 rounded-md object-cover ring-1 ring-[#D5DCFF]"
+              />
+            ) : null}
+            {/* The « + » takes an image from the computer too (owner,
+                2026-11-07: « en cliquant sur le +, il doit aussi pouvoir
+                ajouter des images extérieures au site »). The strip of
+                recent renders stays the quick way; this is the other one. */}
+            <label className={`cursor-pointer ${CHIP_SLOT}`} title={t('video.addImage')}>
+              + {t('video.addImage')}
+              <input
+                type="file"
+                className="hidden"
+                accept={ACCEPTED_UPLOAD_TYPES.join(',')}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) onAttach(file);
+                  e.target.value = '';
+                }}
+              />
+            </label>
 
             {/* Drawn only where the endpoint really takes an end frame. */}
             {caps.modes.includes('first_last') && (
