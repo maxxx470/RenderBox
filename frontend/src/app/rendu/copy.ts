@@ -16,12 +16,12 @@ export const HUB = {
     fr: {
       title: 'Rendu architectural par IA : tous les cas',
       description:
-        'Croquis, plan 2D, capture SketchUp, axonométrie, maquette, rendu de nuit, amélioration d’image : ce que RenderPro fait, cas par cas, avec des exemples.',
+        'Croquis, plan 2D, capture SketchUp, axonométrie, maquette, rendu de nuit, amélioration d’image, animation vidéo : ce que RenderPro fait, cas par cas.',
     },
     en: {
       title: 'AI architectural rendering, case by case',
       description:
-        'Sketches, 2D plans, SketchUp captures, axonometrics, models, night renders, image enhancement: what RenderPro does, case by case, with examples.',
+        'Sketches, 2D plans, SketchUp captures, axonometrics, models, night renders, image enhancement, video animation: what RenderPro does, case by case.',
     },
   },
   h1: {

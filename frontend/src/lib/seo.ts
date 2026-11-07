@@ -50,16 +50,23 @@ export const SEO_PATHS: Record<SeoPage, string> = {
 export const INDEXED_PAGES: readonly SeoPage[] = ['home', 'info', 'exemple', 'legal'];
 
 export const SEO_COPY: Record<SeoPage, Record<Locale, { title: string; description: string }>> = {
+  // The home description names the video animation since 2026-11-07 (owner:
+  // « ajoute dans l'index, pour les indexations SEO et GEO, le fait que notre
+  // site puisse aussi faire les animations vidéo »). The JSON-LD's
+  // SoftwareApplication reads this same string, so the graph and the snippet
+  // cannot disagree. The TITLE deliberately stays on the head term: a landing
+  // ranks for one thing, and « animer un rendu » is served by its own page
+  // under /rendu, which outranks a landing hedging two subjects.
   home: {
     fr: {
       title: 'RenderPro — Rendus architecturaux photoréalistes par IA',
       description:
-        'Transformez vos plans, esquisses et captures 3D en rendus architecturaux photoréalistes en quelques minutes. Deux moteurs IA, retouches par commentaires, ajout d’éléments et amélioration d’images. Formules en FCFA.',
+        'Transformez vos plans, esquisses et captures 3D en rendus architecturaux photoréalistes par IA, puis animez-les en courtes vidéos d’architecture. Retouches, ajout d’éléments, amélioration. Formules en FCFA.',
     },
     en: {
       title: 'RenderPro — Photorealistic AI architectural renders',
       description:
-        'Turn plans, sketches and 3D screenshots into photorealistic architectural renders in minutes. Two AI engines, point-and-comment edits, adding elements and image enhancement.',
+        'Turn plans, sketches and 3D screenshots into photorealistic architectural renders with AI, then animate them into short architectural videos. Edits, added elements, enhancement.',
     },
   },
   info: {
