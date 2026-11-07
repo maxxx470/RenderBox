@@ -31,16 +31,59 @@ export interface SweepResult {
   refunded: number;
 }
 
+/**
+ * How often an opportunistic sweep may run, per instance. Short enough that
+ * a stuck job is caught within the minute someone looks at the page, long
+ * enough that a burst of pollers does not query Kie once per request.
+ */
+const OPPORTUNISTIC_EVERY_MS = 60_000;
+
+/** Per-instance, deliberately: a missed sweep costs one more poll, and a
+ *  Redis lease for this would be machinery for nothing. */
+let lastOpportunisticSweep = 0;
+
+/**
+ * The sweep nobody has to schedule (2026-11-07).
+ *
+ * /api/cron/video-sweep is the thorough pass, and it needs an external
+ * scheduler because Vercel Hobby runs a declared cron once a day. Relying on
+ * that alone would mean a user's refund waits on a dashboard entry somebody
+ * remembered to create — so the work also happens on its own, piggybacked on
+ * the requests the video module already serves: starting a clip, and polling
+ * one. Whoever looks at the page pays for a small sweep, at most once a
+ * minute per instance.
+ *
+ * It never throws: a sweep failing must not fail the request that triggered
+ * it. The cron pass stays, for the hours when nobody is looking.
+ */
+export async function sweepVideoJobsOpportunistically(prisma: PrismaClient): Promise<void> {
+  const now = Date.now();
+  if (now - lastOpportunisticSweep < OPPORTUNISTIC_EVERY_MS) return;
+  // Claimed before the await, so two concurrent requests do not both sweep.
+  lastOpportunisticSweep = now;
+  try {
+    await sweepVideoJobs(prisma, new Date(now), OPPORTUNISTIC_LIMIT);
+  } catch (err: unknown) {
+    log.warn('video: the opportunistic sweep failed, the cron pass still stands', {
+      err: String(err),
+    });
+  }
+}
+
+/** Smaller than the cron's: this one runs inside someone's page load. */
+export const OPPORTUNISTIC_LIMIT = 5;
+
 export async function sweepVideoJobs(
   prisma: PrismaClient,
   now: Date = new Date(),
+  limit: number = SWEEP_LIMIT,
 ): Promise<SweepResult> {
   const result: SweepResult = { looked: 0, settled: 0, expired: 0, refunded: 0 };
 
   const open = await prisma.videoJob.findMany({
     where: { status: { in: ['PENDING', 'RUNNING'] } },
     orderBy: { createdAt: 'asc' },
-    take: SWEEP_LIMIT,
+    take: Math.max(1, Math.min(limit, SWEEP_LIMIT)),
   });
   result.looked = open.length;
 

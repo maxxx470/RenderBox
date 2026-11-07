@@ -28,6 +28,7 @@ import {
 import { buildVideoPrompt, type VideoPromptInput } from '@/lib/server/generation/video-prompt';
 import { createVideoTask, uploadFrame } from './kie-video';
 import { videoCallbackUrl } from './callback-token';
+import { sweepVideoJobsOpportunistically } from './sweep';
 
 const log = createLogger();
 
@@ -70,6 +71,13 @@ export async function startVideoJob(
   appUrl: string,
 ): Promise<StartVideoResult> {
   const s = input.settings;
+
+  // 0. Someone is using the module, so this is a good moment to settle what
+  //    the callback never closed. Throttled, bounded and never fatal — see
+  //    sweepVideoJobsOpportunistically. It runs before the debit so that a
+  //    refund owed from a previous clip is back on the balance in time to
+  //    pay for this one.
+  await sweepVideoJobsOpportunistically(prisma);
 
   // 1. Priced first: an unverified combination is refused before anything
   //    else happens, exactly as an unverified image version is.

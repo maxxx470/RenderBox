@@ -3,6 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { VIDEO_JOB_DEADLINE_MS, decideVideoExpiry, decideVideoSettlement } from './settle';
 import { readVideoUrl } from './kie-video';
+import { sweepVideoJobsOpportunistically } from './sweep';
 import { isValidVideoCallbackToken, videoCallbackUrl, videoCallbackToken } from './callback-token';
 
 const base = {
@@ -134,6 +135,30 @@ describe('finding the clip in Kie s answer', () => {
     expect(readVideoUrl('not json')).toBeNull();
     expect(readVideoUrl({ resultUrls: [] })).toBeNull();
     expect(readVideoUrl({ resultUrls: ['/relative.mp4'] })).toBeNull();
+  });
+});
+
+describe('the sweep nobody has to schedule', () => {
+  it('never fails the request that triggered it, and runs at most once a minute', async () => {
+    let reads = 0;
+    const prisma = {
+      videoJob: {
+        findMany: async () => {
+          reads++;
+          throw new Error('database away');
+        },
+      },
+    } as unknown as Parameters<typeof sweepVideoJobsOpportunistically>[0];
+
+    // A sweep that blows up must not take the caller's request with it:
+    // starting a clip is what the user asked for, the sweep is a bonus.
+    await expect(sweepVideoJobsOpportunistically(prisma)).resolves.toBeUndefined();
+    expect(reads).toBe(1);
+
+    // And a burst of pollers must not query Kie once per request.
+    await sweepVideoJobsOpportunistically(prisma);
+    await sweepVideoJobsOpportunistically(prisma);
+    expect(reads).toBe(1);
   });
 });
 
