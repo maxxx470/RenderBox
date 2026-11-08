@@ -402,11 +402,11 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <Wordmark />
           </Link>
           <div className="hidden items-center gap-1 text-[13.5px] font-medium text-[#3D3B49] min-[920px]:flex">
-            <a href="#comment" className={NAV_LINK}>
-              {t('landing.navHow')}
-            </a>
             <a href="#animation" className={NAV_LINK}>
               {t('landing.navVideo')}
+            </a>
+            <a href="#comment" className={NAV_LINK}>
+              {t('landing.navHow')}
             </a>
             <a href="#fonctionnalites" className={NAV_LINK}>
               {t('landing.navFeatures')}
@@ -443,8 +443,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <PublicMobileMenu
               className="min-[920px]:hidden"
               links={[
-                { href: '#comment', label: t('landing.navHow') },
                 { href: '#animation', label: t('landing.navVideo') },
+                { href: '#comment', label: t('landing.navHow') },
                 { href: '#fonctionnalites', label: t('landing.navFeatures') },
                 { href: '#tarifs', label: t('landing.navPricing') },
                 { href: '/exemple', label: t('landing.navExamples') },
@@ -630,6 +630,46 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </div>
         </section>
 
+        {/* VIDEO ANIMATION (2026-11-08) — three clips of a render in movement.
+            It sits right after the before/after (owner, 2026-11-08), so the
+            page reads still image, then the same thing moving, before it
+            explains anything: the strongest two sections meet. It was placed
+            after Améliorer on the first pass, which buried it. The clips are
+            product output, not films of the interface, so they do not go
+            through MotionFilm. */}
+        <section id="animation" className="scroll-mt-20 py-14 min-[860px]:py-20">
+          <SectionHeader
+            eyebrow={t('landing.animEyebrow')}
+            title={t('landing.animTitle')}
+            subtitle={t('landing.animBody')}
+          />
+          <Reveal delayMs={100}>
+            <VideoShowcase
+              clips={[
+                {
+                  name: 'visite',
+                  title: t('landing.animClipVisite'),
+                  alt: t('landing.animClipVisiteAlt'),
+                },
+                {
+                  name: 'croquis-rendu',
+                  title: t('landing.animClipCroquis'),
+                  alt: t('landing.animClipCroquisAlt'),
+                },
+                {
+                  name: 'plan-film',
+                  title: t('landing.animClipPlan'),
+                  alt: t('landing.animClipPlanAlt'),
+                },
+              ]}
+              ctaLabel={t('landing.animCta')}
+              ctaHref={startHref}
+              secondaryLabel={t('landing.animSecondary')}
+              secondaryHref={useCasePath('animer-un-rendu')}
+            />
+          </Reveal>
+        </section>
+
         {/* HOW IT WORKS — full-width cards, one above the other (owner's
             brief, 2026-10-06): "Ajouter" first (owner, 2026-10-10), then the
             gradient one with the "Commenter" film, the grey one with the
@@ -793,43 +833,6 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 className="rounded-[14px]"
               />
             </div>
-          </Reveal>
-        </section>
-
-        {/* VIDEO ANIMATION (2026-11-08) — three clips of a render in movement,
-            after Améliorer because it is the next thing you do to a render you
-            already have. The clips are product output, not films of the
-            interface, so they do not go through MotionFilm. */}
-        <section id="animation" className="scroll-mt-20 py-14 min-[860px]:py-20">
-          <SectionHeader
-            eyebrow={t('landing.animEyebrow')}
-            title={t('landing.animTitle')}
-            subtitle={t('landing.animBody')}
-          />
-          <Reveal delayMs={100}>
-            <VideoShowcase
-              clips={[
-                {
-                  name: 'visite',
-                  title: t('landing.animClipVisite'),
-                  alt: t('landing.animClipVisiteAlt'),
-                },
-                {
-                  name: 'croquis-rendu',
-                  title: t('landing.animClipCroquis'),
-                  alt: t('landing.animClipCroquisAlt'),
-                },
-                {
-                  name: 'plan-film',
-                  title: t('landing.animClipPlan'),
-                  alt: t('landing.animClipPlanAlt'),
-                },
-              ]}
-              ctaLabel={t('landing.animCta')}
-              ctaHref={startHref}
-              secondaryLabel={t('landing.animSecondary')}
-              secondaryHref={useCasePath('animer-un-rendu')}
-            />
           </Reveal>
         </section>
 
