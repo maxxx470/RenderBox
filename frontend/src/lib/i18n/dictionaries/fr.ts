@@ -1160,6 +1160,24 @@ const fr = {
     'Envoyez un rendu faible ou une photo en basse résolution : Améliorer la rend nette, détaillée et lumineuse, sans changer la composition.',
   'landing.enhanceAlt':
     'Film : sur la page Améliorer, une image floue est jointe, les améliorations choisies, puis le rendu devient net, de 384 × 214 à 2752 × 1536 pixels.',
+  // « Animation vidéo » (2026-11-08). Pas de durée en secondes : les moteurs
+  // n'offrent pas la même (de 3 à 10 s selon celui que l'on choisit), donc
+  // « vidéo de 8 secondes » serait faux pour la plupart des rendus — c'est la
+  // durée de ces trois démonstrations, pas celle du produit.
+  'landing.animEyebrow': 'Animation vidéo',
+  'landing.animTitle': 'Vos rendus se mettent en mouvement.',
+  'landing.animBody':
+    'Choisissez un de vos rendus : la caméra avance, tourne ou survole, la scène vit — et le bâtiment, lui, ne change pas.',
+  'landing.animClipVisite': 'Visite de la maison',
+  'landing.animClipVisiteAlt':
+    "Vidéo : l'extérieur d'une maison, puis la caméra entre et traverse le séjour.",
+  'landing.animClipCroquis': 'Du croquis au rendu',
+  'landing.animClipCroquisAlt':
+    'Vidéo : un croquis au crayon devient un rendu photoréaliste, puis la caméra avance.',
+  'landing.animClipPlan': 'Du plan au film',
+  'landing.animClipPlanAlt': 'Vidéo : un plan bleu se transforme en bâtiment réel filmé.',
+  'landing.animCta': 'Animer un de mes rendus',
+  'landing.animSecondary': 'Voir comment ça marche',
   'landing.beforeAfterAltBefore':
     "Croquis à main levée d'une villa contemporaine : un étage en porte-à-faux, une pergola et une piscine.",
   'landing.beforeAfterAltAfter':
@@ -1251,6 +1269,7 @@ const fr = {
     'Importez une photo, choisissez une ambiance, et laissez RenderPro garder la mémoire de chaque matériau pour vous.',
   'landing.ctaBandButton': 'Générer mon premier rendu',
   'landing.navHow': 'Comment ça marche',
+  'landing.navVideo': 'Vidéo',
   'landing.navFaq': 'FAQ',
   'landing.menuClose': 'Fermer le menu',
   'landing.heroBadgePayment': 'Paiement',

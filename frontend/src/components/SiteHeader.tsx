@@ -55,6 +55,12 @@ export function SiteHeader({
               {t('landing.navHow')}
             </Link>
             <Link
+              href="/#animation"
+              className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
+            >
+              {t('landing.navVideo')}
+            </Link>
+            <Link
               href="/#fonctionnalites"
               className="rounded-lg px-3 py-1.5 transition-colors hover:text-[#17161F]"
             >
@@ -99,6 +105,7 @@ export function SiteHeader({
               className="min-[860px]:hidden"
               links={[
                 { href: '/#comment', label: t('landing.navHow') },
+                { href: '/#animation', label: t('landing.navVideo') },
                 { href: '/#fonctionnalites', label: t('landing.navFeatures') },
                 { href: '/#tarifs', label: t('landing.navPricing') },
                 { href: '/exemple', label: t('landing.navExamples') },

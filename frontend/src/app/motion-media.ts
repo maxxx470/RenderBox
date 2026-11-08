@@ -38,6 +38,34 @@ export const FILM_EDITIONS: Readonly<Record<string, string>> = {
   'tuto-ameliorer': '20261017b',
 };
 
+/**
+ * The landing's « Animation vidéo » clips (2026-11-08) — the three 16:9 loops
+ * that show a render in movement. They are NOT motion-design films: they are
+ * product output, rendered in Flow from the owner's own images, and they carry
+ * no text of their own (the title is HTML over the card, so it translates).
+ *
+ * On R2 like everything heavy, and for the same reason: three autoplaying
+ * clips add roughly 7 MB to a landing visit that already pulls ~55 MB of film.
+ * Served from Vercel they would cut the site's monthly visit budget by about
+ * an eighth, for one section.
+ *
+ * Two files per clip because the brief asks for both and the saving is real:
+ * VP9 in WebM where the browser takes it, H.264 in MP4 for Safari. The poster
+ * is a WebP of the clip's FIRST frame, so the card does not jump when the loop
+ * starts.
+ *
+ * Upload (the names are dated, since the bucket caches as immutable — a
+ * remade clip gets a new date here rather than overwriting):
+ *   wrangler r2 object put renderbox-media/landing/<name> --remote \
+ *     --file <file> --cache-control "public, max-age=31536000, immutable"
+ */
+export const LANDING_VIDEO_EDITION = '20261108';
+
+export function landingVideo(name: string): { webm: string; mp4: string; poster: string } {
+  const base = `${MEDIA_ORIGIN}/landing/${name}-${LANDING_VIDEO_EDITION}`;
+  return { webm: `${base}.webm`, mp4: `${base}.mp4`, poster: `${base}.webp` };
+}
+
 /** The film's video and poster URLs for this language. */
 export function motionFilm(film: string, locale: string): { src: string; poster: string } {
   const own = FILM_EDITIONS[film] ?? FILMS_EDITION;

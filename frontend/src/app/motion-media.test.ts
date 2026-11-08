@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { FILMS_EDITION, MEDIA_ORIGIN, motionFilm, presentationFilm } from './motion-media';
+import {
+  FILMS_EDITION,
+  LANDING_VIDEO_EDITION,
+  landingVideo,
+  MEDIA_ORIGIN,
+  motionFilm,
+  presentationFilm,
+} from './motion-media';
 
 describe('motion films — served from Cloudflare R2, not from Vercel', () => {
   it('builds the video and poster URLs on the media origin', () => {
@@ -20,7 +27,20 @@ describe('motion films — served from Cloudflare R2, not from Vercel', () => {
     });
   });
 
-  it('no page loads a film from public/motion/ any more', () => {
+  // 2026-11-08: the landing's three « Animation vidéo » clips go the same
+  // way, and for the same reason — three autoplaying clips add ~7 MB to a
+  // visit that already pulls ~55 MB of film, so Vercel would serve them to
+  // every visitor who scrolls that far.
+  it('the landing animation clips are on the media origin too', () => {
+    const e = LANDING_VIDEO_EDITION;
+    expect(landingVideo('visite')).toEqual({
+      webm: `${MEDIA_ORIGIN}/landing/visite-${e}.webm`,
+      mp4: `${MEDIA_ORIGIN}/landing/visite-${e}.mp4`,
+      poster: `${MEDIA_ORIGIN}/landing/visite-${e}.webp`,
+    });
+  });
+
+  it('no page loads a film or a clip from public/ any more', () => {
     const src = path.resolve(__dirname, '..');
     const offenders: string[] = [];
     const walk = (dir: string) => {
@@ -28,7 +48,7 @@ describe('motion films — served from Cloudflare R2, not from Vercel', () => {
         const p = path.join(dir, e.name);
         if (e.isDirectory()) walk(p);
         else if (/\.tsx?$/.test(e.name) && !/\.test\.tsx?$/.test(e.name)) {
-          if (/["'`]\/motion\//.test(fs.readFileSync(p, 'utf8')))
+          if (/["'`]\/(motion|videos)\//.test(fs.readFileSync(p, 'utf8')))
             offenders.push(path.relative(src, p));
         }
       }

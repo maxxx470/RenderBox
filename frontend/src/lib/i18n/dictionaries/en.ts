@@ -1127,6 +1127,20 @@ const en: Record<keyof typeof fr, string> = {
     'Send a weak render or a low-resolution photo: Enhance makes it sharp, detailed and bright, without changing the composition.',
   'landing.enhanceAlt':
     'Film: on the Enhance page, a blurry image is attached, the improvements chosen, then the render turns sharp, from 384 × 214 to 2752 × 1536 pixels.',
+  'landing.animEyebrow': 'Video animation',
+  'landing.animTitle': 'Your renders start moving.',
+  'landing.animBody':
+    'Pick one of your renders: the camera moves in, orbits or flies over, the scene comes alive — and the building itself does not change.',
+  'landing.animClipVisite': 'Home walkthrough',
+  'landing.animClipVisiteAlt':
+    'Video: the exterior of a house, then the camera moves in and through the living room.',
+  'landing.animClipCroquis': 'Sketch to render',
+  'landing.animClipCroquisAlt':
+    'Video: a pencil sketch becomes a photorealistic render, then the camera moves in.',
+  'landing.animClipPlan': 'Blueprint to film',
+  'landing.animClipPlanAlt': 'Video: a blueprint turns into a real building, filmed.',
+  'landing.animCta': 'Animate one of my renders',
+  'landing.animSecondary': 'See how it works',
   'landing.beforeAfterAltBefore':
     'Freehand sketch of a contemporary villa: a cantilevered upper floor, a pergola and a pool.',
   'landing.beforeAfterAltAfter':
@@ -1207,6 +1221,7 @@ const en: Record<keyof typeof fr, string> = {
     'Upload a photo, pick a preset, and let RenderPro remember every material for you.',
   'landing.ctaBandButton': 'Generate my first render',
   'landing.navHow': 'How it works',
+  'landing.navVideo': 'Video',
   'landing.navFaq': 'FAQ',
   'landing.menuClose': 'Close the menu',
   'landing.heroBadgePayment': 'Payment',
