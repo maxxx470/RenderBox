@@ -7,6 +7,7 @@ import {
   landingVideo,
   MEDIA_ORIGIN,
   motionFilm,
+  PRESENTATION_EDITION,
   presentationFilm,
 } from './motion-media';
 
@@ -21,9 +22,11 @@ describe('motion films — served from Cloudflare R2, not from Vercel', () => {
     expect(motionFilm('tuto-generer', 'en').src).toBe(
       `${MEDIA_ORIGIN}/motion/tuto-generer-20261017b-en.mp4`,
     );
+    // Dated since 2026-11-08 (the « Animez. » beat): an undated name would
+    // serve the old film for ever, the bucket caching as immutable.
     expect(presentationFilm('en')).toEqual({
-      src: `${MEDIA_ORIGIN}/motion/presentation-en.mp4`,
-      poster: `${MEDIA_ORIGIN}/motion/presentation-en.jpg`,
+      src: `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-en.mp4`,
+      poster: `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-en.jpg`,
     });
   });
 

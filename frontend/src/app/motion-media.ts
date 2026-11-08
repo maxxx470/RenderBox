@@ -17,9 +17,28 @@
 
 export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev';
 
-/** The presentation film (with sound) and its poster for this language. */
+/**
+ * The presentation film (with sound) and its poster for this language.
+ *
+ * Dated since 2026-11-08, like the films below and for the same reason: the
+ * bucket caches as immutable, so a changed film goes up under a NEW name or
+ * nobody ever sees it. That edition added a fourth beat to the closing
+ * sequence — « Esquissez. / Générez. / Présentez. » became « … / Animez. »,
+ * with a clip of a render in movement (owner: add the video animation to the
+ * presentation film without redoing it).
+ *
+ * How it was done, because it constrains the next edit: the body of the film
+ * is untouched and the AUDIO STREAM IS COPIED BIT FOR BIT. The beat fits in
+ * the time taken back from the logo card's silent hold, so the total duration
+ * is unchanged to within one frame and the music bed never had to be rebuilt
+ * — which mattered, since neither the edit project nor the music track used
+ * is anywhere in this repo. Keep that property: re-cut the tail, not the
+ * middle.
+ */
+export const PRESENTATION_EDITION = '20261108';
+
 export function presentationFilm(locale: string): { src: string; poster: string } {
-  const base = `${MEDIA_ORIGIN}/motion/presentation-${locale}`;
+  const base = `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-${locale}`;
   return { src: `${base}.mp4`, poster: `${base}.jpg` };
 }
 
