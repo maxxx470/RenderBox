@@ -28,7 +28,13 @@ export const MOBILE_NAV_PAD = 'pb-[calc(104px+env(safe-area-inset-bottom))] min-
  *  a sticky element stops at the scroller's padding, so bottom-0 is right. */
 export const PHONE_STICKY_BAR = 'max-[899px]:sticky max-[899px]:bottom-0 max-[899px]:z-20';
 
-const MORE_PAGES: RailPage[] = ['info', 'settings', 'pricing', 'admin'];
+// « Vidéo » is here and not in the bar because the bar is full: five tap
+// targets of 58px are what a 360px phone holds, and the four that are there
+// are the ones a session starts from. But it has to be reachable SOMEWHERE on
+// a phone — it shipped on 2026-11-07 with a rail entry and nothing at all
+// below 900px, so the page existed and no phone could open it, while the
+// relance e-mails tell the reader to go to the « Vidéo » tab.
+const MORE_PAGES: RailPage[] = ['video', 'info', 'settings', 'pricing', 'admin'];
 
 export function MobileNav({
   current,
@@ -82,6 +88,7 @@ export function MobileNav({
     { page: 'images', href: '/app/images', label: t('app.railImages'), icon: 'projects' },
   ];
   const more: { page: RailPage; href: string; label: string; icon: RailIconName }[] = [
+    { page: 'video', href: '/app/video', label: t('app.railVideo'), icon: 'video' },
     { page: 'info', href: '/app/info', label: t('app.railInfo'), icon: 'info' },
     { page: 'settings', href: '/parametres', label: t('parametres.title'), icon: 'settings' },
     { page: 'pricing', href: '/app/tarifs', label: t('app.railPricing'), icon: 'pricing' },

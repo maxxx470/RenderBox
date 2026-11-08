@@ -18,6 +18,24 @@
  * « launch your first render » — they would hit the plans dialog and learn
  * we promised what they cannot do. The prospect e-mails show what the
  * product makes, then name the price page plainly.
+ *
+ * WHAT THE PRODUCT DOES IS PART OF THESE TEXTS, so a new surface has to be
+ * written in here the day it ships (2026-11-08, owner: « les mails automatisés
+ * qu'on envoie, on doit les mettre à jour vu qu'on a fait des ajouts sur notre
+ * site … tu devras faire comprendre aux utilisateurs qu'on a la fonctionnalité
+ * de générer des animations à partir des images »). Video animation went into
+ * the five relances that describe the product — the three prospect ones that
+ * list what it makes, the idle subscriber and the winback — and deliberately
+ * NOT into the four that do not: `credits_low` (a balance warning, no place
+ * for news), `lapsed_day7` (a plan has ended) and `lapsed_day30` (one
+ * question, no pitch). A relance whose job is a fact does not become an
+ * announcement.
+ *
+ * The same house rules hold for it: no duration in seconds and no clip count,
+ * since both live in video-models.ts and provider-cost.ts and would drift —
+ * « une courte vidéo », never a figure. [emails.test.ts] pins that the feature
+ * is named in those five and in both languages, so a later rewrite cannot
+ * silently drop it again.
  */
 import 'server-only';
 import { SITE_URL } from '@/lib/seo';
@@ -229,6 +247,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
               '• un plan 2D',
               '• une photo d’un bâtiment existant',
               'Le cadrage, les proportions et l’architecture de votre image restent la référence : RenderPro change le rendu, pas votre projet.',
+              'Et un rendu ne reste pas forcément fixe : RenderPro peut l’animer en une courte vidéo — la caméra bouge, le feuillage et le ciel vivent, le bâtiment ne change pas.',
               'Avant de vous décider, regardez ce que ça donne — chaque usage a sa page, avec des exemples.',
             ],
             cta: { label: 'Voir ce que ça donne →', href: cases },
@@ -245,6 +264,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
               '• a 2D plan',
               '• a photo of an existing building',
               'Your framing, proportions and architecture stay the reference: RenderPro changes the render, not your project.',
+              'And a render does not have to stay still: RenderPro can animate it into a short video — the camera moves, foliage and sky come alive, the building does not change.',
               'Before you decide anything, see the results — each use has its own page, with examples.',
             ],
             cta: { label: 'See the results →', href: cases },
@@ -255,7 +275,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
       return fr
         ? {
             subject: 'Tout ce que RenderPro sait faire d’une seule image',
-            preheader: 'Rendu de jour, de nuit, intérieur, plan 3D, axonométrie éclatée…',
+            preheader: 'Rendu de jour, de nuit, intérieur, plan 3D, axonométrie éclatée, vidéo…',
             paragraphs: [
               'Vous n’avez pas encore lancé de rendu — peut-être que vous ne saviez pas par où commencer. Voici ce que RenderPro fait, à partir d’une seule image :',
               '• un rendu extérieur de jour, à partir d’un croquis ou d’un modèle',
@@ -265,7 +285,8 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
               '• une axonométrie éclatée, niveau par niveau',
               '• une planche d’analyse pour présenter un projet',
               '• une maquette blanche ou isométrique',
-              '• et « Améliorer » un rendu que vous avez déjà : netteté, matériaux, lumière, ciel',
+              '• « Améliorer » un rendu que vous avez déjà : netteté, matériaux, lumière, ciel',
+              '• et animer un rendu en courte vidéo : travelling, orbite, survol, visite intérieure',
               'Chaque usage a sa page avec des exemples : vous voyez le résultat avant d’essayer.',
             ],
             cta: { label: 'Voir les exemples →', href: cases },
@@ -273,7 +294,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
           }
         : {
             subject: 'Everything RenderPro can do with one image',
-            preheader: 'Day render, night render, interior, 3D plan, exploded axonometric…',
+            preheader: 'Day render, night render, interior, 3D plan, exploded axonometric, video…',
             paragraphs: [
               'You haven’t run a render yet — maybe you weren’t sure where to start. Here is what RenderPro does from a single image:',
               '• a daylight exterior render, from a sketch or a model',
@@ -283,7 +304,8 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
               '• an exploded axonometric, floor by floor',
               '• an analysis board to present a project',
               '• a white model or an isometric model',
-              '• and “Enhance” on a render you already have: sharpness, materials, light, sky',
+              '• “Enhance” on a render you already have: sharpness, materials, light, sky',
+              '• and animating a render into a short video: a dolly, an orbit, a flyover, an interior walkthrough',
               'Each one has its own page with examples: see the result before you try.',
             ],
             cta: { label: 'See the examples →', href: cases },
@@ -322,7 +344,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             preheader: 'On arrête là — votre compte, lui, reste ouvert.',
             paragraphs: [
               'C’est le dernier e-mail que nous vous envoyons : vous ne serez plus relancé.',
-              'Votre compte reste ouvert, et tout ce que RenderPro fait est visible sans s’inscrire — croquis en rendu, plan 2D en 3D, rendu de nuit, planche d’analyse. Si un jour vous avez un projet à présenter, vous saurez où c’est.',
+              'Votre compte reste ouvert, et tout ce que RenderPro fait est visible sans s’inscrire — croquis en rendu, plan 2D en 3D, rendu de nuit, planche d’analyse, rendu animé en vidéo. Si un jour vous avez un projet à présenter, vous saurez où c’est.',
               'Les pages d’exemples restent en ligne, sans compte et sans limite de temps. Vous pouvez y revenir le jour où un projet se présente.',
             ],
             cta: { label: 'Voir les exemples →', href: cases },
@@ -333,7 +355,7 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
             preheader: 'We stop here — your account stays open.',
             paragraphs: [
               'This is the last email we will send you: no more reminders.',
-              'Your account stays open, and everything RenderPro does is visible without signing up — sketch to render, 2D plan to 3D, night render, analysis board. If a project to present ever comes up, you will know where we are.',
+              'Your account stays open, and everything RenderPro does is visible without signing up — sketch to render, 2D plan to 3D, night render, analysis board, a render animated into a video. If a project to present ever comes up, you will know where we are.',
               'The example pages stay online, with no account and no time limit. Come back to them the day a project comes up.',
             ],
             cta: { label: 'See the examples →', href: cases },
@@ -369,10 +391,11 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
       return fr
         ? {
             subject: 'Votre rendu est toujours dans votre galerie',
-            preheader: 'Deux choses que beaucoup découvrent après coup.',
+            preheader: 'La vidéo, les images de référence, les deux moteurs.',
             paragraphs: [
               'Votre galerie n’a pas bougé depuis deux semaines, et votre formule tourne.',
-              'Deux choses que beaucoup découvrent après coup :',
+              'Trois choses que beaucoup découvrent après coup :',
+              '• La vidéo. Un rendu de votre galerie devient une courte animation — travelling, orbite, survol, visite intérieure — sans que le bâtiment change. C’est l’onglet « Vidéo » dans votre espace.',
               '• Les images de référence. Vous attachez une photo dont vous aimez les matériaux, la végétation ou le ciel, et RenderPro s’en inspire sans jamais toucher à la géométrie de votre bâtiment.',
               '• Les deux moteurs. Visio et Pixel IA ne rendent pas la même image. Lancez la même demande sur les deux et gardez celle que vous préférez.',
             ],
@@ -381,10 +404,11 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
           }
         : {
             subject: 'Your render is still sitting in your gallery',
-            preheader: 'Two things most people find out later.',
+            preheader: 'Video, reference images, the two engines.',
             paragraphs: [
               'Your gallery hasn’t moved in two weeks, and your plan is running.',
-              'Two things most people find out later:',
+              'Three things most people find out later:',
+              '• Video. A render from your gallery becomes a short animation — a dolly, an orbit, a flyover, an interior walkthrough — without the building changing. It is the “Video” tab in your workspace.',
               '• Reference images. Attach a photo whose materials, planting or sky you like, and RenderPro draws on it without ever changing your building’s geometry.',
               '• The two engines. Visio and Pixel AI don’t produce the same image. Run the same request on both and keep the one you prefer.',
             ],
@@ -444,9 +468,10 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
       return fr
         ? {
             subject: 'RenderPro a changé depuis votre dernier rendu',
-            preheader: 'Images de référence, nouvelles ambiances, « Améliorer ».',
+            preheader: 'La vidéo, les images de référence, les nouvelles ambiances.',
             paragraphs: [
               'Ça fait un moment. Le produit n’est plus celui que vous avez utilisé :',
+              '• la vidéo : un de vos rendus devient une courte animation — travelling, orbite, survol — sans que le bâtiment change',
               '• les images de référence : une photo dont vous aimez les matériaux ou le ciel, sans jamais toucher à la géométrie de votre bâtiment',
               '• quatorze ambiances, dont la maquette blanche, l’aquarelle, l’heure dorée et le temps de pluie',
               '• « Améliorer », pour reprendre un rendu existant : netteté, matériaux, lumière, ciel',
@@ -457,9 +482,10 @@ function bodyFor(kind: ReengagementKind, locale: Locale): Body {
           }
         : {
             subject: 'RenderPro has changed since your last render',
-            preheader: 'Reference images, new ambiances, “Enhance”.',
+            preheader: 'Video, reference images, new ambiances.',
             paragraphs: [
               'It has been a while. The product is no longer the one you used:',
+              '• video: one of your renders becomes a short animation — a dolly, an orbit, a flyover — without the building changing',
               '• reference images: a photo whose materials or sky you like, without ever touching your building’s geometry',
               '• fourteen ambiances, among them the white model, watercolour, golden hour and rainy weather',
               '• “Enhance”, to take an existing render further: sharpness, materials, light, sky',

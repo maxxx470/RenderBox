@@ -132,6 +132,46 @@ describe('a prospect is never told to launch a render they cannot pay for', () =
   });
 });
 
+describe('the relances say the product animates an image into a video', () => {
+  // 2026-11-08, owner: « tu devras faire comprendre aux utilisateurs qu'on a
+  // la fonctionnalité de générer des animations à partir des images ». The
+  // five relances that DESCRIBE the product carry it; the four that state a
+  // fact (a balance running out, a plan ended, one closing question) do not,
+  // and that split is pinned both ways — the first half so a rewrite cannot
+  // drop the feature, the second so none of them turns into an announcement.
+  const DESCRIBE = [
+    'prospect_day1',
+    'prospect_day4',
+    'prospect_day18',
+    'idle_subscriber',
+    'winback',
+  ] as const;
+  const FACTUAL = ['prospect_day10', 'credits_low', 'lapsed_day7', 'lapsed_day30'] as const;
+
+  for (const kind of DESCRIBE) {
+    it(kind, () => {
+      expect(mail(kind, 'fr').text.toLowerCase()).toMatch(/vidéo|animation|animer/);
+      expect(mail(kind, 'en').text.toLowerCase()).toMatch(/video|animat/);
+    });
+  }
+
+  for (const kind of FACTUAL) {
+    it(`${kind} stays a fact, not an announcement`, () => {
+      expect(mail(kind, 'fr').text.toLowerCase()).not.toMatch(/vidéo|animation/);
+      expect(mail(kind, 'en').text.toLowerCase()).not.toMatch(/video|animat/);
+    });
+  }
+
+  it('and never names a clip length — it would drift', () => {
+    for (const kind of REENGAGEMENT_KINDS) {
+      for (const locale of ['fr', 'en'] as const) {
+        const body = mail(kind, locale).text;
+        expect(body, kind).not.toMatch(/\d+\s*(s\b|secondes?|seconds?)/i);
+      }
+    }
+  });
+});
+
 describe('the last relance of a sequence says it is the last', () => {
   it('prospect_day18', () => {
     expect(mail('prospect_day18', 'fr').text).toContain('dernier e-mail');

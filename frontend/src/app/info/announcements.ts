@@ -39,6 +39,19 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'video-animation',
+    date: '2026-11-07',
+    kind: 'shipped',
+    title: {
+      fr: 'Vos rendus deviennent des vidéos',
+      en: 'Your renders become videos',
+    },
+    body: {
+      fr: 'Un nouvel onglet « Vidéo » dans votre espace : vous choisissez un rendu de votre galerie et il devient une courte animation — travelling, orbite, survol, visite intérieure. Vous réglez le mouvement de caméra, ce qui doit bouger dans la scène (feuillage, ciel, eau, passants) et l’intensité ; le bâtiment, lui, ne change pas. Vous pouvez aussi donner une image de fin, et le moteur construit le chemin entre les deux. Plusieurs moteurs vidéo sont proposés, et chacun n’affiche que ce qu’il sait vraiment faire : le son n’apparaît que sur ceux qui en produisent, le format d’image que sur ceux qui l’acceptent. Pas de texte vers vidéo : on part toujours d’une de vos images.',
+      en: 'A new “Video” tab in your workspace: pick a render from your gallery and it becomes a short animation — a dolly, an orbit, a flyover, an interior walkthrough. You set the camera movement, what should move in the scene (foliage, sky, water, passers-by) and how strongly; the building itself does not change. You can also hand it an end frame, and the engine builds the way between the two. Several video engines are offered, and each one shows only what it really supports: sound appears only on those that produce it, the aspect ratio only on those that accept one. No text-to-video: it always starts from one of your own images.',
+    },
+  },
+  {
     id: 'reference-images',
     date: '2026-10-25',
     kind: 'shipped',
