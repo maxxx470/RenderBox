@@ -22,20 +22,34 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
  *
  * Dated since 2026-11-08, like the films below and for the same reason: the
  * bucket caches as immutable, so a changed film goes up under a NEW name or
- * nobody ever sees it. That edition added a fourth beat to the closing
- * sequence — « Esquissez. / Générez. / Présentez. » became « … / Animez. »,
- * with a clip of a render in movement (owner: add the video animation to the
- * presentation film without redoing it).
+ * nobody ever sees it.
  *
- * How it was done, because it constrains the next edit: the body of the film
- * is untouched and the AUDIO STREAM IS COPIED BIT FOR BIT. The beat fits in
- * the time taken back from the logo card's silent hold, so the total duration
- * is unchanged to within one frame and the music bed never had to be rebuilt
- * — which mattered, since neither the edit project nor the music track used
- * is anywhere in this repo. Keep that property: re-cut the tail, not the
- * middle.
+ * Edition 20261108b adds a SECTION on video animation, before the « Améliorer »
+ * part (owner, 2026-11-08: the first attempt only announced the feature in the
+ * closing sequence — « tu n'as rien fait »). Eight seconds: the section card,
+ * a capture of the Vidéo page with an image loaded and the prompt typed, then
+ * the starting image beside the animation it produced, the prompt above them.
+ * The « Animez. » beat of edition 20261108 is still there at the end.
+ *
+ * How it was done, because it constrains the next edit. Both editions are cut
+ * from the ORIGINAL master in ONE pass, so the picture is never re-encoded
+ * twice; a third edit re-applies all of them from presentation-<lang>.mp4
+ * rather than building on this file. The insert goes in at the white dip that
+ * precedes the « Un rendu flou ? » card (91.667 s FR, 88.167 s EN) and the
+ * section's own background IS the film's frame at that instant, so both joins
+ * fall on the same picture and cannot be seen.
+ *
+ * The SOUND is the constraint to know about: the edit project is not on this
+ * machine and the film's music bed is in none of the project's libraries (all
+ * of them were compared — mel-feature matching, no candidate above 0.57, and
+ * the mix is near-mono so the voice cannot be separated out either). The bed
+ * can therefore NOT be continued across an insert. The section carries its own
+ * music (the Commenter shorts' track, levelled to the film's own -21.5 dB RMS)
+ * with a whoosh in and a swell out to cover the two changes. An insert that
+ * must keep the music unbroken has to take its time from somewhere instead, as
+ * edition 20261108 did with the logo card's silent hold.
  */
-export const PRESENTATION_EDITION = '20261108';
+export const PRESENTATION_EDITION = '20261108b';
 
 export function presentationFilm(locale: string): { src: string; poster: string } {
   const base = `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-${locale}`;
