@@ -24,7 +24,51 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
  * bucket caches as immutable, so a changed film goes up under a NEW name or
  * nobody ever sees it.
  *
- * Edition 20261108b adds a SECTION on video animation, before the « Améliorer »
+ * Edition 20261109 REGENERATES THE WHOLE NARRATION, both languages (owner,
+ * 2026-11-09: « tu vas régénérer totalement les voix, du début jusqu'à la fin
+ * … je ne veux pas qu'il y ait des coupures ou des voix bizarres qui
+ * s'ajoutent »). The section could not simply be given a voice of its own: one
+ * foreign voice inside a film narrated end to end by another is worse than no
+ * voice. So every line is new, from one engine, and the film's own music is
+ * kept under it.
+ *
+ * How, because none of it is obvious and the next edit depends on it:
+ *  - The script was nowhere: it was READ BACK off the film (faster-whisper,
+ *    locally, nothing sent anywhere) — 53 lines in French, 31 in English, each
+ *    with the timing the edit gives it. texte-{fr,en}.json in the workspace.
+ *  - The voice was CHOSEN BY MEASUREMENT, not by ear, because this assistant
+ *    cannot hear: the original narration is female, median pitch 180 Hz in
+ *    French and 193 in English, 3.4 words/s. Every candidate was synthesised on
+ *    one of the film's own sentences and measured the same way; Vivienne
+ *    (184 Hz) and Ava (195 Hz) won. Denise at 203 and Eloise at 286 did not.
+ *  - Each line is put back ON ITS OWN CUE and must fit the room the edit leaves
+ *    it, else it would run over the next shot and the whole film would drift.
+ *    The engine pads every utterance with silence; trimming that padding is
+ *    what took the worst case from « speak 60 % faster » to no change at all.
+ *    A line that ENDS after the insertion point belongs to what follows and
+ *    moves with it — « Un rendu flou ou trop simple » starts 0.27 s before the
+ *    cut and was playing under the new section while its own shot was silent.
+ *  - The MUSIC IS THE FILM'S OWN, recovered from under the old voice by source
+ *    separation (demucs), not replaced. Checked, not assumed: in the recovered
+ *    bed the voice's 180 Hz signature is gone and the level DROPS 6.3 dB under
+ *    speech — the original ducking, still there, so the new voice sits in it
+ *    with no further treatment. The bed is instrumental, so the new section is
+ *    covered by another passage of the same track, crossfaded at both joins.
+ *  - The new voice is levelled onto the old one, measured over speech only:
+ *    +1.42 dB in French, +0.64 in English.
+ * This assistant cannot listen, so the TONE of the new voice is the one thing
+ * here that was never verified. Everything else above was measured.
+ *
+ * Edition 20261108c was that section rebuilt so it EXPLAINS, after the owner read
+ * the first cut: « tu n'as même pas pris du temps pour expliquer comment ça
+ * s'anime ». The first try flashed the whole page shrunk to a grey blur and a
+ * result; this one is 18 s of readable close-ups cut from a dsf-3 capture —
+ * the camera-move grid with the pointer picking « Visite », « ce qui peut
+ * bouger » with « Feuillage » ticked and the page's own « le bâtiment reste
+ * immobile » line, the command bar, then the still becoming the video. The
+ * steps are written on screen because the section has NO narration: see below.
+ *
+ * Edition 20261108b added a SECTION on video animation, before the « Améliorer »
  * part (owner, 2026-11-08: the first attempt only announced the feature in the
  * closing sequence — « tu n'as rien fait »). Eight seconds: the section card,
  * a capture of the Vidéo page with an image loaded and the prompt typed, then
@@ -45,11 +89,14 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
  * the mix is near-mono so the voice cannot be separated out either). The bed
  * can therefore NOT be continued across an insert. The section carries its own
  * music (the Commenter shorts' track, levelled to the film's own -21.5 dB RMS)
- * with a whoosh in and a swell out to cover the two changes. An insert that
+ * with a whoosh in and a swell out to cover the two changes. It also has no
+ * VOICE, unlike every other section: VoiceStudio, the local engine the project's
+ * shorts use, opens on « Installer l'environnement local » — several GB that are
+ * the owner's call to download — and it would not be the film's narrator anyway. An insert that
  * must keep the music unbroken has to take its time from somewhere instead, as
  * edition 20261108 did with the logo card's silent hold.
  */
-export const PRESENTATION_EDITION = '20261108b';
+export const PRESENTATION_EDITION = '20261109';
 
 export function presentationFilm(locale: string): { src: string; poster: string } {
   const base = `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-${locale}`;
