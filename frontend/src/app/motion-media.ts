@@ -24,7 +24,18 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
  * bucket caches as immutable, so a changed film goes up under a NEW name or
  * nobody ever sees it.
  *
- * Edition 20261109 REGENERATES THE WHOLE NARRATION, both languages (owner,
+ * Edition 20261109b fixes the French voice. 20261109 picked it on pitch alone
+ * and landed on a « Multilingual » voice; those are built on an English base
+ * and keep that accent in French, which is exactly what the owner heard
+ * (« la voix en français, c'est comme si c'était de l'anglais »). NATIVENESS
+ * COMES FIRST, pitch second: fr-FR-Denise, dropped 20 Hz, measures 178 Hz
+ * against the original's 180. Never pick a *Multilingual* voice for the
+ * language it is not native to. Denise also speaks a little more slowly, so
+ * the section's four lines were re-fitted to the shots already rendered
+ * (SECT_AT in the workspace's bande-son.py) rather than re-rendering 1320
+ * frames. English is untouched — en-US-Ava is native there.
+ *
+ * Edition 20261109 REGENERATED THE WHOLE NARRATION, both languages (owner,
  * 2026-11-09: « tu vas régénérer totalement les voix, du début jusqu'à la fin
  * … je ne veux pas qu'il y ait des coupures ou des voix bizarres qui
  * s'ajoutent »). The section could not simply be given a voice of its own: one
@@ -96,7 +107,7 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
  * must keep the music unbroken has to take its time from somewhere instead, as
  * edition 20261108 did with the logo card's silent hold.
  */
-export const PRESENTATION_EDITION = '20261109';
+export const PRESENTATION_EDITION = '20261109b';
 
 export function presentationFilm(locale: string): { src: string; poster: string } {
   const base = `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-${locale}`;
