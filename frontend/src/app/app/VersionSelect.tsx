@@ -2,7 +2,7 @@
 
 // The engine's version, a chip of the command bar's settings row (owner,
 // 2026-10-15: each vendor version becomes a numbered version under our name —
-// Visio 1, Pro, 2, 2.1, 2 Lite; Pixel IA 1.5, 2, 2.5). The two engines stay
+// Nano Banana 1, Pro, 2, 2.1, 2 Lite; ChatGPT 1.5, 2, 2.5). The two engines stay
 // the coloured toggle; this chip picks which version of the chosen one runs.
 // The panel is the ratio chip's: a heading over a radio list.
 import { ChevronUp, ChevronDown } from 'react-iconly';

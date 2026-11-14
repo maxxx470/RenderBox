@@ -129,7 +129,7 @@ describe('generateWithKie', () => {
     });
   });
 
-  // A landscape render (1.6) and a portrait reference: Visio left on 'auto'
+  // A landscape render (1.6) and a portrait reference: Nano Banana left on 'auto'
   // framed the result on the reference (paid test, 2026-10-17).
   const landscape = () =>
     sharp({ create: { width: 160, height: 100, channels: 3, background: '#ffffff' } })
@@ -155,7 +155,7 @@ describe('generateWithKie', () => {
     expect(created().input.aspect_ratio).toBe('auto');
   });
 
-  it('Visio 3 (Seedream 5.0 Pro): its model, a quality for the size, a ratio always', async () => {
+  it('Nano Banana 3 (Seedream 5.0 Pro): its model, a quality for the size, a ratio always', async () => {
     await run('visio-3', {
       ...INPUT,
       referenceImages: [],
@@ -174,7 +174,7 @@ describe('generateWithKie', () => {
     expect(body.input.image_urls).toHaveLength(1);
   });
 
-  it('Visio 3 at 1K: basic quality; a ratio it lacks goes to the nearest', async () => {
+  it('Nano Banana 3 at 1K: basic quality; a ratio it lacks goes to the nearest', async () => {
     await run('visio-3', { ...INPUT, resolution: '1k' as never, aspectRatio: '5:4' as never });
     expect(created().input).toMatchObject({ quality: 'basic', aspect_ratio: '4:3' });
   });

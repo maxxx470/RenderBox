@@ -37,7 +37,7 @@ export interface GenerateRenderInput {
   // generation behaved before the ratio control existed. Each engine
   // translates this itself — see generation/ratios.ts.
   aspectRatio?: RatioKey | undefined;
-  // Requested output size (1K / 2K / 4K). Visio renders at it; any engine
+  // Requested output size (1K / 2K / 4K). Nano Banana renders at it; any engine
   // output smaller than it is enlarged afterwards — see output-shape.ts.
   resolution?: ResolutionKey | undefined;
   // The engine version (engine-versions.ts), run through Kie (kie.ts). Absent:
@@ -49,7 +49,7 @@ export interface GenerateRenderInput {
 }
 
 /**
- * How long one engine call may take — every SDK retry and Visio's Flash
+ * How long one engine call may take — every SDK retry and Nano Banana's Flash
  * fallback included. Fits the routes' 300 s maxDuration (Vercel Hobby with
  * Fluid compute, checked 2026-10-11) with the upload, the database writes
  * and the 30 s material detection after it.

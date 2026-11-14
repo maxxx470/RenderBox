@@ -20,7 +20,7 @@
 //
 // Ameliorer keeps the specification's prompt (`enhancePrompt`), which the
 // owner's fourteen texts do not cover.
-// The same text goes to Visio and Pixel IA, with the source image.
+// The same text goes to Nano Banana and ChatGPT, with the source image.
 import 'server-only';
 import type { Locale } from '@/lib/i18n/dictionaries';
 import { ambiancePromptText } from './ambiance-prompts';
@@ -70,7 +70,7 @@ function requestLine(text: string): string[] {
 
 /**
  * What the reference images are for (2026-10-25, owner: « ces images-là
- * permettront à Pixel IA et Visio de savoir quel matériau appliquer au
+ * permettront à ChatGPT et Nano Banana de savoir quel matériau appliquer au
  * nouveau croquis »). Written in the ambiance's own language, so the engine
  * reads one coherent prompt rather than two.
  *

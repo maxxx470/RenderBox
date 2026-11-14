@@ -9,7 +9,7 @@
 // protections whatever the source, and the light of a version never drifts
 // from the one before (audit R6, R7).
 //
-// Commenter always runs on Pixel IA (annotations.ts, ANNOTATE_ENGINE).
+// Commenter always runs on ChatGPT (annotations.ts, ANNOTATE_ENGINE).
 import 'server-only';
 import type { EngineName } from './engines/types';
 import { regionOf, type Annotation } from './annotations';

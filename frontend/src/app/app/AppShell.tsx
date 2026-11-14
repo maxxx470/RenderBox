@@ -902,7 +902,7 @@ export function AppShell({
                 : t('app.modeAdd')
           }
           generating={generating || submittingEdit}
-          // "Commenter" always runs on Pixel IA — the chip says so and is locked.
+          // "Commenter" always runs on ChatGPT — the chip says so and is locked.
           engine={mode === 'retouch' ? ANNOTATE_ENGINE : engine}
           onEngineChange={handleEngineChange}
           engineLocked={mode === 'retouch'}

@@ -86,8 +86,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
       en: 'Every image costs the engine’s exact price',
     },
     body: {
-      fr: 'Les crédits suivent désormais le prix réel de chaque moteur et de chaque taille : une image Visio coûte 4 crédits en 1K, 6 en 2K et 9 en 4K ; une image Pixel IA 6, 10 et 16. Les formules donnent 500, 1 500 et 4 000 crédits, aux mêmes prix, et chaque carte indique combien d’images cela représente. Le coût s’affiche avant chaque génération, et les crédits sont rendus si elle échoue. Une fiche de matériaux coûte 2 crédits.',
-      en: 'Credits now follow the real price of each engine and size: a Visio image costs 4 credits at 1K, 6 at 2K and 9 at 4K; a Pixel AI image 6, 10 and 16. The plans give 500, 1,500 and 4,000 credits at the same prices, and each card shows how many images that makes. The cost shows before every generation, and the credits come back if it fails. A materials sheet costs 2 credits.',
+      fr: 'Les crédits suivent désormais le prix réel de chaque moteur et de chaque taille : une image Nano Banana coûte 4 crédits en 1K, 6 en 2K et 9 en 4K ; une image ChatGPT 6, 10 et 16. Les formules donnent 500, 1 500 et 4 000 crédits, aux mêmes prix, et chaque carte indique combien d’images cela représente. Le coût s’affiche avant chaque génération, et les crédits sont rendus si elle échoue. Une fiche de matériaux coûte 2 crédits.',
+      en: 'Credits now follow the real price of each engine and size: a Nano Banana image costs 4 credits at 1K, 6 at 2K and 9 at 4K; a ChatGPT image 6, 10 and 16. The plans give 500, 1,500 and 4,000 credits at the same prices, and each card shows how many images that makes. The cost shows before every generation, and the credits come back if it fails. A materials sheet costs 2 credits.',
     },
   },
   {
@@ -147,8 +147,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     date: '2026-10-17',
     kind: 'shipped',
     title: {
-      fr: 'Visio et Pixel IA sur leur meilleure version',
-      en: 'Visio and Pixel AI on their best version',
+      fr: 'Nano Banana et ChatGPT sur leur meilleure version',
+      en: 'Nano Banana and ChatGPT on their best version',
     },
     body: {
       fr: 'Plus de version à choisir : chaque moteur tourne sur la version la plus performante pour l’architecture, choisie par l’équipe.',
@@ -190,8 +190,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
       en: 'The whole interface from the start, and our channels',
     },
     body: {
-      fr: 'Sans formule ou sans assez de crédits, le Générateur, vos projets et Améliorer s’ouvrent désormais en entier : vous préparez votre rendu, et les formules s’affichent dans une petite fenêtre au moment de lancer. Visio et Pixel IA ont chacun leur symbole. Sur téléphone, la connexion et l’accueil tiennent sur un seul écran. Et la page Info mène à notre chaîne WhatsApp (en français ou en anglais selon votre langue) et à notre chaîne YouTube.',
-      en: 'Without a plan or with too few credits, the Image generator, your projects and Enhance now open in full: you prepare your render, and the plans show in a small window when you launch it. Visio and Pixel AI each have their own symbol. On a phone, sign-in and onboarding fit on a single screen. And the Info page leads to our WhatsApp channel (in French or English, following your language) and to our YouTube channel.',
+      fr: 'Sans formule ou sans assez de crédits, le Générateur, vos projets et Améliorer s’ouvrent désormais en entier : vous préparez votre rendu, et les formules s’affichent dans une petite fenêtre au moment de lancer. Nano Banana et ChatGPT ont chacun leur symbole. Sur téléphone, la connexion et l’accueil tiennent sur un seul écran. Et la page Info mène à notre chaîne WhatsApp (en français ou en anglais selon votre langue) et à notre chaîne YouTube.',
+      en: 'Without a plan or with too few credits, the Image generator, your projects and Enhance now open in full: you prepare your render, and the plans show in a small window when you launch it. Nano Banana and ChatGPT each have their own symbol. On a phone, sign-in and onboarding fit on a single screen. And the Info page leads to our WhatsApp channel (in French or English, following your language) and to our YouTube channel.',
     },
   },
   {
@@ -242,8 +242,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
       en: 'Every format and every size',
     },
     body: {
-      fr: 'Onze formats (dont 16:9, 9:16, 4:3, 4:5 et 21:9) et les résolutions 1K, 2K et 4K sont disponibles avec les deux moteurs, pour générer comme pour retoucher. Visio rend directement à la taille choisie.',
-      en: 'Eleven formats (including 16:9, 9:16, 4:3, 4:5 and 21:9) and 1K, 2K and 4K output are available on both engines, for generating as well as editing. Visio renders straight at the chosen size.',
+      fr: 'Onze formats (dont 16:9, 9:16, 4:3, 4:5 et 21:9) et les résolutions 1K, 2K et 4K sont disponibles avec les deux moteurs, pour générer comme pour retoucher. Nano Banana rend directement à la taille choisie.',
+      en: 'Eleven formats (including 16:9, 9:16, 4:3, 4:5 and 21:9) and 1K, 2K and 4K output are available on both engines, for generating as well as editing. Nano Banana renders straight at the chosen size.',
     },
   },
   {
@@ -308,8 +308,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     kind: 'shipped',
     title: { fr: 'Une barre de commande complète', en: 'A complete command bar' },
     body: {
-      fr: 'Tout se fait depuis la barre : les actions Générer, Commenter, Ajouter et Enhance côte à côte, les deux moteurs toujours visibles (Visio rouge, Pixel IA jaune), un trombone pour joindre une image, qui s’affiche en miniature, et le nombre de variantes. Le bouton « ? » ouvre l’assistant.',
-      en: 'Everything happens in the bar: the Generate, Comment, Add and Enhance actions side by side, both engines always on show (Visio red, Pixel AI yellow), a paperclip to attach an image, shown as a thumbnail, and the number of variants. The "?" button opens the assistant.',
+      fr: 'Tout se fait depuis la barre : les actions Générer, Commenter, Ajouter et Enhance côte à côte, les deux moteurs toujours visibles (Nano Banana rouge, ChatGPT jaune), un trombone pour joindre une image, qui s’affiche en miniature, et le nombre de variantes. Le bouton « ? » ouvre l’assistant.',
+      en: 'Everything happens in the bar: the Generate, Comment, Add and Enhance actions side by side, both engines always on show (Nano Banana red, ChatGPT yellow), a paperclip to attach an image, shown as a thumbnail, and the number of variants. The "?" button opens the assistant.',
     },
   },
   {
@@ -341,8 +341,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
       en: 'Comment: point, comment, it’s changed',
     },
     body: {
-      fr: 'Le mode « Retoucher » devient « Commenter ». Cliquez sur le rendu à l’endroit à changer, écrivez ce qui doit changer dans la bulle — jusqu’à 8 commentaires numérotés — puis « Appliquer ». Ce mode utilise toujours Pixel IA, le plus précis pour suivre des consignes localisées, et la mémoire des matériaux est mise à jour après la modification.',
-      en: '"Retouch" becomes "Comment". Click the render where it should change, type the change in the bubble — up to 8 numbered comments — then "Apply". This mode always uses Pixel AI, the most precise at following localized instructions, and the material memory is updated after the edit.',
+      fr: 'Le mode « Retoucher » devient « Commenter ». Cliquez sur le rendu à l’endroit à changer, écrivez ce qui doit changer dans la bulle — jusqu’à 8 commentaires numérotés — puis « Appliquer ». Ce mode utilise toujours ChatGPT, le plus précis pour suivre des consignes localisées, et la mémoire des matériaux est mise à jour après la modification.',
+      en: '"Retouch" becomes "Comment". Click the render where it should change, type the change in the bubble — up to 8 numbered comments — then "Apply". This mode always uses ChatGPT, the most precise at following localized instructions, and the material memory is updated after the edit.',
     },
   },
   {
@@ -374,8 +374,8 @@ export const ANNOUNCEMENTS: readonly Announcement[] = [
     kind: 'shipped',
     title: { fr: 'Une couleur par moteur', en: 'One colour per engine' },
     body: {
-      fr: 'Visio est rouge, Pixel IA est jaune, partout où un moteur est indiqué : on voit d’un coup d’œil quel moteur a produit quel rendu.',
-      en: 'Visio is red, Pixel AI is yellow, wherever an engine is shown: you can tell at a glance which engine made which render.',
+      fr: 'Nano Banana est rouge, ChatGPT est jaune, partout où un moteur est indiqué : on voit d’un coup d’œil quel moteur a produit quel rendu.',
+      en: 'Nano Banana is red, ChatGPT is yellow, wherever an engine is shown: you can tell at a glance which engine made which render.',
     },
   },
   {

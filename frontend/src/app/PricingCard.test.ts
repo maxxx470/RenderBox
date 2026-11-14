@@ -126,14 +126,14 @@ describe('PricingCard — one card for the landing and the Abonnement page', () 
     const order = {
       fr: [
         'crédits / mois',
-        'Deux moteurs : Visio et Pixel IA',
+        'Deux moteurs : Nano Banana et ChatGPT',
         '5 ambiances de rendu',
         'Commenter, Ajouter et Améliorer',
         'Assistant intégré',
       ],
       en: [
         'credits / month',
-        'Two engines: Visio and Pixel AI',
+        'Two engines: Nano Banana and ChatGPT',
         '5 render ambiances',
         'Comment, Add and Enhance',
         'Built-in assistant',

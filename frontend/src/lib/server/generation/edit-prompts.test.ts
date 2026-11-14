@@ -19,7 +19,7 @@ describe('Ajouter', () => {
     expect(p).not.toMatch(/\d{4} K|EV\b|blue hour|hazy/);
   });
 
-  it('Pixel IA ends with its final check', () => {
+  it('ChatGPT ends with its final check', () => {
     const p = buildAddElementPrompt({ engine: 'gpt_image', instruction: 'x', materials: [] });
     expect(p.endsWith('nothing new except the requested element.')).toBe(true);
     expect(p).not.toContain(PROJECT_MATERIALS_HEADER);
@@ -61,7 +61,7 @@ describe('Commenter', () => {
     { x: 70, y: 85, comment: 'retirer\nla voiture' },
   ];
 
-  it('runs on Pixel IA: sections, lock first, final check', () => {
+  it('runs on ChatGPT: sections, lock first, final check', () => {
     const p = buildAnnotationPrompt({
       engine: ANNOTATE_ENGINE,
       annotations,

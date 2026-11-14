@@ -3,10 +3,10 @@
 // reasoning as presets.ts: no secrets here, and the client component needs
 // these strings at runtime.
 //
-// The names are deliberately generic. They used to be the vendors' own
-// ("Nanobanana", "ChatGPT Image"), which told every visitor exactly which
-// third-party product to go buy directly instead of paying for RenderBox. The
-// engine *identifiers* below stay as they are — they are written on every
+// Since 2026-11-14 the engines carry their real names, Nano Banana and
+// ChatGPT, with their own logos (owner: « on va garder les vrais noms
+// d'origine des IA, on ne va plus masquer »); they were Visio and Pixel IA
+// from 2026-10-08, chosen to hide the vendors. The engine *identifiers* below stay as they are — they are written on every
 // RenderNode row in the database and read back by the dispatcher, so renaming
 // them would orphan the renders already generated.
 import type { EngineName } from './engines/types';
@@ -18,8 +18,8 @@ interface EngineLabel {
 
 // Each engine's own colour (owner's choice, 2026-10-06: bright red and
 // yellow), used wherever an engine is marked — the model chip, the Enhance
-// toggle, the landing film. Red goes to Visio and yellow to Pixel IA on
-// purpose: a yellow Visio would point straight at the banana it runs on.
+// toggle, the landing film: red for Nano Banana, yellow for ChatGPT (kept
+// as they were when the engines were renamed, 2026-11-14).
 // The red is #DC2626, deliberately NOT the error red #E5484D (reserved for
 // errors and destructive actions by the charter). Every value is a complete
 // literal class name so Tailwind's scanner sees it.
@@ -43,21 +43,21 @@ export const ENGINE_COLORS: Record<
   },
 };
 
-// Each engine's own symbol (owner-generated, 2026-10-15): Visio's eye, Pixel
-// IA's four pixels with one turned into a petal. 128px squares on white in
-// public/engines/; replace a file under the same name to change one.
+// Each engine's original logo since 2026-11-14 (the banana, OpenAI's knot),
+// SVG on a white tile in public/engines/; replace a file under the same name
+// to change one. The owner's Visio / Pixel IA symbols stay beside them.
 export const ENGINE_LOGOS: Record<EngineName, string> = {
-  nanobanana: '/engines/visio.webp',
-  gpt_image: '/engines/pixel-ia.webp',
+  nanobanana: '/engines/nano-banana.svg',
+  gpt_image: '/engines/chatgpt.svg',
 };
 
 export const ENGINE_LABELS: Record<EngineName, EngineLabel> = {
   nanobanana: {
-    name: { fr: 'Visio', en: 'Visio' },
+    name: { fr: 'Nano Banana', en: 'Nano Banana' },
     description: { fr: 'Haute définition, jusqu’en 4K', en: 'High definition, up to 4K' },
   },
   gpt_image: {
-    name: { fr: 'Pixel IA', en: 'Pixel AI' },
+    name: { fr: 'ChatGPT', en: 'ChatGPT' },
     description: {
       fr: "Meilleur suivi d'instructions précises",
       en: 'Best at following precise instructions',

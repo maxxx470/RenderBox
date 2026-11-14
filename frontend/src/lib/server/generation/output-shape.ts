@@ -2,8 +2,8 @@
 // and at least the chosen size — whatever engine made it (2026-10-08, owner:
 // a paying user gets every ratio and every size on both engines).
 //
-// Visio's Pro model already renders the right ratio at the right size, so for
-// it this is a no-op. Pixel IA (gpt-image-1) only returns 1024×1024,
+// Nano Banana's Pro model already renders the right ratio at the right size, so for
+// it this is a no-op. ChatGPT (gpt-image-1) only returns 1024×1024,
 // 1536×1024 or 1024×1536: its image is cropped to the exact ratio (centred,
 // the engine was asked for the nearest shape so little is lost) and enlarged
 // to the size's long edge. Enlarging adds pixels, not detail — said plainly

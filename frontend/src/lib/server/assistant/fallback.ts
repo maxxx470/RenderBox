@@ -30,8 +30,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
       'edit',
       'pin ',
     ],
-    fr: `Pour modifier une partie d'un rendu : ouvrez le projet, choisissez le mode « Commenter », cliquez sur le rendu à l'endroit à changer et écrivez le changement dans la bulle (Entrée pour valider). Jusqu'à ${MAX_ANNOTATIONS} commentaires, puis « Appliquer ». Ce mode utilise toujours Pixel IA, et le résultat devient une nouvelle branche de l'arbre : l'original reste disponible.`,
-    en: `To change part of a render: open the project, pick the "Comment" mode, click the render where it should change and type the change in the bubble (Enter to save). Up to ${MAX_ANNOTATIONS} comments, then "Apply". This mode always uses Pixel AI, and the result becomes a new branch of the tree: the original stays available.`,
+    fr: `Pour modifier une partie d'un rendu : ouvrez le projet, choisissez le mode « Commenter », cliquez sur le rendu à l'endroit à changer et écrivez le changement dans la bulle (Entrée pour valider). Jusqu'à ${MAX_ANNOTATIONS} commentaires, puis « Appliquer ». Ce mode utilise toujours ChatGPT, et le résultat devient une nouvelle branche de l'arbre : l'original reste disponible.`,
+    en: `To change part of a render: open the project, pick the "Comment" mode, click the render where it should change and type the change in the bubble (Enter to save). Up to ${MAX_ANNOTATIONS} comments, then "Apply". This mode always uses ChatGPT, and the result becomes a new branch of the tree: the original stays available.`,
   },
   {
     keys: [
@@ -51,8 +51,8 @@ const TOPICS: { keys: string[]; fr: string; en: string }[] = [
   },
   {
     keys: ['moteur', 'engine', 'rouge', 'jaune', 'red', 'yellow'],
-    fr: "RenderPro a deux moteurs. Visio (pastille rouge) : rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail. Pixel IA (pastille jaune) : meilleur suivi d'instructions précises. Vous choisissez le moteur à chaque rendu dans la barre de commande ; le moteur par défaut se règle dans Paramètres. Les deux partagent les matériaux et l'historique du projet.",
-    en: 'RenderPro has two engines. Visio (red dot): renders straight at the chosen size, up to 4K, with the most detail. Pixel AI (yellow dot): best at following precise instructions. Pick the engine for each render in the command bar; set the default one in Settings. Both share the project’s materials and history.',
+    fr: "RenderPro a deux moteurs. Nano Banana (pastille rouge) : rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail. ChatGPT (pastille jaune) : meilleur suivi d'instructions précises. Vous choisissez le moteur à chaque rendu dans la barre de commande ; le moteur par défaut se règle dans Paramètres. Les deux partagent les matériaux et l'historique du projet.",
+    en: 'RenderPro has two engines. Nano Banana (red dot): renders straight at the chosen size, up to 4K, with the most detail. ChatGPT (yellow dot): best at following precise instructions. Pick the engine for each render in the command bar; set the default one in Settings. Both share the project’s materials and history.',
   },
   {
     keys: [

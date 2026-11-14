@@ -1,5 +1,5 @@
 // "Nanobanana" = the community nickname for Google's Gemini image models,
-// accessed here via the `@google/genai` SDK. Shown in the UI as "Visio".
+// accessed here via the `@google/genai` SDK. Shown in the UI as "Nano Banana".
 //
 // Since 2026-10-08 the Pro image model: it takes `imageSize` (1K / 2K / 4K)
 // alongside the aspect ratio, so every size and ratio the command bar offers

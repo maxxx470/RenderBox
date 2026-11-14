@@ -399,7 +399,7 @@ const en: Record<keyof typeof fr, string> = {
   'app.legacyAttachReasonDuplicate': 'Another ticked row has the same face.',
   'app.cmdbarPlaceholder': 'Add an optional detail for this render',
   'app.canvasPresetBadge': 'Preset: {preset} · {engine}',
-  'app.engineTag': 'Visio',
+  'app.engineTag': 'Nano Banana',
   'app.engineDropdownNote':
     'The materials sheet and active preset apply the same way regardless of the engine chosen.',
   'app.uploading': 'Uploading…',
@@ -486,7 +486,8 @@ const en: Record<keyof typeof fr, string> = {
   'app.genHomeInputPlaceholder': 'Describe the render to generate, or drop a reference image…',
   'app.genHomeQuickStartError': 'Quick start failed. Try again.',
   'app.genHomeNoTierTitle': 'No active plan',
-  'app.genHomeNoTierBody': 'Choose a plan to unlock your monthly generations (Visio + Pixel AI).',
+  'app.genHomeNoTierBody':
+    'Choose a plan to unlock your monthly generations (Nano Banana + ChatGPT).',
   'app.genHomeChooseTier': 'View pricing',
   'app.genHomeCardPlaceholder':
     'Upload a photo, a sketch or an image export of your project to start',
@@ -517,8 +518,8 @@ const en: Record<keyof typeof fr, string> = {
   'annotate.remove': 'Remove',
   'annotate.listTitle': 'Comments',
   'annotate.max': 'At most {n} comments per pass.',
-  'annotate.engineNote': 'Comments are always handled by Pixel AI.',
-  'annotate.engineLocked': 'Comment mode always uses Pixel AI',
+  'annotate.engineNote': 'Comments are always handled by ChatGPT.',
+  'annotate.engineLocked': 'Comment mode always uses ChatGPT',
   'annotate.pinLabel': 'Comment {n}',
   'edit.enterButton': 'Edit',
   'edit.closeButton': 'Close edit mode',
@@ -564,7 +565,7 @@ const en: Record<keyof typeof fr, string> = {
   'info.filmEtapesTitle': 'Generate, fix, animate: the 3 steps',
   'info.filmCommenterTitle': 'Edit an image by commenting on it',
   'info.filmArbreTitle': 'Explore several directions with the project tree',
-  'info.filmMoteursTitle': 'Compare the two engines, Visio and Pixel AI',
+  'info.filmMoteursTitle': 'Compare the two engines, Nano Banana and ChatGPT',
   'info.filmAjouterTitle': 'Add an element from its photo',
   'info.filmAmeliorerTitle': 'Turn a blurry image sharp',
   'info.filmAnimerTitle': 'Animate a render into a video',
@@ -1102,8 +1103,8 @@ const en: Record<keyof typeof fr, string> = {
   'landing.heroCtaPrimary': 'Generate my first render',
   'landing.heroCtaSecondary': 'See an example',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
-  'landing.heroPreviewEngine': 'Visio',
-  'landing.heroPreviewCaption': 'Exterior day · Visio',
+  'landing.heroPreviewEngine': 'Nano Banana',
+  'landing.heroPreviewCaption': 'Exterior day · Nano Banana',
   'landing.heroChipMaterials': 'Materials remembered: 12/12',
   'landing.heroChipFacade': 'North façade → white render',
 
@@ -1249,7 +1250,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.faq2A': 'Yes. Every render you generate is yours, with no commercial-use limit.',
   'landing.faq3Q': "What's the difference between the two AI engines?",
   'landing.faq3A':
-    'Visio (red) renders straight at the chosen size, up to 4K, with the most detail; Pixel AI (yellow) follows precise instructions more closely. You pick whichever fits each render best, any time. Edits by comment always use Pixel AI.',
+    'Nano Banana (red) renders straight at the chosen size, up to 4K, with the most detail; ChatGPT (yellow) follows precise instructions more closely. You pick whichever fits each render best, any time. Edits by comment always use ChatGPT.',
   'landing.faq4Q': 'What happens when I run out of credits?',
   'landing.faq4A':
     'Generations stop until your next purchase: the app then offers you the plans. Nothing is charged automatically — never a surprise charge.',
@@ -1291,7 +1292,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureCredits': '{count} credits / month',
-  'landing.pricingFeatureEngines': 'Two engines: Visio and Pixel AI',
+  'landing.pricingFeatureEngines': 'Two engines: Nano Banana and ChatGPT',
   'landing.pricingFeaturePresets': '5 render ambiances',
   'landing.pricingFeatureEditing': 'Comment, Add and Enhance',
   'landing.pricingCta': 'Choose {tier}',
@@ -1320,7 +1321,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.enginesSubtitle':
     'Compare both engines on the same request and keep the one that fits: materials and history stay shared.',
   'landing.enginesAlt':
-    'Demo film: the sketch of a living room is sent to Visio or Pixel AI, up to 4K, then the render appears beside the sketch.',
+    'Demo film: the sketch of a living room is sent to Nano Banana or ChatGPT, up to 4K, then the render appears beside the sketch.',
   'landing.animateTitle': 'Your renders come alive.',
   'landing.animateSubtitle':
     'Pick a camera move and what should move in the scene, or an end image: from day to night in one video.',

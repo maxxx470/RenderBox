@@ -9,7 +9,7 @@
 // which ties each number to its comment and to a coarse region name so
 // the edit still lands if the marked copy is ever missing.
 //
-// Annotate always runs on gpt-image (Pixel IA): it is the engine whose
+// Annotate always runs on gpt-image (ChatGPT): it is the engine whose
 // image-edit follows localized, multi-instruction requests reliably. The route
 // enforces that server-side whatever engine the client sends.
 //

@@ -790,8 +790,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             <div className="rounded-[24px] bg-[#F7F7FA] p-4 min-[640px]:p-10">
               {/* Same shape as the two cards above: the same prompt rendered
                   by each engine, interior on the left, exterior on the right
-                  (owner's brief, 2026-10-06). Engines are only ever named
-                  "Visio / Pixel IA" here, never by provider. */}
+                  (owner's brief, 2026-10-06). Engines are named by their real
+                  names, Nano Banana and ChatGPT (owner, 2026-11-14). */}
               <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
                 <div
                   className={`hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${GRADIENT} min-[640px]:flex`}

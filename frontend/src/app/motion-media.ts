@@ -143,7 +143,7 @@ export const FILMS_EDITION: string | null = '20261114';
 
 // A film remade on its own after its edition keeps a later name here. The two
 // dashboard tutorials were re-rendered the same day without the engine
-// version (« Pixel IA 2 » became « Pixel IA » when the version choice went).
+// version (« ChatGPT 2 » became « ChatGPT » when the version choice went).
 export const FILM_EDITIONS: Readonly<Record<string, string>> = {
   'tuto-generer': '20261017b',
   'tuto-ameliorer': '20261017b',

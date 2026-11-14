@@ -37,7 +37,7 @@ describe('shapeOutput', () => {
     expect(await shapeOutput(out, { ratio: '3:2', resolution: '1k' })).toBe(out);
   });
 
-  it("crops Pixel IA's 3:2 to an exact 16:9", async () => {
+  it("crops ChatGPT's 3:2 to an exact 16:9", async () => {
     const shaped = await shapeOutput(await png(1536, 1024), { ratio: '16:9' });
     expect(shaped.mimeType).toBe('image/jpeg');
     expect(await size(shaped.imageBuffer)).toEqual([1536, 864]);

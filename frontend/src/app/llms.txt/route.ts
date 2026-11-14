@@ -50,7 +50,7 @@ function body(): string {
 ## What it does
 
 - Generate: upload an image (photo, scanned sketch, screenshot or image export from SketchUp, Revit, AutoCAD, Archicad or Rhino) and get a photorealistic render that keeps the framing, volumes and openings. Optional styles: furnished 3D plan, exploded axonometric, analysis board, isometric model, sketch; templates for day and night, exterior and interior.
-- Two AI engines: Visio (most detail, renders straight at the chosen size up to 4K) and Pixel AI (follows precise instructions closely).
+- Two AI engines: Nano Banana (most detail, renders straight at the chosen size up to 4K) and ChatGPT (follows precise instructions closely).
 - Comment: click points on a render and write the change for each (up to 8 comments); the rest of the image is kept.
 - Add: insert an element (furniture, people, trees…) from a reference picture.
 - Enhance: improve a render made with any other software (sharpness, detail, light, materials, sky, planting, life and atmosphere), each with an optional reference image.

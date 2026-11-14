@@ -90,7 +90,7 @@ describe('the grid: every engine version × size', () => {
 
 describe('what the plans buy, and what they guarantee', () => {
   it('the image range comes from the grid: dearest offered for the min, cheapest for the max', () => {
-    // Dearest: Pixel IA 4K (16); cheapest: Visio 1K (4).
+    // Dearest: ChatGPT 4K (16); cheapest: Nano Banana 1K (4).
     expect(imageRange(500)).toEqual({ min: 31, max: 125 });
     expect(imageRange(1500)).toEqual({ min: 93, max: 375 });
     expect(imageRange(4000)).toEqual({ min: 250, max: 1000 });
@@ -115,10 +115,10 @@ describe('what the plans buy, and what they guarantee', () => {
 
   it('describes the offered prices in both languages', () => {
     expect(describePrices('fr')).toBe(
-      'Visio : 4 crédits en 1K, 6 en 2K, 9 en 4K ; Pixel IA : 6 crédits en 1K, 10 en 2K, 16 en 4K',
+      'Nano Banana : 4 crédits en 1K, 6 en 2K, 9 en 4K ; ChatGPT : 6 crédits en 1K, 10 en 2K, 16 en 4K',
     );
     expect(describePrices('en')).toBe(
-      'Visio: 4 credits at 1K, 6 at 2K, 9 at 4K; Pixel AI: 6 credits at 1K, 10 at 2K, 16 at 4K',
+      'Nano Banana: 4 credits at 1K, 6 at 2K, 9 at 4K; ChatGPT: 6 credits at 1K, 10 at 2K, 16 at 4K',
     );
   });
 });

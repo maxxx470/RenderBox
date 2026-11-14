@@ -6,11 +6,11 @@
 //
 // Every size is available on both engines since 2026-10-08 (owner: there is
 // no free mode, a paying user gets everything):
-//   • Visio runs on Gemini's Pro image model, which takes an `imageSize` of
+//   • Nano Banana runs on Gemini's Pro image model, which takes an `imageSize` of
 //     1K / 2K / 4K and renders at that size (see engines/nanobanana.ts);
-//   • Pixel IA (gpt-image-1) tops out around 1536px, so its image is enlarged
+//   • ChatGPT (gpt-image-1) tops out around 1536px, so its image is enlarged
 //     to the size asked for afterwards (see output-shape.ts) — the same
-//     happens to Visio if the Pro model is ever unavailable and the call falls
+//     happens to Nano Banana if the Pro model is ever unavailable and the call falls
 //     back to the Flash one.
 
 export const RESOLUTION_KEYS = ['1k', '2k', '4k'] as const;

@@ -3,8 +3,8 @@
 //
 // Every prompt is a PromptSpec — the same blocks, the same constraints — that
 // formatPrompt() lays out for the engine that will read it:
-// - Visio (Nano Banana): fluent, concise prose, in a photographer's words;
-// - Pixel IA (GPT Image): numbered sections, every figure on its own line,
+// - Nano Banana: fluent, concise prose, in a photographer's words;
+// - ChatGPT (GPT Image): numbered sections, every figure on its own line,
 //   then a FINAL CHECK.
 // The formatting never drops a constraint: both layouts print the same lock,
 // the same request, the same sections and the same "avoid" list (a test walks
@@ -124,9 +124,9 @@ const PROFILE_TEXT = {
 export type SkyKey = SkyOption;
 
 interface Light {
-  /** One paragraph, figure + plain words, for Visio. */
+  /** One paragraph, figure + plain words, for Nano Banana. */
   visio: string;
-  /** One line per value, for Pixel IA. */
+  /** One line per value, for ChatGPT. */
   pixel: readonly string[];
   avoid: string;
 }
@@ -215,11 +215,11 @@ const SOURCE_LIGHT: Light = {
 // ── Spec and layouts ──────────────────────────────────────────────────────
 
 export interface PromptSection {
-  /** Pixel IA's section title (uppercase). */
+  /** ChatGPT's section title (uppercase). */
   title: string;
-  /** Visio's prose. */
+  /** Nano Banana's prose. */
   visio: string;
-  /** Pixel IA's lines. */
+  /** ChatGPT's lines. */
   pixel: readonly string[];
 }
 
@@ -232,7 +232,7 @@ export interface PromptSpec {
   sections: readonly PromptSection[];
   /** Comma-separated, lower case; none for the comment edits. */
   avoid?: string;
-  /** Pixel IA's FINAL CHECK, after "Before answering, verify: ". */
+  /** ChatGPT's FINAL CHECK, after "Before answering, verify: ". */
   check: string;
   /**
    * Lines sent LAST on both engines, after everything else — the final check
@@ -240,7 +240,7 @@ export interface PromptSpec {
    * frozen prompts are untouched.
    *
    * It exists for the reference-image lock (2026-10-29): a constraint the
-   * engine must not trade away has to be the last thing it reads, and Visio's
+   * engine must not trade away has to be the last thing it reads, and Nano Banana's
    * layout has no final-check block to put it in.
    */
   tail?: readonly string[];

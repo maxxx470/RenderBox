@@ -50,13 +50,13 @@ export const ASSISTANT_COST: number = 0;
  * Kie credits per image, for every engine version × size. `null` = no
  * verified price: that combination is refused (409 PRICE_NOT_VERIFIED) until
  * the owner confirms a price. Where each figure comes from:
- *  - visio-2-1 (Nano Banana 2.1, Visio today): kie.ai/nano-banana-2-1, read on
+ *  - visio-2-1 (Nano Banana 2.1, the default today): kie.ai/nano-banana-2-1, read on
  *    2026-10-22 (4 / 6 / 9), and 4 billed for a 1K render on 2026-10-21;
- *  - pixel-2-5 (GPT Image 2.5 Sunburst, Pixel IA today): billed in the paid
+ *  - pixel-2-5 (GPT Image 2.5 Sunburst, ChatGPT today): billed in the paid
  *    tests of 2026-10-17 (6 / 10 / 16), 6 and 16 seen again on the renders;
- *  - visio-pro (Nano Banana Pro, Visio until 2026-10-19): billed 2026-10-17
+ *  - visio-pro (Nano Banana Pro, the default until 2026-10-19): billed 2026-10-17
  *    (18 / 18 / 24);
- *  - visio-3 (Seedream 5.0 Pro, Visio 2026-10-19 → 20): kie.ai's price and the
+ *  - visio-3 (Seedream 5.0 Pro, Nano Banana 2026-10-19 → 20): kie.ai's price and the
  *    renders, 7 at 1K, 14 at 2K; 4K asks Kie for a 2K render (enlarged after).
  * The other versions are no longer offered (resolveEngineVersion only runs
  * each engine's default) and have no verified price.
@@ -169,7 +169,7 @@ export function normalizeKieCredits(raw: number, expected: number | null): numbe
 }
 
 /** The offered prices in one sentence, for the assistant and /llms.txt
- *  (« Visio : 4 crédits en 1K, 6 en 2K, 9 en 4K ; Pixel IA : … »). */
+ *  (« Nano Banana : 4 crédits en 1K, 6 en 2K, 9 en 4K ; ChatGPT : … »). */
 export function describePrices(locale: 'fr' | 'en'): string {
   const byEngine = new Map<EngineName, OfferedPrice[]>();
   for (const p of offeredPrices()) byEngine.set(p.engine, [...(byEngine.get(p.engine) ?? []), p]);

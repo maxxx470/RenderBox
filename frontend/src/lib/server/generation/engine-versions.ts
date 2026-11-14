@@ -1,9 +1,8 @@
-// The versions of each engine (owner, 2026-10-15: « chaque version du
-// fournisseur devient une version numérotée sous notre nom »). Visio's were
-// the Nano Banana family until 2026-10-19, when the owner moved Visio to
-// ByteDance's Seedream (« Visio 3 », Seedream 5.0 Pro); Pixel IA's are the
-// GPT Image family; all reached through Kie (engines/kie.ts). The vendor's model is never shown: the UI says
-// « Visio 2.1 », not the model id.
+// The versions of each engine, all reached through Kie (engines/kie.ts):
+// the Nano Banana family (plus Seedream 5.0 Pro, which stood in for it from
+// 2026-10-19 to 2026-10-20) and the GPT Image family shown as ChatGPT. Since
+// 2026-11-14 the owner shows the real model names (« on va garder les vrais
+// noms d'origine des IA ») instead of our old ones, Visio and Pixel IA.
 //
 // Deliberately NOT server-only (same reasoning as engine-labels.ts): the
 // command bar lists these. No secret here — only what each Kie model accepts,
@@ -61,8 +60,8 @@ const OUR_RATIOS = ['1:1', '4:3', '3:4', '3:2', '2:3', '16:9', '9:16', '5:4', '4
 export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   'visio-1': {
     engine: 'nanobanana',
-    name: { fr: 'Visio 1', en: 'Visio 1' },
-    description: { fr: 'Le premier Visio, rapide', en: 'The first Visio, fast' },
+    name: { fr: 'Nano Banana', en: 'Nano Banana' },
+    description: { fr: 'Le premier Nano Banana, rapide', en: 'The first Nano Banana, fast' },
     kieModel: 'google/nano-banana-edit',
     imageField: 'image_urls',
     maxImages: 10,
@@ -73,7 +72,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   },
   'visio-pro': {
     engine: 'nanobanana',
-    name: { fr: 'Visio Pro', en: 'Visio Pro' },
+    name: { fr: 'Nano Banana Pro', en: 'Nano Banana Pro' },
     description: { fr: 'Haute définition, jusqu’en 4K', en: 'High definition, up to 4K' },
     kieModel: 'nano-banana-pro',
     imageField: 'image_input',
@@ -85,7 +84,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   },
   'visio-2': {
     engine: 'nanobanana',
-    name: { fr: 'Visio 2', en: 'Visio 2' },
+    name: { fr: 'Nano Banana 2', en: 'Nano Banana 2' },
     description: { fr: 'Nouvelle génération, jusqu’en 4K', en: 'New generation, up to 4K' },
     kieModel: 'nano-banana-2',
     imageField: 'image_input',
@@ -97,7 +96,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   },
   'visio-2-1': {
     engine: 'nanobanana',
-    name: { fr: 'Visio 2.1', en: 'Visio 2.1' },
+    name: { fr: 'Nano Banana 2.1', en: 'Nano Banana 2.1' },
     description: { fr: 'Le plus récent, jusqu’en 4K', en: 'The latest, up to 4K' },
     kieModel: 'nano-banana-2-1',
     imageField: 'image_input',
@@ -109,7 +108,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   },
   'visio-2-lite': {
     engine: 'nanobanana',
-    name: { fr: 'Visio 2 Lite', en: 'Visio 2 Lite' },
+    name: { fr: 'Nano Banana 2 Lite', en: 'Nano Banana 2 Lite' },
     description: { fr: 'Léger et rapide', en: 'Light and fast' },
     kieModel: 'nano-banana-2-lite',
     imageField: 'image_urls',
@@ -126,7 +125,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   // high (2K), a prompt of 5 000 characters at most; 7 / 14 Kie credits.
   'visio-3': {
     engine: 'nanobanana',
-    name: { fr: 'Visio 3', en: 'Visio 3' },
+    name: { fr: 'Seedream 5.0 Pro', en: 'Seedream 5.0 Pro' },
     description: { fr: 'Autre génération, jusqu’en 2K', en: 'Another generation, up to 2K' },
     kieModel: 'seedream/5-pro-image-to-image',
     imageField: 'image_urls',
@@ -140,7 +139,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   },
   'pixel-1-5': {
     engine: 'gpt_image',
-    name: { fr: 'Pixel IA 1.5', en: 'Pixel AI 1.5' },
+    name: { fr: 'GPT Image 1.5', en: 'GPT Image 1.5' },
     description: { fr: 'Suivi précis des instructions', en: 'Follows precise instructions' },
     kieModel: 'gpt-image/1.5-image-to-image',
     imageField: 'input_urls',
@@ -152,7 +151,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   },
   'pixel-2': {
     engine: 'gpt_image',
-    name: { fr: 'Pixel IA 2', en: 'Pixel AI 2' },
+    name: { fr: 'GPT Image 2', en: 'GPT Image 2' },
     description: { fr: 'Plus de détail, jusqu’en 4K', en: 'More detail, up to 4K' },
     kieModel: 'gpt-image-2-image-to-image',
     imageField: 'input_urls',
@@ -164,7 +163,7 @@ export const ENGINE_VERSIONS: Record<EngineVersionKey, EngineVersion> = {
   },
   'pixel-2-5': {
     engine: 'gpt_image',
-    name: { fr: 'Pixel IA 2.5', en: 'Pixel AI 2.5' },
+    name: { fr: 'GPT Image 2.5', en: 'GPT Image 2.5' },
     description: { fr: 'Le plus récent, jusqu’en 4K', en: 'The latest, up to 4K' },
     // Sunburst, the stronger of GPT Image 2.5's two variants (first on the
     // Arena boards at launch); Flare is `gpt-image-2-5-flare-image-to-image`.
@@ -216,9 +215,9 @@ export function parseEngineVersions(raw: unknown): Record<EngineName, EngineVers
 }
 
 /**
- * What to call the engine that made an image: the engine alone (« Visio »,
- * « Pixel IA ») since versions are no longer shown (2026-10-17). An unknown
- * engine reads as Visio, as the canvas badge always did.
+ * What to call the engine that made an image: the engine alone (« Nano
+ * Banana », « ChatGPT ») since versions are no longer shown (2026-10-17). An unknown
+ * engine reads as Nano Banana, as the canvas badge always did.
  */
 export function engineDisplayName(
   engine: string | null | undefined,

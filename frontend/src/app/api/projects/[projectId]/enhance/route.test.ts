@@ -372,7 +372,7 @@ describe('POST /api/projects/[projectId]/enhance — engine deadline (étape 3B.
 });
 
 describe('POST /api/projects/[projectId]/enhance — credits', () => {
-  it('debits one image at the grid price, before the engine: Visio 6 at 2K, 9 at 4K', async () => {
+  it('debits one image at the grid price, before the engine: Nano Banana 6 at 2K, 9 at 4K', async () => {
     expect((await POST(makeReq(baseFields({ resolution: '2k' })), ctx())).status).toBe(201);
     expect(mockDebitCredits).toHaveBeenLastCalledWith(prismaMock, USER_ID, 6);
     expect(mockDebitCredits.mock.invocationCallOrder[0]).toBeLessThan(
@@ -383,7 +383,7 @@ describe('POST /api/projects/[projectId]/enhance — credits', () => {
     expect(mockRefundCredits).not.toHaveBeenCalled();
   });
 
-  it('Pixel IA is priced at its own grid: 6 / 10 / 16', async () => {
+  it('ChatGPT is priced at its own grid: 6 / 10 / 16', async () => {
     for (const [resolution, cost] of [
       ['1k', 6],
       ['2k', 10],

@@ -1,4 +1,4 @@
-// Pixel IA's adapter (gpt-image.ts) against a fully mocked `openai` SDK: what
+// ChatGPT's adapter (gpt-image.ts) against a fully mocked `openai` SDK: what
 // is actually handed to `images.edit` (model, image or image array in order,
 // size per ratio, nothing else), and how responses and errors come back.
 // No network: the SDK is replaced, and `fetch` throws if anything tries it.

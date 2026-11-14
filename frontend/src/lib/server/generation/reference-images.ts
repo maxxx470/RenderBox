@@ -3,7 +3,7 @@ import { prisma } from '@/lib/server/prisma';
 import { createLogger } from '@/lib/server/logger';
 
 // Reading the reference images of a render (2026-10-25, owner: « des images
-// de référence … ces images-là permettront à Pixel IA et Visio de savoir quel
+// de référence … ces images-là permettront à ChatGPT et Nano Banana de savoir quel
 // matériau appliquer au nouveau croquis »).
 //
 // THE ACCESS RULE, and it is the only one that matters here: a reference is

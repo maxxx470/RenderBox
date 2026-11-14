@@ -1,6 +1,6 @@
 // Kie (kie.ai) — the one provider behind every engine version (owner,
 // 2026-10-15: « l'API Kie seulement pour Nano Banana et ChatGPT Image »).
-// Shown in the UI only as Visio / Pixel IA and their numbers.
+// Shown in the UI only as Nano Banana / ChatGPT and their numbers.
 //
 // A Kie market task runs in three steps (docs.kie.ai, read 2026-10-15):
 //   1. the images are uploaded to Kie's file store (they must be URLs; files

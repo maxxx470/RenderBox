@@ -1,4 +1,4 @@
-// Visio's adapter (nanobanana.ts) against a fully mocked `@google/genai`:
+// Nano Banana's adapter (nanobanana.ts) against a fully mocked `@google/genai`:
 // what is actually handed to the SDK (model, parts in order, imageConfig),
 // the fallback to the Flash model, and how responses and errors come back.
 // No network: the SDK is replaced, and `fetch` throws if anything tries it.

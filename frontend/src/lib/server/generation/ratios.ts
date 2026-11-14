@@ -6,8 +6,8 @@
 // Every ratio is available on both engines since 2026-10-08 (owner: there is
 // no free mode, a paying user gets everything). Each engine reaches it its
 // own way, and the result is the ratio asked for, never an approximation:
-//   • Visio (Gemini's image models) takes the ratio string as is;
-//   • Pixel IA (gpt-image-1) only knows three pixel sizes, so it is asked for
+//   • Nano Banana (Gemini's image models) takes the ratio string as is;
+//   • ChatGPT (gpt-image-1) only knows three pixel sizes, so it is asked for
 //     the nearest one and the image is cropped to the exact ratio afterwards
 //     (see output-shape.ts).
 export const RATIO_KEYS = [

@@ -11,8 +11,8 @@
 //   noir"; it was dark ink #17161F for a few hours) —
 //   1. the composer, a lighter panel: pinned images as thumbnails (never a
 //      filename), the prompt in large type (Enter sends), then the paperclip,
-//      a hint, and both engines in their colours (Visio red, Pixel IA
-//      yellow — "Commenter" exists on Pixel IA only, so it locks Visio);
+//      a hint, and both engines in their colours (Nano Banana red, ChatGPT
+//      yellow — "Commenter" exists on ChatGPT only, so it locks Nano Banana);
 //   2. beside it, a big square send button with the action's verb;
 //   3. under it, the actions as chips with a coloured tile (Générer,
 //      Commenter, Ajouter), then the settings (ambiance, ratio, size,
@@ -294,7 +294,7 @@ export function CommandBar({
   generating: boolean;
   engine: EngineName;
   onEngineChange: (engine: EngineName) => void;
-  /** The mode imposes its engine ("Commenter" → Pixel IA): shown, not choosable. */
+  /** The mode imposes its engine ("Commenter" → ChatGPT): shown, not choosable. */
   engineLocked?: boolean;
   /** What the paperclip does in the current mode; null turns it off. */
   onAttach: ((file: File) => void) | null;
@@ -686,7 +686,7 @@ export function CommandBar({
                   m.key === 'retouch' ? (
                     <>
                       {t(m.labelKey)}
-                      {/* Commenter exists on Pixel IA only: its colour, on the chip. */}
+                      {/* Commenter exists on ChatGPT only: its colour, on the chip. */}
                       <span
                         aria-hidden
                         title={t('annotate.engineNote')}

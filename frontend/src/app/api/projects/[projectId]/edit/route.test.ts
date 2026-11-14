@@ -320,7 +320,7 @@ describe('POST /api/projects/[projectId]/edit — ambiance of the source', () =>
 });
 
 describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
-  it('creates N RenderNodes with the same parentId, charges the rate limit N units, and debits N × the grid price up front (Visio 1K: 4)', async () => {
+  it('creates N RenderNodes with the same parentId, charges the rate limit N units, and debits N × the grid price up front (Nano Banana 1K: 4)', async () => {
     const res = await POST(makeReq(baseFields({ variantCount: '3' })), ctx());
     expect(res.status).toBe(201);
     const body = (await res.json()) as { createdCount: number; requestedCount: number };
@@ -373,7 +373,7 @@ describe('POST /api/projects/[projectId]/edit — multi-variant', () => {
     expect(mockRefundCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 8);
   });
 
-  it('prices N variants at 4K at N × the grid (Visio 4K: 9)', async () => {
+  it('prices N variants at 4K at N × the grid (Nano Banana 4K: 9)', async () => {
     const res = await POST(makeReq(baseFields({ variantCount: '2', resolution: '4k' })), ctx());
     expect(res.status).toBe(201);
     expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 18);

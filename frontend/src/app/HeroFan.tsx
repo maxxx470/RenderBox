@@ -271,7 +271,7 @@ export function HeroFan({ ctaHref, ctaLabel }: { ctaHref: string; ctaLabel: stri
   const tag = t('landing.heroFanTag');
 
   // 2026-10-08 (evening) — yellow, the owner's choice for this one button:
-  // Pixel IA's #FACC15 between a lighter and a deeper yellow, with ink text
+  // ChatGPT's #FACC15 between a lighter and a deeper yellow, with ink text
   // (13:1 on #FACC15). Red earlier the same day; an exception to the
   // red-and-blue charter, recorded in CLAUDE.md.
   //

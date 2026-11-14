@@ -148,7 +148,7 @@ describe('debitCredits', () => {
     expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
-  it('debits exactly the amount it is given, no rounding and no minimum (Pixel IA 4K: 16)', async () => {
+  it('debits exactly the amount it is given, no rounding and no minimum (ChatGPT 4K: 16)', async () => {
     prismaMock.user.findUnique.mockResolvedValueOnce(activeUser('pro', 4000));
     prismaMock.user.updateMany.mockResolvedValueOnce({ count: 1 });
 

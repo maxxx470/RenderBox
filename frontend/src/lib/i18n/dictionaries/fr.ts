@@ -409,7 +409,7 @@ const fr = {
   'app.legacyAttachReasonDuplicate': 'Une autre ligne cochée porte la même face.',
   'app.cmdbarPlaceholder': 'Précisez un détail pour ce rendu (facultatif)',
   'app.canvasPresetBadge': 'Preset : {preset} · {engine}',
-  'app.engineTag': 'Visio',
+  'app.engineTag': 'Nano Banana',
   'app.engineDropdownNote':
     "La fiche matériaux et le preset actif s'appliquent de la même façon, quel que soit le moteur choisi.",
   'app.uploading': 'Envoi…',
@@ -499,7 +499,7 @@ const fr = {
   'app.genHomeQuickStartError': 'La création rapide a échoué. Réessayez.',
   'app.genHomeNoTierTitle': 'Aucun palier actif',
   'app.genHomeNoTierBody':
-    'Choisissez un palier pour débloquer vos générations mensuelles (Visio + Pixel IA).',
+    'Choisissez un palier pour débloquer vos générations mensuelles (Nano Banana + ChatGPT).',
   'app.genHomeChooseTier': 'Voir les tarifs',
   'app.genHomeCardPlaceholder':
     'Importez une photo, un croquis ou l’export image de votre projet pour commencer',
@@ -536,8 +536,8 @@ const fr = {
   'annotate.remove': 'Supprimer',
   'annotate.listTitle': 'Commentaires',
   'annotate.max': 'Maximum {n} commentaires par passage.',
-  'annotate.engineNote': 'Les commentaires sont toujours traités par Pixel IA.',
-  'annotate.engineLocked': 'Le mode Commenter utilise toujours Pixel IA',
+  'annotate.engineNote': 'Les commentaires sont toujours traités par ChatGPT.',
+  'annotate.engineLocked': 'Le mode Commenter utilise toujours ChatGPT',
   'annotate.pinLabel': 'Commentaire {n}',
   'edit.enterButton': 'Éditer',
   'edit.closeButton': 'Fermer le mode édition',
@@ -583,7 +583,7 @@ const fr = {
   'info.filmEtapesTitle': 'Générer, corriger, animer : les 3 étapes',
   'info.filmCommenterTitle': 'Modifier une image en la commentant',
   'info.filmArbreTitle': "Explorer plusieurs pistes avec l'arbre du projet",
-  'info.filmMoteursTitle': 'Comparer les deux moteurs, Visio et Pixel IA',
+  'info.filmMoteursTitle': 'Comparer les deux moteurs, Nano Banana et ChatGPT',
   'info.filmAjouterTitle': 'Ajouter un élément à partir de sa photo',
   'info.filmAmeliorerTitle': 'Rendre nette une image floue',
   'info.filmAnimerTitle': 'Animer un rendu en vidéo',
@@ -1135,8 +1135,8 @@ const fr = {
   'landing.heroCtaPrimary': 'Générer mon premier rendu',
   'landing.heroCtaSecondary': 'Voir un exemple',
   'landing.heroPreviewProject': 'Villa Agoè-Nyivé',
-  'landing.heroPreviewEngine': 'Visio',
-  'landing.heroPreviewCaption': 'Jour extérieur · Visio',
+  'landing.heroPreviewEngine': 'Nano Banana',
+  'landing.heroPreviewCaption': 'Jour extérieur · Nano Banana',
   'landing.heroChipMaterials': 'Matériaux mémorisés : 12/12',
   'landing.heroChipFacade': 'Façade nord → enduit blanc',
 
@@ -1297,7 +1297,7 @@ const fr = {
   'landing.faq2A': "Oui. Chaque rendu généré est votre propriété, sans limite d'usage commercial.",
   'landing.faq3Q': 'Quelle est la différence entre les deux moteurs IA ?',
   'landing.faq3A':
-    'Visio (rouge) rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail ; Pixel IA (jaune) suit mieux les instructions précises. Vous choisissez celui qui convient à chaque rendu, à tout moment. Les modifications par commentaires utilisent toujours Pixel IA.',
+    'Nano Banana (rouge) rend directement à la taille choisie, jusqu’en 4K, avec le plus de détail ; ChatGPT (jaune) suit mieux les instructions précises. Vous choisissez celui qui convient à chaque rendu, à tout moment. Les modifications par commentaires utilisent toujours ChatGPT.',
   'landing.faq4Q': "Que se passe-t-il quand je n'ai plus de crédits ?",
   'landing.faq4A':
     'Les générations s’arrêtent jusqu’à votre prochain achat : l’application vous propose alors les formules. Rien n’est prélevé automatiquement — jamais de facturation surprise.',
@@ -1339,7 +1339,7 @@ const fr = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureCredits': '{count} crédits / mois',
-  'landing.pricingFeatureEngines': 'Deux moteurs : Visio et Pixel IA',
+  'landing.pricingFeatureEngines': 'Deux moteurs : Nano Banana et ChatGPT',
   'landing.pricingFeaturePresets': '5 ambiances de rendu',
   'landing.pricingFeatureEditing': 'Commenter, Ajouter et Améliorer',
   'landing.pricingCta': 'Choisir {tier}',
@@ -1368,7 +1368,7 @@ const fr = {
   'landing.enginesSubtitle':
     'Comparez les deux moteurs sur la même demande et gardez celui qui convient : matériaux et historique restent partagés.',
   'landing.enginesAlt':
-    "Film de démonstration : le croquis d'un séjour est envoyé à Visio ou à Pixel IA, jusqu'en 4K, puis le rendu apparaît à côté du croquis.",
+    "Film de démonstration : le croquis d'un séjour est envoyé à Nano Banana ou à ChatGPT, jusqu'en 4K, puis le rendu apparaît à côté du croquis.",
   'landing.animateTitle': 'Vos rendus prennent vie.',
   'landing.animateSubtitle':
     'Choisissez un mouvement de caméra et ce qui doit bouger dans la scène, ou une image de fin : du jour à la nuit en une vidéo.',

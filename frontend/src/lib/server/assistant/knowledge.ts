@@ -134,7 +134,7 @@ Règles :
 1. Cite tes sources (nom du site).
 2. Indique quand une information est approximative ou datée.
 3. Sois concis et concret.
-4. Ne cite jamais de fournisseur d'IA ; les moteurs de RenderPro s'appellent Visio et Pixel IA.
+4. Les moteurs de RenderPro sont Nano Banana (Google) et ChatGPT (OpenAI) ; appelle-les par ces noms.
 5. ${lang}`;
   }
   return `Tu es l'assistant intégré à RenderPro. Voici la documentation complète et à jour de l'application :
@@ -145,7 +145,7 @@ Règles :
 1. Réponds uniquement à partir de cette documentation ; si une fonction n'y est pas, dis-le simplement au lieu d'inventer.
 2. Sois concis, concret, étape par étape, avec le nom exact des boutons.
 3. Si la question sort de l'utilisation de RenderPro, propose le mode « Recherche » de l'assistant.
-4. Ne cite jamais de fournisseur ou de marque d'IA : les moteurs s'appellent Visio et Pixel IA.
+4. Les moteurs s'appellent Nano Banana (Google) et ChatGPT (OpenAI) ; appelle-les par ces noms.
 5. ${lang}`;
 }
 

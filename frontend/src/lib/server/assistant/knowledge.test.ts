@@ -25,9 +25,11 @@ describe('assistant knowledge', () => {
       expect(doc).toContain(`${tier.creditsPerMonth.toLocaleString('fr-FR')} crédits`);
   });
 
-  it('never names an AI vendor', () => {
+  it('names the engines by their real names, never the old ones (2026-11-14)', () => {
     const all = doc + buildSystemPrompt('renderbox', 'fr') + buildSystemPrompt('search', 'en');
-    expect(all).not.toMatch(/gemini|openai|chatgpt|nano ?banana|gpt-image/i);
+    expect(all).toMatch(/Nano Banana/);
+    expect(all).toMatch(/ChatGPT/);
+    expect(all).not.toMatch(/\bVisio\b|Pixel (IA|AI)/);
   });
 
   it('asks for the user language', () => {
@@ -45,7 +47,7 @@ describe('assistant fallback', () => {
   });
 
   it('answers in English', () => {
-    expect(fallbackReply('Which engine should I pick?', 'en')).toContain('Pixel AI');
+    expect(fallbackReply('Which engine should I pick?', 'en')).toContain('ChatGPT');
   });
 
   it('has a default answer', () => {

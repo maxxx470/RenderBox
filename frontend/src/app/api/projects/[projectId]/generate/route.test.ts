@@ -364,7 +364,7 @@ describe('POST /api/projects/[projectId]/generate — credits', () => {
     expect(mockEnforceGenerationRateLimit).not.toHaveBeenCalled();
   });
 
-  it('debits the grid price (Visio 2K: 6 credits) BEFORE the engine call, and keeps it once stored', async () => {
+  it('debits the grid price (Nano Banana 2K: 6 credits) BEFORE the engine call, and keeps it once stored', async () => {
     const res = await POST(makeReq(validBody({ resolution: '2k' })), ctx());
     expect(res.status).toBe(201);
     expect(mockDebitCredits).toHaveBeenCalledWith(prismaMock, USER_ID, 6);

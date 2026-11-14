@@ -11,13 +11,12 @@ import {
 import { RATIO_KEYS } from './ratios';
 
 describe('engine versions', () => {
-  it('names each version after our engines, never the vendor', () => {
+  it('names each version after its real model (owner, 2026-11-14)', () => {
     for (const key of ENGINE_VERSION_KEYS) {
       const { name, engine } = ENGINE_VERSIONS[key];
-      const prefix = engine === 'nanobanana' ? 'Visio' : /^Pixel (IA|AI)/;
-      expect(name.fr).toMatch(prefix);
-      expect(name.en).toMatch(prefix);
-      expect(`${name.fr} ${name.en}`).not.toMatch(/banana|gpt|gemini|openai|chatgpt/i);
+      const real = engine === 'nanobanana' ? /^(Nano Banana|Seedream)/ : /^GPT Image/;
+      expect(name.fr).toMatch(real);
+      expect(name.en).toBe(name.fr);
     }
   });
 
@@ -36,10 +35,10 @@ describe('engine versions', () => {
   });
 
   it('engineDisplayName: the engine alone, never a version (2026-10-17)', () => {
-    expect(engineDisplayName('nanobanana', 'visio-2-1', 'fr')).toBe('Visio');
-    expect(engineDisplayName('gpt_image', 'pixel-2-5', 'en')).toBe('Pixel AI');
-    expect(engineDisplayName('gpt_image', null, 'fr')).toBe('Pixel IA');
-    expect(engineDisplayName(null, 'not-a-version', 'fr')).toBe('Visio');
+    expect(engineDisplayName('nanobanana', 'visio-2-1', 'fr')).toBe('Nano Banana');
+    expect(engineDisplayName('gpt_image', 'pixel-2-5', 'en')).toBe('ChatGPT');
+    expect(engineDisplayName('gpt_image', null, 'fr')).toBe('ChatGPT');
+    expect(engineDisplayName(null, 'not-a-version', 'fr')).toBe('Nano Banana');
   });
 });
 
