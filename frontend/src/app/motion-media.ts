@@ -106,8 +106,19 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
  * the owner's call to download — and it would not be the film's narrator anyway. An insert that
  * must keep the music unbroken has to take its time from somewhere instead, as
  * edition 20261108 did with the logo card's silent hold.
+ *
+ * Edition 20261114 is NOT an edit of the film above: it is a new film (owner,
+ * 2026-11-14: « je valide les deux vidéos que tu as générées pour la
+ * présentation du site »), about 1 min 45, built from scratch in Remotion — a
+ * sketch becoming a render, the actions, the animation —, its own voice and
+ * music, so none of the constraints above (the lost music bed, the inserts)
+ * apply to it any more. Uploaded as the approved masters, 1920×1080 H.264 with
+ * sound, not re-encoded (≈ 115 MB, the previous edition was ≈ 97 MB). The
+ * poster is the frame at 1.2 s, the first one where the opening line
+ * (« Ce croquis : 2 minutes. » / « This sketch: 2 minutes. ») is complete.
+ * The 20261109b files stay in the bucket, unused.
  */
-export const PRESENTATION_EDITION = '20261109b';
+export const PRESENTATION_EDITION = '20261114';
 
 export function presentationFilm(locale: string): { src: string; poster: string } {
   const base = `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-${locale}`;

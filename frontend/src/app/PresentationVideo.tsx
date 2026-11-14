@@ -3,7 +3,7 @@
 // The landing's presentation video, right after the hero and the compatible
 // tools (owner, 2026-10-06).
 //
-// The film (2026-10-16, FR 2 min 15, EN 2 min 12) is framed the way Metrio
+// The film (remade 2026-11-14, FR 1 min 45, EN 1 min 42) is framed the way Metrio
 // frames its hero video — a browser window (three dots, a file name) tilted
 // back in perspective, which straightens and sharpens as it scrolls into view.
 //
