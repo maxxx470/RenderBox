@@ -117,8 +117,13 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
  * poster is the frame at 1.2 s, the first one where the opening line
  * (« Ce croquis : 2 minutes. » / « This sketch: 2 minutes. ») is complete.
  * The 20261109b files stay in the bucket, unused.
+ *
+ * 20261114c (same day, owner): the gaps between features shortened (≈ 1 min
+ * 25) and the engines named Nano Banana and ChatGPT with their logos, in the
+ * picture and in the voice. 2560×1440 H.264 with sound, −16 LUFS, poster at
+ * 3.0 s. The 20261114 and 20261114b files stay in the bucket, unused.
  */
-export const PRESENTATION_EDITION = '20261114';
+export const PRESENTATION_EDITION = '20261114c';
 
 export function presentationFilm(locale: string): { src: string; poster: string } {
   const base = `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-${locale}`;
