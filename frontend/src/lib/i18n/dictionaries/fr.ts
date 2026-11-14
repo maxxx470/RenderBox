@@ -580,12 +580,13 @@ const fr = {
   'info.youtubeLine': 'Démonstrations, tutoriels et nouveautés en vidéo',
   'info.tiktokTitle': 'Compte TikTok',
   'info.tiktokLine': 'Des vidéos courtes : rendus et astuces',
-  'info.filmEtapesTitle': 'Générer un rendu en 3 étapes',
+  'info.filmEtapesTitle': 'Générer, corriger, animer : les 3 étapes',
   'info.filmCommenterTitle': 'Modifier une image en la commentant',
   'info.filmArbreTitle': "Explorer plusieurs pistes avec l'arbre du projet",
   'info.filmMoteursTitle': 'Comparer les deux moteurs, Visio et Pixel IA',
   'info.filmAjouterTitle': 'Ajouter un élément à partir de sa photo',
   'info.filmAmeliorerTitle': 'Rendre nette une image floue',
+  'info.filmAnimerTitle': 'Animer un rendu en vidéo',
   'info.plannedHeading': 'À venir',
   'info.shippedHeading': 'Mises à jour',
   'info.badgePlanned': 'à venir',
@@ -614,7 +615,7 @@ const fr = {
   'dashboard.tutoEnhance': 'Améliorer une image',
   'dashboard.tutoEnhanceCta': 'Ouvrir Améliorer',
   'dashboard.filmAlt':
-    'Film : une photo ou un croquis, le choix d’une ambiance (jour, nuit, intérieur, extérieur), puis le rendu.',
+    "Film : un croquis, une photo de chantier ou une capture de maquette, le choix d'une ambiance, le rendu, une correction avec Commenter, puis le rendu animé en vidéo.",
   'dashboard.showcaseLabel': 'Rendus en vitrine',
   'dashboard.showcaseGoTo': 'Aller au visuel {n}',
   'dashboard.cardImagesSub': 'au total',
@@ -1159,7 +1160,7 @@ const fr = {
   'landing.enhanceBody':
     'Envoyez un rendu faible ou une photo en basse résolution : Améliorer la rend nette, détaillée et lumineuse, sans changer la composition.',
   'landing.enhanceAlt':
-    'Film : sur la page Améliorer, une image floue est jointe, les améliorations choisies, puis le rendu devient net, de 384 × 214 à 2752 × 1536 pixels.',
+    "Film : un rendu flou passe par l'outil Améliorer, puis un curseur avant / après montre la même image devenue nette.",
   // « Animation vidéo » (2026-11-08). Pas de durée en secondes : les moteurs
   // n'offrent pas la même (de 3 à 10 s selon celui que l'on choisit), donc
   // « vidéo de 8 secondes » serait faux pour la plupart des rendus — c'est la
@@ -1220,13 +1221,13 @@ const fr = {
   'landing.treeSubtitle':
     "Repartez de n'importe quel rendu pour tenter une nouvelle direction. Rien ne se perd.",
   'landing.treeAlt':
-    "Film de démonstration : depuis un rendu de base, trois variantes sont générées (nuit extérieur, jour intérieur, ajout d'un personnage), chacune devient une branche de l'arbre du projet.",
+    "Film de démonstration : depuis un rendu de base, trois variantes (intérieur, nuit, ajout d'un personnage) deviennent chacune une branche de l'arbre du projet.",
   'landing.addEyebrow': 'Ajouter',
   'landing.addTitle': 'Ajoutez ce qui manque.',
   'landing.addSubtitle':
     "Joignez la photo d'un meuble, d'une personne ou d'un arbre et dites où le placer : RenderPro l'intègre au rendu, le reste de l'image gardé comme référence. Une planche d'ambiance suffit pour meubler une pièce vide.",
   'landing.addAlt':
-    "Film : une pièce vide meublée d'après une planche d'ambiance, deux personnes puis deux arbres ajoutés devant une villa, une personne assise sur une terrasse.",
+    "Film : le rendu d'une maison au jardin vide, une image de référence jointe avec l'outil Ajouter, puis le rendu qui intègre ce qu'elle montre.",
   'landing.split2Tag': 'Galerie en arbre',
   // Ce que la tuile EST dans l'arbre, pas quel moteur l'a produite. Les
   // sous-libellés portaient les noms des fournisseurs : des noms de moteurs
@@ -1361,13 +1362,18 @@ const fr = {
   'landing.commentSubtitle':
     'Cliquez sur le rendu, écrivez ce qui doit changer. Plusieurs commentaires, un seul clic.',
   'landing.commentAlt':
-    "Film de démonstration : trois commentaires posés sur un rendu (façade en panneaux laqués jaunes, végétation retirée, voiture assortie en jaune), un clic sur Appliquer, puis le nouveau rendu à côté de l'ancien.",
+    "Film de démonstration : sur le rendu d'une maison, un commentaire « Bardage bois foncé » posé sur la façade avec l'outil Commenter, puis le nouveau rendu où seul ce détail a changé.",
   'landing.enginesEyebrow': 'Moteurs de rendu',
   'landing.enginesTitle': 'Deux moteurs, un seul projet',
   'landing.enginesSubtitle':
     'Comparez les deux moteurs sur la même demande et gardez celui qui convient : matériaux et historique restent partagés.',
   'landing.enginesAlt':
-    'Film de démonstration : la même demande rendue par Visio puis Pixel IA, pour une salle à manger (à gauche) et un pavillon en montagne (à droite), puis les quatre rendus côte à côte.',
+    "Film de démonstration : le croquis d'un séjour est envoyé à Visio ou à Pixel IA, jusqu'en 4K, puis le rendu apparaît à côté du croquis.",
+  'landing.animateTitle': 'Vos rendus prennent vie.',
+  'landing.animateSubtitle':
+    'Choisissez un mouvement de caméra et ce qui doit bouger dans la scène, ou une image de fin : du jour à la nuit en une vidéo.',
+  'landing.animateAlt':
+    'Film : sur la page Vidéo, un rendu de terrasse est choisi, un mouvement de caméra et les éléments qui bougent sont cochés, puis une maison passe du jour à la nuit entre une image de départ et une image de fin.',
   'app.railGroupGeneral': 'Général',
   'app.railGroupHelp': 'Aide',
   'app.railGroupProfile': 'Profil',

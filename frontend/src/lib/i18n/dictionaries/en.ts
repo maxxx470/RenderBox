@@ -561,12 +561,13 @@ const en: Record<keyof typeof fr, string> = {
   'info.youtubeLine': 'Demos, tutorials and what is new, on video',
   'info.tiktokTitle': 'TikTok account',
   'info.tiktokLine': 'Short videos: renders and tips',
-  'info.filmEtapesTitle': 'Generate a render in 3 steps',
+  'info.filmEtapesTitle': 'Generate, fix, animate: the 3 steps',
   'info.filmCommenterTitle': 'Edit an image by commenting on it',
   'info.filmArbreTitle': 'Explore several directions with the project tree',
   'info.filmMoteursTitle': 'Compare the two engines, Visio and Pixel AI',
   'info.filmAjouterTitle': 'Add an element from its photo',
   'info.filmAmeliorerTitle': 'Turn a blurry image sharp',
+  'info.filmAnimerTitle': 'Animate a render into a video',
   'info.plannedHeading': 'Coming up',
   'info.shippedHeading': 'Updates',
   'info.badgePlanned': 'planned',
@@ -594,7 +595,7 @@ const en: Record<keyof typeof fr, string> = {
   'dashboard.tutoEnhance': 'Enhance an image',
   'dashboard.tutoEnhanceCta': 'Open Enhance',
   'dashboard.filmAlt':
-    'Film: a photo or a sketch, an ambiance picked (day, night, interior, exterior), then the render.',
+    'Film: a sketch, a site photo or a model capture, an ambiance picked, the render, a fix with Comment, then the render animated into a video.',
   'dashboard.showcaseLabel': 'Showcase renders',
   'dashboard.showcaseGoTo': 'Go to slide {n}',
   'dashboard.cardImagesSub': 'in total',
@@ -1126,7 +1127,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.enhanceBody':
     'Send a weak render or a low-resolution photo: Enhance makes it sharp, detailed and bright, without changing the composition.',
   'landing.enhanceAlt':
-    'Film: on the Enhance page, a blurry image is attached, the improvements chosen, then the render turns sharp, from 384 × 214 to 2752 × 1536 pixels.',
+    'Film: a blurry render goes through the Enhance tool, then a before / after slider shows the same image made sharp.',
   'landing.animEyebrow': 'Video animation',
   'landing.animTitle': 'Your renders start moving.',
   'landing.animBody':
@@ -1182,13 +1183,13 @@ const en: Record<keyof typeof fr, string> = {
   'landing.treeTitle': 'One image. Every direction.',
   'landing.treeSubtitle': 'Start again from any render to try a new direction. Nothing gets lost.',
   'landing.treeAlt':
-    'Demo film: from a base render, three variants are generated (exterior night, interior day, an added character), each becoming a branch of the project tree.',
+    'Demo film: from a base render, three variants (interior, night, an added character) each become a branch of the project tree.',
   'landing.addEyebrow': 'Add',
   'landing.addTitle': "Add what's missing.",
   'landing.addSubtitle':
     'Attach the photo of a piece of furniture, a person or a tree and say where it goes: RenderPro works it into the render, keeping the rest of the image as the reference. A moodboard is enough to furnish an empty room.',
   'landing.addAlt':
-    'Film: an empty room furnished from a moodboard, two people then two trees added in front of a villa, a person seated on a terrace.',
+    'Film: the render of a house with an empty garden, a reference image attached with the Add tool, then the render that brings in what it shows.',
   'landing.split2Tag': 'Tree gallery',
 
   'landing.presetsTitlePrefix': 'A preset for ',
@@ -1313,13 +1314,18 @@ const en: Record<keyof typeof fr, string> = {
   'landing.commentSubtitle':
     'Click the render, write what should change. Several comments, one click.',
   'landing.commentAlt':
-    'Demo film: three comments placed on a render (yellow lacquered façade panels, greenery removed, matching yellow car), one click on Apply, then the new render beside the old one.',
+    'Demo film: on the render of a house, a “Dark wood cladding” comment placed on the façade with the Comment tool, then the new render where only that detail changed.',
   'landing.enginesEyebrow': 'Render engines',
   'landing.enginesTitle': 'Two engines, one project',
   'landing.enginesSubtitle':
     'Compare both engines on the same request and keep the one that fits: materials and history stay shared.',
   'landing.enginesAlt':
-    'Demo film: the same request rendered by Visio then Pixel AI, for a dining room (left) and a mountain pavilion (right), then the four renders side by side.',
+    'Demo film: the sketch of a living room is sent to Visio or Pixel AI, up to 4K, then the render appears beside the sketch.',
+  'landing.animateTitle': 'Your renders come alive.',
+  'landing.animateSubtitle':
+    'Pick a camera move and what should move in the scene, or an end image: from day to night in one video.',
+  'landing.animateAlt':
+    'Film: on the Video page, a terrace render is picked, a camera move and the moving elements are ticked, then a house goes from day to night between a start image and an end image.',
   'app.railGroupGeneral': 'General',
   'app.railGroupHelp': 'Help',
   'app.railGroupProfile': 'Profile',

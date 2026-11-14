@@ -130,7 +130,16 @@ export function presentationFilm(locale: string): { src: string; poster: string 
 // <film>-<lang>.mp4. The six feature films (commenter, arbre, moteurs,
 // ajouter, ameliorer, etapes) were remade on the current interface on
 // 2026-10-17 (owner: « corrige le logo et juste l'interface du site »).
-export const FILMS_EDITION: string | null = '20261017';
+//
+// Edition 20261114: all six remade in Remotion beside the new presentation
+// film, plus a seventh, `animer` (the Vidéo page), so the landing and the Info
+// page show the animation too. Shorter (10–13 s each; etapes 36 s, now
+// « Générez, corrigez, animez », animer 27 s), each ending on the
+// « RenderPro.app » card. They carry a music track, which MotionFilm never
+// plays (it is muted) — uploaded as rendered, not re-encoded, 2560×1440.
+// Posters: 1 s in, except commenter 8.5 s, arbre 6.5 s and moteurs 7.5 s,
+// whose first second is a dark title card or a camera move.
+export const FILMS_EDITION: string | null = '20261114';
 
 // A film remade on its own after its edition keeps a later name here. The two
 // dashboard tutorials were re-rendered the same day without the engine

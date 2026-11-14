@@ -28,7 +28,15 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Category, ChevronRight, Document, Image as ImageIcon, Plus, Swap } from 'react-iconly';
+import {
+  Category,
+  ChevronRight,
+  Document,
+  Image as ImageIcon,
+  Plus,
+  Swap,
+  Video,
+} from 'react-iconly';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { PRESETS } from '@/lib/server/generation/presets';
 import { UC } from './rendu/copy';
@@ -808,6 +816,36 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                 <MotionFilm
                   {...motionFilm('moteurs', locale)}
                   label={t('landing.enginesAlt')}
+                  className="rounded-[14px]"
+                />
+              </div>
+            </div>
+          </Reveal>
+
+          {/* « Animer » (2026-11-14, owner: « passer à la création des autres
+              vidéos de la landing page »): the Vidéo page, a camera move and
+              what moves ticked, then a house from day to night between a start
+              and an end image. Gradient like the Commenter card, so the
+              section alternates grey and blue. */}
+          <Reveal delayMs={150} className="mt-5">
+            <div className={`rounded-[24px] ${GRADIENT} p-4 text-white min-[640px]:p-10`}>
+              <div className="mb-5 flex items-start gap-4 px-1 pt-2 min-[640px]:mb-7 min-[640px]:px-0 min-[640px]:pt-0">
+                <div className="hidden h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white min-[640px]:flex">
+                  <Video set="curved" size={22} primaryColor="#F34857" />
+                </div>
+                <div>
+                  <h3 className="mb-2 text-[24px] font-semibold leading-[1.2] min-[640px]:text-[30px]">
+                    {t('landing.animateTitle')}
+                  </h3>
+                  <p className="max-w-[680px] text-[14px] leading-[1.55] text-white/85 min-[640px]:text-[15px]">
+                    {t('landing.animateSubtitle')}
+                  </p>
+                </div>
+              </div>
+              <div className="overflow-hidden rounded-[20px] bg-white p-1.5 shadow-[0_30px_60px_-30px_rgba(10,18,70,0.6)] min-[640px]:p-2">
+                <MotionFilm
+                  {...motionFilm('animer', locale)}
+                  label={t('landing.animateAlt')}
                   className="rounded-[14px]"
                 />
               </div>

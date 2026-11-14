@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { INFO_FILMS, isNewInfoFilm, newInfoCount } from './info-films';
+import { INFO_BADGE_SINCE, INFO_FILMS, isNewInfoFilm, newInfoCount } from './info-films';
 
 describe('Info page news — the « Info » badge', () => {
   it('counts a film published after the last visit, not one published before', () => {
@@ -14,8 +14,13 @@ describe('Info page news — the « Info » badge', () => {
 
   it('counts nothing for an unknown account, nor the films published before the badge', () => {
     expect(newInfoCount(null)).toBe(0);
-    // An account older than every film still starts at zero.
-    expect(newInfoCount(new Date('2020-01-01T00:00:00Z'))).toBe(0);
+    // An account older than every film counts only the films published after
+    // the badge went live (2026-11-14: « animer »), never the older ones.
+    const afterBadge = INFO_FILMS.filter(
+      (f) => new Date(f.addedAt).getTime() > new Date(INFO_BADGE_SINCE).getTime(),
+    ).length;
+    expect(afterBadge).toBe(1);
+    expect(newInfoCount(new Date('2020-01-01T00:00:00Z'))).toBe(afterBadge);
     expect(isNewInfoFilm('2026-10-13', '2020-01-01T00:00:00Z')).toBe(false);
   });
 

@@ -38,6 +38,12 @@ export const INFO_FILMS: readonly {
     alt: 'landing.enhanceAlt',
     addedAt: '2026-10-13',
   },
+  {
+    id: 'animer',
+    title: 'info.filmAnimerTitle',
+    alt: 'landing.animateAlt',
+    addedAt: '2026-11-14T12:00:00Z',
+  },
 ];
 
 /** The badge went live then: a film published before it is never « new »,
