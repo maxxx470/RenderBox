@@ -152,7 +152,11 @@ export function presentationFilm(locale: string): { src: string; poster: string 
 // the real result (images generated on 2026-11-13/14 only). Music, which
 // MotionFilm keeps muted. 2560×1440 H.264, −16 LUFS; posters at 9 s, a step on
 // the interface.
-export const FILMS_EDITION: string | null = '20261115';
+//
+// 20261115b (owner, same day): the send button (✦ « Générer ») was hidden
+// with its credit badge; it now shows, only the badge is hidden. All but
+// `animer`, whose page already showed it, re-rendered under this name.
+export const FILMS_EDITION: string | null = '20261115b';
 
 // A film remade on its own after its edition keeps a later name here. The two
 // dashboard tutorials were re-rendered the same day without the engine
@@ -160,6 +164,7 @@ export const FILMS_EDITION: string | null = '20261115';
 export const FILM_EDITIONS: Readonly<Record<string, string>> = {
   'tuto-generer': '20261017b',
   'tuto-ameliorer': '20261017b',
+  animer: '20261115',
 };
 
 /**
