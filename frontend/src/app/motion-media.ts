@@ -144,7 +144,15 @@ export function presentationFilm(locale: string): { src: string; poster: string 
 // plays (it is muted) — uploaded as rendered, not re-encoded, 2560×1440.
 // Posters: 1 s in, except commenter 8.5 s, arbre 6.5 s and moteurs 7.5 s,
 // whose first second is a dark title card or a camera move.
-export const FILMS_EDITION: string | null = '20261114';
+//
+// Edition 20261115: the seven remade as real tutorials (owner, 2026-11-14:
+// « pour chaque fonctionnalité, tu dois générer une vidéo », not cut from the
+// presentation film). 25–31 s each, every step on the interface captured from
+// renderpro.app with a numbered caption, the cursor on the exact control, then
+// the real result (images generated on 2026-11-13/14 only). Music, which
+// MotionFilm keeps muted. 2560×1440 H.264, −16 LUFS; posters at 9 s, a step on
+// the interface.
+export const FILMS_EDITION: string | null = '20261115';
 
 // A film remade on its own after its edition keeps a later name here. The two
 // dashboard tutorials were re-rendered the same day without the engine
