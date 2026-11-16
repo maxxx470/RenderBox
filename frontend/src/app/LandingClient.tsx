@@ -638,7 +638,8 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </div>
         </section>
 
-        {/* VIDEO ANIMATION (2026-11-08) — three clips of a render in movement.
+        {/* VIDEO ANIMATION (2026-11-08; seven clips since 2026-11-16, the four
+            16:9 on one row and the three 9:16 on the next) — clips of a render in movement.
             It sits right after the before/after (owner, 2026-11-08), so the
             page reads still image, then the same thing moving, before it
             explains anything: the strongest two sections meet. It was placed
@@ -668,6 +669,33 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
                   name: 'plan-film',
                   title: t('landing.animClipPlan'),
                   alt: t('landing.animClipPlanAlt'),
+                },
+                {
+                  name: 'scan-salon',
+                  edition: '20261116',
+                  title: t('landing.animClipScan'),
+                  alt: t('landing.animClipScanAlt'),
+                },
+                {
+                  name: 'maquette-maison',
+                  edition: '20261116',
+                  portrait: true,
+                  title: t('landing.animClipMaison'),
+                  alt: t('landing.animClipMaisonAlt'),
+                },
+                {
+                  name: 'maquette-tour',
+                  edition: '20261116',
+                  portrait: true,
+                  title: t('landing.animClipTour'),
+                  alt: t('landing.animClipTourAlt'),
+                },
+                {
+                  name: 'ecran-salon',
+                  edition: '20261116',
+                  portrait: true,
+                  title: t('landing.animClipEcran'),
+                  alt: t('landing.animClipEcranAlt'),
                 },
               ]}
               ctaLabel={t('landing.animCta')}

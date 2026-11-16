@@ -1141,6 +1141,18 @@ const en: Record<keyof typeof fr, string> = {
     'Video: a pencil sketch becomes a photorealistic render, then the camera moves in.',
   'landing.animClipPlan': 'Blueprint to film',
   'landing.animClipPlanAlt': 'Video: a blueprint turns into a real building, filmed.',
+  'landing.animClipMaison': 'From model to house',
+  'landing.animClipMaisonAlt':
+    'Video: a small house model becomes a real modern house with its garden.',
+  'landing.animClipTour': 'The model comes alive',
+  'landing.animClipTourAlt':
+    'Video: hands set down a tower model, which becomes a real building at dusk.',
+  'landing.animClipScan': 'Empty room → living room',
+  'landing.animClipScanAlt':
+    'Video: a line of light sweeps an empty room and reveals a furnished living room.',
+  'landing.animClipEcran': 'From screen to room',
+  'landing.animClipEcranAlt':
+    'Video: the 3D view of a living room on a phone becomes the real, furnished room.',
   'landing.animCta': 'Animate one of my renders',
   'landing.animSecondary': 'See how it works',
   'landing.beforeAfterAltBefore':

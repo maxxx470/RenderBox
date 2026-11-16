@@ -1,8 +1,9 @@
 'use client';
 
-// The landing's « Animation vidéo » row (2026-11-08): three 16:9 cards on one
-// line, each a muted loop of a render in movement, with its title in HTML over
-// the picture.
+// The landing's « Animation vidéo » rows (2026-11-08, seven clips since
+// 2026-11-16: the 16:9 ones on a first row, the 9:16 ones on a second),
+// each a muted loop of a render in movement, with its title in HTML over the
+// picture.
 //
 // Why the title is NOT burnt into the clip: the site speaks two languages on
 // one URL (geo-locale.ts), so a word inside the video would be wrong for half
@@ -32,6 +33,10 @@ export interface ShowcaseClip {
   title: string;
   /** What the clip shows, for a screen reader. */
   alt: string;
+  /** Upload date of this clip on R2, when it is not LANDING_VIDEO_EDITION. */
+  edition?: string;
+  /** A 9:16 clip: it goes on the second row, in a tall card. */
+  portrait?: boolean;
 }
 
 function Card({ clip }: { clip: ShowcaseClip }) {
@@ -42,7 +47,7 @@ function Card({ clip }: { clip: ShowcaseClip }) {
   const [nearRef, near] = useInView<HTMLDivElement>({ rootMargin: '320px', once: true });
   const [videoRef, onScreen] = useInView<HTMLVideoElement>({ threshold: 0.4, once: false });
   const reducedMotion = usePrefersReducedMotion();
-  const { webm, mp4, poster } = landingVideo(clip.name);
+  const { webm, mp4, poster } = landingVideo(clip.name, clip.edition);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -54,7 +59,9 @@ function Card({ clip }: { clip: ShowcaseClip }) {
   return (
     <div
       ref={nearRef}
-      className="relative w-[82vw] max-w-[420px] flex-none snap-center overflow-hidden rounded-2xl bg-[#17161F] min-[768px]:w-auto min-[768px]:max-w-none"
+      className={`relative flex-none snap-center overflow-hidden rounded-2xl bg-[#17161F] min-[768px]:w-auto min-[768px]:max-w-none ${
+        clip.portrait ? 'w-[56vw] max-w-[260px]' : 'w-[82vw] max-w-[420px]'
+      }`}
     >
       <video
         ref={videoRef}
@@ -65,7 +72,7 @@ function Card({ clip }: { clip: ShowcaseClip }) {
         preload="metadata"
         controls={reducedMotion}
         aria-label={clip.alt}
-        className="block aspect-video w-full object-cover"
+        className={`block w-full object-cover ${clip.portrait ? 'aspect-[9/16]' : 'aspect-video'}`}
       >
         {/* Attached only once the card is near: an empty <video> downloads
             nothing, and adding the sources later starts the fetch. */}
@@ -112,19 +119,37 @@ export function VideoShowcase({
   secondaryLabel: string;
   secondaryHref: string;
 }) {
+  const wide = clips.filter((clip) => !clip.portrait);
+  const tall = clips.filter((clip) => clip.portrait);
   return (
     <>
-      {/* Three on a line from 768px. Below it they scroll sideways with
-          scroll-snap rather than stacking: stacked, three 16:9 cards are a
-          screen and a half of scrolling for one section. The negative margin
-          lets the row bleed to the screen edge while the page keeps its
-          gutter, and the padding gives the first and last card that gutter
-          back. */}
-      <div className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2 [scrollbar-width:none] min-[768px]:mx-0 min-[768px]:grid min-[768px]:grid-cols-3 min-[768px]:gap-4 min-[768px]:overflow-visible min-[768px]:px-0 min-[768px]:pb-0">
-        {clips.map((clip) => (
-          <Card key={clip.name} clip={clip} />
-        ))}
-      </div>
+      {/* Two blocks, one per shape (2026-11-16, seven clips): the four 16:9
+          clips two by two, then the three 9:16 clips on one line. Both
+          blocks are 880px wide and centred, and at that width they come out
+          the same height (2 × 16:9 rows ≈ one 9:16 row), so the section
+          reads as two equal panels. Four 16:9 on one line next to the tall
+          row made them look like thumbnails; mixing both shapes on one line
+          left holes whatever the order.
+
+          Below 768px each block scrolls sideways with scroll-snap rather
+          than stacking (seven stacked cards are several screens for one
+          section). The negative margin lets the row bleed to the screen
+          edge while the page keeps its gutter, and the padding gives the
+          first and last card that gutter back. */}
+      {wide.length > 0 && (
+        <div className="-mx-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2 [scrollbar-width:none] min-[768px]:mx-auto min-[768px]:grid min-[768px]:max-w-[880px] min-[768px]:grid-cols-2 min-[768px]:gap-4 min-[768px]:overflow-visible min-[768px]:px-0 min-[768px]:pb-0">
+          {wide.map((clip) => (
+            <Card key={clip.name} clip={clip} />
+          ))}
+        </div>
+      )}
+      {tall.length > 0 && (
+        <div className="-mx-6 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-6 pb-2 [scrollbar-width:none] min-[768px]:mx-auto min-[768px]:mt-4 min-[768px]:grid min-[768px]:max-w-[880px] min-[768px]:grid-cols-3 min-[768px]:gap-4 min-[768px]:overflow-visible min-[768px]:px-0 min-[768px]:pb-0">
+          {tall.map((clip) => (
+            <Card key={clip.name} clip={clip} />
+          ))}
+        </div>
+      )}
 
       <div className="mt-9 flex flex-col items-center justify-center gap-3 min-[560px]:flex-row min-[560px]:gap-5">
         <Link

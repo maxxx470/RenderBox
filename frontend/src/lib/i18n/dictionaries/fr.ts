@@ -1177,6 +1177,18 @@ const fr = {
     'Vidéo : un croquis au crayon devient un rendu photoréaliste, puis la caméra avance.',
   'landing.animClipPlan': 'Du plan au film',
   'landing.animClipPlanAlt': 'Vidéo : un plan bleu se transforme en bâtiment réel filmé.',
+  'landing.animClipMaison': 'De la maquette à la maison',
+  'landing.animClipMaisonAlt':
+    'Vidéo : une petite maquette de maison devient une vraie maison moderne avec son jardin.',
+  'landing.animClipTour': 'La maquette prend vie',
+  'landing.animClipTourAlt':
+    'Vidéo : des mains posent la maquette d’une tour, qui devient un immeuble réel au crépuscule.',
+  'landing.animClipScan': 'Pièce vide → salon meublé',
+  'landing.animClipScanAlt':
+    'Vidéo : un trait de lumière balaie une pièce vide et révèle un salon meublé.',
+  'landing.animClipEcran': 'De l’écran à la pièce',
+  'landing.animClipEcranAlt':
+    'Vidéo : la vue 3D d’un salon sur un téléphone devient la vraie pièce décorée.',
   'landing.animCta': 'Animer un de mes rendus',
   'landing.animSecondary': 'Voir comment ça marche',
   'landing.beforeAfterAltBefore':

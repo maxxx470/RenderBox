@@ -190,8 +190,15 @@ export const FILM_EDITIONS: Readonly<Record<string, string>> = {
  */
 export const LANDING_VIDEO_EDITION = '20261108';
 
-export function landingVideo(name: string): { webm: string; mp4: string; poster: string } {
-  const base = `${MEDIA_ORIGIN}/landing/${name}-${LANDING_VIDEO_EDITION}`;
+// 2026-11-16 (owner): four more Flow clips — three 9:16 (maquette-maison,
+// maquette-tour, ecran-salon) and one 16:9 (scan-salon). Uploaded as the
+// approved MP4s untouched (they carry a sound track the card never plays),
+// plus a VP9 WebM without sound and a WebP of the first frame.
+export function landingVideo(
+  name: string,
+  edition: string = LANDING_VIDEO_EDITION,
+): { webm: string; mp4: string; poster: string } {
+  const base = `${MEDIA_ORIGIN}/landing/${name}-${edition}`;
   return { webm: `${base}.webm`, mp4: `${base}.mp4`, poster: `${base}.webp` };
 }
 
