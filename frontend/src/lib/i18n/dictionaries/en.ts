@@ -1053,6 +1053,8 @@ const en: Record<keyof typeof fr, string> = {
   // method here would promise one that may not be enabled.
   'paiement.title': 'Your payment',
   'paiement.close': 'Close',
+  'paiement.phoneHint':
+    'Mobile money: a confirmation request arrives on your phone. Type your PIN there right away. If it does not respond to taps, close chat bubbles and the blue-light filter, then start the payment again.',
   'paiement.secureNote': 'Payment secured by Moneriz. You stay on RenderPro.',
   'paiement.verifying': 'Payment received, confirming with your provider…',
   'paiement.successTitle': 'Payment confirmed',

@@ -40,7 +40,16 @@ const log = createLogger();
 
 const ORDER_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24h — matches the order-expiration cron's PENDING sweep
 
-const Body = z.object({ tier: z.enum(['decouverte', 'standard', 'pro']) });
+// `mode` (2026-11-21): a phone asks for Moneriz's own page instead of the
+// frame. On a real mobile-money test the operator's confirmation prompt
+// (USSD / SIM) came up while the customer's phone was holding our landing —
+// films, carousels and the payment frame all running behind it — and the
+// prompt would not take a tap, so the PIN could never be typed and the order
+// stayed PENDING. On Moneriz's hosted page nothing of ours runs at all.
+const Body = z.object({
+  tier: z.enum(['decouverte', 'standard', 'pro']),
+  mode: z.enum(['iframe', 'redirect']).optional(),
+});
 
 /**
  * What the customer sees as the payment's label on Moneriz's page.
@@ -78,6 +87,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
     const { tier } = parsed.data;
+    const mode = parsed.data.mode ?? 'iframe';
 
     if (!isMonerizConfigured()) {
       return NextResponse.json(
@@ -144,11 +154,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     let checkout: MonerizCheckoutResult;
     try {
-      checkout = await monerizCheckout({
-        ...base,
-        integrationMode: 'iframe',
-        ...(embedOrigin ? { embedOrigin } : {}),
-      });
+      checkout =
+        mode === 'redirect'
+          ? await monerizCheckout({ ...base, integrationMode: 'redirect' })
+          : await monerizCheckout({
+              ...base,
+              integrationMode: 'iframe',
+              ...(embedOrigin ? { embedOrigin } : {}),
+            });
     } catch (e) {
       if (isMonerizIdentityError(e)) {
         // The merchant space's identity is not approved yet. No key,

@@ -1083,6 +1083,8 @@ const fr = {
   // pas si la carte bancaire n'est pas activée.
   'paiement.title': 'Votre paiement',
   'paiement.close': 'Fermer',
+  'paiement.phoneHint':
+    'Mobile money : une demande de confirmation arrive sur votre téléphone. Saisissez-y votre code secret sans tarder. Si elle ne réagit pas au toucher, fermez les bulles de discussion et le filtre de lumière bleue, puis relancez le paiement.',
   'paiement.secureNote': 'Paiement sécurisé par Moneriz. Vous restez sur RenderPro.',
   'paiement.verifying': 'Paiement reçu, nous confirmons auprès de votre opérateur…',
   'paiement.successTitle': 'Paiement confirmé',

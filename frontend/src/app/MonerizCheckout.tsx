@@ -53,6 +53,23 @@ const MAX_FRAME_H = 4000;
 const VERIFY_ATTEMPTS = 10;
 const VERIFY_DELAY_MS = 2000;
 
+/**
+ * A phone pays on Moneriz's own page, not in our frame (2026-11-21, owner's
+ * real test: the operator's confirmation prompt came up but would not take a
+ * tap, so the PIN could not be typed and the payment stayed pending). On a
+ * phone the frame changes nothing visible — the dialog is full screen — but it
+ * keeps our whole page alive behind it (films, carousels, the frame itself),
+ * which is exactly what a small phone cannot afford while the operator's
+ * prompt is up. A touch screen narrower than a tablet is a phone here.
+ */
+function isPhone(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  return (
+    window.matchMedia('(pointer: coarse)').matches &&
+    window.matchMedia('(max-width: 899px)').matches
+  );
+}
+
 export function useMonerizCheckout() {
   const [session, setSession] = useState<CheckoutSession | null>(null);
   const [startingTier, setStartingTier] = useState<PricingTierId | null>(null);
@@ -62,7 +79,7 @@ export function useMonerizCheckout() {
     try {
       const res = await api<CheckoutSession>('/api/payments/checkout', {
         method: 'POST',
-        body: { tier },
+        body: isPhone() ? { tier, mode: 'redirect' } : { tier },
       });
       // No frame to mount (Moneriz fell back to its hosted page because the
       // origin is not allow-listed yet): take the customer there rather than
@@ -197,6 +214,26 @@ export function MonerizCheckoutFrame({
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, [expectedOrigin, session.embedToken, verify, setPhaseBoth]);
+
+  // Nothing of ours keeps playing behind the payment: every film, the
+  // presentation video included, is paused while the dialog is open, and the
+  // page under it stops scrolling. The CPU goes to the payment and to the
+  // operator's confirmation prompt, not to a muted loop nobody sees.
+  useEffect(() => {
+    const paused: HTMLVideoElement[] = [];
+    document.querySelectorAll('video').forEach((v) => {
+      if (!v.paused) {
+        v.pause();
+        paused.push(v);
+      }
+    });
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      paused.forEach((v) => void v.play().catch(() => {}));
+    };
+  }, []);
 
   /** Moneriz expects `moneriz.init` once our listener is installed. */
   const onFrameLoad = useCallback(() => {
@@ -341,6 +378,9 @@ export function MonerizCheckoutFrame({
                 className="block w-full border-0"
                 style={{ height }}
               />
+              <p className="mt-4 rounded-xl bg-[#F7F7FA] px-4 py-3 text-[13px] leading-relaxed text-[#3D3B49]">
+                {t('paiement.phoneHint')}
+              </p>
               <p className="pt-4 text-center text-[12px] text-[#8A8896]">
                 {t('paiement.secureNote')}
               </p>
