@@ -575,7 +575,7 @@ const fr = {
   'info.followTitle': 'Restez informé',
   'info.followSubtitle': 'Les nouveautés de RenderPro, dès qu’elles sortent.',
   'info.whatsappTitle': 'Chaîne WhatsApp',
-  'info.whatsappLine': 'Les annonces et les mises à jour, en français',
+  'info.whatsappLine': 'Les annonces et les mises à jour (en anglais)',
   'info.youtubeTitle': 'Chaîne YouTube',
   'info.youtubeLine': 'Démonstrations, tutoriels et nouveautés en vidéo',
   'info.tiktokTitle': 'Compte TikTok',

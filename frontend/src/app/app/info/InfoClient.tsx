@@ -34,7 +34,7 @@ export function InfoClient({
       subtitle={t('info.guideTitle')}
     >
       {/* Where the news is announced (owner, 2026-10-15): the WhatsApp
-          channel of the interface's language, the YouTube channel and, since
+          channel (the English one for everyone since 2026-11-23), the YouTube channel and, since
           2026-10-17, the TikTok account — three in a row on a wide screen. */}
       <section className="mb-6 rounded-[20px] bg-white p-4 min-[640px]:p-5">
         <h2 className="font-[family-name:var(--font-display)] text-[16px] font-semibold text-[#17161F]">
@@ -43,7 +43,7 @@ export function InfoClient({
         <p className="mt-0.5 text-[13px] text-[#6B6878]">{t('info.followSubtitle')}</p>
         <div className="mt-4 grid grid-cols-1 gap-2.5 min-[640px]:grid-cols-2 min-[1280px]:grid-cols-3">
           <ChannelLink
-            href={WHATSAPP_CHANNEL[locale]}
+            href={WHATSAPP_CHANNEL}
             title={t('info.whatsappTitle')}
             line={t('info.whatsappLine')}
             mark={<WhatsAppMark />}
