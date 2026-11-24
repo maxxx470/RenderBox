@@ -36,6 +36,7 @@ import {
   type VideoMode,
   type VideoModelKey,
 } from '@/lib/server/generation/video-models';
+import { videoPrice } from '@/lib/provider-cost';
 import { VideoBar, type VideoBarState } from './VideoBar';
 import { VideoSettings } from './VideoSettings';
 
@@ -50,6 +51,14 @@ interface VideoJobRow {
   failCode: string | null;
   createdAt: string;
   sourceNodeId: string | null;
+}
+
+/** The first size of this engine that has a verified price. Veo 3.1 lists
+ *  720p first but is priced at 1080p only, so a plain « first size » left the
+ *  send button greyed with no reason given. */
+function pricedResolution(model: VideoModelKey, duration: number): string {
+  const sizes = videoResolutionsFor(model, duration);
+  return sizes.find((r) => videoPrice(model, duration, r) !== null) ?? sizes[0] ?? '720p';
 }
 
 /** While a clip works, ask again. This poll is also the heartbeat that
@@ -75,7 +84,7 @@ export function VideoClient({
     environment: ['trees', 'clouds'],
     intensity: 'natural',
     duration: firstCaps.durations[0] ?? 5,
-    resolution: videoResolutionsFor(DEFAULT_VIDEO_MODEL, firstCaps.durations[0] ?? 5)[0] ?? '720p',
+    resolution: pricedResolution(DEFAULT_VIDEO_MODEL, firstCaps.durations[0] ?? 5),
     // Nothing chosen = the clip keeps the render's own framing. A default of
     // 16:9 would silently recrop a portrait render.
     ratio: null,
@@ -109,7 +118,10 @@ export function VideoClient({
       return {
         ...s,
         duration,
-        resolution: sizes.includes(s.resolution) ? s.resolution : (sizes[0] ?? '720p'),
+        resolution:
+          sizes.includes(s.resolution) && videoPrice(s.model, duration, s.resolution) !== null
+            ? s.resolution
+            : pricedResolution(s.model, duration),
         // Engines do not spell their frames the same way (Kling has no 4:3,
         // Wan has no ratio at all), so one the new engine cannot take falls
         // back to « follow the image » rather than to a refusal after the
@@ -217,7 +229,10 @@ export function VideoClient({
     try {
       await api('/api/video/jobs', {
         method: 'POST',
-        body: JSON.stringify({
+        // api() serialises the body itself: stringifying here sent a JSON
+        // STRING, which the route's zod parse refused as INVALID_REQUEST —
+        // no clip could ever start (found 2026-11-24).
+        body: {
           model: state.model,
           mode,
           ...(mode === 'reference' ? { referenceNodeIds: [sourceId] } : { sourceNodeId: sourceId }),
@@ -230,7 +245,7 @@ export function VideoClient({
           ...(state.ratio ? { ratio: state.ratio } : {}),
           audio: state.audio,
           ...(state.note.trim() ? { request: state.note.trim() } : {}),
-        }),
+        },
       });
       setState((s) => ({ ...s, note: '' }));
       await load();
