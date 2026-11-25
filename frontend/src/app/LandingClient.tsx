@@ -647,7 +647,7 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
             subtitle={t('landing.possiblesBody')}
           />
           <div className="grid grid-cols-2 gap-3 min-[640px]:grid-cols-3 min-[1024px]:grid-cols-5 min-[860px]:gap-4">
-            {Array.from({ length: 10 }, (_, i) => (
+            {Array.from({ length: 20 }, (_, i) => (
               <Reveal key={i} delayMs={60 + (i % 5) * 60}>
                 <img
                   src={`/vitrine/possibles/rendu-${String(i + 1).padStart(2, '0')}.webp`}
