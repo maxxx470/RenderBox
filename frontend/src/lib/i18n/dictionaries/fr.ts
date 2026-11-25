@@ -1199,6 +1199,11 @@ const fr = {
     'La même villa en rendu photoréaliste : enduit blanc, bardage en chêne, piscine, lumière de fin de journée.',
   'landing.beforeAfterLabelBefore': 'Esquisse',
   'landing.beforeAfterLabelAfter': 'Rendu RenderPro',
+  'landing.possiblesEyebrow': 'Galerie',
+  'landing.possiblesTitle': 'Ce que tu peux faire avec RenderPro',
+  'landing.possiblesBody':
+    'Rendus, coupes, planches de présentation, axonométries : quelques exemples réalisés avec RenderPro.',
+  'landing.possiblesAlt': 'Rendu architectural réalisé avec RenderPro',
   'landing.beforeAfterExterior': 'Extérieur',
   'landing.beforeAfterInterior': 'Intérieur',
   'landing.beforeAfterAltBeforeInterior':

@@ -1163,6 +1163,11 @@ const en: Record<keyof typeof fr, string> = {
     'The same villa as a photorealistic render: white render, oak cladding, pool, golden-hour light.',
   'landing.beforeAfterLabelBefore': 'Sketch',
   'landing.beforeAfterLabelAfter': 'RenderPro render',
+  'landing.possiblesEyebrow': 'Gallery',
+  'landing.possiblesTitle': 'What you can do with RenderPro',
+  'landing.possiblesBody':
+    'Renders, sections, presentation boards, axonometrics: a few examples made with RenderPro.',
+  'landing.possiblesAlt': 'Architectural render made with RenderPro',
   'landing.beforeAfterExterior': 'Exterior',
   'landing.beforeAfterInterior': 'Interior',
   'landing.beforeAfterAltBeforeInterior':

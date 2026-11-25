@@ -638,6 +638,31 @@ export function LandingClient({ ctaHref }: { ctaHref: '/app' | '/connexion' }) {
           </div>
         </section>
 
+        {/* WHAT YOU CAN DO — renders made in Flow with RenderPro's engine
+            (owner, 2026-11-24), right under the before/after pairs. */}
+        <section className="pb-14 min-[860px]:pb-20">
+          <SectionHeader
+            eyebrow={t('landing.possiblesEyebrow')}
+            title={t('landing.possiblesTitle')}
+            subtitle={t('landing.possiblesBody')}
+          />
+          <div className="grid grid-cols-2 gap-3 min-[640px]:grid-cols-3 min-[1024px]:grid-cols-5 min-[860px]:gap-4">
+            {Array.from({ length: 10 }, (_, i) => (
+              <Reveal key={i} delayMs={60 + (i % 5) * 60}>
+                <img
+                  src={`/vitrine/possibles/rendu-${String(i + 1).padStart(2, '0')}.webp`}
+                  alt={t('landing.possiblesAlt')}
+                  width={896}
+                  height={1200}
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[3/4] w-full rounded-2xl object-cover shadow-[0_8px_24px_rgba(23,22,31,0.10)]"
+                />
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
         {/* VIDEO ANIMATION (2026-11-08; seven clips since 2026-11-16, the four
             16:9 on one row and the three 9:16 on the next) — clips of a render in movement.
             It sits right after the before/after (owner, 2026-11-08), so the
