@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { COUNTRY_CURRENCY, SUPPORTED_CURRENCIES, XOF_PER_EUR, localPrice } from './local-currency';
+import {
+  COUNTRY_CURRENCY,
+  SUPPORTED_CURRENCIES,
+  XOF_PER_EUR,
+  charmPrice,
+  localPrice,
+  referencePrice,
+} from './local-currency';
 
 // Intl inserts a narrow no-break space before the symbol and between
 // thousands in French; \s covers both, so the assertions stay readable.
@@ -74,5 +81,28 @@ describe('localPrice', () => {
     it('leaves the euro exact — the peg does not depend on the fetch', () => {
       expect(plain(localPrice(6000, 'FR', 'fr-FR', { EUR: 1 }))).toBe('9,15 €');
     });
+  });
+});
+
+describe('referencePrice — charm figures ending in 9 (2026-11-27)', () => {
+  it('keeps the exact dollar prices', () => {
+    expect(plain(referencePrice(9.99, 'USD', 'en-US'))).toBe('$9.99');
+    expect(plain(referencePrice(24.99, 'USD', 'en-US'))).toBe('$24.99');
+    expect(plain(referencePrice(59.99, 'USD', 'en-US'))).toBe('$59.99');
+  });
+  it('ends in ,99 under 100 and in 9 above, never with cents above 100', () => {
+    expect(plain(referencePrice(9.99, 'EUR', 'fr-FR'))).toBe('8,99 €');
+    expect(plain(referencePrice(24.99, 'MAD', 'fr-FR'))).toBe('249 MAD');
+    expect(plain(referencePrice(9.99, 'NGN', 'en-US'))).toMatch(/13,290/);
+    expect(plain(referencePrice(9.99, 'JPY', 'en-US'))).toMatch(/1,569$/);
+  });
+  it('never shows less than the real conversion', () => {
+    for (const raw of [
+      0.5, 7.47, 9.99, 99.995, 100.2, 245.33, 999.4, 1347.89, 13259.39, 221068.69, 1550457.99,
+    ]) {
+      const v = charmPrice(raw, true);
+      expect(v).toBeGreaterThanOrEqual(raw - 1e-6);
+      expect(v).toBeLessThan(raw * 1.11 + 1);
+    }
   });
 });

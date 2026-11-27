@@ -193,10 +193,9 @@ export function currencyFor(country: string | null | undefined): string | null {
  * through the euro — one extra division, and the euro figure stays exact
  * through the CFA peg for everything else that still converts from FCFA.
  *
- * Decimals are the currency's own, as Intl knows them: two for the euro, none
- * for the yen or the dong. No hand-rolled rounding here — 24,99 $ must not
- * become « 25 490 ₫ » rounded to the nearest ten when the currency's own
- * convention says otherwise.
+ * Rounded up to a figure ending in 9 by `charmPrice` (2026-11-27, owner):
+ * « 22,99 € », « 949 ₹ », « 13 290 ₦ » — cents only under 100 and only in a
+ * currency that has them.
  */
 export function referencePrice(
   priceUsd: number,
@@ -213,12 +212,46 @@ export function referencePrice(
   const usdPerEur = perEur('USD');
   const target = perEur(currency);
   if (!usdPerEur || !target) return null;
-  const amount = (priceUsd / usdPerEur) * target;
+  const raw = (priceUsd / usdPerEur) * target;
+  const minor = new Intl.NumberFormat('en-US', { style: 'currency', currency }).resolvedOptions()
+    .maximumFractionDigits;
+  const amount = charmPrice(raw, (minor ?? 2) > 0);
+  const digits = (minor ?? 2) > 0 && amount < 100 ? 2 : 0;
   return new Intl.NumberFormat(intl, {
     style: 'currency',
     currency,
     currencyDisplay: 'symbol',
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   }).format(amount);
+}
+
+/**
+ * A converted price rounded UP to a « charm » figure ending in 9 (owner,
+ * 2026-11-27: « des chiffres ronds … 9,99 c'est encore mieux que 10 »,
+ * rounding up chosen so the figure shown is never below the real conversion).
+ *
+ *   under 100, in a currency with cents  → the next X,99   (8,92 € → 8,99 €)
+ *   100 to 999                           → the next whole number ending in 9 (245,33 → 249)
+ *   1 000 and above                      → four significant figures, the last
+ *                                          one a 9 (13 259 ₦ → 13 290 ₦,
+ *                                          221 069 GNF → 221 900 GNF)
+ *
+ * No crumbs: never cents above 100. The result is always ≥ `raw` (a tiny
+ * tolerance keeps 9.99 $ at 9,99 $ despite the round trip through the euro).
+ */
+export function charmPrice(raw: number, hasCents: boolean): number {
+  if (!(raw > 0)) return raw;
+  const x = raw * (1 - 1e-9);
+  if (hasCents && x < 100) {
+    const v = Math.floor(x) + 0.99;
+    return Math.round((v >= x ? v : v + 1) * 100) / 100;
+  }
+  const digits = Math.floor(Math.log10(x)) + 1;
+  const unit = 10 ** Math.max(0, digits <= 3 ? digits - 3 : digits - 4);
+  let n = Math.ceil(x / unit);
+  while (n % 10 !== 9) n += 1;
+  return n * unit;
 }
 
 /**

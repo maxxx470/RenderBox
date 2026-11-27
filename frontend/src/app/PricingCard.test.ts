@@ -92,8 +92,8 @@ describe('PricingCard — one card for the landing and the Abonnement page', () 
 
     it('in another currency: the converted figure with « ≈ », FCFA under it', () => {
       const text = cardText(PRICING_TIERS[1]!, 'fr', 'page', 'FR', { EUR: 1, USD: 1.25 });
-      // 24.99 $ ÷ 1.25 $/€ = 19,99 €.
-      expect(text).toContain('≈ 19,99 €');
+      // 24.99 $ ÷ 1.25 $/€ = 19,992 €, rounded UP to the next figure in ,99 (charmPrice).
+      expect(text).toContain('≈ 20,99 €');
       expect(text).toContain('15 000 FCFA');
     });
 
