@@ -19,6 +19,20 @@ export interface DashboardVideo {
   poster: string | null;
 }
 
+/**
+ * The animation loop at the top of the dashboard (owner, 2026-11-27): it
+ * replaces the two « Premier pas » tutorials and sits under a « Générer une
+ * animation » button that opens the Vidéo page. Cut from the clip the owner
+ * sent on Telegram, keeping only the shots with no text on them (the
+ * « MIRAE » title and the closing logo are out); 51.8 s, 1280×720, no sound.
+ * On R2 like the landing clips; the poster is its first frame.
+ */
+export const DASHBOARD_ANIMATION = {
+  src: 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev/landing/dashboard-animation-20261127.mp4',
+  poster:
+    'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev/landing/dashboard-animation-20261127.webp',
+} as const;
+
 export const DASHBOARD_VIDEO: DashboardVideo = {
   url: null,
   poster: null,

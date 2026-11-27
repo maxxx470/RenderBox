@@ -17,12 +17,14 @@ import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { SHOWCASE_SLIDES, SHOWCASE_INTERVAL_MS } from './dashboard-media';
+import { CardHeader } from './DashboardVideoCard';
 
 // Outlined like every other block on the dashboard, so the two banners sit in
 // the same frame language as the cards below them. On a wide screen it takes
 // the height of the film card beside it (the grid row stretches both).
-const FRAME =
-  'relative aspect-[16/9] overflow-hidden rounded-2xl min-[900px]:aspect-auto min-[900px]:h-full min-[900px]:min-h-[210px]';
+// 16:9 at every width since 2026-11-27 (owner: « les images là en format
+// 16:9 »), inside a white card whose header carries « Générer une image ».
+const FRAME = 'relative aspect-[16/9] overflow-hidden rounded-xl';
 
 export function DashboardCarousel() {
   const { locale } = useLocale();
@@ -45,49 +47,57 @@ export function DashboardCarousel() {
   if (slides.length === 0) return null;
 
   return (
-    <div
-      className={`${FRAME} bg-[#F7F7FA]`}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={() => setPaused(false)}
-      // Announced as a region so a screen reader user knows content changes
-      // here on its own; `polite` never interrupts what is being read.
-      aria-roledescription="carousel"
-      aria-label={t('dashboard.showcaseLabel')}
-    >
-      {slides.map((slide, i) => (
-        <div
-          key={slide.id}
-          aria-hidden={i !== index}
-          className={`absolute inset-0 transition-opacity duration-700 ease-out ${
-            i === index ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <img src={slide.src} alt="" className="h-full w-full object-cover" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
-          <p className="absolute inset-x-4 bottom-10 max-w-[300px] font-[family-name:var(--font-display)] text-[17px] font-bold leading-[1.2] text-white">
-            {slide.caption[locale]}
-          </p>
-        </div>
-      ))}
+    <div className="flex min-w-0 flex-col gap-3 rounded-2xl bg-white p-4">
+      <CardHeader
+        title={t('dashboard.showcaseTitle')}
+        subtitle={t('dashboard.showcaseSubtitle')}
+        href="/app/generer"
+        cta={t('dashboard.imageCta')}
+      />
+      <div
+        className={`${FRAME} bg-[#F7F7FA]`}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocusCapture={() => setPaused(true)}
+        onBlurCapture={() => setPaused(false)}
+        // Announced as a region so a screen reader user knows content changes
+        // here on its own; `polite` never interrupts what is being read.
+        aria-roledescription="carousel"
+        aria-label={t('dashboard.showcaseLabel')}
+      >
+        {slides.map((slide, i) => (
+          <div
+            key={slide.id}
+            aria-hidden={i !== index}
+            className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+              i === index ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <img src={slide.src} alt="" className="h-full w-full object-cover" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+            <p className="absolute inset-x-4 bottom-10 max-w-[300px] font-[family-name:var(--font-display)] text-[17px] font-bold leading-[1.2] text-white">
+              {slide.caption[locale]}
+            </p>
+          </div>
+        ))}
 
-      {slides.length > 1 && (
-        <div className="absolute inset-x-4 bottom-4 flex gap-1.5">
-          {slides.map((slide, i) => (
-            <button
-              key={slide.id}
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-label={t('dashboard.showcaseGoTo', { n: String(i + 1) })}
-              aria-current={i === index}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/55 hover:bg-white/80'
-              }`}
-            />
-          ))}
-        </div>
-      )}
+        {slides.length > 1 && (
+          <div className="absolute inset-x-4 bottom-4 flex gap-1.5">
+            {slides.map((slide, i) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-label={t('dashboard.showcaseGoTo', { n: String(i + 1) })}
+                aria-current={i === index}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === index ? 'w-6 bg-white' : 'w-1.5 bg-white/55 hover:bg-white/80'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

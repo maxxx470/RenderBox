@@ -312,13 +312,13 @@ export function ImagesGrid({
 
           {isDashboard && (
             // As on Metrio: the four figures straight under the title, then
-            // one row (owner, 2026-10-17, layout C): « Premier pas » — the
-            // two tutorial films and « Lancer un rendu » — on two thirds, the
-            // showcase on the last third. Everything down to the recent
-            // images fits a 1440 × 900 screen without scrolling.
+            // one row of two equal 16:9 cards (owner, 2026-11-27): the
+            // animation loop with « Générer une animation », the showcase
+            // carousel with « Générer une image » (layout C of 2026-10-17,
+            // two thirds / one third, before).
             <div className="mb-7 flex flex-col gap-5">
               <DashboardStats data={dashboard} />
-              <div className="grid grid-cols-1 gap-4 min-[900px]:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+              <div className="grid grid-cols-1 gap-4 min-[900px]:grid-cols-2">
                 <DashboardVideoCard />
                 <DashboardCarousel />
               </div>

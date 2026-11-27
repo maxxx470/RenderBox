@@ -9,99 +9,77 @@
 //     on click. Embedding an iframe on load would pull YouTube's scripts and
 //     cookies into every dashboard visit for a video most people never start.
 //
-//   • No video is configured — the card teaches the same thing the video was
-//     going to teach, in the space it was going to occupy: « Premier pas sur
-//     RenderPro », two short tutorial films (generate, enhance). It used to render a dead
-//     "video coming soon" pill instead, which spent the best block on the
-//     first screen after sign-in on a promise. A card that says nothing and
-//     does nothing is worse than no card; a card that explains the product is
-//     better than either.
+//   • No video is configured — the card shows the animation loop and its
+//     « Générer une animation » button (owner, 2026-11-27; two tutorial
+//     films before). It used to render a dead "video coming soon" pill,
+//     which spent the best block on the first screen on a promise.
 //
 // Set DASHBOARD_VIDEO.url and the first state takes over — nothing else to
 // change anywhere.
 import { useState } from 'react';
 import Link from 'next/link';
 import { Play, ArrowRight } from 'react-iconly';
-import { useLocale, useTranslations } from '@/lib/i18n/LocaleContext';
+import { useTranslations } from '@/lib/i18n/LocaleContext';
 import { MotionFilm } from '@/app/MotionFilm';
-import { motionFilm } from '@/app/motion-media';
-import { DASHBOARD_VIDEO, toEmbedUrl } from './dashboard-media';
+import { DASHBOARD_ANIMATION, DASHBOARD_VIDEO, toEmbedUrl } from './dashboard-media';
 
 const FRAME =
   'relative aspect-[16/9] overflow-hidden rounded-2xl min-[900px]:aspect-auto min-[900px]:h-[210px]';
 
-// « Premier pas sur RenderPro » (owner, 2026-10-17; « De la photo au rendu,
-// en 3 étapes » with the etapes film before): two short tutorial films —
-// generating an image on the Générateur d'images, then enhancing one on
-// Améliorer —, each step captioned in the film itself, muted and looping like
-// the landing films (MotionFilm). Same day, layout C of the owner's choice:
-// the two films side by side under a header that carries « Lancer un rendu »,
-// so the dashboard's main action is on the first screen whatever the account
-// holds; the showcase carousel takes the third of the row beside the card.
-// Each film's caption links to its page. On a phone the films stack and keep
-// a « Plein écran » button, as on the Info page.
-const TUTORIALS = [
-  {
-    film: 'tuto-generer',
-    title: 'dashboard.tutoGenerate',
-    cta: 'dashboard.tutoGenerateCta',
-    href: '/app/generer',
-  },
-  {
-    film: 'tuto-ameliorer',
-    title: 'dashboard.tutoEnhance',
-    cta: 'dashboard.tutoEnhanceCta',
-    href: '/app/enhance',
-  },
-] as const;
-
-function FirstSteps() {
+// « Animation vidéo » (owner, 2026-11-27; « Premier pas sur RenderPro » and
+// its two tutorial films from 2026-10-17 until then): one 16:9 animation loop
+// cut from the owner's clip, muted and looping like the landing films
+// (MotionFilm), under a header whose button opens the Vidéo page. The
+// showcase carousel beside it carries « Générer une image » the same way, so
+// the dashboard's two main actions sit on the first screen.
+function AnimationCard() {
   const t = useTranslations();
-  const { locale } = useLocale();
   return (
     <div className="flex min-w-0 flex-col gap-3 rounded-2xl bg-white p-4">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5">
-        <div className="min-w-0">
-          <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold leading-tight text-[#17161F]">
-            {t('dashboard.firstStepsTitle')}
-          </h3>
-          <p className="mt-0.5 text-[12px] text-[#6B6878]">{t('dashboard.firstStepsSubtitle')}</p>
-        </div>
-        <Link
-          href="/app/generer"
-          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-4 py-2.5 text-[13px] font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
-        >
-          {t('projects.startCta')}
-          <ArrowRight set="curved" size={14} primaryColor="#ffffff" />
-        </Link>
+      <CardHeader
+        title={t('dashboard.animTitle')}
+        subtitle={t('dashboard.animSubtitle')}
+        href="/app/video"
+        cta={t('dashboard.animCta')}
+      />
+      <MotionFilm
+        src={DASHBOARD_ANIMATION.src}
+        poster={DASHBOARD_ANIMATION.poster}
+        label={t('dashboard.animAlt')}
+        expandLabel={t('info.filmExpand')}
+        className="rounded-xl shadow-[0_0_0_1px_#ECECF2]"
+      />
+    </div>
+  );
+}
+
+/** Title, one muted line and the blue action button, shared by both dashboard banners. */
+export function CardHeader({
+  title,
+  subtitle,
+  href,
+  cta,
+}: {
+  title: string;
+  subtitle: string;
+  href: string;
+  cta: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5">
+      <div className="min-w-0">
+        <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold leading-tight text-[#17161F]">
+          {title}
+        </h3>
+        <p className="mt-0.5 text-[12px] text-[#6B6878]">{subtitle}</p>
       </div>
-      <div className="grid grid-cols-1 gap-3 min-[640px]:grid-cols-2">
-        {TUTORIALS.map((tuto, i) => (
-          <div key={tuto.film} className="flex min-w-0 flex-col gap-2">
-            <MotionFilm
-              {...motionFilm(tuto.film, locale)}
-              label={t(tuto.title)}
-              expandLabel={t('info.filmExpand')}
-              className="rounded-xl shadow-[0_0_0_1px_#ECECF2]"
-            />
-            <div className="flex items-center justify-between gap-2">
-              <p className="flex min-w-0 items-center gap-2 text-[12.5px] font-semibold text-[#17161F]">
-                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-[#EEF1FF] font-[family-name:var(--font-mono)] text-[11px] font-semibold text-[#1E36D6]">
-                  {i + 1}
-                </span>
-                <span className="truncate">{t(tuto.title)}</span>
-              </p>
-              <Link
-                href={tuto.href}
-                className="inline-flex flex-shrink-0 items-center gap-1 text-[12px] font-semibold text-[#2948FC] underline-offset-4 hover:underline"
-              >
-                {t(tuto.cta)}
-                <ArrowRight set="curved" size={13} primaryColor="#2948FC" />
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
+      <Link
+        href={href}
+        className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-4 py-2.5 text-[13px] font-semibold text-white transition-transform duration-150 ease-out hover:-translate-y-0.5 active:scale-[0.97]"
+      >
+        {cta}
+        <ArrowRight set="curved" size={14} primaryColor="#ffffff" />
+      </Link>
     </div>
   );
 }
@@ -111,7 +89,7 @@ export function DashboardVideoCard() {
   const [playing, setPlaying] = useState(false);
 
   const url = DASHBOARD_VIDEO.url;
-  if (!url) return <FirstSteps />;
+  if (!url) return <AnimationCard />;
 
   const embed = toEmbedUrl(url);
 
