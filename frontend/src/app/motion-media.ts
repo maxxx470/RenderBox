@@ -123,7 +123,13 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
  * picture and in the voice. 2560×1440 H.264 with sound, −16 LUFS, poster at
  * 3.0 s. The 20261114 and 20261114b files stay in the bucket, unused.
  */
-export const PRESENTATION_EDITION = '20261114c';
+//
+// 20261127 (owner, 2026-11-27: « refais-le »): the first presentation film of
+// 2026-10-17 remade in the feature films' style, its script updated with the
+// animation, Nano Banana / ChatGPT, the 14 ambiances, the gallery, the Info
+// page and the install on a phone. Gemini TTS voice, soft music, subtitles,
+// ≈ 2 min 16. 1920×1080 H.264 with sound, −16 LUFS, poster at 3.0 s.
+export const PRESENTATION_EDITION = '20261127';
 
 export function presentationFilm(locale: string): { src: string; poster: string } {
   const base = `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-${locale}`;
@@ -156,7 +162,12 @@ export function presentationFilm(locale: string): { src: string; poster: string 
 // 20261115b (owner, same day): the send button (✦ « Générer ») was hidden
 // with its credit badge; it now shows, only the badge is hidden. All but
 // `animer`, whose page already showed it, re-rendered under this name.
-export const FILMS_EDITION: string | null = '20261115b';
+//
+// 20261127 (owner, 2026-11-27): the six feature films remade in the formation
+// style — blue ground, no music, no voice, the cursor exactly on each control,
+// English versions filmed on the English interface. 1920×1080 H.264, no sound;
+// posters at 6 s. `animer` keeps its own edition.
+export const FILMS_EDITION: string | null = '20261127';
 
 // A film remade on its own after its edition keeps a later name here. The two
 // dashboard tutorials were re-rendered the same day without the engine
