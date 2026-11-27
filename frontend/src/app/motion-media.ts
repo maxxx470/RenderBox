@@ -166,7 +166,8 @@ export function presentationFilm(locale: string): { src: string; poster: string 
 // 20261127 (owner, 2026-11-27): the six feature films remade in the formation
 // style — blue ground, no music, no voice, the cursor exactly on each control,
 // English versions filmed on the English interface. 1920×1080 H.264, no sound;
-// posters at 6 s. `animer` keeps its own edition.
+// posters at 6 s. `animer` (the Vidéo page: drone, trees and clouds, 8 s,
+// then the real result) followed the same evening under the same name.
 export const FILMS_EDITION: string | null = '20261127';
 
 // A film remade on its own after its edition keeps a later name here. The two
@@ -175,7 +176,6 @@ export const FILMS_EDITION: string | null = '20261127';
 export const FILM_EDITIONS: Readonly<Record<string, string>> = {
   'tuto-generer': '20261017b',
   'tuto-ameliorer': '20261017b',
-  animer: '20261115',
 };
 
 /**
