@@ -1376,6 +1376,8 @@ const fr = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureCredits': '{count} crédits / mois',
+  'landing.pricingFeatureImages': "Génération d'images illimitée",
+  'landing.pricingFeatureVideos': 'Environ {count} vidéos (Veo 3.1)',
   'landing.pricingFeatureEngines': 'Deux moteurs : Nano Banana et ChatGPT',
   'landing.pricingFeaturePresets': '5 ambiances de rendu',
   'landing.pricingFeatureEditing': 'Commenter, Ajouter et Améliorer',

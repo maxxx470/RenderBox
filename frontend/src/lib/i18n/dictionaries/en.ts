@@ -1328,6 +1328,8 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureCredits': '{count} credits / month',
+  'landing.pricingFeatureImages': 'Unlimited image generation',
+  'landing.pricingFeatureVideos': 'About {count} videos (Veo 3.1)',
   'landing.pricingFeatureEngines': 'Two engines: Nano Banana and ChatGPT',
   'landing.pricingFeaturePresets': '5 render ambiances',
   'landing.pricingFeatureEditing': 'Comment, Add and Enhance',
