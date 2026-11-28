@@ -126,16 +126,18 @@ describe('PricingCard — one card for the landing and the Abonnement page', () 
     const order = {
       fr: [
         'crédits / mois',
+        "Génération d'images illimitée",
+        'Génération de vidéos',
         'Deux moteurs : Nano Banana et ChatGPT',
-        '5 ambiances de rendu',
-        'Commenter, Ajouter et Améliorer',
+        'Accès à toutes les fonctionnalités de RenderPro',
         'Assistant intégré',
       ],
       en: [
         'credits / month',
+        'Unlimited image generation',
+        'Video generation',
         'Two engines: Nano Banana and ChatGPT',
-        '5 render ambiances',
-        'Comment, Add and Enhance',
+        'Access to every RenderPro feature',
         'Built-in assistant',
       ],
     };
@@ -148,7 +150,7 @@ describe('PricingCard — one card for the landing and the Abonnement page', () 
       ).toBe(true);
       expect([...at].sort((a, b) => a - b)).toEqual(at);
     }
-    expect(PLAN_FEATURES).toHaveLength(4);
+    expect(PLAN_FEATURES).toHaveLength(3);
   });
 
   it('never shows a number of renders, only credits', () => {

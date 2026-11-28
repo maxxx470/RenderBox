@@ -84,8 +84,7 @@ export const PRICING_TIERS: readonly PricingTier[] = [
  *  and the in-app Abonnement page list exactly these. */
 export const PLAN_FEATURES: readonly TranslationKey[] = [
   'landing.pricingFeatureEngines',
-  'landing.pricingFeaturePresets',
-  'landing.pricingFeatureEditing',
+  'landing.pricingFeatureAll',
   'landing.pricingFeatureAssistant',
 ];
 

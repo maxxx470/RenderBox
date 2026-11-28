@@ -17,11 +17,7 @@ import { TickSquare } from 'react-iconly';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 import type { TranslationKey } from '@/lib/i18n/dictionaries';
 import { PLAN_FEATURES, type PricingTier, type PricingTierId } from '@/lib/pricing-tiers';
-import { videoPrice } from '@/lib/provider-cost';
 
-/** One Veo 3.1 clip — the video model the app opens on — in credits (65):
- *  the plan card says how many of those its credits buy (owner, 2026-11-28). */
-const VEO_VIDEO_CREDITS = videoPrice('veo-3-1', 8, '1080p') ?? 65;
 import { currencyFor, isCfaCountry, referencePrice } from '@/lib/local-currency';
 import { useVisitorCountry } from '@/lib/visitor-country';
 import { useEurRates } from '@/lib/fx-rates';
@@ -132,6 +128,7 @@ export function PricingCard({
             </span>
           ) : null}
         </div>
+        <p className={`mt-1 text-[13px] ${muted}`}>{t(`landing.pricingTagline.${tier.id}`)}</p>
         <div className="mt-4 flex items-baseline gap-1.5">
           <span className={`text-[28px] font-bold tracking-[-0.5px] ${cfa ? charged : ''}`}>
             {converted ? t('landing.pricingLocal', { amount: headline }) : headline}
@@ -151,11 +148,7 @@ export function PricingCard({
           </span>
         </CheckItem>
         <CheckItem light={light}>{t('landing.pricingFeatureImages')}</CheckItem>
-        <CheckItem light={light}>
-          {t('landing.pricingFeatureVideos', {
-            count: Math.floor(tier.creditsPerMonth / VEO_VIDEO_CREDITS).toLocaleString(intl),
-          })}
-        </CheckItem>
+        <CheckItem light={light}>{t('landing.pricingFeatureVideos')}</CheckItem>
         {PLAN_FEATURES.map((k) => (
           <CheckItem key={k} light={light}>
             {t(k)}
