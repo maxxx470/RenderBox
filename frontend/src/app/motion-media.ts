@@ -129,7 +129,10 @@ export const MEDIA_ORIGIN = 'https://pub-fc6020f1c90e413d8b091df39371afc2.r2.dev
 // animation, Nano Banana / ChatGPT, the 14 ambiances, the gallery, the Info
 // page and the install on a phone. Gemini TTS voice, soft music, subtitles,
 // ≈ 2 min 16. 1920×1080 H.264 with sound, −16 LUFS, poster at 3.0 s.
-export const PRESENTATION_EDITION = '20261127b';
+// 2026-11-28 (owner): the « Ajouter de la végétation » board redone — no
+// trees in front, a natural tropical garden (low shrubs, large leaves,
+// boulders, stepping stones) and a reference of plants without pots.
+export const PRESENTATION_EDITION = '20261128';
 
 export function presentationFilm(locale: string): { src: string; poster: string } {
   const base = `${MEDIA_ORIGIN}/motion/presentation-${PRESENTATION_EDITION}-${locale}`;
