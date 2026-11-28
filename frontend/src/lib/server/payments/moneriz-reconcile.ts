@@ -241,7 +241,7 @@ export async function reconcileMonerizOrder(
  * question being « can the stock cover what the accounts now hold », not
  * what they held a second ago.
  */
-async function alertAdminsIfStockShort(
+export async function alertAdminsIfStockShort(
   prisma: PrismaClient,
   orderId: string,
   tier: PricingTierId,

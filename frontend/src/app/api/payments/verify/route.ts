@@ -5,7 +5,7 @@
 // the same one the webhook and the cron use, so « credit at most once » has
 // a single implementation per provider.
 //
-// Moneriz is the only provider since 2026-11-02. Orders carrying any other
+// Chariow (since 2026-11-28) and Moneriz (2026-11-02, kept as fallback). Orders carrying any other
 // provider are refused rather than guessed at: Maketou's code was removed on
 // 2026-11-03, none of its orders was left payable (4 failed, 5 expired, none
 // pending), so nothing it opened can settle any more.
@@ -17,10 +17,15 @@ import { requireAuth } from '@/lib/server/middleware';
 import { prisma } from '@/lib/server/prisma';
 import { reconcileMonerizOrder } from '@/lib/server/payments/moneriz-reconcile';
 import { MonerizNotConfiguredError, MonerizApiError } from '@/lib/server/payments/moneriz';
+import {
+  ChariowApiError,
+  ChariowNotConfiguredError,
+  reconcileChariowOrder,
+} from '@/lib/server/payments/chariow';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 /** Providers this route knows how to re-verify. */
-const SUPPORTED = new Set(['moneriz']);
+const SUPPORTED = new Set(['moneriz', 'chariow']);
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const ctx = makeRequestContext(req.headers);
@@ -71,19 +76,22 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
 
     try {
-      const result = await reconcileMonerizOrder(prisma, order);
+      const result =
+        order.provider === 'chariow'
+          ? await reconcileChariowOrder(prisma, order)
+          : await reconcileMonerizOrder(prisma, order);
       return NextResponse.json(
         { status: result.status },
         { headers: { 'x-request-id': ctx.requestId } },
       );
     } catch (e) {
-      if (e instanceof MonerizNotConfiguredError) {
+      if (e instanceof MonerizNotConfiguredError || e instanceof ChariowNotConfiguredError) {
         return NextResponse.json(
           { code: 'PAYMENT_PROVIDER_UNCONFIGURED', message: 'Payment provider not configured' },
           { status: 503, headers: { 'x-request-id': ctx.requestId } },
         );
       }
-      if (e instanceof MonerizApiError) {
+      if (e instanceof MonerizApiError || e instanceof ChariowApiError) {
         // Transient provider-side hiccup — the webhook and the reconcile
         // cron will retry. Report the order's last-known local status rather
         // than 502ing the customer's return page.

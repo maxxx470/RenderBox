@@ -26,7 +26,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CloseSquare, Danger, TickSquare } from 'react-iconly';
 import { BrandMark, Wordmark } from '@/components/BrandMark';
-import { api } from '@/lib/api';
+import { api, ApiError } from '@/lib/api';
 import type { PricingTierId } from '@/lib/pricing-tiers';
 import { useLocale } from '@/lib/i18n/LocaleContext';
 
@@ -39,6 +39,25 @@ interface CheckoutSession {
   /** The hosted page — the fallback when the frame cannot be used. */
   paymentUrl: string | null;
 }
+
+/** Chariow (2026-11-28) needs a first name, a last name and a phone before
+ *  it opens a checkout. The server answers CUSTOMER_DETAILS_REQUIRED with
+ *  what the account already knows, and the dialog asks for the rest. */
+export interface CustomerDetails {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  country: string;
+}
+
+interface DetailsStep {
+  kind: 'details';
+  tier: PricingTierId;
+  defaults: CustomerDetails;
+  submit: (details: CustomerDetails) => Promise<boolean>;
+}
+
+type CheckoutState = CheckoutSession | DetailsStep;
 
 type Phase = 'paying' | 'verifying' | 'paid' | 'failed';
 
@@ -71,33 +90,57 @@ function isPhone(): boolean {
 }
 
 export function useMonerizCheckout() {
-  const [session, setSession] = useState<CheckoutSession | null>(null);
+  const [session, setSession] = useState<CheckoutState | null>(null);
   const [startingTier, setStartingTier] = useState<PricingTierId | null>(null);
 
-  const start = useCallback(async (tier: PricingTierId): Promise<boolean> => {
-    setStartingTier(tier);
-    try {
-      const res = await api<CheckoutSession>('/api/payments/checkout', {
-        method: 'POST',
-        body: isPhone() ? { tier, mode: 'redirect' } : { tier },
-      });
-      // No frame to mount (Moneriz fell back to its hosted page because the
-      // origin is not allow-listed yet): take the customer there rather than
-      // showing them an empty dialog.
-      if (!res.embedUrl) {
-        if (!res.paymentUrl) return false;
-        window.location.href = res.paymentUrl;
+  const request = useCallback(
+    async (tier: PricingTierId, customer?: CustomerDetails): Promise<boolean> => {
+      setStartingTier(tier);
+      try {
+        const body: Record<string, unknown> = isPhone() ? { tier, mode: 'redirect' } : { tier };
+        if (customer) body.customer = customer;
+        const res = await api<CheckoutSession>('/api/payments/checkout', {
+          method: 'POST',
+          body,
+        });
+        // No frame to mount (Chariow's hosted page, or Moneriz refused the
+        // embed): take the customer there rather than showing an empty dialog.
+        if (!res.embedUrl) {
+          if (!res.paymentUrl) return false;
+          window.location.href = res.paymentUrl;
+          return true;
+        }
+        setSession(res);
         return true;
+      } catch (e) {
+        if (
+          e instanceof ApiError &&
+          e.status === 422 &&
+          e.body.code === 'CUSTOMER_DETAILS_REQUIRED'
+        ) {
+          const d = (e.body.defaults ?? {}) as Partial<CustomerDetails>;
+          setSession({
+            kind: 'details',
+            tier,
+            defaults: {
+              firstName: d.firstName ?? '',
+              lastName: d.lastName ?? '',
+              phone: d.phone ?? '',
+              country: d.country ?? 'TG',
+            },
+            submit: (details) => request(tier, details),
+          });
+          return true;
+        }
+        return false;
+      } finally {
+        setStartingTier(null);
       }
-      setSession(res);
-      return true;
-    } catch {
-      return false;
-    } finally {
-      setStartingTier(null);
-    }
-  }, []);
+    },
+    [],
+  );
 
+  const start = useCallback((tier: PricingTierId) => request(tier), [request]);
   const close = useCallback(() => setSession(null), []);
 
   return { session, startingTier, start, close };
@@ -107,9 +150,195 @@ export function MonerizCheckoutFrame({
   session,
   onClose,
 }: {
-  session: CheckoutSession;
+  session: CheckoutState;
   onClose: () => void;
 }) {
+  if ('kind' in session) return <CustomerDetailsDialog step={session} onClose={onClose} />;
+  return <PaymentFrame session={session} onClose={onClose} />;
+}
+
+/** Countries offered for the phone, mobile-money West/Central Africa first. */
+const PHONE_COUNTRIES: readonly { code: string; dial: string }[] = [
+  { code: 'TG', dial: '228' },
+  { code: 'BJ', dial: '229' },
+  { code: 'CI', dial: '225' },
+  { code: 'SN', dial: '221' },
+  { code: 'BF', dial: '226' },
+  { code: 'ML', dial: '223' },
+  { code: 'NE', dial: '227' },
+  { code: 'CM', dial: '237' },
+  { code: 'GA', dial: '241' },
+  { code: 'CG', dial: '242' },
+  { code: 'CD', dial: '243' },
+  { code: 'GN', dial: '224' },
+  { code: 'TD', dial: '235' },
+  { code: 'MG', dial: '261' },
+  { code: 'FR', dial: '33' },
+  { code: 'BE', dial: '32' },
+  { code: 'CH', dial: '41' },
+  { code: 'CA', dial: '1' },
+  { code: 'US', dial: '1' },
+];
+
+/** Digits only, with the country's dial code removed when it was typed
+ *  in international form (+228… or 00228…). */
+export function localPhone(raw: string, country: string): string {
+  const trimmed = raw.trim();
+  let digits = trimmed.replace(/\D+/g, '');
+  const international = trimmed.startsWith('+') || trimmed.startsWith('00');
+  if (trimmed.startsWith('00')) digits = digits.slice(2);
+  const dial = PHONE_COUNTRIES.find((c) => c.code === country)?.dial;
+  if (international && dial && digits.startsWith(dial)) digits = digits.slice(dial.length);
+  return digits;
+}
+
+function CustomerDetailsDialog({ step, onClose }: { step: DetailsStep; onClose: () => void }) {
+  const { t, locale } = useLocale();
+  const [form, setForm] = useState<CustomerDetails>(step.defaults);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
+
+  const countries = PHONE_COUNTRIES.some((c) => c.code === form.country)
+    ? PHONE_COUNTRIES
+    : [{ code: form.country, dial: '' }, ...PHONE_COUNTRIES];
+  const names = (() => {
+    try {
+      return new Intl.DisplayNames([locale], { type: 'region' });
+    } catch {
+      return null;
+    }
+  })();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !busy) onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose, busy]);
+
+  const phone = localPhone(form.phone, form.country);
+  const valid = !!form.firstName.trim() && !!form.lastName.trim() && phone.length >= 6;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!valid || busy) return;
+    setBusy(true);
+    setError(false);
+    const ok = await step.submit({ ...form, phone });
+    // On success the page is already leaving for the payment.
+    if (!ok) {
+      setError(true);
+      setBusy(false);
+    }
+  };
+
+  const field =
+    'w-full rounded-xl border border-[#ECECF2] bg-white px-3.5 py-3 text-[15px] text-[#17161F] outline-none transition-colors focus:border-[#2948FC]';
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checkout-details-title"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-[#17161F]/45 backdrop-blur-[2px] min-[640px]:items-center min-[640px]:p-6"
+      onPointerDown={(e) => {
+        if (e.target === e.currentTarget && !busy) onClose();
+      }}
+    >
+      <form
+        onSubmit={submit}
+        className="rb-pop-up flex w-full max-w-[440px] flex-col gap-4 rounded-t-[24px] bg-white p-6 min-[640px]:rounded-[24px]"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <span className="flex items-center gap-2.5">
+            <BrandMark size="sm" />
+            <h2
+              id="checkout-details-title"
+              className="font-[family-name:var(--font-display)] text-[18px] font-extrabold text-[#17161F]"
+            >
+              {t('paiement.detailsTitle')}
+            </h2>
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            aria-label={t('paiement.close')}
+            className="flex-shrink-0 rounded-lg p-1 text-[#6B6878] transition-colors hover:bg-[#F2F2F5] hover:text-[#17161F]"
+          >
+            <CloseSquare set="curved" size={22} primaryColor="currentColor" />
+          </button>
+        </div>
+        <p className="text-[14px] leading-relaxed text-[#3D3B49]">{t('paiement.detailsBody')}</p>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#3D3B49]">
+            {t('paiement.firstName')}
+            <input
+              className={field}
+              value={form.firstName}
+              maxLength={50}
+              autoComplete="given-name"
+              required
+              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#3D3B49]">
+            {t('paiement.lastName')}
+            <input
+              className={field}
+              value={form.lastName}
+              maxLength={50}
+              autoComplete="family-name"
+              required
+              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+            />
+          </label>
+        </div>
+        <label className="flex flex-col gap-1.5 text-[13px] font-semibold text-[#3D3B49]">
+          {t('paiement.phone')}
+          <span className="flex gap-2">
+            <select
+              aria-label={t('paiement.country')}
+              className={`${field} w-[46%] flex-shrink-0`}
+              value={form.country}
+              onChange={(e) => setForm({ ...form, country: e.target.value })}
+            >
+              {countries.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {(names?.of(c.code) ?? c.code) + (c.dial ? ` (+${c.dial})` : '')}
+                </option>
+              ))}
+            </select>
+            <input
+              className={field}
+              value={form.phone}
+              inputMode="tel"
+              autoComplete="tel-national"
+              maxLength={30}
+              required
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            />
+          </span>
+        </label>
+        {error && (
+          <p className="rounded-xl bg-[#FFE4E7] px-4 py-3 text-[13px] text-[#C21F33]">
+            {t('paiement.detailsError')}
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={!valid || busy}
+          className="rounded-xl bg-gradient-to-br from-[#435CFE] via-[#2948FC] to-[#1E36D6] px-5 py-3.5 text-[15px] font-semibold text-white transition-transform active:scale-[0.98] disabled:opacity-50"
+        >
+          {busy ? t('paiement.detailsBusy') : t('paiement.detailsCta')}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function PaymentFrame({ session, onClose }: { session: CheckoutSession; onClose: () => void }) {
   const { t } = useLocale();
   const frameRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(560);

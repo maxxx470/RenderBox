@@ -34,6 +34,15 @@ import {
 } from '@/lib/server/payments/moneriz';
 import { getPricingTier, type PricingTierId } from '@/lib/pricing-tiers';
 import { createLogger } from '@/lib/server/logger';
+import {
+  activeCheckoutProvider,
+  chariowCheckout,
+  digitsOnly,
+  isChariowCertainRefusal,
+  isCompleteCustomer,
+  splitName,
+  type ChariowCustomer,
+} from '@/lib/server/payments/chariow';
 import { makeRequestContext, withRequestContext } from '@/lib/server/observability/request-context';
 
 const log = createLogger();
@@ -49,6 +58,20 @@ const ORDER_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24h — matches the order-expira
 const Body = z.object({
   tier: z.enum(['decouverte', 'standard', 'pro']),
   mode: z.enum(['iframe', 'redirect']).optional(),
+  // Chariow (2026-11-28) requires a first name, a last name and a phone.
+  // The dialog sends them once the server has answered
+  // CUSTOMER_DETAILS_REQUIRED with what the account already knows.
+  customer: z
+    .object({
+      firstName: z.string().trim().min(1).max(50),
+      lastName: z.string().trim().min(1).max(50),
+      phone: z.string().trim().min(6).max(30),
+      country: z
+        .string()
+        .trim()
+        .regex(/^[A-Za-z]{2}$/),
+    })
+    .optional(),
 });
 
 /**
@@ -89,7 +112,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const { tier } = parsed.data;
     const mode = parsed.data.mode ?? 'iframe';
 
-    if (!isMonerizConfigured()) {
+    const provider = activeCheckoutProvider();
+    if (provider === 'moneriz' && !isMonerizConfigured()) {
       return NextResponse.json(
         { code: 'PAYMENT_PROVIDER_UNCONFIGURED', message: 'Payment provider not configured' },
         { status: 503, headers: { 'x-request-id': ctx.requestId } },
@@ -105,6 +129,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         { error: 'USER_NOT_FOUND', message: 'User not found' },
         { status: 404, headers: { 'x-request-id': ctx.requestId } },
       );
+    }
+
+    if (provider === 'chariow') {
+      return chariowCheckoutResponse(req, ctx.requestId, user, tier, parsed.data.customer);
     }
 
     const amount = getTierAmount(tier);
@@ -273,4 +301,123 @@ async function endOrder(
     { code: 'PAYMENT_RESULT_UNKNOWN', message: 'Could not confirm the checkout — please retry' },
     { status: 503, headers: { 'x-request-id': requestId } },
   );
+}
+
+/**
+ * The Chariow path (2026-11-28). Chariow's checkout is a hosted page: the
+ * answer carries `paymentUrl` and no `embedUrl`, which the dialog already
+ * reads as « go there ». The customer comes back to /paiement/retour.
+ */
+async function chariowCheckoutResponse(
+  req: NextRequest,
+  requestId: string,
+  user: { id: string; email: string; name: string | null; phone: string | null },
+  tier: PricingTierId,
+  given: ChariowCustomer | undefined,
+): Promise<NextResponse> {
+  const headers = { 'x-request-id': requestId };
+  const country = (given?.country ?? req.headers.get('x-vercel-ip-country') ?? 'TG').toUpperCase();
+  const known = splitName(user.name);
+  const customer: Partial<ChariowCustomer> = given
+    ? { ...given, country, phone: digitsOnly(given.phone) }
+    : { ...known, phone: digitsOnly(user.phone), country };
+
+  // Asked every time unless the dialog sent them: a phone saved months ago
+  // may not be the one that will pay, and the operator prompt goes to it.
+  if (!given || !isCompleteCustomer(customer)) {
+    return NextResponse.json(
+      {
+        code: 'CUSTOMER_DETAILS_REQUIRED',
+        defaults: {
+          firstName: customer.firstName ?? known.firstName,
+          lastName: customer.lastName ?? known.lastName,
+          phone: customer.phone ?? '',
+          country,
+        },
+      },
+      { status: 422, headers },
+    );
+  }
+
+  const amount = getTierAmount(tier);
+  const order = await prisma.order.create({
+    data: {
+      userId: user.id,
+      amount,
+      currency: 'XOF',
+      status: 'PENDING',
+      customerEmail: user.email,
+      customerName: `${customer.firstName} ${customer.lastName}`.trim(),
+      customerPhone: customer.phone,
+      provider: 'chariow',
+      metadata: { tier },
+      expiresAt: new Date(Date.now() + ORDER_EXPIRY_MS),
+    },
+    select: { id: true },
+  });
+  // Remember the phone for next time, never overwriting one already set.
+  if (!user.phone) {
+    await prisma.user
+      .update({ where: { id: user.id }, data: { phone: customer.phone } })
+      .catch(() => undefined);
+  }
+
+  const appUrl = (process.env.APP_URL ?? req.nextUrl.origin).replace(/\/+$/, '');
+  try {
+    const result = await chariowCheckout({
+      tier,
+      email: user.email,
+      customer,
+      orderId: order.id,
+      redirectUrl: `${appUrl}/paiement/retour?orderId=${order.id}`,
+    });
+    if (result.step === 'already_purchased') {
+      log.warn('chariow checkout: already_purchased', { orderId: order.id, tier, requestId });
+      await prisma.order.update({ where: { id: order.id }, data: { status: 'FAILED' } });
+      return NextResponse.json(
+        { code: 'ALREADY_PURCHASED', message: 'Chariow refused a repeat purchase' },
+        { status: 409, headers },
+      );
+    }
+    await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        ...(result.saleId ? { providerChargeId: result.saleId } : {}),
+        ...(result.step === 'payment' ? { paymentUrl: result.checkoutUrl } : {}),
+      },
+    });
+    const pricing = getPricingTier(tier);
+    return NextResponse.json(
+      {
+        orderId: order.id,
+        sessionId: result.saleId,
+        embedUrl: null,
+        embedToken: null,
+        // `completed` never happens for a paid product; the return page
+        // verifies the order either way.
+        paymentUrl:
+          result.step === 'payment'
+            ? result.checkoutUrl
+            : `${appUrl}/paiement/retour?orderId=${order.id}`,
+        integrationMode: 'redirect',
+        amount,
+        currency: 'XOF',
+        credits: pricing?.creditsPerMonth ?? null,
+      },
+      { status: 201, headers },
+    );
+  } catch (e) {
+    log.warn('chariow checkout failed', { orderId: order.id, err: String(e), requestId });
+    if (isChariowCertainRefusal(e)) {
+      await prisma.order.update({ where: { id: order.id }, data: { status: 'FAILED' } });
+      return NextResponse.json(
+        { code: 'PAYMENT_PROVIDER_ERROR', message: 'Could not start checkout' },
+        { status: 502, headers },
+      );
+    }
+    return NextResponse.json(
+      { code: 'PAYMENT_RESULT_UNKNOWN', message: 'Could not confirm the checkout — please retry' },
+      { status: 503, headers },
+    );
+  }
 }

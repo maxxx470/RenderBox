@@ -1104,6 +1104,16 @@ const fr = {
   'paiement.resumeBody':
     'Votre banque demande une vérification que cette fenêtre ne peut pas afficher.',
   'paiement.resumeLink': 'Terminer le paiement dans un nouvel onglet',
+  'paiement.detailsTitle': 'Vos coordonnées',
+  'paiement.detailsBody':
+    'Le paiement se fait sur la page sécurisée de Chariow. Indiquez le numéro qui va payer : votre opérateur y enverra la demande de confirmation.',
+  'paiement.firstName': 'Prénom',
+  'paiement.lastName': 'Nom',
+  'paiement.phone': 'Téléphone',
+  'paiement.country': 'Pays',
+  'paiement.detailsCta': 'Continuer vers le paiement',
+  'paiement.detailsBusy': 'Ouverture du paiement…',
+  'paiement.detailsError': "Le paiement n'a pas pu s'ouvrir. Vérifiez le numéro et réessayez.",
   'paiementRetour.checking': 'Vérification du paiement…',
   'paiementRetour.paidTitle': 'Paiement confirmé',
   'paiementRetour.paidBody': 'Merci — votre paiement a bien été reçu.',

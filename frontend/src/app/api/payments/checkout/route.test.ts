@@ -1,6 +1,6 @@
 import { prismaMock } from '@/test-utils/prisma-mock';
 import { mockNextCookies } from '@/test-utils/mock-cookies';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest, NextResponse } from 'next/server';
 
 mockNextCookies();
@@ -223,5 +223,99 @@ describe('POST /api/payments/checkout', () => {
     const res = await POST(makeReq());
     expect(res.status).toBe(404);
     expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('POST /api/payments/checkout — Chariow', () => {
+  const CUSTOMER = { firstName: 'Ama', lastName: 'Koffi', phone: '90 12 34 56', country: 'TG' };
+
+  beforeEach(() => {
+    vi.stubEnv('CHARIOW_API_KEY', 'sk_live_x');
+    vi.stubEnv('CHARIOW_WEBHOOK_SECRET', 'whsec_x');
+    vi.stubEnv('PAYMENT_PROVIDER', '');
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('asks for the customer details first, prefilled from the account, without an Order', async () => {
+    prismaMock.user.findUnique.mockResolvedValueOnce({
+      id: 'user-1',
+      email: 'me@example.com',
+      name: 'Ama Koffi',
+      phone: '+22890123456',
+    } as never);
+    const res = await POST(makeReq({ tier: 'standard' }));
+    expect(res.status).toBe(422);
+    expect(await res.json()).toMatchObject({
+      code: 'CUSTOMER_DETAILS_REQUIRED',
+      defaults: { firstName: 'Ama', lastName: 'Koffi', phone: '22890123456' },
+    });
+    expect(prismaMock.order.create).not.toHaveBeenCalled();
+  });
+
+  it('opens Chariow for the plan product and returns its hosted page', async () => {
+    withUserAndOrder();
+    prismaMock.user.update.mockResolvedValueOnce({} as never);
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            data: {
+              step: 'payment',
+              purchase: { id: 'sal_1', status: 'awaiting_payment' },
+              payment: { checkout_url: 'https://pay.chariow.com/c/1' },
+            },
+          }),
+          { status: 200 },
+        ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const res = await POST(makeReq({ tier: 'standard', customer: CUSTOMER }));
+    expect(res.status).toBe(201);
+    expect(await res.json()).toMatchObject({
+      orderId: 'order-1',
+      embedUrl: null,
+      paymentUrl: 'https://pay.chariow.com/c/1',
+    });
+    const sent = JSON.parse(
+      String(
+        (fetchMock.mock.calls[0] as unknown[])[1] &&
+          ((fetchMock.mock.calls[0] as unknown[])[1] as RequestInit).body,
+      ),
+    );
+    expect(sent).toMatchObject({
+      product_id: 'prd_qlo7a0kw',
+      first_name: 'Ama',
+      last_name: 'Koffi',
+      phone: { number: '90123456', country_code: 'TG' },
+      custom_metadata: { order_id: 'order-1', tier: 'standard' },
+    });
+    expect(sent.redirect_url).toContain('/paiement/retour?orderId=order-1');
+    expect(prismaMock.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ provider: 'chariow' }) }),
+    );
+    expect(prismaMock.order.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ providerChargeId: 'sal_1' }),
+      }),
+    );
+  });
+
+  it('fails the Order at once when Chariow refuses (4xx)', async () => {
+    withUserAndOrder();
+    prismaMock.user.update.mockResolvedValueOnce({} as never);
+    prismaMock.order.update.mockResolvedValueOnce({} as never);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ message: 'bad phone' }), { status: 422 })),
+    );
+    const res = await POST(makeReq({ tier: 'standard', customer: CUSTOMER }));
+    expect(res.status).toBe(502);
+    expect(prismaMock.order.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: 'FAILED' } }),
+    );
   });
 });
