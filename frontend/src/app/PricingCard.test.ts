@@ -126,7 +126,7 @@ describe('PricingCard — one card for the landing and the Abonnement page', () 
     const order = {
       fr: [
         'crédits / mois',
-        "Génération d'images illimitée",
+        "Générez autant d'images que vos crédits le permettent",
         'Génération de vidéos',
         'Deux moteurs : Nano Banana et ChatGPT',
         'Accès à toutes les fonctionnalités de RenderPro',
@@ -134,7 +134,7 @@ describe('PricingCard — one card for the landing and the Abonnement page', () 
       ],
       en: [
         'credits / month',
-        'Unlimited image generation',
+        'Generate as many images as your credits allow',
         'Video generation',
         'Two engines: Nano Banana and ChatGPT',
         'Access to every RenderPro feature',

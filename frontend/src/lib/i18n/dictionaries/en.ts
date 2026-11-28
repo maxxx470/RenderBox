@@ -1328,7 +1328,7 @@ const en: Record<keyof typeof fr, string> = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureCredits': '{count} credits / month',
-  'landing.pricingFeatureImages': 'Unlimited image generation',
+  'landing.pricingFeatureImages': 'Generate as many images as your credits allow',
   'landing.pricingFeatureVideos': 'Video generation',
   'landing.pricingFeatureAll': 'Access to every RenderPro feature',
   'landing.pricingTagline.decouverte': 'To try it on a project',

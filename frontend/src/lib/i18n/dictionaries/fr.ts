@@ -1376,7 +1376,7 @@ const fr = {
   'landing.pricingTierStandardName': 'Standard',
   'landing.pricingTierProName': 'Pro',
   'landing.pricingFeatureCredits': '{count} crédits / mois',
-  'landing.pricingFeatureImages': "Génération d'images illimitée",
+  'landing.pricingFeatureImages': "Générez autant d'images que vos crédits le permettent",
   'landing.pricingFeatureVideos': 'Génération de vidéos',
   'landing.pricingFeatureAll': 'Accès à toutes les fonctionnalités de RenderPro',
   'landing.pricingTagline.decouverte': 'Pour tester sur un projet',
