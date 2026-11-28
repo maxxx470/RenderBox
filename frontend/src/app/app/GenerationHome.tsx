@@ -169,18 +169,22 @@ export function GenerationHome({
     setPins([]);
     setReferenceFile(null);
     setTemplate(null);
-    // Générer shows its ambiance's text again; the edit modes start empty.
-    setPrompt(next === 'generate' ? ambianceText(preset, locale) : '');
+    // Every mode starts with an empty bar: an ambiance's prompt is never
+    // shown (owner, 2026-11-28).
+    setPrompt('');
   }
 
   /**
-   * Picking an ambiance (the menu or a fan template) writes its prompt in the
-   * bar, to be read and changed before launching (owner, 2026-10-19). Since
-   * 2026-10-25 that text IS the owner's prompt for this ambiance, in the
-   * language of the site: a new ambiance replaces what was there.
+   * Picking an ambiance (the menu or a fan template) no longer writes its
+   * prompt in the bar (owner, 2026-11-28: the prompt must not be shown). The
+   * server builds the ambiance's own prompt; what the user types in the bar
+   * is sent as an addition to it. Until then (2026-10-19 → 11-28) the bar
+   * showed the ambiance's text to be read and changed.
    */
   function writeAmbiance(key: PresetKey | null) {
-    setPrompt(ambianceText(key, locale));
+    void key;
+    // A bar still holding an ambiance's text from before goes back to empty.
+    setPrompt((current) => (isAmbianceText(current) ? '' : current));
   }
 
   // The bar's text changed. Until 2026-10-25 a materials sheet pasted here
@@ -188,6 +192,15 @@ export function GenerationHome({
   // reference images carry a building's look from one render to the next.
   function changePrompt(value: string) {
     setPrompt(value);
+  }
+
+  // True when the text is exactly one ambiance's or template's own prompt.
+  function isAmbianceText(text: string): boolean {
+    const t = text.trim();
+    if (!t) return false;
+    return [...Object.keys(PRESETS), ...Object.keys(TEMPLATES)].some(
+      (k) => ambianceText(k as PresetKey, locale).trim() === t,
+    );
   }
 
   function changePreset(next: PresetKey | null) {
@@ -198,7 +211,7 @@ export function GenerationHome({
 
   function clearTemplate() {
     setTemplate(null);
-    if (prompt.trim() === ambianceText(template, locale)) setPrompt('');
+    if (isAmbianceText(prompt)) setPrompt('');
   }
 
   // "Utiliser ce modèle": the template's chip goes in the bar, then the
@@ -372,7 +385,6 @@ export function GenerationHome({
 
   // Générer: the render is made here and appears beside its source.
   async function generate() {
-    const ambianceKey = template ?? preset;
     setCreating(true);
     setResult(null);
     try {
@@ -389,8 +401,10 @@ export function GenerationHome({
             // With an ambiance the bar holds its text (read, maybe edited);
             // the server keeps the default when it was left as written. With
             // none, the bar holds the user's own request.
-            ambianceText: ambianceKey ? prompt.trim() || undefined : undefined,
-            customPrompt: ambianceKey ? undefined : prompt.trim() || undefined,
+            // The ambiance's prompt is never shown: the server writes it,
+            // and the bar's text is the user's own request — on its own
+            // without an ambiance, as an addition with one.
+            customPrompt: prompt.trim() || undefined,
             template: template ?? undefined,
             // 'auto' is the absence of a request, so it is not sent at all.
             ratio: ratio === 'auto' ? undefined : ratio,
